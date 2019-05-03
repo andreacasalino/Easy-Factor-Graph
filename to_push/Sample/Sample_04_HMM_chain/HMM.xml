@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<HMM>
+	<Variable name="Y1" Size="4"></Variable>
+	<Variable name="X1" Size="4"></Variable>
+	<Variable name="Y2" Size="4"></Variable>
+	<Variable name="X2" Size="4"></Variable>
+	<Variable name="Y3" Size="4"></Variable>
+	<Variable name="X3" Size="4"></Variable>
+	<Variable name="Y4" Size="4"></Variable>
+	<Variable name="X4" Size="4"></Variable>
+	<Variable name="Y5" Size="4"></Variable>
+	<Variable name="X5" Size="4"></Variable>
+	<Variable name="Y6" Size="4"></Variable>
+	<Variable name="X6" Size="4"></Variable>
+	<Variable name="Y7" Size="4"></Variable>
+	<Variable name="X7" Size="4"></Variable>
+	<Variable name="Y8" Size="4"></Variable>
+	<Variable name="X8" Size="4"></Variable>
+	<Variable name="Y9" Size="4"></Variable>
+	<Variable name="X9" Size="4"></Variable>
+	<Variable name="Y10" Size="4"></Variable>
+	<Variable name="X10" Size="4"></Variable>
+	<Potential var="Y1" weight="1.0">
+		<Distr_val v="1" D="1"></Distr_val>
+	</Potential>
+	<Potential var="X1" var="Y1" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X2" var="Y2" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X3" var="Y3" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X4" var="Y4" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X5" var="Y5" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X6" var="Y6" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X7" var="Y7" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X8" var="Y8" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X9" var="Y9" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="X10" var="Y10" weight="1.0" Source="XY_observations.txt"></Potential>
+	<Potential var="Y2" var="Y1" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y3" var="Y2" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y4" var="Y3" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y5" var="Y4" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y6" var="Y5" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y7" var="Y6" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y8" var="Y7" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y9" var="Y8" weight="1.0" Source="YY_dynamic.txt"></Potential>
+	<Potential var="Y10" var="Y9" weight="1.0" Source="YY_dynamic.txt"></Potential>
+</HMM>
