@@ -38,7 +38,7 @@ namespace Segugio {
 
 		class Node_factory {
 		public:
-			~Node_factory();
+			virtual ~Node_factory();
 
 			Categoric_var*			  Find_Variable(const std::string& var_name);
 			void					  Get_Actual_Hidden_Set(std::list<Categoric_var*>* result);
@@ -153,6 +153,8 @@ namespace Segugio {
 
 	class I_belief_propagation_strategy {
 	public:
+		virtual ~I_belief_propagation_strategy() {};
+
 		static bool Propagate(std::list<Node*>& cluster, const bool& sum_or_MAP = true, const unsigned int& Iterations = 1000);
 	protected:
 		void Instantiate_message(Node::Neighbour_connection* outgoing_mex_to_compute, const bool& sum_or_MAP);

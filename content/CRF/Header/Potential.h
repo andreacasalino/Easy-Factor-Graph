@@ -16,6 +16,7 @@ namespace Segugio {
 	//domain is assumed to be {0,1,2,3,...,size}
 		Categoric_var(const size_t& size, const std::string& name); //name cannot be empty string ""
 		Categoric_var(const Categoric_var& to_copy) { abort(); };
+		virtual ~Categoric_var() {};
 
 		const size_t& size() { return this->Size; };
 		const std::string& Get_name() { return this->Name; };
@@ -43,8 +44,11 @@ namespace Segugio {
 		friend class I_Potential_Decorator;
 	public:
 		I_Potential(const I_Potential& to_copy) { abort(); };
+		virtual ~I_Potential() {};
 
 		struct I_Distribution_value {
+			virtual ~I_Distribution_value() {};
+
 			virtual void	Set_val(const float& v) = 0;
 			virtual void	Get_val(float* result) = 0;
 			virtual size_t* Get_indeces() = 0;

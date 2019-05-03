@@ -41,7 +41,7 @@ namespace Segugio {
 		friend struct Distribution_exp_value;
 
 		Distribution_value(size_t* ind, const float& v = 0.f) : val(v) { this->indices = ind; };
-		~Distribution_value() { free(indices); };
+		~Distribution_value();
 
 		void	Set_val(const float& v) { this->val = v; };
 		void	Get_val(float* result) { *result = val; };
@@ -52,9 +52,13 @@ namespace Segugio {
 		float   val;
 	};
 
+	Distribution_value::~Distribution_value() {
+		free(indices);
+	};
+
 	struct Distribution_exp_value : public I_Potential::I_Distribution_value {
 		Distribution_exp_value(Distribution_value* to_wrap, float* weight) :wrapped(to_wrap), w(weight) {};
-		~Distribution_exp_value() { delete wrapped; };
+		~Distribution_exp_value();
 
 		void	Set_val(const float& v) { this->wrapped->val = v; };
 		void	Get_val(float* result) { *result = expf(this->wrapped->val * *this->w); };
@@ -63,6 +67,10 @@ namespace Segugio {
 	// data
 		float*   w;
 		Distribution_value* wrapped;
+	};
+
+	Distribution_exp_value::~Distribution_exp_value() {
+		delete wrapped;
 	};
 
 	void I_Potential::Get_entire_domain(list<size_t*>* domain, const list<Categoric_var*>& Vars_in_domain) {
