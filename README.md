@@ -7,3 +7,5 @@ After that you will be able to link CRF.lib to the projects in content/Sample, p
 See the README.pptx provided in every sample folder
 
 For developing a new project you will need to link CRF.lib
+
+questa è una modifica
