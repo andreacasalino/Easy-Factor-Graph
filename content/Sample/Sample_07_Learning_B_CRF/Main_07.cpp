@@ -42,7 +42,7 @@ int main() {
 	I_Potential::Get_entire_domain(&domain_of_observed_set, observed_set);
 	for (auto it_o = domain_of_observed_set.begin(); it_o != domain_of_observed_set.end(); it_o++) {
 		cond_graph.Set_Observation_Set_val(*it_o);
-		cond_graph.Gibbs_Sampling_on_Hidden_set(&samples_temp, 50, 100);
+		cond_graph.Gibbs_Sampling_on_Hidden_set(&samples_temp, 15, 100);
 		for (auto itt = samples_temp.begin(); itt != samples_temp.end(); itt++)
 			Append_list(&(*itt), *it_o);
 
@@ -55,9 +55,9 @@ int main() {
 
 	Conditional_Random_Field cond_graph_to_learn("cond_graph_to_learn.xml", prefix); //in this model all weights are initially equal to 1
 	Training_set Set(prefix + "Train_set.txt");
-	auto Learner = I_Trainer::Get_fixed_step(0.1f); // Random_Field::I_Training::Get_BFGS();  //
+	auto Learner = I_Trainer::Get_fixed_step(1.f, 0.3f);
 	list<float> likelihood_story;
-	Learner->Train(&cond_graph_to_learn, &Set, 5, &likelihood_story);
+	Learner->Train(&cond_graph_to_learn, &Set, 10, &likelihood_story);
 	delete Learner;
 
 	cout << "\n\n\n evolution of the likelihood during training\n";
@@ -72,6 +72,20 @@ int main() {
 	Graph_Learnable::Weights_Manager::Get_w(&w, &cond_graph_to_learn);
 	print_distribution(w); cout << endl;
 	cout << endl;
+
+
+
+
+	list<float> marginals;
+	cond_graph.Set_Observation_Set_val(domain_of_observed_set.front());
+	cond_graph.Get_marginal_distribution(&marginals, cond_graph.Find_Variable("Y4"));
+	cout << "P(Y|X) real model    ";
+	print_distribution(marginals); cout << endl;
+
+	cond_graph_to_learn.Set_Observation_Set_val(domain_of_observed_set.front());
+	cond_graph_to_learn.Get_marginal_distribution(&marginals, cond_graph_to_learn.Find_Variable("Y4"));
+	cout << "P(Y|X) learnt model  ";
+	print_distribution(marginals); cout << endl;
 
 	system("pause");
 	return 0;

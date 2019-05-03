@@ -62,6 +62,11 @@ namespace Segugio {
 
 		f_set.close();
 
+		if (this->Set.empty()) {
+			system("ECHO empty train set parsed");
+			abort();
+		}
+
 	}
 
 	Training_set::Training_set(const std::string& file_to_import, const bool& display_after_parsing) : Training_set(file_to_import) {

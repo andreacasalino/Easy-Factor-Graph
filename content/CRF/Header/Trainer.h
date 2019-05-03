@@ -12,7 +12,7 @@ namespace Segugio {
 
 	class I_Trainer {
 	public:
-		static I_Trainer* Get_fixed_step(const float& step_size, const float& stoch_grad_percentage = 1.f);
+		static I_Trainer* Get_fixed_step(const float& step_size = 0.1f, const float& stoch_grad_percentage = 1.f);
 		static I_Trainer* Get_BFGS(const float& stoch_grad_percentage = 1.f);
 
 		virtual void Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations = 100, std::list<float>* descend_story = NULL) = 0;

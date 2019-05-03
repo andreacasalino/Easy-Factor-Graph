@@ -1,6 +1,8 @@
 #include "../Header/Graphical_model.h"
 using namespace std;
 
+//#define ADD_REGULARIZATION
+
 namespace Segugio {
 
 	Graph::Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file) {
@@ -256,6 +258,7 @@ namespace Segugio {
 		model->Get_w_grad(grad_w, comb_train_set, comb_var_order); //here the beta part is added
 		model->pLast_train_set = comb_train_set;
 
+#ifdef ADD_REGULARIZATION
 		//add regularization term
 		float temp;
 		auto it_grad = grad_w->begin();
@@ -264,6 +267,7 @@ namespace Segugio {
 			*it_grad -= 2.f * temp;
 			it_grad++;
 		}
+#endif
 
 	}
 
@@ -354,6 +358,7 @@ namespace Segugio {
 			this->Get_Log_activation(&temp, *it_set, comb_var_order);
 			*result += temp;
 		}
+		//*result = 1.f / (float)comb_train_set->size();
 
 		free(Y_MAP_malloc);
 
@@ -587,6 +592,8 @@ namespace Segugio {
 			this->Get_Log_activation(&temp, *it_set, comb_var_order);
 			*result += temp;
 		}
+		//*result = 1.f / (float)comb_train_set->size();
+
 		free(Y_MAP_malloc);
 
 	}

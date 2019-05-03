@@ -31,22 +31,22 @@ int main() {
 	//part_01(prefix);
 	//system("pause");
 
-	///////////////////////////////////////////
-	//            part 02 graph_2            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 02 \n\n\n";
-	cout << "-----------------------\n";
-	part_02(prefix);
-	system("pause");
+	/////////////////////////////////////////////
+	////            part 02 graph_2            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 02 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_02(prefix);
+	//system("pause");
 
-	/////////////////////////////////////////////
-	////            part 03 graph_3            //
-	/////////////////////////////////////////////
-	//cout << "-----------------------\n";
-	//cout << "part 03 \n\n\n";
-	//cout << "-----------------------\n";
-	//part_03(prefix);
+	///////////////////////////////////////////
+	//            part 03 graph_3            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 03 \n\n\n";
+	cout << "-----------------------\n";
+	part_03(prefix);
 
 	system("pause");
 	return 0;
@@ -108,7 +108,7 @@ void part_02(const string& prefix) {
 
 	//extract some samples from the graph with a Gibbs sampling method, for building a train set
 	list<list<size_t>> samples;
-	graph_2.Gibbs_Sampling_on_Hidden_set(&samples, 300, 1000);
+	graph_2.Gibbs_Sampling_on_Hidden_set(&samples, 500, 500);
 	Print_set_as_training_set(prefix + "Train_set.txt", { A,B,C }, samples);
 
 	//check empirical frequency for some combinations
@@ -139,9 +139,9 @@ void part_02(const string& prefix) {
 
 	//train graph_to_learn with a fixed step gradient descend algorithm
 	Training_set Set(prefix + "Train_set.txt");
-	auto Learner = I_Trainer::Get_fixed_step(0.1f, 0.3f);
+	auto Learner = I_Trainer::Get_fixed_step(1.f);
 	list<float> likelihood_story;
-	Learner->Train(&graph_to_learn, &Set, 20, &likelihood_story);
+	Learner->Train(&graph_to_learn, &Set, 50, &likelihood_story);
 	delete Learner;
 
 	cout << "\n\n\n evolution of the likelihood of the model during training\n";
@@ -157,6 +157,19 @@ void part_02(const string& prefix) {
 	print_distribution(w); cout << endl;
 	cout << endl;
 
+
+	list<float> marginals;
+	graph_2.Set_Observation_Set_var({C});
+	graph_2.Set_Observation_Set_val({ 0 });
+	graph_2.Get_marginal_distribution(&marginals, A);
+	cout << "P(A|C=0) real model    ";
+	print_distribution(marginals); cout << endl;
+
+	graph_to_learn.Set_Observation_Set_var({ C2 });
+	graph_to_learn.Set_Observation_Set_val({ 0 });
+	graph_to_learn.Get_marginal_distribution(&marginals, A2);
+	cout << "P(A|C=0) learnt model  ";
+	print_distribution(marginals); cout << endl;
 }
 
 void part_03(const string& prefix) {
@@ -169,13 +182,13 @@ void part_03(const string& prefix) {
 	list<Categoric_var*> vars;
 	graph_3.Get_All_variables_in_model(&vars);
 
-	graph_3.Gibbs_Sampling_on_Hidden_set(&samples, 300, 1000);
+	graph_3.Gibbs_Sampling_on_Hidden_set(&samples, 500, 500);
 	Print_set_as_training_set(prefix + "Train_set.txt", vars, samples);
 
 
 	Random_Field graph_to_learn("graph_3_to_learn.xml", prefix); //in this model all weights are initially equal to 1
 	Training_set Set(prefix + "Train_set.txt");
-	auto Learner = I_Trainer::Get_fixed_step(0.1f); // Random_Field::I_Training::Get_BFGS();  //
+	auto Learner = I_Trainer::Get_fixed_step(1.f); // Random_Field::I_Training::Get_BFGS();  //
 	list<float> likelihood_story;
 	Learner->Train(&graph_to_learn, &Set, 50, &likelihood_story);
 	delete Learner;
@@ -192,5 +205,19 @@ void part_03(const string& prefix) {
 	Graph_Learnable::Weights_Manager::Get_w(&w, &graph_to_learn);
 	print_distribution(w); cout << endl;
 	cout << endl;
+
+
+	list<float> marginals;
+	graph_3.Set_Observation_Set_var({ graph_3.Find_Variable("v5") });
+	graph_3.Set_Observation_Set_val({ 0 });
+	graph_3.Get_marginal_distribution(&marginals, graph_3.Find_Variable("v1"));
+	cout << "P(A|C=0) real model    ";
+	print_distribution(marginals); cout << endl;
+
+	graph_to_learn.Set_Observation_Set_var({ graph_to_learn.Find_Variable("v5") });
+	graph_to_learn.Set_Observation_Set_val({ 0 });
+	graph_to_learn.Get_marginal_distribution(&marginals, graph_to_learn.Find_Variable("v1"));
+	cout << "P(A|C=0) learnt model  ";
+	print_distribution(marginals); cout << endl;
 
 }
