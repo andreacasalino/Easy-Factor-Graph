@@ -44,7 +44,7 @@ int main() {
 	graph_1.Get_marginal_distribution(&marginals, A1);
 	cout << "P(A|B=0)" << endl;
 	cout << "theoretical " << endl;
-	print_distribution({ expf(teta) / Z, 1.f / Z });
+	print_distribution(list<float>({ expf(teta) / Z, 1.f / Z }));
 	print_distribution(marginals);
 	cout << endl << endl;
 
@@ -55,7 +55,7 @@ int main() {
 	graph_1.Get_marginal_distribution(&marginals, A1);
 	cout << "P(A|B=1)" << endl;
 	cout << "theoretical " << endl;
-	print_distribution({ 1.f / Z, expf(teta) / Z });
+	print_distribution(list<float>({ 1.f / Z, expf(teta) / Z }));
 	print_distribution(marginals);
 	cout << endl << endl;
 
@@ -97,13 +97,13 @@ int main() {
 	graph_2.Get_marginal_distribution(&marginals, B2);
 	cout << "P(B|C=1)\n";
 	cout << "theoretical " << endl;
-	print_distribution({ (1.f + expf(beta)) / Z, expf(alfa)*(1.f + expf(beta)) / Z });
+	print_distribution(list<float>({ (1.f + expf(beta)) / Z, expf(alfa)*(1.f + expf(beta)) / Z }));
 	print_distribution(marginals);
 
 	graph_2.Get_marginal_distribution(&marginals, A2);
 	cout << "P(A|C=1)\n";
 	cout << "theoretical " << endl;
-	print_distribution({ (expf(alfa) + expf(beta)) / Z, (1.f + expf(alfa) * expf(beta)) / Z });
+	print_distribution(list<float>({ (expf(alfa) + expf(beta)) / Z, (1.f + expf(alfa) * expf(beta)) / Z }));
 	print_distribution(marginals);
 
 
@@ -116,7 +116,7 @@ int main() {
 	graph_2.Get_marginal_distribution(&marginals, A2);
 	cout << "P(A|B=1)\n";
 	cout << "theoretical " << endl;
-	print_distribution({ 1.f / Z, expf(beta) / Z });
+	print_distribution(list<float>({ 1.f / Z, expf(beta) / Z }));
 	print_distribution(marginals);
 
 	Z = 1.f + expf(alfa);
@@ -124,7 +124,7 @@ int main() {
 	graph_2.Get_marginal_distribution(&marginals, C2);
 	cout << "P(C|B=1)\n";
 	cout << "theoretical " << endl;
-	print_distribution({ 1.f / Z, expf(alfa) / Z });
+	print_distribution(list<float>({ 1.f / Z, expf(alfa) / Z }));
 	print_distribution(marginals);
 
 

@@ -7,7 +7,8 @@
 #include "../CRF/Header/Potential.h"
 using namespace std;
 
-void print_distribution(const list<float>& distr) {
+template<typename T>
+void print_distribution(const list<T>& distr) {
 
 	for (auto it = distr.begin(); it != distr.end(); it++) {
 		cout << " " << *it;

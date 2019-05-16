@@ -83,7 +83,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = (1.f + a) * (1.f + g + e + e * g);
 	cout << "theoretical\n";
-	print_distribution({ (a*(g + e) + (1 + g * e)) / Z, ((g + e) + a * (1 + g * e)) / Z });
+	print_distribution(list<float>({ (a*(g + e) + (1 + g * e)) / Z, ((g + e) + a * (1 + g * e)) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("B"));
@@ -91,7 +91,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + e + g + e * g;
 	cout << "theoretical\n";
-	print_distribution({ (g + e) / Z,(1 + g * e) / Z });
+	print_distribution(list<float>({ (g + e) / Z,(1 + g * e) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("C"));
@@ -99,7 +99,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = (1.f + b) * (1.f + g + e + e * g);
 	cout << "theoretical\n";
-	print_distribution({ (b*(g + e) + (1 + g * e)) / Z, ((g + e) + b * (1 + g * e)) / Z });
+	print_distribution(list<float>({ (b*(g + e) + (1 + g * e)) / Z, ((g + e) + b * (1 + g * e)) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("D"));
@@ -107,7 +107,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + e;
 	cout << "theoretical\n";
-	print_distribution({ 1.f / Z,e / Z });
+	print_distribution(list<float>({ 1.f / Z,e / Z }));
 	cout << endl;
 
 
@@ -126,7 +126,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = (1.f + a) * (1.f + g + e + e * g);
 	cout << "theoretical\n";
-	print_distribution({ ((g + e) + a * (1 + g * e)) / Z, (a*(g + e) + (1 + g * e)) / Z });
+	print_distribution(list<float>({ ((g + e) + a * (1 + g * e)) / Z, (a*(g + e) + (1 + g * e)) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("B"));
@@ -134,7 +134,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + e + g + e * g;
 	cout << "theoretical\n";
-	print_distribution({ (1 + g * e) / Z , (g + e) / Z });
+	print_distribution(list<float>({ (1 + g * e) / Z , (g + e) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("C"));
@@ -142,7 +142,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = (1.f + b) * (1.f + g + e + e * g);
 	cout << "theoretical\n";
-	print_distribution({ ((g + e) + b * (1 + g * e)) / Z , (b*(g + e) + (1 + g * e)) / Z });
+	print_distribution(list<float>({ ((g + e) + b * (1 + g * e)) / Z , (b*(g + e) + (1 + g * e)) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("D"));
@@ -150,7 +150,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + e;
 	cout << "theoretical\n";
-	print_distribution({ e / Z, 1.f / Z });
+	print_distribution(list<float>({ e / Z, 1.f / Z }));
 	cout << endl;
 
 
@@ -166,7 +166,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + a + g + a * g;
 	cout << "theoretical\n";
-	print_distribution({ (a + g) / Z, (1.f + a * g) / Z });
+	print_distribution(list<float>({ (a + g) / Z, (1.f + a * g) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("B"));
@@ -174,7 +174,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + g;
 	cout << "theoretical\n";
-	print_distribution({ 1.f / Z, g / Z });
+	print_distribution(list<float>({ 1.f / Z, g / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("C"));
@@ -182,7 +182,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + b + g + b * g;
 	cout << "theoretical\n";
-	print_distribution({ (b + g) / Z, (1.f + b * g) / Z });
+	print_distribution(list<float>({ (b + g) / Z, (1.f + b * g) / Z }));
 	cout << endl;
 
 	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("E"));
@@ -190,7 +190,7 @@ void process_graph_1(const string& prefix) {
 	print_distribution(marginals);
 	Z = 1.f + e;
 	cout << "theoretical\n";
-	print_distribution({ 1.f / Z, e / Z });
+	print_distribution(list<float>({ 1.f / Z, e / Z }));
 	cout << endl;
 
 }
