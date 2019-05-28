@@ -59,19 +59,42 @@ namespace Segugio {
 
 			//when the passed potential involves two variable is interpreted as a new edge, when containing a single a variable is assumed as a new unary potential;
 			//in any other cases is a an error
-			virtual void Insert(Potential_Shape* pot) { this->Insert<Potential_Shape>(pot); };
-			virtual void Insert(Potential_Exp_Shape* pot) { this->Insert<Potential_Exp_Shape>(pot); };
+			virtual void Insert(Potential_Shape* pot) { this->Insert_with_size_check<Potential_Shape>(pot); };
+			virtual void Insert(Potential_Exp_Shape* pot) { this->Insert_with_size_check<Potential_Exp_Shape>(pot); };
 
-			void Insert(Potential* pot, Categoric_var* varA, Categoric_var* varB);
-			void Insert(Potential* pot, Categoric_var* varU);
-
+			void Insert(const std::list<Potential_Shape*>& set_to_insert);
+			void Insert(const std::list<Potential_Exp_Shape*>& set_to_insert);
 
 			Node*					  Find_Node(const std::string& var_name);
 
+		//methods having an effect on mState
+			void					  Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars);
+			void					  Set_Observation_Set_val(const std::list<size_t>& new_observed_vals); //assuming the same observed set last time
+			void					  Belief_Propagation(const bool& sum_or_MAP);
 
+
+			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
+		private:
+			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);
+			void					  Recompute_clusters();
+
+			struct observation_info {
+				Node*  Involved_node;
+				size_t Value;
+			};
+
+			struct last_belief_propagation_info {
+				bool          Terminate_within_iter;
+				unsigned int  Iterations_perfomed;
+				bool          Last_was_SumProd_or_MAP;
+			};
+
+
+			void Insert(Potential* pot, Categoric_var* varA, Categoric_var* varB);
+			void Insert(Potential* pot, Categoric_var* varU);
 		//methods having an effect on mState
 			template<typename T>
-			void Insert(T* pot) {
+			void Insert_with_size_check(T* pot) {
 
 				auto var_involved = pot->Get_involved_var_safe();
 
@@ -93,26 +116,7 @@ namespace Segugio {
 				this->mState = 0;
 
 			};
-			void					  Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars);
-			void					  Set_Observation_Set_val(const std::list<size_t>& new_observed_vals); //assuming the same observed set last time
-			void					  Belief_Propagation(const bool& sum_or_MAP);
 
-
-			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
-		private:
-			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);
-			void					  Recompute_clusters();
-
-			struct observation_info {
-				Node*  Involved_node;
-				size_t Value;
-			};
-
-			struct last_belief_propagation_info {
-				bool          Terminate_within_iter;
-				unsigned int  Iterations_perfomed;
-				bool          Last_was_SumProd_or_MAP;
-			};
 		// data
 			size_t								mState;
 			last_belief_propagation_info*		Last_propag_info;

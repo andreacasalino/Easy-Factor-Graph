@@ -485,6 +485,29 @@ namespace Segugio {
 
 	};
 
+	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var) {
+
+		list<Potential_Exp_Shape*>		binary_edge;
+		list<Potential_Exp_Shape*>		unary_edge;
+		for (auto it = potentials.begin(); it != potentials.end(); it++) {
+			if ((*it)->Get_involved_var_safe()->size() == 1)
+				unary_edge.push_back(*it);
+			else if ((*it)->Get_involved_var_safe()->size() == 2)
+				binary_edge.push_back(*it);
+			else {
+				system("ECHO invalid component to insert in a graph");
+				abort();
+			}
+		}
+
+		this->Node_factory::Insert(binary_edge);
+		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
+			this->Insert(*it);
+
+		this->Set_Observation_Set_var(observed_var);
+
+	}
+
 	void extract_observations(std::list<size_t>* result, size_t* entire_vec, const std::list<size_t>& var_pos) {
 
 		result->clear();
@@ -597,5 +620,6 @@ namespace Segugio {
 		free(Y_MAP_malloc);
 
 	}
+
 
 }

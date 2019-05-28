@@ -10,7 +10,12 @@
 
 
 namespace Segugio {
-
+	
+	/*!
+	 * \brief Describes a categoric variable
+	 * \details , having a finite set as domain,
+	 * assumed by default as {0,1,2,3,...,size}
+	 */
 	class Categoric_var {
 		/** \brief domain is assumed to be {0,1,2,3,...,size}
 		 */
@@ -44,13 +49,18 @@ namespace Segugio {
 
 
 
-
+	/*!
+	 * \brief Abstract interface for potentials handled by graphs
+	 */
 	class I_Potential {
 		friend class I_Potential_Decorator;
 	public:
 		I_Potential(const I_Potential& to_copy) { abort(); };
 		virtual ~I_Potential() {};
-
+		
+		/*!
+		 * \brief Abstract interface for describing a value in the domain of a potential
+		 */
 		struct I_Distribution_value {
 			virtual ~I_Distribution_value() {};
 
@@ -110,9 +120,9 @@ namespace Segugio {
 
 
 
-
-
-
+	/*!
+	 * \brief Abstract decorator of a Potential, wrapping an Abstract potential
+	 */
 	class I_Potential_Decorator : public I_Potential {
 	public:
 		~I_Potential_Decorator() { if (Destroy_wrapped) delete this->pwrapped; };
@@ -124,14 +134,16 @@ namespace Segugio {
 		virtual I_Potential*						Get_shape() { return this->pwrapped->Get_shape(); };
 	protected:
 	// data
-		bool			Destroy_wrapped; //when false, the wrapped potential is wrapped also in another decorator, and the destruction is done there
-		I_Potential*	pwrapped;
+		bool			Destroy_wrapped; /** when false, the wrapped abstract potential is wrapped also in another decorator, whihc is in charge of deleting the wrapped potential */
+		I_Potential*	pwrapped; /** the abstract potential wrapped*/
 	};
 
-
-	class Potential_Shape : public I_Potential { //it's a concrete I_Potential
+	/*!
+	 * \brief It's the only possible concrete potential. It contains the domain and the image of the potential
+	 */
+	class Potential_Shape : public I_Potential {
 	public:
-		/** \brief When building a new shape potential, the image of the domain is populated with all zeros
+		/** \brief When building a new shape potential, all values of the image are assumed as all zeros
 		*
 		* @param[in] var_involved variables involved in the domain of this variables
 		*/
@@ -141,6 +153,15 @@ namespace Segugio {
 		* @param[in] file_to_read textual file to read containing the values for the image
 		*/
 		Potential_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read);
+		/** \details Use this constructor for cloning a shape, but considering a different set of variables.
+		* Variables in var_involved must be equal in number to those in the potential to clone and must have 
+		* the same sizes of the variables involved in the potential to clone.
+		*
+		* @param[in] to_copy shape to clone
+		* @param[in] var_involved new set of variables to consider when cloning
+		*/
+		Potential_Shape(I_Potential* to_copy, const std::list<Categoric_var*>& var_involved);
+
 		~Potential_Shape();
 
 		/** \brief For populating the image of the domain with the values reported in the textual file
@@ -173,11 +194,13 @@ namespace Segugio {
 		virtual I_Potential*						Get_shape() { return this; };
 	private:
 	// data
-		std::list<Categoric_var*>			Involved_var;
-		std::list<I_Distribution_value*>	Distribution;
+		std::list<Categoric_var*>			Involved_var; /** list of the involved variables in the domain of this potential */
+		std::list<I_Distribution_value*>	Distribution; /** Every element describes: a combination in the domain and its corresponding value in the image */
 	};
 
-
+	/*!
+	 * \brief Represents an exponential potential, wrapping a normal shape one: every value of the domain are assumed as exp(mWeight * val_in_shape_wrapped)
+	*/
 	class Potential_Exp_Shape : public I_Potential_Decorator {
 	public:
 		/** \brief When building a new exponential shape potential, all the values of the domain are computed 
@@ -196,6 +219,15 @@ namespace Segugio {
 		* @param[in] w weight of the exponential
 		*/
 		Potential_Exp_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read, const float& w = 1.f);
+		/** \details Use this constructor for cloning an exponential shape, but considering a different set of variables.
+		* Variables in var_involved must be equal in number to those in the potential to clone and must have
+		* the same sizes of the variables involved in the potential to clone.
+		*
+		* @param[in] to_copy shape to clone
+		* @param[in] var_involved new set of variables to consider when cloning
+		*/
+		Potential_Exp_Shape(const Potential_Exp_Shape& to_copy, const std::list<Categoric_var*>& var_involved);
+
 		~Potential_Exp_Shape();
 
 		struct Handler_weight {
@@ -206,11 +238,13 @@ namespace Segugio {
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
 		void										Wrap(Potential_Shape* shape);
 	// data
-		float								    mWeight;
-		std::list<I_Distribution_value*>		Distribution; //in this case are exponential value
+		float								    mWeight; /** Weight assumed for modulating the exponential (see description of the class) */
+		std::list<I_Distribution_value*>		Distribution; /** Every element describes: a combination in the domain and its corresponding value in the image */
 	};
 
-
+	/*! 
+	\brief This class is mainly adopted for computing operations on potentials
+	*/
 	class Potential : public I_Potential_Decorator {
 	public:		
 		/**
@@ -247,7 +281,9 @@ namespace Segugio {
 	};
 
 
-
+	/*! 
+	\brief This class is adopted by belief propagation algorithms. It is the message incoming to a node of the graph. Every node of a graph refers to a single Categorical variable
+	*/
 	class Message_Unary : public Potential { //adopted by belief propagation algorithms
 	public:
 		/** \brief Creates a Message with all 1 as values for the image

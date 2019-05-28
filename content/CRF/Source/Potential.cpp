@@ -273,6 +273,39 @@ namespace Segugio {
 
 	}
 
+	Potential_Shape::Potential_Shape(I_Potential* to_copy, const std::list<Categoric_var*>& var_involved) {
+
+		auto var_list = this->I_Potential::Get_involved_var(to_copy);
+		if (var_involved.size() != var_list->size()) {
+			system("ECHO invalid set of new variables when cloning Potential");
+			abort();
+		}
+		auto it2 = var_list->begin();
+		for (auto it = var_involved.begin(); it != var_involved.end(); it++) {
+			if((*it)->size() != (*it2)->size()) {
+				system("ECHO invalid set of new variables when cloning Potential");
+				abort();
+			}
+			it2++;
+		}
+		this->Involved_var = var_involved;
+
+		size_t* temp, * temp2;
+		int k_temp;
+		size_t L = this->Involved_var.size();
+		float v_temp;
+		auto Distr = this->I_Potential::Get_distr(to_copy);
+		for (auto itD = Distr->begin(); itD != Distr->end(); itD++) {
+			temp = (size_t*)malloc(sizeof(size_t)*L);
+			temp2 = (*itD)->Get_indeces();
+			for (k_temp = 0; k_temp < L; k_temp++)
+				temp[k_temp] = temp2[k_temp];
+			(*itD)->Get_val(&v_temp);
+			this->Distribution.push_back(new Distribution_value(temp, v_temp));
+		}
+
+	}
+
 	Potential_Shape::~Potential_Shape() {
 
 		for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++)
@@ -501,6 +534,9 @@ namespace Segugio {
 		this->Wrap(temp);
 
 	}
+
+	Potential_Exp_Shape::Potential_Exp_Shape(const Potential_Exp_Shape& to_copy, const std::list<Categoric_var*>& var_involved) :
+		Potential_Exp_Shape(new Potential_Shape(to_copy.pwrapped, var_involved), to_copy.mWeight) {	};
 
 
 

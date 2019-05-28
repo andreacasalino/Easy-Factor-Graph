@@ -224,8 +224,7 @@ namespace Segugio {
 
 		//import variables
 		list<Categoric_var*>	variables;
-
-		Categoric_var* temp_clone;
+		Categoric_var* temp_clone, * temp_clone2;
 		list<XML_reader::Tag_readable> Var_tags;
 		root.Get_Nested("Variable", &Var_tags);
 		string var_name;
@@ -243,61 +242,68 @@ namespace Segugio {
 		}
 
 		//import potentials
-		struct pote_info {
-			Potential_Shape*		shape;
-			float					weight; //-1.f for pure shape function not to wrap in a log model
-			list<Categoric_var*>	vars;
-		};
-
 		list<XML_reader::Tag_readable> Pot_tags;
 		root.Get_Nested("Potential", &Pot_tags);
 		list<string> var_names;
 
-		list<pote_info> bin_pot;
-		list<pote_info> una_pot;
+		list<Potential_Shape*>	   una_pot;
+		list<Potential_Shape*>	   bin_pot;
+		list<Potential_Exp_Shape*> una_exp_pot;
+		list<Potential_Exp_Shape*> bin_exp_pot;
+
+		list<Categoric_var*> processed_vars;
+		float w_temp;
+		bool b_temp;
 		for (auto itP = Pot_tags.begin(); itP != Pot_tags.end(); itP++) {
 			itP->Get_values_specific_field_name("var", &var_names);
 			if (var_names.size() == 1) { //new unary potential to read
-				una_pot.push_back(pote_info());
-				una_pot.back().weight = -1.f;
 				temp_clone = Find_by_name(variables, var_names.front());
 				if (temp_clone == NULL) {
 					system("ECHO potential refers to an inexistent variable");
 					abort();
 				}
-				una_pot.back().vars.push_back(temp_clone);
-				una_pot.back().shape = Import_shape(prefix_config_xml_file, *itP, una_pot.back().vars);
 				if (itP->Exist_Field("weight")) {
-					una_pot.back().weight = (float)atof(itP->Get_value("weight").c_str());
-					if (una_pot.back().weight < 0.f) {
+					w_temp = (float)atof(itP->Get_value("weight").c_str());
+					if (w_temp < 0.f) {
 						system("ECHO weight of potential must be positive");
 						abort();
 					}
+					una_exp_pot.push_back(new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone }), w_temp));
 				}
+				else
+					una_pot.push_back(Import_shape(prefix_config_xml_file, *itP, { temp_clone }));
+
+				exist_in_list(&b_temp, processed_vars, temp_clone);
+				if (!b_temp) processed_vars.push_back(temp_clone);
 			}
 			else if (var_names.size() == 2) { //new binary potential to read
-				bin_pot.push_back(pote_info());
-				bin_pot.back().weight = -1.f;
 				temp_clone = Find_by_name(variables, var_names.front());
 				if (temp_clone == NULL) {
 					system("ECHO potential refers to an inexistent variable");
 					abort();
 				}
-				bin_pot.back().vars.push_back(temp_clone);
-				temp_clone = Find_by_name(variables, var_names.back());
-				if (temp_clone == NULL) {
+				exist_in_list(&b_temp, processed_vars, temp_clone);
+				if (!b_temp) processed_vars.push_back(temp_clone);
+
+				temp_clone2 = Find_by_name(variables, var_names.back());
+				if (temp_clone2 == NULL) {
 					system("ECHO potential refers to an inexistent variable");
 					abort();
 				}
-				bin_pot.back().vars.push_back(temp_clone);
-				bin_pot.back().shape = Import_shape(prefix_config_xml_file, *itP, bin_pot.back().vars);
+				exist_in_list(&b_temp, processed_vars, temp_clone2);
+				if (!b_temp) processed_vars.push_back(temp_clone2);
+
 				if (itP->Exist_Field("weight")) {
-					bin_pot.back().weight = (float)atof(itP->Get_value("weight").c_str());
-					if (bin_pot.back().weight < 0.f) {
+					w_temp = (float)atof(itP->Get_value("weight").c_str());
+					if (w_temp < 0.f) {
 						system("ECHO weight of potential must be positive");
 						abort();
 					}
+					bin_exp_pot.push_back(new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }), w_temp));
 				}
+				else
+					bin_pot.push_back(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }));
+
 			}
 			else {
 				system("ECHO valid potentials must refer only to 1 or 2 variables");
@@ -305,60 +311,21 @@ namespace Segugio {
 			}
 		}
 
-		if (bin_pot.empty()) {
-			system("ECHO at least one binary potential must be present in a config file");
-			abort();
-		}
-
-		//add binary potentials
-		if (bin_pot.front().weight == -1.f)
-			this->Insert(bin_pot.front().shape);
-		else
-			this->Insert(new Potential_Exp_Shape(bin_pot.front().shape, bin_pot.front().weight));
-
-		list<Categoric_var*> processed_vars = bin_pot.front().vars;
-		bin_pot.pop_front();
-		list<pote_info>::iterator it_bin;
-		bool bA, bB;
-		while (!bin_pot.empty()) {
-			//find a binary potential to insert
-			for (it_bin = bin_pot.begin(); it_bin != bin_pot.end(); it_bin++) {
-				exist_in_list(&bA, processed_vars, it_bin->vars.front());
-				exist_in_list(&bB, processed_vars, it_bin->vars.back());
-				if (bA || bB) {
-
-					if (bin_pot.front().weight == -1.f)
-						this->Insert(it_bin->shape);
-					else
-						this->Insert(new Potential_Exp_Shape(it_bin->shape, it_bin->weight));
-
-					break;
-				}
-			}
-
-			if (it_bin == bin_pot.end()) {
-				system("graph found in the config file is not unique");
-				abort();
-			}
-
-
-			if (!bA) processed_vars.push_back(it_bin->vars.front());
-			if (!bB) processed_vars.push_back(it_bin->vars.back());
-			bin_pot.erase(it_bin);
-		}
-
-		//add unary potentials
-		for (auto itU = una_pot.begin(); itU != una_pot.end(); itU++) {
-			if (itU->weight == -1.f)
-				this->Insert(itU->shape);
-			else
-				this->Insert(new Potential_Exp_Shape(itU->shape, itU->weight));
-		}
-
 		if (processed_vars.size() != variables.size()) {
 			system("ECHO some variables declared in the config file were not included in any potentials");
 			abort();
 		}
+
+		if (bin_pot.empty() && bin_exp_pot.empty()) {
+			system("ECHO at least one binary potential must be present in a config file");
+			abort();
+		}
+
+		this->Insert(bin_pot);
+		this->Insert(bin_exp_pot);
+
+		for (auto it = una_pot.begin(); it != una_pot.end(); it++) this->Insert(*it);
+		for (auto it = una_exp_pot.begin(); it != una_exp_pot.end(); it++) this->Insert(*it);
 
 	}
 
@@ -963,6 +930,72 @@ namespace Segugio {
 
 		return NULL;
 		
+	}
+
+	template<typename T>
+	void extract_consistent_order(list<T*>* result, const list<T*>& set_to_insert) {
+
+		if (set_to_insert.empty()) return;
+
+		auto open_set = set_to_insert;
+		auto it = set_to_insert.begin();
+		auto it2 = it;
+		result->push_back(open_set.front());
+		open_set.pop_front();
+		size_t old_size;
+		bool insert;
+		bool matching[4];
+		while (true) {
+			old_size = open_set.size();
+
+			it = open_set.begin();
+			while (it != open_set.end()) {
+				insert = false;
+				for (it2 = result->begin(); it2 != result->end(); it2++) {
+					matching[0] = ((*it2)->Get_involved_var_safe()->front() == (*it)->Get_involved_var_safe()->front());
+					matching[1] = ((*it2)->Get_involved_var_safe()->back() == (*it)->Get_involved_var_safe()->front());
+					matching[2] = ((*it2)->Get_involved_var_safe()->front() == (*it)->Get_involved_var_safe()->back());
+					matching[3] = ((*it2)->Get_involved_var_safe()->back() == (*it)->Get_involved_var_safe()->back());
+
+					if (matching[0] || matching[1] || matching[2] || matching[3]) {
+						insert = true;
+						break;
+					}
+				}
+
+				if (insert) {
+					result->push_back(*it);
+					it = open_set.erase(it);
+				}
+				else it++;
+			}
+
+			if (old_size == open_set.size()) {
+				system("ECHO inconsistent set to add CRF");
+				abort();
+			}
+
+			if (open_set.empty()) break;
+		}
+
+	}
+
+	void Node::Node_factory::Insert(const std::list<Potential_Shape*>& set_to_insert) {
+
+		list<Potential_Shape*> temp;
+		extract_consistent_order(&temp, set_to_insert);
+		for (auto it = temp.begin(); it != temp.end(); it++)
+			this->Insert(*it);
+
+	}
+
+	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_to_insert) {
+
+		list<Potential_Exp_Shape*> temp;
+		extract_consistent_order(&temp, set_to_insert);
+		for (auto it = temp.begin(); it != temp.end(); it++)
+			this->Insert(*it);
+
 	}
 
 }

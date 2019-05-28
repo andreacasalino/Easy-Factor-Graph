@@ -111,7 +111,6 @@ int main() {
 	for (auto it = shapes.begin(); it != shapes.end(); it++)
 		delete *it;
 
-
 	system("pause");
 	return 0;
 }
