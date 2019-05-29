@@ -306,6 +306,34 @@ namespace Segugio {
 
 	}
 
+	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& assume_simple_correlation) :
+		Potential_Shape(var_involved) {
+
+		if (var_involved.size() <= 1) {
+			system("ECHO simple correlation shapes must involve at least two variables");
+			abort();
+		}
+
+		auto it = var_involved.begin();
+		size_t Size = (*it)->size(); it++;
+		for (it; it != var_involved.end(); it++) {
+			if ((*it)->size() != Size) {
+				system("ECHO variables in a simple correlating potential must have all same sizes");
+				abort();
+			}
+		}
+
+		list<size_t> comb;
+		size_t kk;
+		for (size_t k = 0; k < Size; k++) {
+			comb.clear();
+			for (kk = 0; kk < var_involved.size(); kk++)
+				comb.push_back(k);
+			this->Add_value(comb, 1.f);
+		}
+
+	}
+
 	Potential_Shape::~Potential_Shape() {
 
 		for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++)

@@ -12,6 +12,10 @@ using namespace Segugio;
 #endif // DEBUG
 
 
+void process_sample_1();
+void process_sample_2();
+void process_sample_3();
+
 int main() {
 	///////////////////////////////////////////
 	// part 01 graph with a single potential //	
@@ -19,12 +23,37 @@ int main() {
 	cout << "-----------------------\n";
 	cout << "part 01 \n\n\n";
 	cout << "-----------------------\n";
+	process_sample_1();
+	system("pause");
+
+	///////////////////////////////////////////////////////
+	// part 02 graph with two potentials and 3 variables //	
+	///////////////////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 02 \n\n\n";
+	cout << "-----------------------\n";
+	process_sample_2();
+	system("pause");
+
+	////////////////////////////////////////////////////
+	// part 03 belief degradation with the chain size //	
+	////////////////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 03 \n\n\n";
+	cout << "-----------------------\n";
+	process_sample_3();
+
+	system("pause");
+	return 0;
+}
+
+void process_sample_1() {
 
 	//create a simple graph with two nodes
 	Categoric_var* A1 = new Categoric_var(2, "A");
 	Categoric_var* B1 = new Categoric_var(2, "B");
 
-	Potential_Shape* shape1 = new  Potential_Shape({A1, B1});
+	Potential_Shape* shape1 = new  Potential_Shape({ A1, B1 });
 	shape1->Add_value({ 1,1 }, 1.f);
 	shape1->Add_value({ 0,0 }, 1.f);
 
@@ -59,14 +88,9 @@ int main() {
 	print_distribution(marginals);
 	cout << endl << endl;
 
-	system("pause");
+}
 
-	///////////////////////////////////////////////////////
-	// part 02 graph with two potentials and 3 variables //	
-	///////////////////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 02 \n\n\n";
-	cout << "-----------------------\n";
+void process_sample_2() {
 
 	Categoric_var* A2 = new Categoric_var(2, "A");
 	Categoric_var* B2 = new Categoric_var(2, "B");
@@ -92,8 +116,9 @@ int main() {
 	graph_2.Set_Observation_Set_var({ C2 });
 	graph_2.Set_Observation_Set_val({ 1 });
 
-	Z = 1.f + expf(alfa) + expf(beta) + expf(alfa)*expf(beta);
+	float Z = 1.f + expf(alfa) + expf(beta) + expf(alfa)*expf(beta);
 
+	list<float> marginals;
 	graph_2.Get_marginal_distribution(&marginals, B2);
 	cout << "P(B|C=1)\n";
 	cout << "theoretical " << endl;
@@ -127,8 +152,43 @@ int main() {
 	print_distribution(list<float>({ 1.f / Z, expf(alfa) / Z }));
 	print_distribution(marginals);
 
+}
 
+void process_chain(const size_t& chain_size, const size_t& var_size, const float& w) {
 
-	system("pause");
-	return 0;
+	if (chain_size < 2) {
+		system("ECHO invalid chain size");
+		abort();
+	}
+
+	list<Categoric_var*> Y;
+	for (size_t k = 0; k < chain_size; k++)
+		Y.push_back(new Categoric_var(var_size, "Y_" + to_string(k)));
+	auto it1 = Y.begin();
+	auto it2 = it1; it2++;
+
+	Graph graph;
+
+	while(it2 != Y.end()) {
+		auto temp = new Potential_Exp_Shape(new Potential_Shape({ *it1, *it2 }, true), w);
+		graph.Insert(temp);
+		it1++; it2++;
+	}
+
+	graph.Set_Observation_Set_var({ Y.front() });
+	graph.Set_Observation_Set_val({ 0 });
+	list<float> prob;
+	graph.Get_marginal_distribution(&prob, Y.back());
+
+	print_distribution(prob);
+	cout << endl;
+
+}
+void process_sample_3() {
+
+	for (int k = 2; k <= 10; k++) {
+		cout << "size " << k << ":   ";
+		process_chain(k, 5, 3.5f);
+	}
+
 }

@@ -36,6 +36,7 @@ namespace Segugio {
 		* a potential which involves that variable).
 		*/
 		void Insert(Potential_Shape* pot) { this->Node_factory::Insert(pot); };
+
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input

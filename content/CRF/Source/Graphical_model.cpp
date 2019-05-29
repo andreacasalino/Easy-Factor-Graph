@@ -504,7 +504,7 @@ namespace Segugio {
 		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
 			this->Insert(*it);
 
-		this->Set_Observation_Set_var(observed_var);
+		this->Node_factory::Set_Observation_Set_var(observed_var);
 
 	}
 

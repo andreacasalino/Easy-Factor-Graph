@@ -148,11 +148,22 @@ namespace Segugio {
 		* @param[in] var_involved variables involved in the domain of this variables
 		*/
 		Potential_Shape(const std::list<Categoric_var*>& var_involved);
+		
 		/**
 		* @param[in] var_involved variables involved in the domain of this variables
 		* @param[in] file_to_read textual file to read containing the values for the image
 		*/
 		Potential_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read);
+
+		/** \details Use this to create a shape for which a simple correlation exists among the set of variables.
+		* All variables must have the same size. The distribution related to this shape assumes 0 for all values
+		* apart from the following combinations: {0,0,...,0}; {1,1,..,1}; ...
+		*
+		* @param[in] var_involved variables involved in the domain of this variables
+		* @param[in] file_to_read textual file to read containing the values for the image
+		*/
+		Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& assume_simple_correlation);
+
 		/** \details Use this constructor for cloning a shape, but considering a different set of variables.
 		* Variables in var_involved must be equal in number to those in the potential to clone and must have 
 		* the same sizes of the variables involved in the potential to clone.
@@ -162,6 +173,7 @@ namespace Segugio {
 		*/
 		Potential_Shape(I_Potential* to_copy, const std::list<Categoric_var*>& var_involved);
 
+		Potential_Shape(const Potential_Shape& to_copy) { abort(); };
 		~Potential_Shape();
 
 		/** \brief For populating the image of the domain with the values reported in the textual file
