@@ -33,10 +33,10 @@ namespace Segugio {
 	I_Learning_handler::I_Learning_handler(I_Learning_handler* other) :
 		I_Learning_handler(other->ref_to_wrapped_exp_potential) {  };
 
-	void I_Learning_handler::Get_grad_alfa_part(float* alfa, std::list<size_t*>* comb_in_train_set, std::list<Categoric_var*>* comb_var) {
+	void I_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
 
 		list<I_Distribution_value*> val_in_train_set;
-		Find_Comb_in_distribution(&val_in_train_set, *comb_in_train_set, *comb_var, this->Get_shape());
+		Find_Comb_in_distribution(&val_in_train_set, comb_in_train_set, comb_var, this->Get_shape());
 
 		*alfa = 0.f;
 		float temp;
@@ -46,7 +46,7 @@ namespace Segugio {
 				*alfa += temp;
 			}
 		}
-		*alfa *= 1.f / (float)comb_in_train_set->size();
+		*alfa *= 1.f / (float)comb_in_train_set.size();
 
 	}
 
@@ -211,6 +211,8 @@ namespace Segugio {
 
 		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
 			delete *it;
+		if (this->pLast_train_set != NULL)
+			delete this->pLast_train_set;
 
 	}
 
@@ -251,12 +253,17 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Weights_Manager::Get_w_grad(std::list<float>* grad_w, Graph_Learnable* model, std::list<size_t*>* comb_train_set, std::list<Categoric_var*>* comb_var_order) {
+	void Graph_Learnable::Weights_Manager::Get_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
 		grad_w->clear();
 		model->Graph_Learnable::Get_w_grad(grad_w, comb_train_set, comb_var_order); //here tha alfa part is appended
 		model->Get_w_grad(grad_w, comb_train_set, comb_var_order); //here the beta part is added
-		model->pLast_train_set = comb_train_set;
+
+		if (model->pLast_train_set == NULL) model->pLast_train_set = new proxy_gradient_info(comb_train_set);
+		else {
+			delete model->pLast_train_set;
+			model->pLast_train_set = new proxy_gradient_info(comb_train_set);
+		}
 
 #ifdef ADD_REGULARIZATION
 		//add regularization term
@@ -281,9 +288,9 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Get_w_grad(std::list<float>* grad_w, std::list<size_t*>* comb_train_set, std::list<Categoric_var*>* comb_var_order) {
+	void Graph_Learnable::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
-		if (comb_train_set != this->pLast_train_set) {
+		if (comb_train_set != this->pLast_train_set->Last_set) {
 			//recompute alfa part
 			this->Alfa_part_gradient.clear();
 
@@ -298,11 +305,11 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Get_Log_activation(float* result, size_t* Y, std::list<Categoric_var*>* Y_var_order) {
+	void Graph_Learnable::Get_Log_activation(float* result, size_t* Y, const std::list<Categoric_var*>& Y_var_order) {
 
 		*result = 0.f;
 		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
-			(*it)->Cumul_Log_Activation(result, Y, *Y_var_order);
+			(*it)->Cumul_Log_Activation(result, Y, Y_var_order);
 
 	}
 
@@ -317,7 +324,7 @@ namespace Segugio {
 
 	};
 
-	void Random_Field::Get_w_grad(std::list<float>* grad_w, std::list<size_t*>* comb_train_set, std::list<Categoric_var*>* comb_var_order) {
+	void Random_Field::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
 		this->Set_Observation_Set_var(list<Categoric_var*>());
 		this->Set_Observation_Set_val(list<size_t>());
@@ -333,7 +340,7 @@ namespace Segugio {
 
 	}
 
-	void Random_Field::Get_Likelihood_estimation(float* result, std::list<size_t*>* comb_train_set, std::list<Categoric_var*>* comb_var_order) {
+	void Random_Field::Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
 		this->Set_Observation_Set_var(list<Categoric_var*>());
 		this->Set_Observation_Set_val(list<size_t>());
@@ -350,11 +357,11 @@ namespace Segugio {
 		this->Get_Actual_Hidden_Set(&MAP_order);
 
 		float MAP_activation; 
-		this->Get_Log_activation(&MAP_activation, Y_MAP_malloc, &MAP_order);
+		this->Get_Log_activation(&MAP_activation, Y_MAP_malloc, MAP_order);
 
-		*result = -MAP_activation * (float)comb_train_set->size();
+		*result = -MAP_activation * (float)comb_train_set.size();
 		float temp;
-		for (auto it_set = comb_train_set->begin(); it_set != comb_train_set->end(); it_set++) {
+		for (auto it_set = comb_train_set.begin(); it_set != comb_train_set.end(); it_set++) {
 			this->Get_Log_activation(&temp, *it_set, comb_var_order);
 			*result += temp;
 		}
@@ -535,12 +542,12 @@ namespace Segugio {
 
 	}
 
-	void Conditional_Random_Field::Get_w_grad(std::list<float>* grad_w, std::list<size_t*>* comb_train_set, std::list<Categoric_var*>* comb_var_order) {
+	void Conditional_Random_Field::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
 		list<size_t> pos_of_observed_var;
 		list<Categoric_var*> observed_var_temp;
 		this->Get_Actual_Observation_Set(&observed_var_temp);
-		find_observed_order(&pos_of_observed_var, observed_var_temp, *comb_var_order);
+		find_observed_order(&pos_of_observed_var, observed_var_temp, comb_var_order);
 
 		float temp;
 		list<float> beta_total;
@@ -550,7 +557,7 @@ namespace Segugio {
 		list<size_t> obsv;
 
 		auto it_beta = beta_total.begin();
-		for (auto itL = comb_train_set->begin(); itL != comb_train_set->end(); itL++) {
+		for (auto itL = comb_train_set.begin(); itL != comb_train_set.end(); itL++) {
 			extract_observations(&obsv, *itL, pos_of_observed_var);
 			this->Set_Observation_Set_val(obsv);
 			this->Belief_Propagation(true);
@@ -564,7 +571,7 @@ namespace Segugio {
 		}
 
 		auto it_grad = grad_w->begin();
-		temp = 1.f / (float)comb_train_set->size();
+		temp = 1.f / (float)comb_train_set.size();
 		for (it_beta = beta_total.begin(); it_beta != beta_total.end(); it_beta++) {
 			*it_beta *= temp;
 			*it_grad -= *it_beta;
@@ -574,12 +581,12 @@ namespace Segugio {
 
 	}
 
-	void Conditional_Random_Field::Get_Likelihood_estimation(float* result, std::list<size_t*>* comb_train_set, std::list<Categoric_var*>* comb_var_order) {
+	void Conditional_Random_Field::Get_Likelihood_estimation(float* result,const std::list<size_t*>& comb_train_set,const std::list<Categoric_var*>& comb_var_order) {
 
 		list<size_t> pos_of_observed_var;
 		list<Categoric_var*> observed_var_temp;
 		this->Get_Actual_Observation_Set(&observed_var_temp);
-		find_observed_order(&pos_of_observed_var, observed_var_temp, *comb_var_order);
+		find_observed_order(&pos_of_observed_var, observed_var_temp, comb_var_order);
 		list<size_t> obsv;
 
 		list<size_t> Y_MAP;
@@ -593,7 +600,7 @@ namespace Segugio {
  		size_t k;
 		float temp;
 		*result = 0.f;
-		for (auto it_set = comb_train_set->begin(); it_set != comb_train_set->end(); it_set++) {
+		for (auto it_set = comb_train_set.begin(); it_set != comb_train_set.end(); it_set++) {
 			extract_observations(&obsv, *it_set, pos_of_observed_var);
 			this->Set_Observation_Set_val(obsv);
 
@@ -608,7 +615,7 @@ namespace Segugio {
 				k++;
 			}
 
-			this->Get_Log_activation(&temp, Y_MAP_malloc, &MAP_var_order);
+			this->Get_Log_activation(&temp, Y_MAP_malloc, MAP_var_order);
 			*result -= temp;
 
 
@@ -618,6 +625,49 @@ namespace Segugio {
 		//*result = 1.f / (float)comb_train_set->size();
 
 		free(Y_MAP_malloc);
+
+	}
+
+	void Conditional_Random_Field::Get_Likelihood_estimation_observations(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order) {
+
+		list<Categoric_var*> obs_set, set1, set2;
+		size_t* comb1, *comb2;
+		float temp;
+
+		// Y_MAP considering the actual observations
+		this->Get_Actual_Observation_Set(&obs_set);
+		this->Get_Actual_Hidden_Set(&set1);
+		for (auto it = obs_set.begin(); it != obs_set.end(); it++)
+			set1.push_back(*it);
+		list<size_t> Y_MAP;
+		this->MAP_on_Hidden_set(&Y_MAP);
+		comb1 = (size_t*)malloc(set1.size() * sizeof(size_t));
+		int k = 0;
+		for (auto it = Y_MAP.begin(); it != Y_MAP.end(); it++) {
+			comb1[k] = *it;
+			k++;
+		}
+		for (size_t k2 = 0; k2 < obs_set.size(); k2++) {
+			comb1[k] = comb_observations[k2];
+			k++;
+		}		
+		this->Get_Log_activation(&temp, comb1, set1);
+		*result = temp;
+
+		//XY_MAP considering the net as a graph with no observations
+		this->Set_Observation_Set_var({});
+		this->Get_Actual_Hidden_Set(&set2);
+		list<size_t> XY_MAP;
+		comb2 = (size_t*)malloc(XY_MAP.size() * sizeof(size_t));
+		k = 0;
+		for (auto it = XY_MAP.begin(); it != XY_MAP.end(); it++) {
+			comb2[k] = *it;
+			k++;
+		}
+		this->Get_Log_activation(&temp, comb2, set2);
+		*result -= temp;
+
+		this->Set_Observation_Set_var(obs_set);
 
 	}
 

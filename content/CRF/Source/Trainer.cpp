@@ -9,14 +9,14 @@ namespace Segugio {
 	class Advancer_Concrete : public I_Trainer {
 	public:
 		void Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) { abort(); };
-		virtual float _advance(Graph_Learnable* model_to_advance, std::list<size_t*>* comb_in_train_set, std::list<Categoric_var*>* comb_var) = 0; //return L_infinity norm of weigth variation
+		virtual float _advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) = 0; //return L_infinity norm of weigth variation
 	};
 
 	class Fixed_step : public Advancer_Concrete {
 	public:
 		Fixed_step(const float& step) : Step_to_advance(step) {};
 	private:
-		float _advance(Graph_Learnable* model_to_advance, std::list<size_t*>* comb_in_train_set, std::list<Categoric_var*>* comb_var);
+		float _advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 	// data
 		float Step_to_advance;
 	};
@@ -26,7 +26,7 @@ namespace Segugio {
 		BFGS() : pData(NULL) {};
 		~BFGS() { this->Clean_Up(); };
 	private:
-		float _advance(Graph_Learnable* model_to_advance, std::list<size_t*>* comb_in_train_set, std::list<Categoric_var*>* comb_var);
+		float _advance(Graph_Learnable* model_to_advance,const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 		void Clean_Up() { if (this->pData != NULL) delete this->pData; };
 
 		struct Cache {
@@ -82,10 +82,10 @@ namespace Segugio {
 		compute_order_of_variable_in_train_set(&order_of_variable_in_train_set, model_to_train, this->Get_names(&Set));
 		float variation;
 		for (unsigned int k = 0; k < Max_Iterations; k++) {
-			variation = this->Wrapped->_advance(model_to_train, this->Get_list(&Set), &order_of_variable_in_train_set);
+			variation = this->Wrapped->_advance(model_to_train, *this->Get_list(&Set), order_of_variable_in_train_set);
 			if (descend_story != NULL) {
 				float temp;
-				model_to_train->Get_Likelihood_estimation(&temp, this->Get_list(&Set), &order_of_variable_in_train_set);
+				model_to_train->Get_Likelihood_estimation(&temp, *this->Get_list(&Set), order_of_variable_in_train_set);
 				descend_story->push_back(temp);
 			}
 
@@ -103,10 +103,10 @@ namespace Segugio {
 		float variation;
 		for (unsigned int k = 0; k < Max_Iterations; k++) {
 			Training_set::subset Set(Train_set, this->Percentage);
-			variation = this->Wrapped->_advance(model_to_train, this->Get_list(&Set), &order_of_variable_in_train_set);
+			variation = this->Wrapped->_advance(model_to_train, *this->Get_list(&Set), order_of_variable_in_train_set);
 			if (descend_story != NULL) {
 				float temp;
-				model_to_train->Get_Likelihood_estimation(&temp, this->Get_list(&Set), &order_of_variable_in_train_set);
+				model_to_train->Get_Likelihood_estimation(&temp, *this->Get_list(&Set), order_of_variable_in_train_set);
 				descend_story->push_back(temp);
 			}
 
@@ -117,7 +117,7 @@ namespace Segugio {
 
 	}
 
-	float Fixed_step::_advance(Graph_Learnable* model_to_advance, std::list<size_t*>* comb_in_train_set, std::list<Categoric_var*>* comb_var) {
+	float Fixed_step::_advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
 
 		list<float> grad_att;
 		this->Get_w_grad(model_to_advance, &grad_att, comb_in_train_set, comb_var);
@@ -153,7 +153,7 @@ namespace Segugio {
 
 	}
 
-	float BFGS::_advance(Graph_Learnable* model_to_advance, std::list<size_t*>* comb_in_train_set, std::list<Categoric_var*>* comb_var) {
+	float BFGS::_advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
 
 		if (this->pData == NULL) {
 			size_t model_size = model_to_advance->Get_model_size();
