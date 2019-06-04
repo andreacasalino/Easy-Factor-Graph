@@ -48,12 +48,10 @@ namespace Segugio {
 	};
 
 
-
 	/*!
 	 * \brief Abstract interface for potentials handled by graphs
 	 */
 	class I_Potential {
-		friend class I_Potential_Decorator;
 	public:
 		I_Potential(const I_Potential& to_copy) { abort(); };
 		virtual ~I_Potential() {};
@@ -76,7 +74,7 @@ namespace Segugio {
 		void Print_distribution(std::ostream& f, const bool& print_entire_domain = false); 
 		/** \brief return list of references to the variables representing the domain of this Potential
 		*/
-		const std::list<Categoric_var*>*			Get_involved_var_safe() { return this->Get_involved_var(); };
+		const std::list<Categoric_var*>*			Get_involved_var_safe() const {  return this->Get_involved_var(); };
 		/**
 		* @param[out] result the list of values matching the combinations to find sent as input
 		*
@@ -105,38 +103,38 @@ namespace Segugio {
 		static void			Find_Comb_in_distribution(std::list<I_Distribution_value*>* result,
 			                size_t* partial_comb_to_search, const std::list<Categoric_var*>& partial_comb_to_search_var_order, I_Potential* pot);
 
-		virtual std::list<Categoric_var*>*		    Get_involved_var() = 0;
-		static std::list<Categoric_var*>*       Get_involved_var(I_Potential* pot) { return pot->Get_involved_var(); };
+		struct Getter_4_Decorator{
+		protected:
+			static const std::list<Categoric_var*>*       Get_involved_var(I_Potential* pot) { return pot->Get_involved_var(); };
+			static std::list<I_Distribution_value*>*	  Get_distr(I_Potential* pot) { return pot->Get_distr(); };
+		};
 
+		virtual const std::list<Categoric_var*>*	  Get_involved_var() const = 0;
 		virtual std::list<I_Distribution_value*>*	Get_distr() = 0;
-		static std::list<I_Distribution_value*>*	Get_distr(I_Potential* pot) { return pot->Get_distr(); };
-
-		virtual I_Potential*						Get_shape() = 0;
-		static  I_Potential*						Get_shape(I_Potential* pot) { return pot->Get_shape(); };
 
 		//computes all the indices constituting the domain of a group of categorical variables
 		static void Get_entire_domain(std::list<size_t*>* domain, const std::list<Categoric_var*>& Vars_in_domain);
 	};
 
 
-
 	/*!
 	 * \brief Abstract decorator of a Potential, wrapping an Abstract potential
 	 */
-	class I_Potential_Decorator : public I_Potential {
+	template <typename Wrapped_Type>
+	class I_Potential_Decorator : public I_Potential, public I_Potential::Getter_4_Decorator {
 	public:
 		~I_Potential_Decorator() { if (Destroy_wrapped) delete this->pwrapped; };
 	protected:
-		I_Potential_Decorator(I_Potential* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) {};
+		I_Potential_Decorator(Wrapped_Type* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) {};
 
-		virtual std::list<Categoric_var*>*		Get_involved_var() { return pwrapped->Get_involved_var(); };
-		virtual std::list<I_Distribution_value*>*	Get_distr() { return pwrapped->Get_distr(); };
-		virtual I_Potential*						Get_shape() { return this->pwrapped->Get_shape(); };
+		virtual const std::list<Categoric_var*>*    Get_involved_var() const { return this->I_Potential::Getter_4_Decorator::Get_involved_var(pwrapped); };
+		virtual std::list<I_Distribution_value*>*	Get_distr() { return this->I_Potential::Getter_4_Decorator::Get_distr(pwrapped); };
 	protected:
 	// data
 		bool			Destroy_wrapped; /** when false, the wrapped abstract potential is wrapped also in another decorator, whihc is in charge of deleting the wrapped potential */
-		I_Potential*	pwrapped; /** the abstract potential wrapped*/
+		Wrapped_Type*	pwrapped;		 /** the object wrapped by this decorator*/
 	};
+
 
 	/*!
 	 * \brief It's the only possible concrete potential. It contains the domain and the image of the potential
@@ -171,7 +169,7 @@ namespace Segugio {
 		* @param[in] to_copy shape to clone
 		* @param[in] var_involved new set of variables to consider when cloning
 		*/
-		Potential_Shape(I_Potential* to_copy, const std::list<Categoric_var*>& var_involved);
+		Potential_Shape(const Potential_Shape* to_copy, const std::list<Categoric_var*>& var_involved);
 
 		Potential_Shape(const Potential_Shape& to_copy) { abort(); };
 		~Potential_Shape();
@@ -201,19 +199,19 @@ namespace Segugio {
 	protected:
 		void Check_add_value(const std::list<size_t>& indices); //check the specified combination is not already present in the distribution
 
-		virtual std::list<Categoric_var*>*		    Get_involved_var() { return &this->Involved_var; };
+		virtual const std::list<Categoric_var*>*	Get_involved_var() const { return &this->Involved_var; };
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
-		virtual I_Potential*						Get_shape() { return this; };
 	private:
 	// data
 		std::list<Categoric_var*>			Involved_var; /** list of the involved variables in the domain of this potential */
 		std::list<I_Distribution_value*>	Distribution; /** Every element describes: a combination in the domain and its corresponding value in the image */
 	};
 
+
 	/*!
 	 * \brief Represents an exponential potential, wrapping a normal shape one: every value of the domain are assumed as exp(mWeight * val_in_shape_wrapped)
 	*/
-	class Potential_Exp_Shape : public I_Potential_Decorator {
+	class Potential_Exp_Shape : public I_Potential_Decorator<Potential_Shape> {
 	public:
 		/** \brief When building a new exponential shape potential, all the values of the domain are computed 
 		* according to the new shape passed as input
@@ -238,26 +236,28 @@ namespace Segugio {
 		* @param[in] to_copy shape to clone
 		* @param[in] var_involved new set of variables to consider when cloning
 		*/
-		Potential_Exp_Shape(const Potential_Exp_Shape& to_copy, const std::list<Categoric_var*>& var_involved);
+		Potential_Exp_Shape(const Potential_Exp_Shape* to_copy, const std::list<Categoric_var*>& var_involved);
 
 		~Potential_Exp_Shape();
 
-		struct Handler_weight {
+		struct Getter_weight_and_shape {
 		protected:
-			static float* Get_weight(Potential_Exp_Shape* pot) { return &pot->mWeight; };
+			static float*           Get_weight(Potential_Exp_Shape* pot) { return &pot->mWeight; };
+			static Potential_Shape*  Get_shape(Potential_Exp_Shape* pot) { return pot->pwrapped; };
 		};
 	protected:
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
 		void										Wrap(Potential_Shape* shape);
 	// data
-		float								    mWeight; /** Weight assumed for modulating the exponential (see description of the class) */
-		std::list<I_Distribution_value*>		Distribution; /** Every element describes: a combination in the domain and its corresponding value in the image */
+		float								    mWeight;		/** Weight assumed for modulating the exponential (see description of the class) */
+		std::list<I_Distribution_value*>		Distribution;   /** Every element describes: a combination in the domain and its corresponding value in the image */
 	};
+
 
 	/*! 
 	\brief This class is mainly adopted for computing operations on potentials
 	*/
-	class Potential : public I_Potential_Decorator {
+	class Potential : public I_Potential_Decorator<I_Potential> {
 	public:		
 		/**
 		* @param[in] pot potential shape to wrap
@@ -294,7 +294,8 @@ namespace Segugio {
 
 
 	/*! 
-	\brief This class is adopted by belief propagation algorithms. It is the message incoming to a node of the graph. Every node of a graph refers to a single Categorical variable
+	\brief This class is adopted by belief propagation algorithms. It is the message incoming to a node of the graph. Every node of a graph refers to a single Categorical variable.
+	* Internally it keeps track of the difference in time of the messages produced, in order to arrest loopy belief propagation. 
 	*/
 	class Message_Unary : public Potential { //adopted by belief propagation algorithms
 	public:

@@ -22,23 +22,23 @@ void part_03(const string& prefix);
 int main() {
 	string prefix =  compute_prefix() + "Sample_06_Learning_A" + "/";
 
-	///////////////////////////////////////////
-	//            part 01 graph_1            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 01 \n\n\n";
-	cout << "-----------------------\n";
-	part_01(prefix);
-	system("pause");
+	/////////////////////////////////////////////
+	////            part 01 graph_1            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 01 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_01(prefix);
+	//system("pause");
 
-	///////////////////////////////////////////
-	//            part 02 graph_2            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 02 \n\n\n";
-	cout << "-----------------------\n";
-	part_02(prefix);
-	system("pause");
+	/////////////////////////////////////////////
+	////            part 02 graph_2            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 02 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_02(prefix);
+	//system("pause");
 
 	///////////////////////////////////////////
 	//            part 03 graph_3            //
@@ -57,12 +57,12 @@ void part_01(const string& prefix) {
 	float w = 1.5f;
 
 	//create a graph with a single binary potential, having w as weight
-	Categoric_var* A = new Categoric_var(2, "A");
-	Categoric_var* B = new Categoric_var(2, "B");
-	Potential_Shape* shape = new Potential_Shape({ A,B }, prefix + "Shape.txt");
-	Potential_Exp_Shape* pot = new Potential_Exp_Shape(shape, w);
+	Categoric_var A(2, "A");
+	Categoric_var B(2, "B");
+	Potential_Shape* shape = new Potential_Shape({ &A,&B }, prefix + "Shape.txt");
+	Potential_Exp_Shape pot(shape, w);
 	Graph graph_1;
-	graph_1.Insert(pot);
+	graph_1.Insert(&pot);
 
 	//sample from the created graph
 	list<list<size_t>> sample;
@@ -70,12 +70,15 @@ void part_01(const string& prefix) {
 
 	list<float> marginals;
 
+	Categoric_var* A_in_graph = graph_1.Find_Variable("A");
+	Categoric_var* B_in_graph = graph_1.Find_Variable("B");
+
 	//check the correctness of the marginal probabilty distributions
-	Get_empirical_frequencies(&marginals, sample, A, { A,B });
+	Get_empirical_frequencies(&marginals, sample, A_in_graph, { A_in_graph,B_in_graph });
 	cout << "P(A| any values) (as freq in the sampled set)\n";
 	print_distribution(marginals); cout << endl;
 
-	Get_empirical_frequencies(&marginals, sample, B, { A,B });
+	Get_empirical_frequencies(&marginals, sample, B_in_graph, { A_in_graph,B_in_graph });
 	cout << "P(B| any values) (as freq in the sampled set)\n";
 	print_distribution(marginals); cout << endl;
 
@@ -91,25 +94,25 @@ void part_01(const string& prefix) {
 void part_02(const string& prefix) {
 
 	//build graph_2
-	Categoric_var* A = new Categoric_var(2, "A");
-	Categoric_var* B = new Categoric_var(2, "B");
-	Categoric_var* C = new Categoric_var(2, "C");
+	Categoric_var A(2, "A");
+	Categoric_var B(2, "B");
+	Categoric_var C(2, "C");
 
 	float alfa = 1.f, beta = 3.f, gamma = 0.1f;
 
-	Potential_Exp_Shape* Pot_AB = new Potential_Exp_Shape(new Potential_Shape({ A,B }, prefix + "Shape.txt"), alfa);
-	Potential_Exp_Shape* Pot_AC = new Potential_Exp_Shape(new Potential_Shape({ A,C }, prefix + "Shape.txt"), beta);
-	Potential_Exp_Shape* Pot_BC = new Potential_Exp_Shape(new Potential_Shape({ B,C }, prefix + "Shape.txt"), gamma);
+	Potential_Exp_Shape Pot_AB(new Potential_Shape({ &A,&B }, prefix + "Shape.txt"), alfa);
+	Potential_Exp_Shape Pot_AC(new Potential_Shape({ &A,&C }, prefix + "Shape.txt"), beta);
+	Potential_Exp_Shape Pot_BC(new Potential_Shape({ &B,&C }, prefix + "Shape.txt"), gamma);
 
 	Random_Field graph_2;
-	graph_2.Insert(Pot_AB);
-	graph_2.Insert(Pot_AC);
-	graph_2.Insert(Pot_BC);
+	graph_2.Insert(&Pot_AB);
+	graph_2.Insert(&Pot_AC);
+	graph_2.Insert(&Pot_BC);
 
 	//extract some samples from the graph with a Gibbs sampling method, for building a train set
 	list<list<size_t>> samples;
 	graph_2.Gibbs_Sampling_on_Hidden_set(&samples, 500, 500);
-	Print_set_as_training_set(prefix + "Train_set.txt", { A,B,C }, samples);
+	Print_set_as_training_set(prefix + "Train_set.txt", { &A,&B,&C }, samples);
 
 	//check empirical frequency for some combinations
 	float Z = 2.f*(expf(alfa) + expf(beta) + expf(gamma) + expf(alfa)*expf(beta)*expf(gamma));
@@ -124,18 +127,18 @@ void part_02(const string& prefix) {
 
 	//build a second graph, with the same potentials, but all weights equal to 1. Then use the previous train set to train 
 	//this model, for obtaining a combination of weights similar to the original ones
-	Categoric_var* A2 = new Categoric_var(2, "A");
-	Categoric_var* B2 = new Categoric_var(2, "B");
-	Categoric_var* C2 = new Categoric_var(2, "C");
+	Categoric_var A2(2, "A");
+	Categoric_var B2(2, "B");
+	Categoric_var C2(2, "C");
 
-	Potential_Exp_Shape* Pot_AB_to_learn = new Potential_Exp_Shape(new Potential_Shape({ A2,B2 }, prefix + "Shape.txt"));
-	Potential_Exp_Shape* Pot_AC_to_learn = new Potential_Exp_Shape(new Potential_Shape({ A2,C2 }, prefix + "Shape.txt"));
-	Potential_Exp_Shape* Pot_BC_to_learn = new Potential_Exp_Shape(new Potential_Shape({ B2,C2 }, prefix + "Shape.txt"));
+	Potential_Exp_Shape Pot_AB_to_learn(new Potential_Shape({ &A2,&B2 }, prefix + "Shape.txt"));
+	Potential_Exp_Shape Pot_AC_to_learn(new Potential_Shape({ &A2,&C2 }, prefix + "Shape.txt"));
+	Potential_Exp_Shape Pot_BC_to_learn(new Potential_Shape({ &B2,&C2 }, prefix + "Shape.txt"));
 
 	Random_Field graph_to_learn;
-	graph_to_learn.Insert(Pot_AB_to_learn);
-	graph_to_learn.Insert(Pot_AC_to_learn);
-	graph_to_learn.Insert(Pot_BC_to_learn);
+	graph_to_learn.Insert(&Pot_AB_to_learn);
+	graph_to_learn.Insert(&Pot_AC_to_learn);
+	graph_to_learn.Insert(&Pot_BC_to_learn);
 
 	//train graph_to_learn with a fixed step gradient descend algorithm
 	Training_set Set(prefix + "Train_set.txt");
@@ -159,15 +162,15 @@ void part_02(const string& prefix) {
 
 
 	list<float> marginals;
-	graph_2.Set_Observation_Set_var({C});
+	graph_2.Set_Observation_Set_var({ graph_2.Find_Variable("C")});
 	graph_2.Set_Observation_Set_val({ 0 });
-	graph_2.Get_marginal_distribution(&marginals, A);
+	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("A"));
 	cout << "P(A|C=0) real model    ";
 	print_distribution(marginals); cout << endl;
 
-	graph_to_learn.Set_Observation_Set_var({ C2 });
+	graph_to_learn.Set_Observation_Set_var({ graph_to_learn.Find_Variable("C") });
 	graph_to_learn.Set_Observation_Set_val({ 0 });
-	graph_to_learn.Get_marginal_distribution(&marginals, A2);
+	graph_to_learn.Get_marginal_distribution(&marginals, graph_to_learn.Find_Variable("A"));
 	cout << "P(A|C=0) learnt model  ";
 	print_distribution(marginals); cout << endl;
 }

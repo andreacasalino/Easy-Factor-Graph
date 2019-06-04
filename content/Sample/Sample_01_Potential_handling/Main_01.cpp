@@ -31,7 +31,7 @@ int main() {
 	Categoric_var V(6, "V");
 
 	//define a shape function involving variable V
-	Potential_Shape* Phi1 = new Potential_Shape({ &V });
+	Potential_Shape* Phi1 = new Potential_Shape({ &V }); //allocated with new since will be then wrapped in an exponential pot, that will destroy it
 	// add some random values to the distribution
 	for (size_t k = 0; k < 3; k++)
 		Phi1->Add_value({ k }, (float)rand() / (float)RAND_MAX);
@@ -52,7 +52,7 @@ int main() {
 	Categoric_var V3(5, "V3");
 
 	//read from file a shape function involving V,V2 and V3
-	Potential_Shape* Phi2 = new Potential_Shape({ &V,&V2 ,&V3 });
+	Potential_Shape* Phi2 = new Potential_Shape({ &V,&V2 ,&V3 }); //allocated with new since will be then wrapped in an exponential pot, that will destroy it
 	Phi2->Import(prefix + "Ternary_Shape_function.txt");
 	cout << "Phi2 \n";
 	Phi2->Print_distribution(cout);

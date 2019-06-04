@@ -171,7 +171,7 @@ namespace Segugio {
 		list<size_t> comb_pos, distr_pos;
 
 		list<Categoric_var*>::const_iterator it_comb_to_search_var_order;
-		auto vars = I_Potential::Get_involved_var(pot);
+		auto vars = pot->Get_involved_var();
 		size_t k = 0, k2;
 		for (auto it_var = vars->begin(); it_var != vars->end(); it_var++) {
 			distr_pos.push_back(k);
@@ -192,7 +192,7 @@ namespace Segugio {
 			abort();
 		}
 
-		__find_Comb_in_distribution(result, comb_to_search, comb_pos, I_Potential::Get_distr(pot), distr_pos, true);
+		__find_Comb_in_distribution(result, comb_to_search, comb_pos, pot->Get_distr(), distr_pos, true);
 
 	}
 
@@ -201,8 +201,8 @@ namespace Segugio {
 
 		list<size_t> comb_pos, distr_pos;
 		size_t k = 0, k2;
-		auto vars = I_Potential::Get_involved_var(pot);
-		list<Categoric_var*>::iterator it_vars;
+		auto vars = pot->Get_involved_var();
+		list<Categoric_var*>::const_iterator it_vars;
 		for (auto it_comb = partial_comb_to_search_var_order.begin();
 			it_comb != partial_comb_to_search_var_order.end(); it_comb++) {
 			comb_pos.push_back(k);
@@ -223,7 +223,7 @@ namespace Segugio {
 			abort();
 		}
 
-		__find_Comb_in_distribution(result, { partial_comb_to_search }, comb_pos, I_Potential::Get_distr(pot), distr_pos, false);
+		__find_Comb_in_distribution(result, { partial_comb_to_search }, comb_pos, pot->Get_distr(), distr_pos, false);
 
 	}
 
@@ -259,6 +259,10 @@ namespace Segugio {
 					system("ECHO all variables in a shape function must be different");
 					abort();
 				}
+				if ((*itV2)->Get_name().compare((*itV)->Get_name()) == 0) {
+					system("ECHO all variables in a shape function must have a different name");
+					abort();
+				}
 			}
 
 			this->Involved_var.push_back(*itV);
@@ -273,9 +277,9 @@ namespace Segugio {
 
 	}
 
-	Potential_Shape::Potential_Shape(I_Potential* to_copy, const std::list<Categoric_var*>& var_involved) {
+	Potential_Shape::Potential_Shape(const Potential_Shape* to_copy, const std::list<Categoric_var*>& var_involved) {
 
-		auto var_list = this->I_Potential::Get_involved_var(to_copy);
+		auto var_list = &to_copy->Involved_var;
 		if (var_involved.size() != var_list->size()) {
 			system("ECHO invalid set of new variables when cloning Potential");
 			abort();
@@ -294,7 +298,7 @@ namespace Segugio {
 		int k_temp;
 		size_t L = this->Involved_var.size();
 		float v_temp;
-		auto Distr = this->I_Potential::Get_distr(to_copy);
+		auto Distr = &to_copy->Distribution;
 		for (auto itD = Distr->begin(); itD != Distr->end(); itD++) {
 			temp = (size_t*)malloc(sizeof(size_t)*L);
 			temp2 = (*itD)->Get_indeces();
@@ -527,10 +531,10 @@ namespace Segugio {
 		this->pwrapped = shape;
 
 		list<size_t*> entire_domain;
-		Get_entire_domain(&entire_domain, *I_Potential::Get_involved_var(shape));
-		
+		Get_entire_domain(&entire_domain, *this->I_Potential::Getter_4_Decorator::Get_involved_var(shape));
+
 		list<I_Distribution_value*> _distribution;
-		shape->Find_Comb_in_distribution(&_distribution, entire_domain, *I_Potential::Get_involved_var(shape), shape);
+		shape->Find_Comb_in_distribution(&_distribution, entire_domain, *this->I_Potential::Getter_4_Decorator::Get_involved_var(shape), shape);
 		auto it_domain = entire_domain.begin();
 		float temp;
 		Distribution_value* temp_pt;
@@ -563,8 +567,13 @@ namespace Segugio {
 
 	}
 
-	Potential_Exp_Shape::Potential_Exp_Shape(const Potential_Exp_Shape& to_copy, const std::list<Categoric_var*>& var_involved) :
-		Potential_Exp_Shape(new Potential_Shape(to_copy.pwrapped, var_involved), to_copy.mWeight) {	};
+	Potential_Exp_Shape::Potential_Exp_Shape(const Potential_Exp_Shape* to_copy, const std::list<Categoric_var*>& var_involved) :
+		I_Potential_Decorator(NULL), mWeight(to_copy->mWeight) {
+
+		this->Wrap(new Potential_Shape(to_copy->pwrapped, var_involved));
+
+
+	};
 
 
 
@@ -578,14 +587,14 @@ namespace Segugio {
 			abort();
 		}
 
-		list<Categoric_var*>* front_vars = I_Potential::Get_involved_var(potential_to_merge.front());
+		const list<Categoric_var*>* front_vars = this->I_Potential::Getter_4_Decorator::Get_involved_var(potential_to_merge.front());
 		list<list<I_Distribution_value*>> Distributions_to_merge;
 		list<size_t*> val_to_search;
 		if (use_sparse_format) {
 			size_t* temp_malloc;
 			//copy all the values in front distribution
 			size_t k, N_var = front_vars->size();
-			auto Distribution_front = I_Potential::Get_distr(potential_to_merge.front());
+			auto Distribution_front = this->I_Potential::Getter_4_Decorator::Get_distr(potential_to_merge.front());
 			for (auto itD = Distribution_front->begin(); itD != Distribution_front->end(); itD++) {
 				temp_malloc = (size_t*)malloc(sizeof(size_t)*N_var);
 				for (k = 0; k < N_var; k++)
@@ -607,7 +616,7 @@ namespace Segugio {
 		//build the merged distribution
 
 		Potential_Shape* shape_to_create = new Potential_Shape(*front_vars);
-		auto shape_Distr = I_Potential::Get_distr(shape_to_create);
+		auto shape_Distr = this->I_Potential::Getter_4_Decorator::Get_distr(shape_to_create);
 
 		bool match_in_all;
 		float product, temp;
@@ -656,7 +665,7 @@ namespace Segugio {
 			abort();
 		}
 
-		if (val_observed.size() >= I_Potential::Get_involved_var(pot_to_reduce)->size() ) {
+		if (val_observed.size() >= this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_reduce)->size() ) {
 			system("ECHO at least one non observed variable must exist");
 			abort();
 		}
@@ -674,7 +683,7 @@ namespace Segugio {
 		auto it_obs = var_observed.begin();
 		bool is_obs;
 		size_t k = 0;
-		auto pot_to_reduce_vars = I_Potential::Get_involved_var(pot_to_reduce);
+		auto pot_to_reduce_vars = this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_reduce);
 		for (auto itV = pot_to_reduce_vars->begin(); itV != pot_to_reduce_vars->end(); itV++) {
 			is_obs = false;
 			for (it_obs = var_observed.begin(); it_obs != var_observed.end(); it_obs++) {
@@ -696,7 +705,7 @@ namespace Segugio {
 		free(index_to_find);
 
 		Potential_Shape* shape_to_create = new Potential_Shape(var_to_remain);
-		auto distr_to_create = I_Potential::Get_distr(shape_to_create);
+		auto distr_to_create = this->I_Potential::Getter_4_Decorator::Get_distr(shape_to_create);
 
 		if (vals.front() != NULL) {
 			size_t Remain_size = var_to_remain.size();
@@ -811,7 +820,7 @@ namespace Segugio {
 		if (pwrapped == NULL)
 			*diff_to_previous = FLT_MAX;
 		else {
-			eval_diff(diff_to_previous, this->I_Potential::Get_distr(this->pwrapped), this->I_Potential::Get_distr(merged_pot));
+			eval_diff(diff_to_previous, this->I_Potential::Getter_4_Decorator::Get_distr(this->pwrapped), this->I_Potential::Getter_4_Decorator::Get_distr(merged_pot));
 			delete this->pwrapped;
 		}
 		this->pwrapped = merged_pot;
@@ -835,7 +844,7 @@ namespace Segugio {
 		if (pwrapped == NULL)
 			*diff_to_previous = FLT_MAX;
 		else {
-			eval_diff(diff_to_previous, this->I_Potential::Get_distr(this->pwrapped), this->I_Potential::Get_distr(merged_pot));
+			eval_diff(diff_to_previous, this->I_Potential::Getter_4_Decorator::Get_distr(this->pwrapped), this->I_Potential::Getter_4_Decorator::Get_distr(merged_pot));
 			delete this->pwrapped;
 		}
 		this->pwrapped = merged_pot;
@@ -844,10 +853,10 @@ namespace Segugio {
 	
 	Potential_Shape* Message_Unary::merge_binary_and_unary(Potential* binary_to_merge, Potential* unary, const bool& Sum_or_MAP) {
 
-		Categoric_var* var_to_marginalize = I_Potential::Get_involved_var(binary_to_merge)->front(),
-					 * var_to_remain = I_Potential::Get_involved_var(binary_to_merge)->back();
+		Categoric_var* var_to_marginalize = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->front(),
+					 * var_to_remain = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->back();
 		size_t         pos_to_marginalize = 0, pos_to_remain = 1;
-		if (var_to_remain == I_Potential::Get_involved_var(unary)->front()) {
+		if (var_to_remain == this->I_Potential::Getter_4_Decorator::Get_involved_var(unary)->front()) {
 			Categoric_var* C = var_to_remain;
 			var_to_remain = var_to_marginalize;
 			var_to_marginalize = C;
@@ -858,8 +867,7 @@ namespace Segugio {
 		}
 
 		Potential_Shape* shape_temp = new Potential_Shape({ var_to_remain });
-		auto shape_D = I_Potential::Get_distr(shape_temp);
-
+		auto shape_D = this->I_Potential::Getter_4_Decorator::Get_distr(shape_temp);
 
 		size_t k, K;
 

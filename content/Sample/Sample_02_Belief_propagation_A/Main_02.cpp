@@ -50,27 +50,27 @@ int main() {
 void process_sample_1() {
 
 	//create a simple graph with two nodes
-	Categoric_var* A1 = new Categoric_var(2, "A");
-	Categoric_var* B1 = new Categoric_var(2, "B");
+	Categoric_var A1(2, "A");
+	Categoric_var B1(2, "B");
 
-	Potential_Shape* shape1 = new  Potential_Shape({ A1, B1 });
+	Potential_Shape* shape1 = new  Potential_Shape({ &A1, &B1 });
 	shape1->Add_value({ 1,1 }, 1.f);
 	shape1->Add_value({ 0,0 }, 1.f);
 
 	float teta = 2.f;
 	float Z = 1.f + expf(teta);
 
-	Potential_Exp_Shape* Psi1 = new Potential_Exp_Shape(shape1, teta);
+	Potential_Exp_Shape Psi1(shape1, teta);
 
 	Graph graph_1;
-	graph_1.Insert(Psi1);
+	graph_1.Insert(&Psi1);
 	list<float> marginals;
 
 	//make a new belief propagation setting B1=0 as observation
-	graph_1.Set_Observation_Set_var({ B1 });
+	graph_1.Set_Observation_Set_var({ graph_1.Find_Variable("B") });
 	graph_1.Set_Observation_Set_val({ 0 });
 
-	graph_1.Get_marginal_distribution(&marginals, A1);
+	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("A"));
 	cout << "P(A|B=0)" << endl;
 	cout << "theoretical " << endl;
 	print_distribution(list<float>({ expf(teta) / Z, 1.f / Z }));
@@ -78,10 +78,9 @@ void process_sample_1() {
 	cout << endl << endl;
 
 	//make a new belief propagation setting B1=1 as observation
-	graph_1.Set_Observation_Set_var({ B1 });
 	graph_1.Set_Observation_Set_val({ 1 });
 
-	graph_1.Get_marginal_distribution(&marginals, A1);
+	graph_1.Get_marginal_distribution(&marginals, graph_1.Find_Variable("A"));
 	cout << "P(A|B=1)" << endl;
 	cout << "theoretical " << endl;
 	print_distribution(list<float>({ 1.f / Z, expf(teta) / Z }));
@@ -92,40 +91,40 @@ void process_sample_1() {
 
 void process_sample_2() {
 
-	Categoric_var* A2 = new Categoric_var(2, "A");
-	Categoric_var* B2 = new Categoric_var(2, "B");
-	Categoric_var* C2 = new Categoric_var(2, "C");
+	Categoric_var A2(2, "A");
+	Categoric_var B2(2, "B");
+	Categoric_var C2(2, "C");
 
 	float alfa = 0.5f, beta = 1.f;
 
-	Potential_Shape* shape_BC = new Potential_Shape({ B2, C2 });
+	Potential_Shape* shape_BC = new Potential_Shape({ &B2, &C2 });
 	shape_BC->Add_value({ 0,0 }, 1.f);
 	shape_BC->Add_value({ 1,1 }, 1.f);
-	Potential_Exp_Shape* Psi_BC = new Potential_Exp_Shape(shape_BC, alfa);
+	Potential_Exp_Shape Psi_BC(shape_BC, alfa);
 
-	Potential_Shape* shape_AB = new Potential_Shape({ A2, B2 });
+	Potential_Shape* shape_AB = new Potential_Shape({ &A2, &B2 });
 	shape_AB->Add_value({ 0,0 }, 1.f);
 	shape_AB->Add_value({ 1,1 }, 1.f);
-	Potential_Exp_Shape* Psi_AB = new Potential_Exp_Shape(shape_AB, beta);
+	Potential_Exp_Shape Psi_AB(shape_AB, beta);
 
 	Graph graph_2;
-	graph_2.Insert(Psi_AB);
-	graph_2.Insert(Psi_BC);
+	graph_2.Insert(&Psi_AB);
+	graph_2.Insert(&Psi_BC);
 
 	//make a new belief propagation setting C2=1 as observation
-	graph_2.Set_Observation_Set_var({ C2 });
+	graph_2.Set_Observation_Set_var({ graph_2.Find_Variable("C") });
 	graph_2.Set_Observation_Set_val({ 1 });
 
 	float Z = 1.f + expf(alfa) + expf(beta) + expf(alfa)*expf(beta);
 
 	list<float> marginals;
-	graph_2.Get_marginal_distribution(&marginals, B2);
+	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("B"));
 	cout << "P(B|C=1)\n";
 	cout << "theoretical " << endl;
 	print_distribution(list<float>({ (1.f + expf(beta)) / Z, expf(alfa)*(1.f + expf(beta)) / Z }));
 	print_distribution(marginals);
 
-	graph_2.Get_marginal_distribution(&marginals, A2);
+	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("A"));
 	cout << "P(A|C=1)\n";
 	cout << "theoretical " << endl;
 	print_distribution(list<float>({ (expf(alfa) + expf(beta)) / Z, (1.f + expf(alfa) * expf(beta)) / Z }));
@@ -133,12 +132,12 @@ void process_sample_2() {
 
 
 	//make a new belief propagation setting B2=1 as observation
-	graph_2.Set_Observation_Set_var({ B2 });
+	graph_2.Set_Observation_Set_var({ graph_2.Find_Variable("B") });
 	graph_2.Set_Observation_Set_val({ 1 });
 
 	Z = 1.f + expf(beta);
 
-	graph_2.Get_marginal_distribution(&marginals, A2);
+	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("A"));
 	cout << "P(A|B=1)\n";
 	cout << "theoretical " << endl;
 	print_distribution(list<float>({ 1.f / Z, expf(beta) / Z }));
@@ -146,7 +145,7 @@ void process_sample_2() {
 
 	Z = 1.f + expf(alfa);
 
-	graph_2.Get_marginal_distribution(&marginals, C2);
+	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("C"));
 	cout << "P(C|B=1)\n";
 	cout << "theoretical " << endl;
 	print_distribution(list<float>({ 1.f / Z, expf(alfa) / Z }));
@@ -170,18 +169,21 @@ void process_chain(const size_t& chain_size, const size_t& var_size, const float
 	Graph graph;
 
 	while(it2 != Y.end()) {
-		auto temp = new Potential_Exp_Shape(new Potential_Shape({ *it1, *it2 }, true), w);
-		graph.Insert(temp);
+		Potential_Exp_Shape temp(new Potential_Shape({ *it1, *it2 }, true), w);
+		graph.Insert(&temp);
 		it1++; it2++;
 	}
 
-	graph.Set_Observation_Set_var({ Y.front() });
+	graph.Set_Observation_Set_var({ graph.Find_Variable(Y.front())  });
 	graph.Set_Observation_Set_val({ 0 });
 	list<float> prob;
-	graph.Get_marginal_distribution(&prob, Y.back());
+	graph.Get_marginal_distribution(&prob, graph.Find_Variable(Y.back()));
 
 	print_distribution(prob);
 	cout << endl;
+
+	for (auto it = Y.begin(); it != Y.end(); it++)
+		delete *it;
 
 }
 void process_sample_3() {

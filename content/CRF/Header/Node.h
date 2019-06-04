@@ -41,6 +41,7 @@ namespace Segugio {
 			virtual ~Node_factory();
 
 			Categoric_var*			  Find_Variable(const std::string& var_name);
+			Categoric_var*			  Find_Variable(Categoric_var* var_with_same_name) { return this->Find_Variable(var_with_same_name->Get_name()); };
 			void					  Get_Actual_Hidden_Set(std::list<Categoric_var*>* result);
 			void					  Get_Actual_Observation_Set(std::list<Categoric_var*>* result);
 			void					  Get_All_variables_in_model(std::list<Categoric_var*>* result);
@@ -59,11 +60,119 @@ namespace Segugio {
 
 			//when the passed potential involves two variable is interpreted as a new edge, when containing a single a variable is assumed as a new unary potential;
 			//in any other cases is a an error
-			virtual void Insert(Potential_Shape* pot) { this->Insert_with_size_check<Potential_Shape>(pot); };
-			virtual void Insert(Potential_Exp_Shape* pot) { this->Insert_with_size_check<Potential_Exp_Shape>(pot); };
+			virtual void Insert(Potential_Shape* pot) = 0;
+			virtual void Insert(Potential_Exp_Shape* pot) = 0;
 
 			void Insert(const std::list<Potential_Shape*>& set_to_insert);
 			void Insert(const std::list<Potential_Exp_Shape*>& set_to_insert);
+
+			template<typename T>
+			T* Insert_with_size_check(T* pot) { //returns the cloned potential (shape or exponential)
+
+				T* cloned_to_return = NULL;
+
+				size_t var_numb = pot->Get_involved_var_safe()->size();
+				if (var_numb == 1) {
+					//binary potential insertion
+					Categoric_var* varU = pot->Get_involved_var_safe()->front();
+					auto itN = this->Nodes.begin();
+					bool node_found = false;
+					for (itN; itN != this->Nodes.end(); itN++) {
+						if ((*itN)->Get_var()->Get_name().compare(varU->Get_name()) == 0) {
+							cloned_to_return = new T(pot, { (*itN)->Get_var() });
+							(*itN)->Permanent_Unary.push_back(new Potential(cloned_to_return));
+							node_found = true;
+							break;
+						}
+					}
+
+					if (!node_found) {
+						system("ECHO the unary potential provided refers to an inexistent node");
+						abort();
+					}
+				}
+				else if (var_numb == 2) {
+					//binary potential insertion
+					Node* peer_A = NULL;
+					Node* peer_B = NULL;
+
+					Categoric_var* varA = pot->Get_involved_var_safe()->front();
+					auto itN = this->Nodes.begin();
+					for (itN; itN != this->Nodes.end(); itN++) {
+						if ((*itN)->Get_var()->Get_name().compare(varA->Get_name()) == 0) {
+							peer_A = *itN;
+							break;
+						}
+					}
+					Categoric_var* varB = pot->Get_involved_var_safe()->back();
+					itN = this->Nodes.begin();
+					for (itN; itN != this->Nodes.end(); itN++) {
+						if ((*itN)->Get_var()->Get_name().compare(varB->Get_name()) == 0) {
+							peer_B = *itN;
+							break;
+						}
+					}
+
+					if ((peer_A != NULL) && (peer_B != NULL)) {
+						//check this potential was not already inserted
+						const std::list<Categoric_var*>* temp_var;
+						for (auto it_bb = this->Binary_potentials.begin();
+							it_bb != this->Binary_potentials.end(); it_bb++) {
+							temp_var = (*it_bb)->Get_involved_var_safe();
+
+							if (((peer_A->Get_var() == temp_var->front()) && (peer_B->Get_var() == temp_var->back())) ||
+								((peer_A->Get_var() == temp_var->back()) && (peer_B->Get_var() == temp_var->front()))) {
+								system("ECHO found clone of an already inserted binary potential");
+								abort();
+							}
+						}
+					}
+
+					if (peer_A == NULL) {
+						this->Nodes.push_back(new Node(varA));
+						peer_A = this->Nodes.back();
+					}
+					if (peer_B == NULL) {
+						this->Nodes.push_back(new Node(varB));
+						peer_B = this->Nodes.back();
+					}
+
+					cloned_to_return = new T(pot, { peer_A->Get_var(), peer_B->Get_var() });
+					Potential* new_pot = new Potential(cloned_to_return);
+					//create connection
+					Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
+					A_B->This_Node = peer_A;
+					A_B->Neighbour = peer_B;
+					A_B->Shared_potential = new_pot;
+					A_B->Message_to_this_node = NULL;
+
+					Node::Neighbour_connection* B_A = new Node::Neighbour_connection();
+					B_A->This_Node = peer_B;
+					B_A->Neighbour = peer_A;
+					B_A->Shared_potential = new_pot;
+					B_A->Message_to_this_node = NULL;
+
+					A_B->Message_to_neighbour_node = &B_A->Message_to_this_node;
+					B_A->Message_to_neighbour_node = &A_B->Message_to_this_node;
+
+					peer_A->Active_connections.push_back(A_B);
+					peer_B->Active_connections.push_back(B_A);
+
+					this->Binary_potentials.push_back(new_pot);
+
+				}
+				else {
+					system("ECHO invalid component to insert in a graph");
+					abort();
+				}
+
+				if (this->Last_propag_info != NULL) delete this->Last_propag_info;
+				this->Last_propag_info = NULL;
+				this->mState = 0;
+
+				return cloned_to_return;
+
+			};
 
 			Node*					  Find_Node(const std::string& var_name);
 
@@ -87,34 +196,6 @@ namespace Segugio {
 				bool          Terminate_within_iter;
 				unsigned int  Iterations_perfomed;
 				bool          Last_was_SumProd_or_MAP;
-			};
-
-
-			void Insert(Potential* pot, Categoric_var* varA, Categoric_var* varB);
-			void Insert(Potential* pot, Categoric_var* varU);
-		//methods having an effect on mState
-			template<typename T>
-			void Insert_with_size_check(T* pot) {
-
-				auto var_involved = pot->Get_involved_var_safe();
-
-				size_t var_numb = var_involved->size();
-				if (var_numb == 1) {
-					this->Insert(new Potential(pot), var_involved->front());
-				}
-				else if (var_numb == 2) {
-					auto new_bin = new Potential(pot);
-					this->Insert(new_bin, var_involved->front(), var_involved->back());
-				}
-				else {
-					system("ECHO invalid component to insert in a graph");
-					abort();
-				}
-
-				if (this->Last_propag_info != NULL) delete this->Last_propag_info;
-				this->Last_propag_info = NULL;
-				this->mState = 0;
-
 			};
 
 		// data
@@ -141,7 +222,7 @@ namespace Segugio {
 		void									Compute_neighbour_set(std::list<Node*>* Neigh_set, std::list<Potential*>* binary_involved);
 		void									Compute_neighbourhood_messages(std::list<Potential*>* messages, Node* node_involved_in_connection);
 	private:
-		Node(Categoric_var* var) { this->pVariable = var; };
+		Node(Categoric_var* var) { this->pVariable = new Categoric_var(var->size(), var->Get_name()); };
 	// data
 		Categoric_var*					  pVariable;
 		std::list<Potential*>			  Permanent_Unary;

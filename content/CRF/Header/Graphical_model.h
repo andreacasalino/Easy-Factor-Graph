@@ -14,9 +14,9 @@ namespace Segugio {
 	 * \details Both Exponential and normal shapes can be included
 	 * into the model. Learning is not possible: all belief propagation 
 	 * operations are performed assuming the mdoel as is.
-	 * Every Potential_Shape or Potential_Exp_Shape inserted into the model,
-	 * is wrapped and is automatically destroyed when that instance of Graph
-	 * is destroyed.
+	 * Every Potential_Shape or Potential_Exp_Shape is copied and that copy is 
+	 * inserted into the model, is wrapped and is automatically destroyed when 
+	 * that instance of Graph is destroyed.
 	 */
 	class Graph : public Node::Node_factory {
 	public:
@@ -35,21 +35,21 @@ namespace Segugio {
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input 
 		* a potential which involves that variable).
 		*/
-		void Insert(Potential_Shape* pot) { this->Node_factory::Insert(pot); };
+		void Insert(Potential_Shape* pot) { this->Node_factory::Insert_with_size_check<Potential_Shape>(pot); };
 
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input
 		* a potential which involves that variable).
 		*/
-		void Insert(Potential_Exp_Shape* pot) { this->Node_factory::Insert(pot); };
+		void Insert(Potential_Exp_Shape* pot) { this->Node_factory::Insert_with_size_check<Potential_Exp_Shape>(pot); };
 
 		void Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars) { this->Node_factory::Set_Observation_Set_var(new_observed_vars); };
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
 	};
 
 
-	class I_Learning_handler : public I_Potential_Decorator, public Potential_Exp_Shape::Handler_weight {
+	class I_Learning_handler : public I_Potential_Decorator<Potential_Exp_Shape>, public Potential_Exp_Shape::Getter_weight_and_shape {
 	public:
 		void			Get_weight(float* w) { *w = *this->pWeight; };
 		void			Set_weight(const float& w_new) { *this->pWeight = w_new; };
@@ -58,6 +58,7 @@ namespace Segugio {
 		virtual void    Get_grad_beta_part(float* beta) = 0; //according to last performed belief propagation
 
 		void			Cumul_Log_Activation(float* result, size_t* val_to_consider, const std::list<Categoric_var*>& var_in_set);
+		const Potential_Exp_Shape* get_wrapped_exp_pot() { return this->pwrapped; };
 	protected:
 		I_Learning_handler(Potential_Exp_Shape* pot_to_handle);
 		I_Learning_handler(I_Learning_handler* other);
@@ -65,8 +66,6 @@ namespace Segugio {
 		float*								          pWeight;
 	// cache
 		std::list<I_Distribution_value*>			  Extended_shape_domain; //for computing beta part of gradient
-	private:
-		Potential_Exp_Shape*   ref_to_wrapped_exp_potential;
 	};
 
 
@@ -86,7 +85,9 @@ namespace Segugio {
 		};
 		size_t Get_model_size() { return this->Model_handlers.size(); };
 		virtual void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) = 0;
-	
+		
+		//usefull for structural learning
+		void Get_structure(std::list<const Potential_Exp_Shape*>* result);
 	protected:
 	
 		void Get_Log_activation(float* result, size_t* Y, const std::list<Categoric_var*>& Y_var_order);

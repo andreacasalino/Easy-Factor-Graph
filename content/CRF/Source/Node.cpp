@@ -330,87 +330,6 @@ namespace Segugio {
 	}
 
 
-	void Node::Node_factory::Insert(Potential* pot, Categoric_var* varA, Categoric_var* varB) {
-
-		Node* peer_A = NULL;
-		Node* peer_B = NULL;
-
-		auto itN = this->Nodes.begin();
-		for (itN; itN != this->Nodes.end(); itN++) {
-			if ((*itN)->Get_var() == varA) {
-				peer_A = *itN;
-				break;
-			}
-		}
-		itN = this->Nodes.begin();
-		for (itN; itN != this->Nodes.end(); itN++) {
-			if ((*itN)->Get_var() == varB) {
-				peer_B = *itN;
-				break;
-			}
-		}
-
-		if ((peer_A != NULL) && (peer_B != NULL)) {
-			//check this potential was not already inserted
-			const list<Categoric_var*>* temp_var;
-			for (auto it_bb = this->Binary_potentials.begin();
-				it_bb != this->Binary_potentials.end(); it_bb++) {
-				temp_var = (*it_bb)->Get_involved_var_safe();
-
-				if (((peer_A->Get_var() == temp_var->front()) && (peer_B->Get_var() == temp_var->back())) ||
-					((peer_A->Get_var() == temp_var->back()) && (peer_B->Get_var() == temp_var->front()))) {
-					system("ECHO found clone of an already inserted binary potential");
-					abort();
-				}
-			}
-		}
-
-		if (peer_A == NULL) {
-			this->Nodes.push_back(new Node(varA));
-			peer_A = this->Nodes.back();
-		}
-		if (peer_B == NULL) {
-			this->Nodes.push_back(new Node(varB));
-			peer_B = this->Nodes.back();
-		}
-
-		//create connection
-		Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
-		A_B->This_Node = peer_A;
-		A_B->Neighbour = peer_B;
-		A_B->Shared_potential = pot;
-		A_B->Message_to_this_node = NULL;
-
-		Node::Neighbour_connection* B_A = new Node::Neighbour_connection();
-		B_A->This_Node = peer_B;
-		B_A->Neighbour = peer_A;
-		B_A->Shared_potential = pot;
-		B_A->Message_to_this_node = NULL;
-
-		A_B->Message_to_neighbour_node = &B_A->Message_to_this_node;
-		B_A->Message_to_neighbour_node = &A_B->Message_to_this_node;
-
-		peer_A->Active_connections.push_back(A_B);
-		peer_B->Active_connections.push_back(B_A);
-
-		this->Binary_potentials.push_back(pot);
-
-	}
-
-	void Node::Node_factory::Insert(Potential* pot, Categoric_var* varU) {
-
-		auto itN = this->Nodes.begin();
-		for (itN; itN != this->Nodes.end(); itN++) {
-			if ((*itN)->Get_var() == varU) {
-				(*itN)->Permanent_Unary.push_back(pot);
-				return;
-			}
-		}
-
-		system("ECHO the unary potential provided refers to an inexistent node");
-		abort();
-
-	}
 
 
 
@@ -946,6 +865,8 @@ namespace Segugio {
 		bool insert;
 		bool matching[4];
 		while (true) {
+			if (open_set.empty()) break;
+
 			old_size = open_set.size();
 
 			it = open_set.begin();
@@ -974,8 +895,6 @@ namespace Segugio {
 				system("ECHO inconsistent set to add CRF");
 				abort();
 			}
-
-			if (open_set.empty()) break;
 		}
 
 	}

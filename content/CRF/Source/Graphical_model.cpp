@@ -17,26 +17,26 @@ namespace Segugio {
 
 
 
-	I_Learning_handler::I_Learning_handler(Potential_Exp_Shape* pot_to_handle) : I_Potential_Decorator(pot_to_handle) , ref_to_wrapped_exp_potential(pot_to_handle) {
+	I_Learning_handler::I_Learning_handler(Potential_Exp_Shape* pot_to_handle) : I_Potential_Decorator(pot_to_handle) {
 
 		this->Destroy_wrapped = false; //this exponential shape will be wrapped also by a Potential to be stored in the graphical model
-		this->pWeight = this->Handler_weight::Get_weight(pot_to_handle);
+		this->pWeight = this->Potential_Exp_Shape::Getter_weight_and_shape::Get_weight(pot_to_handle);
 
 		list<size_t*> val_to_search;
-		Get_entire_domain(&val_to_search, *this->I_Potential::Get_involved_var(pot_to_handle));
-		Find_Comb_in_distribution(&this->Extended_shape_domain, val_to_search, *this->Get_involved_var(), this->Get_shape());
+		Get_entire_domain(&val_to_search, *this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_handle));
+		Find_Comb_in_distribution(&this->Extended_shape_domain, val_to_search, *this->Get_involved_var(), this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
 		for (auto it = val_to_search.begin(); it != val_to_search.end(); it++)
 			free(*it);
 
 	}
 
 	I_Learning_handler::I_Learning_handler(I_Learning_handler* other) :
-		I_Learning_handler(other->ref_to_wrapped_exp_potential) {  };
+		I_Learning_handler(other->pwrapped) {  };
 
 	void I_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
 
 		list<I_Distribution_value*> val_in_train_set;
-		Find_Comb_in_distribution(&val_in_train_set, comb_in_train_set, comb_var, this->Get_shape());
+		Find_Comb_in_distribution(&val_in_train_set, comb_in_train_set, comb_var, this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
 
 		*alfa = 0.f;
 		float temp;
@@ -69,7 +69,7 @@ namespace Segugio {
 	void I_Learning_handler::Cumul_Log_Activation(float* result, size_t* val_to_consider, const list<Categoric_var*>& var_in_set) {
 
 		list<Potential::I_Distribution_value*> matching;
-		this->Find_Comb_in_distribution(&matching, list<size_t*>({ val_to_consider }), var_in_set, this->ref_to_wrapped_exp_potential);
+		this->Find_Comb_in_distribution(&matching, list<size_t*>({ val_to_consider }), var_in_set, this->pwrapped);
 		float temp;
 
 #ifdef _DEBUG
@@ -176,7 +176,7 @@ namespace Segugio {
 		float temp, result;
 		list<I_Distribution_value*>::iterator it_pos;
 		list<info_val>::iterator it_info;
-		auto itD2 = I_Potential::Get_distr(this->Binary_for_group_marginal_computation)->begin();
+		auto itD2 = this->I_Potential::Getter_4_Decorator::Get_distr(this->Binary_for_group_marginal_computation)->begin();
 		for (auto itD = pBin_Distr->begin(); itD != pBin_Distr->end(); itD++) {
 			(*itD)->Get_val(&result);
 
@@ -218,7 +218,7 @@ namespace Segugio {
 
 	void Graph_Learnable::Insert(Potential_Exp_Shape* pot) {
 		
-		this->Node_factory::Insert(pot);
+		pot = this->Insert_with_size_check<Potential_Exp_Shape>(pot);
 
 		auto vars = pot->Get_involved_var_safe();
 
@@ -259,12 +259,6 @@ namespace Segugio {
 		model->Graph_Learnable::Get_w_grad(grad_w, comb_train_set, comb_var_order); //here tha alfa part is appended
 		model->Get_w_grad(grad_w, comb_train_set, comb_var_order); //here the beta part is added
 
-		if (model->pLast_train_set == NULL) model->pLast_train_set = new proxy_gradient_info(comb_train_set);
-		else {
-			delete model->pLast_train_set;
-			model->pLast_train_set = new proxy_gradient_info(comb_train_set);
-		}
-
 #ifdef ADD_REGULARIZATION
 		//add regularization term
 		float temp;
@@ -290,7 +284,21 @@ namespace Segugio {
 
 	void Graph_Learnable::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
-		if (comb_train_set != this->pLast_train_set->Last_set) {
+		bool recompute_alpha = false;
+
+		if (this->pLast_train_set == NULL) {
+			recompute_alpha = true;
+			this->pLast_train_set = new proxy_gradient_info(comb_train_set);
+		}
+		else {
+			if (this->pLast_train_set->Last_set != comb_train_set) {
+				recompute_alpha = true;
+				delete this->pLast_train_set;
+				this->pLast_train_set = new proxy_gradient_info(comb_train_set);
+			}
+		}
+
+		if (recompute_alpha) {
 			//recompute alfa part
 			this->Alfa_part_gradient.clear();
 
@@ -310,6 +318,14 @@ namespace Segugio {
 		*result = 0.f;
 		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
 			(*it)->Cumul_Log_Activation(result, Y, Y_var_order);
+
+	}
+
+	void Graph_Learnable::Get_structure(std::list<const Potential_Exp_Shape*>* result) {
+
+		result->clear();
+		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
+			result->push_back((*it)->get_wrapped_exp_pot());
 
 	}
 
@@ -411,7 +427,7 @@ namespace Segugio {
 			comb_to_search.back()[pos_obsv] = *this->ref_to_val_observed;
 		}
 		list<I_Distribution_value*> distr_conditioned_to_obsv;
-		Find_Comb_in_distribution(&distr_conditioned_to_obsv, comb_to_search, *this->Get_involved_var(), this->Get_shape());
+		Find_Comb_in_distribution(&distr_conditioned_to_obsv, comb_to_search, *this->Get_involved_var(), this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
 
 		Dot_with_Prob(beta, marginals, distr_conditioned_to_obsv);
 
@@ -511,7 +527,10 @@ namespace Segugio {
 		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
 			this->Insert(*it);
 
-		this->Node_factory::Set_Observation_Set_var(observed_var);
+		list<Categoric_var*> vars_hidden;
+		for (auto it = observed_var.begin(); it != observed_var.end(); it++)
+			vars_hidden.push_back(this->Find_Variable(*it));
+		this->Node_factory::Set_Observation_Set_var(vars_hidden);
 
 	}
 
