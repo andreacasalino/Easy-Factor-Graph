@@ -10,9 +10,24 @@
 
 namespace Segugio {
 
+	/*!
+	 * \brief This class is used by a Graph_Learnable, to perform training with an instance of a Training_set.
+	 * \details Instantiate a particular class of trainer to use by calling Get_fixed_step or Get_BFGS. That methods 
+	 * allocate in the heap a trainer to use later, for multiple tranining sessions. Remember to delete the instantiated
+	 * trainer.
+	 */
 	class I_Trainer {
 	public:
+		/**
+		* \brief Creates a fixed step gradient descend solver.
+		* @param[in] step_size learinig degree
+		* @param[in] stoch_grad_percentage percentage of the training set to use every time for evaluating the gradient
+		*/
 		static I_Trainer* Get_fixed_step(const float& step_size = 0.1f, const float& stoch_grad_percentage = 1.f);
+		/**
+		* \brief Creates a BFGS gradient descend solver (https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm)
+		* @param[in] stoch_grad_percentage percentage of the training set to use every time for evaluating the gradient
+		*/
 		static I_Trainer* Get_BFGS(const float& stoch_grad_percentage = 1.f);
 
 		virtual ~I_Trainer() {};

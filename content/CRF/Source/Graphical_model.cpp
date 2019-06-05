@@ -332,6 +332,17 @@ namespace Segugio {
 
 
 
+	size_t* list_2_malloc(const list<size_t>& l) {
+
+		size_t* res = (size_t*)malloc(l.size() * sizeof(size_t));
+		size_t k = 0;
+		for (auto it = l.begin(); it != l.end(); it++) {
+			res[k] = *it;
+			k++;
+		}
+		return res;
+
+	};
 
 	Random_Field::Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) {
 
@@ -362,12 +373,7 @@ namespace Segugio {
 		this->Set_Observation_Set_val(list<size_t>());
 		list<size_t> Y_MAP;
 		this->MAP_on_Hidden_set(&Y_MAP);
-		size_t* Y_MAP_malloc = (size_t*)malloc(sizeof(size_t)*Y_MAP.size());
-		size_t k = 0;
-		for (auto it = Y_MAP.begin(); it != Y_MAP.end(); it++) {
-			Y_MAP_malloc[k] = *it;
-			k++;
-		}
+		size_t* Y_MAP_malloc = list_2_malloc(Y_MAP);
 
 		list<Categoric_var*> MAP_order;
 		this->Get_Actual_Hidden_Set(&MAP_order);
@@ -647,46 +653,46 @@ namespace Segugio {
 
 	}
 
+	template<typename T>
+	void append_b_to_a(list<T>* a, const list<T>& b) {
+
+		for (auto it = b.begin(); it != b.end(); it++)
+			a->push_back(*it);
+
+	};
 	void Conditional_Random_Field::Get_Likelihood_estimation_observations(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order) {
 
-		list<Categoric_var*> obs_set, set1, set2;
-		size_t* comb1, *comb2;
-		float temp;
+		size_t* temp_mall;
+		list<size_t> XY_MAP; list<Categoric_var*> XY_MAP_var;
+		list<size_t> X_real_Y_MAP; list<Categoric_var*> X_real_Y_MAP_var;
+		list<Categoric_var*> obs_var;
+		this->Get_Actual_Observation_Set(&obs_var);
 
-		// Y_MAP considering the actual observations
-		this->Get_Actual_Observation_Set(&obs_set);
-		this->Get_Actual_Hidden_Set(&set1);
-		for (auto it = obs_set.begin(); it != obs_set.end(); it++)
-			set1.push_back(*it);
-		list<size_t> Y_MAP;
-		this->MAP_on_Hidden_set(&Y_MAP);
-		comb1 = (size_t*)malloc(set1.size() * sizeof(size_t));
-		int k = 0;
-		for (auto it = Y_MAP.begin(); it != Y_MAP.end(); it++) {
-			comb1[k] = *it;
-			k++;
-		}
-		for (size_t k2 = 0; k2 < obs_set.size(); k2++) {
-			comb1[k] = comb_observations[k2];
-			k++;
-		}		
-		this->Get_Log_activation(&temp, comb1, set1);
-		*result = temp;
-
-		//XY_MAP considering the net as a graph with no observations
 		this->Set_Observation_Set_var({});
-		this->Get_Actual_Hidden_Set(&set2);
-		list<size_t> XY_MAP;
-		comb2 = (size_t*)malloc(XY_MAP.size() * sizeof(size_t));
-		k = 0;
-		for (auto it = XY_MAP.begin(); it != XY_MAP.end(); it++) {
-			comb2[k] = *it;
-			k++;
-		}
-		this->Get_Log_activation(&temp, comb2, set2);
-		*result -= temp;
+		this->Set_Observation_Set_val({});
+		this->MAP_on_Hidden_set(&XY_MAP);
+		this->Get_Actual_Hidden_Set(&XY_MAP_var);
+		temp_mall = list_2_malloc(XY_MAP);
+		this->Get_Log_activation(result, temp_mall, XY_MAP_var);
+		*result *= -1.f;
+		free(temp_mall);
 
-		this->Set_Observation_Set_var(obs_set);
+
+		list<size_t> pos_of_observed_var;
+		find_observed_order(&pos_of_observed_var, obs_var, comb_var_order);
+		list<size_t> obs_temp;
+		extract_observations(&obs_temp, comb_observations, pos_of_observed_var);
+		this->Set_Observation_Set_var(obs_var);
+		this->Set_Observation_Set_val(obs_temp);
+		this->Get_Actual_Hidden_Set(&X_real_Y_MAP_var);
+		this->MAP_on_Hidden_set(&X_real_Y_MAP);
+		append_b_to_a(&X_real_Y_MAP_var, obs_var);
+		append_b_to_a(&X_real_Y_MAP, obs_temp);
+		temp_mall = list_2_malloc(X_real_Y_MAP);
+		float temp;
+		this->Get_Log_activation(&temp, temp_mall, X_real_Y_MAP_var);
+		*result += temp;
+		free(temp_mall);
 
 	}
 
