@@ -35,22 +35,53 @@ namespace Segugio {
 			std::list<Neighbour_connection*>    Neighbourhood;
 		};
 
-
+		/*!
+		 * \brief Interface for describing a net: set of nodes representing random variables
+		 */
 		class Node_factory {
 		public:
 			virtual ~Node_factory();
 
+			/** \brief Returns a pointer to the variable in this graph with that name
+			* @param[in] var_name name to search
+			*/
 			Categoric_var*			  Find_Variable(const std::string& var_name);
+			/** \brief Returns a pointer to the variable in this graph with the same name of the variable passed as input
+			* @param[in] var_with_same_name variable having the same of name of the variable to search
+			*/
 			Categoric_var*			  Find_Variable(Categoric_var* var_with_same_name) { return this->Find_Variable(var_with_same_name->Get_name()); };
+			/** \brief Returns the current set of hidden variables
+			*/
 			void					  Get_Actual_Hidden_Set(std::list<Categoric_var*>* result);
+			/** \brief Returns the current set of observed variables
+			*/
 			void					  Get_Actual_Observation_Set(std::list<Categoric_var*>* result);
+			/** \brief Returns the set of all variable contained in the net
+			*/
 			void					  Get_All_variables_in_model(std::list<Categoric_var*>* result);
-
-			void					  Get_marginal_distribution(std::list<float>* result, Categoric_var* var); //on the basis of last observed values set
-			void					  MAP_on_Hidden_set(std::list<size_t>* result); //Maximum A Posteriori Estimation considering all the hidden variables, on the basis of last observed values set
+			/** \brief Returns the marginal probabilty of the variable passed P(var|model, observations), 
+			* \details on the basis of the last observations set (see Node_factory::Set_Observation_Set_var)
+			*/
+			void					  Get_marginal_distribution(std::list<float>* result, Categoric_var* var);
+			/** \brief Returns the Maximum a Posteriori estimation of the hidden set.
+			* \details Values are ordered as returned by Node_factory::Get_Actual_Hidden_Set.
+			* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
+			*/
+			void					  MAP_on_Hidden_set(std::list<size_t>* result);
+			/** \brief Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables).
+			* \details Samples are obtained through Gibbs sampling. 
+			* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
+			* @param[in] N_samples number of desired samples
+			* @param[in] initial_sample_to_skip number of samples to skip for performing Gibbs sampling
+			* @param[out] result returned samples: every element of the list is a combination of values for the hidden set, with the same
+			* order returned when calling Node_factory::Get_Actual_Hidden_Set
+			*/
 			void					  Gibbs_Sampling_on_Hidden_set(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip); //on the basis of last observed values set
-
+			/** \brief Returns the current value adopted when performing a loopy belief propagation
+			*/
 			unsigned int			  Get_Iteration_4_belief_propagation() { return this->Iterations_4_belief_propagation; };
+			/** \brief Returns the value to adopt when performing a loopy belief propagation
+			*/
 			void					  Set_Iteration_4_belief_propagation(const unsigned int& iter_to_use);
 
 		protected:
@@ -175,9 +206,14 @@ namespace Segugio {
 			};
 
 			Node*					  Find_Node(const std::string& var_name);
-
+			
 		//methods having an effect on mState
+
+			/** \brief Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val
+			*/
 			void					  Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars);
+			/** \brief Set the observation set: which variables are treated like evidence when performing belief propagation
+			*/
 			void					  Set_Observation_Set_val(const std::list<size_t>& new_observed_vals); //assuming the same observed set last time
 			void					  Belief_Propagation(const bool& sum_or_MAP);
 

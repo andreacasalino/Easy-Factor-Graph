@@ -15,8 +15,7 @@ namespace Segugio {
 	 * into the model. Learning is not possible: all belief propagation 
 	 * operations are performed assuming the mdoel as is.
 	 * Every Potential_Shape or Potential_Exp_Shape is copied and that copy is 
-	 * inserted into the model, is wrapped and is automatically destroyed when 
-	 * that instance of Graph is destroyed.
+	 * inserted into the model.
 	 */
 	class Graph : public Node::Node_factory {
 	public:
@@ -49,6 +48,7 @@ namespace Segugio {
 	};
 
 
+
 	class I_Learning_handler : public I_Potential_Decorator<Potential_Exp_Shape>, public Potential_Exp_Shape::Getter_weight_and_shape {
 	public:
 		void			Get_weight(float* w) { *w = *this->pWeight; };
@@ -69,7 +69,10 @@ namespace Segugio {
 	};
 
 
-
+	/*!
+	 * \brief Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning.
+	 * Only Potential_Exp_Shape can be inserted into these kind of nets.
+	 */
 	class Graph_Learnable : public Node::Node_factory {
 	public:
 		Graph_Learnable() : Node::Node_factory(), pLast_train_set(NULL) {};
@@ -83,10 +86,16 @@ namespace Segugio {
 			static void Get_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 			static void Set_w(const std::list<float>& w, Graph_Learnable* model);
 		};
+
+		/*!
+		 * \brief Returns the model size, i.e. the number of potentials constituting the net.
+		 */
 		size_t Get_model_size() { return this->Model_handlers.size(); };
 		virtual void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) = 0;
 		
-		//usefull for structural learning
+		/*!
+		 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
+		 */
 		void Get_structure(std::list<const Potential_Exp_Shape*>* result);
 	protected:
 	
@@ -114,31 +123,61 @@ namespace Segugio {
 	};
 
 
-
+	/*!
+	 * \brief This class describes a generic Random Field, not having a particular set of variables observed.
+	 */
 	class Random_Field : public Graph_Learnable {
 	public:
 		Random_Field() : Graph_Learnable() {};
 		Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file = "");
-
+		
+		/*!
+		 * \brief see Graph::Insert(Potential_Exp_Shape* pot)
+		 */
 		void Insert(Potential_Exp_Shape* pot) { this->Graph_Learnable::Insert(pot); };
-
+		/*!
+		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
+		 */
 		void Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars) { this->Node_factory::Set_Observation_Set_var(new_observed_vars); };
+		/*!
+		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
+		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
-
+		/*!
+		 * \brief Returns an estimation of the likelihood of the model 
+		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference: 
+		 * P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
+		 * @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
+		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model)
+		 * @param[out] result logarithmic estimation of the likelihood
+		 */
 		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	private:
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	};
 
 
-
+	/*!
+	 * \brief This class describes Conditional Random fields
+	 * \details Set_Observation_Set_var is depracated: the observed set of variables cannot be changed after construction.
+	 */
 	class Conditional_Random_Field : public Graph_Learnable {
 	public:
 		Conditional_Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file = "");
 		Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var);
-
-		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
-
+		
+		/*!
+		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
+		 */		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
+		/*!
+		 * \brief Returns an estimation of the likelihood of the model
+		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
+		 * P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
+		 * @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
+		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model, 
+		 * considering both the hidden and the observed sets).
+		 * @param[out] result logarithmic estimation of the likelihood
+		 */
 		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 		void Get_Likelihood_estimation_observations(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order); // estimation of P(X|structure of the net)
 	private:
