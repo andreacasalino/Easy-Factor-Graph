@@ -78,7 +78,7 @@ namespace Segugio {
 		/**
 		* @param[out] result the list of values matching the combinations to find sent as input
 		*
-		* @param[in] comb_to_search domain list of combinations (i.e. values of the domain domain) whose values are to find
+		* @param[in] comb_to_search domain list of combinations (i.e. values of the domain) whose values are to find
 		* @param[in] comb_to_search_var_order order of variables used for assembling the combinations to find
 		*/
 		void			Find_Comb_in_distribution(std::list<float>* result,
@@ -92,7 +92,7 @@ namespace Segugio {
 	protected:
 		I_Potential() {};
 
-		//This version returns the value in the distribution of this pot. matching with the comb_to_search. When there is no match for 
+		//This version returns the value in the distribution of this potential matching with the comb_to_search. When there is no match for 
 		//a certain comb, a NULL is put into result. 
 		static void			Find_Comb_in_distribution(std::list<I_Distribution_value*>* result,
 			const std::list<size_t*>& comb_to_search, const std::list<Categoric_var*>& comb_to_search_var_order, I_Potential* pot);

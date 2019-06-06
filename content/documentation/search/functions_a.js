@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['update',['Update',['../class_segugio_1_1_message___unary.html#a2462ecaa0742c7a8930a8064c46286ed',1,'Segugio::Message_Unary::Update(float *diff_to_previous, Potential *binary_to_merge, const std::list&lt; Potential * &gt; &amp;potential_to_merge, const bool &amp;Sum_or_MAP=true)'],['../class_segugio_1_1_message___unary.html#a547bac096a53e9f47ee791a4fd70ab97',1,'Segugio::Message_Unary::Update(float *diff_to_previous, Potential *binary_to_merge, Categoric_var *var_to_marginalize, const bool &amp;Sum_or_MAP=true)']]]
+  ['training_5fset',['Training_set',['../class_segugio_1_1_training__set.html#a86ff42d656986af038fc30f635c075fb',1,'Segugio::Training_set::Training_set(const std::string &amp;file_to_import)'],['../class_segugio_1_1_training__set.html#a92665e493ead149da8047ac4922f2c4c',1,'Segugio::Training_set::Training_set(const std::string &amp;file_to_import, const bool &amp;display_after_parsing)']]]
 ];

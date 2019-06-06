@@ -66,23 +66,6 @@ namespace Segugio {
 
 	}
 
-	void I_Learning_handler::Cumul_Log_Activation(float* result, size_t* val_to_consider, const list<Categoric_var*>& var_in_set) {
-
-		list<Potential::I_Distribution_value*> matching;
-		this->Find_Comb_in_distribution(&matching, list<size_t*>({ val_to_consider }), var_in_set, this->pwrapped);
-		float temp;
-
-#ifdef _DEBUG
-		if (matching.front() == NULL) {
-			abort();
-		}
-#endif // _DEBUG
-
-		matching.front()->Get_val(&temp);
-		*result += logf(temp);
-
-	}
-
 
 
 	class Unary_handler : public I_Learning_handler {
@@ -313,14 +296,6 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Get_Log_activation(float* result, size_t* Y, const std::list<Categoric_var*>& Y_var_order) {
-
-		*result = 0.f;
-		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
-			(*it)->Cumul_Log_Activation(result, Y, Y_var_order);
-
-	}
-
 	void Graph_Learnable::Get_structure(std::list<const Potential_Exp_Shape*>* result) {
 
 		result->clear();
@@ -369,27 +344,17 @@ namespace Segugio {
 
 	void Random_Field::Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
-		this->Set_Observation_Set_var(list<Categoric_var*>());
-		this->Set_Observation_Set_val(list<size_t>());
-		list<size_t> Y_MAP;
-		this->MAP_on_Hidden_set(&Y_MAP);
-		size_t* Y_MAP_malloc = list_2_malloc(Y_MAP);
+		float log_Z;
+		this->Get_Log_Z(&log_Z);
 
-		list<Categoric_var*> MAP_order;
-		this->Get_Actual_Hidden_Set(&MAP_order);
-
-		float MAP_activation; 
-		this->Get_Log_activation(&MAP_activation, Y_MAP_malloc, MAP_order);
-
-		*result = -MAP_activation * (float)comb_train_set.size();
-		float temp;
+		float E;
+		*result = 0.f;
 		for (auto it_set = comb_train_set.begin(); it_set != comb_train_set.end(); it_set++) {
-			this->Get_Log_activation(&temp, *it_set, comb_var_order);
-			*result += temp;
+			this->Eval_Log_Energy_function(&E, *it_set, comb_var_order);
+			*result += E;
 		}
-		//*result = 1.f / (float)comb_train_set->size();
-
-		free(Y_MAP_malloc);
+		*result = (1.f / (float)comb_train_set.max_size()) * (*result);
+		*result -=  log_Z;
 
 	}
 
@@ -608,51 +573,62 @@ namespace Segugio {
 
 	void Conditional_Random_Field::Get_Likelihood_estimation(float* result,const std::list<size_t*>& comb_train_set,const std::list<Categoric_var*>& comb_var_order) {
 
-		list<size_t> pos_of_observed_var;
+		list<size_t> pos_observ;
 		list<Categoric_var*> observed_var_temp;
 		this->Get_Actual_Observation_Set(&observed_var_temp);
-		find_observed_order(&pos_of_observed_var, observed_var_temp, comb_var_order);
-		list<size_t> obsv;
+		find_observed_order(&pos_observ, observed_var_temp, comb_var_order);
 
-		list<size_t> Y_MAP;
-		list<size_t>::iterator it_temp;
-		list<Categoric_var*> MAP_var_order;
-		this->Get_Actual_Hidden_Set(&MAP_var_order);
-		for (auto it_ob = observed_var_temp.begin(); it_ob != observed_var_temp.end(); it_ob++)
-			MAP_var_order.push_back(*it_ob);
-		size_t* Y_MAP_malloc = (size_t*)malloc(sizeof(size_t)* (MAP_var_order.size() + observed_var_temp.size()));
-
- 		size_t k;
-		float temp;
+		float log_Z;
+		float E;
 		*result = 0.f;
+		list<size_t> obsv_temp;
 		for (auto it_set = comb_train_set.begin(); it_set != comb_train_set.end(); it_set++) {
-			extract_observations(&obsv, *it_set, pos_of_observed_var);
-			this->Set_Observation_Set_val(obsv);
+			//compute logZ according to these observations
+			extract_observations(&obsv_temp, *it_set, pos_observ);
+			this->Set_Observation_Set_val(obsv_temp);
+			this->Get_Log_Z(&log_Z);
+			*result -= log_Z;
 
-			this->MAP_on_Hidden_set(&Y_MAP);
-			k = 0;
-			for (it_temp = Y_MAP.begin(); it_temp != Y_MAP.end(); it_temp++) {
-				Y_MAP_malloc[k] = *it_temp;
-				k++;
-			}
-			for (it_temp = obsv.begin(); it_temp != obsv.end(); it_temp++) {
-				Y_MAP_malloc[k] = *it_temp;
-				k++;
-			}
-
-			this->Get_Log_activation(&temp, Y_MAP_malloc, MAP_var_order);
-			*result -= temp;
-
-
-			this->Get_Log_activation(&temp, *it_set, comb_var_order);
-			*result += temp;
+			this->Eval_Log_Energy_function(&E, *it_set, comb_var_order);
+			*result += E;
 		}
-		//*result = 1.f / (float)comb_train_set->size();
-
-		free(Y_MAP_malloc);
+		*result = (1.f / (float)comb_train_set.max_size()) * (*result);
 
 	}
 
+	void Conditional_Random_Field::Get_Likelihood_Observations_estimation(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order) {
+
+		list<size_t> pos_observ;
+		list<Categoric_var*> observed_var_temp;
+		this->Get_Actual_Observation_Set(&observed_var_temp);
+		find_observed_order(&pos_observ, observed_var_temp, comb_var_order);
+
+		list<size_t> MAP_val;
+		extract_observations(&MAP_val, comb_observations, pos_observ);
+		this->Set_Observation_Set_val(MAP_val);
+
+		float E;
+		list<Categoric_var*> Hidden_vars;
+		this->Get_Actual_Hidden_Set(&Hidden_vars);
+		list<Categoric_var*> MAP_var = observed_var_temp;
+		for (auto it = Hidden_vars.begin(); it != Hidden_vars.end(); it++)
+			MAP_var.push_back(*it);
+		list<size_t> Hidden_MAP;
+		this->MAP_on_Hidden_set(&Hidden_MAP);
+		for (auto it = Hidden_MAP.begin(); it != Hidden_MAP.end(); it++)
+			MAP_val.push_back(*it);
+		this->Eval_Log_Energy_function(&E, MAP_val, MAP_var);
+
+		float Z_tot;
+		this->Node_factory::Get_Log_Z(&Z_tot);
+		this->Set_Observation_Set_var(observed_var_temp);
+
+		*result = E;
+		*result -= Z_tot;
+
+	}
+
+	/*
 	template<typename T>
 	void append_b_to_a(list<T>* a, const list<T>& b) {
 
@@ -694,7 +670,12 @@ namespace Segugio {
 		*result += temp;
 		free(temp_mall);
 
-	}
+	}*/
 
+	void Conditional_Random_Field::Get_Log_Z(float* Z) {
+
+		this->Recompute_Log_Z(Z); //computations are done considering the current observations set
+
+	}
 
 }

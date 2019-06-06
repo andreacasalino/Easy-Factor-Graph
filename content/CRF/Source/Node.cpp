@@ -917,4 +917,139 @@ namespace Segugio {
 
 	}
 
+	void Node::Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		*result = 0.f;
+		list<float> matching;
+
+		//binary potentials
+		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
+			(*it)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+#ifdef _DEBUG
+			if (matching.size() != 1) abort();
+#endif
+			if (matching.front() != 0.f) *result += logf(matching.front());
+		}
+
+		//permanent unary potentials
+		list<Potential*>::iterator it_U;
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
+				(*it_U)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+#ifdef _DEBUG
+				if (matching.size() != 1) abort();
+#endif
+				if (matching.front() != 0.f) *result += logf(matching.front());
+			}
+		}
+
+	}
+
+	void Node::Node_factory::Eval_Log_Energy_function(float* result, const list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		size_t* temp = (size_t*)malloc(combination.size() * sizeof(size_t));
+		size_t k = 0;
+		for (auto it = combination.begin(); it != combination.end(); it++) {
+			temp[k] = *it;
+			k++;
+		}
+
+		this->Eval_Log_Energy_function(result, temp, var_order_in_combination);
+
+		free(temp);
+
+	}
+
+	void Node::Node_factory::Get_Log_Z(float* Z) {
+
+		this->Set_Observation_Set_var({});
+		this->Set_Observation_Set_val({});
+
+		this->Recompute_Log_Z(Z);
+
+	}
+
+	void get_pos_of_max(size_t* p, const list<float>& L) {
+
+		*p = 0;
+		const float* max_val = &L.front();
+		auto it = L.begin(); it++;
+		size_t k = 1;
+		for (it; it != L.end(); it++) {
+			if (*it > *max_val) {
+				*p = k;
+				max_val = &(*it);
+			}
+			k++;
+		}
+
+	}
+	size_t* merge_vals(const list<size_t>& L1, const list<size_t>& L2) {
+
+		size_t* res = (size_t*)malloc((L1.size() + L2.size()) * sizeof(size_t));
+		size_t k = 0;
+		for (auto it = L1.begin(); it != L1.end(); it++) {
+			res[k] = *it;
+			k++;
+		}
+		for (auto it = L2.begin(); it != L2.end(); it++) {
+			res[k] = *it;
+			k++;
+		}
+
+		return res;
+
+	}
+	void Node::Node_factory::Recompute_Log_Z(float* result) {
+
+		//take the first hidden variable in the set
+		Categoric_var* Y = this->Last_hidden_clusters.front().front()->pVariable;
+
+		//compute marginal probabilities P(Y)
+		list<float> probs;
+		this->Get_marginal_distribution(&probs, Y);
+		size_t v_max;
+		get_pos_of_max(&v_max, probs);
+
+		//set Y = v_max as an additional evidence
+		list<Categoric_var*> attual_obs;
+		this->Get_Actual_Observation_Set(&attual_obs);
+		list<size_t>		 attual_ob_vals;
+		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++)
+			attual_ob_vals.push_back(it->Value);
+		attual_obs.push_back(Y);
+		attual_ob_vals.push_back(v_max);
+		this->Set_Observation_Set_var(attual_obs);
+		this->Set_Observation_Set_val(attual_ob_vals);
+
+		float E;
+
+		size_t* comb_temp;
+		list<Categoric_var*> comb_order;
+		if (this->Nodes.size() == attual_obs.size()) {
+			comb_order = attual_obs;
+			comb_temp = merge_vals(attual_ob_vals, {});
+		}
+		else {
+			list<size_t> Y_MAP;
+			this->MAP_on_Hidden_set(&Y_MAP);
+
+			this->Get_Actual_Hidden_Set(&comb_order);
+			for (auto it = attual_obs.begin(); it != attual_obs.end(); it++)
+				comb_order.push_back(*it);
+			comb_temp = merge_vals(Y_MAP, attual_ob_vals);
+		}
+
+		this->Eval_Log_Energy_function(&E, comb_temp, comb_order);
+		free(comb_temp);
+		*result = E - logf(probs.front());
+
+		//clean up
+		attual_obs.pop_back();
+		attual_ob_vals.pop_back();
+		this->Set_Observation_Set_var(attual_obs);
+		this->Set_Observation_Set_val(attual_ob_vals);
+
+	}
+
 }

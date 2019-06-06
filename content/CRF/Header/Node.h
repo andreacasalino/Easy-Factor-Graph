@@ -83,7 +83,24 @@ namespace Segugio {
 			/** \brief Returns the value to adopt when performing a loopy belief propagation
 			*/
 			void					  Set_Iteration_4_belief_propagation(const unsigned int& iter_to_use);
-
+			/** \brief Returns the logartihmic value of the energy function.
+			* \details Energy function E=Pot_1(Y_1,2,....,n) * Pot_2(Y_1,2,....,n) .... * Pot_m(Y_1,2,....,n). The combinations passed as input
+			* must contains values for all the variables present in this graph.
+			* @param[out] result
+			* @param[in] combination set of values in the combination for which the energy function has to be eveluated
+			* @param[in] var_order_in_combination order of variables considered when assembling combination. They must be references 
+			* to the variables actually wrapped by this graph.
+			*/
+			void Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination);
+			/** \brief Same as , passing a list instead of an array Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination)
+			*/
+			void Eval_Log_Energy_function(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
+			/** \brief Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function. 
+			* \details For generic graphs, Z is a function Z(model), while for conditional random field is a function Z(model, X_observations). 
+			* Z is always recomputed, considering actual structure of the net: avoid calling multiple times for generic graphs don't varying between
+			* two intermediate calls.
+			*/
+			virtual void			  Get_Log_Z(float* Z);
 		protected:
 			Node_factory() : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000) {};
 			//Import XML is not inlined in constructor since contains a call to Insert, which is virtual
@@ -217,8 +234,9 @@ namespace Segugio {
 			void					  Set_Observation_Set_val(const std::list<size_t>& new_observed_vals); //assuming the same observed set last time
 			void					  Belief_Propagation(const bool& sum_or_MAP);
 
-
 			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
+
+			void					  Recompute_Log_Z(float* result);
 		private:
 			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);
 			void					  Recompute_clusters();

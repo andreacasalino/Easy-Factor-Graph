@@ -129,6 +129,16 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a049920a9076d89737bb4793e4795e5e1">Set_Iteration_4_belief_propagation</a> (const unsigned int &amp;iter_to_use)</td></tr>
 <tr class="memdesc:a049920a9076d89737bb4793e4795e5e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value to adopt when performing a loopy belief propagation. <br /></td></tr>
 <tr class="separator:a049920a9076d89737bb4793e4795e5e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20ea540a53980f69398ead5613dcc669"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669">Eval_Log_Energy_function</a> (float *result, size_t *combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
+<tr class="memdesc:a20ea540a53980f69398ead5613dcc669"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the logartihmic value of the energy function.  <a href="#a20ea540a53980f69398ead5613dcc669">More...</a><br /></td></tr>
+<tr class="separator:a20ea540a53980f69398ead5613dcc669"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aceafa7587a04e516fe7413fc5bbd6972"><td class="memItemLeft" align="right" valign="top"><a id="aceafa7587a04e516fe7413fc5bbd6972"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aceafa7587a04e516fe7413fc5bbd6972">Eval_Log_Energy_function</a> (float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
+<tr class="memdesc:aceafa7587a04e516fe7413fc5bbd6972"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as , passing a list instead of an array <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a> <br /></td></tr>
+<tr class="separator:aceafa7587a04e516fe7413fc5bbd6972"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a694d83be785f93fafea6c69c69d9dd3a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a694d83be785f93fafea6c69c69d9dd3a">Get_Log_Z</a> (float *Z)</td></tr>
+<tr class="memdesc:a694d83be785f93fafea6c69c69d9dd3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function.  <a href="#a694d83be785f93fafea6c69c69d9dd3a">More...</a><br /></td></tr>
+<tr class="separator:a694d83be785f93fafea6c69c69d9dd3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -168,10 +178,57 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Belief_Propagation</b
 <tr class="memitem:ad12022d0ebfaa8b51df40dd4f70f221a"><td class="memItemLeft" align="right" valign="top"><a id="ad12022d0ebfaa8b51df40dd4f70f221a"></a>
 size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_in_case_is_in_observed_set</b> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var)</td></tr>
 <tr class="separator:ad12022d0ebfaa8b51df40dd4f70f221a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62eb94f9b37a5a67d0395b2cc7bc91a3"><td class="memItemLeft" align="right" valign="top"><a id="a62eb94f9b37a5a67d0395b2cc7bc91a3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Recompute_Log_Z</b> (float *result)</td></tr>
+<tr class="separator:a62eb94f9b37a5a67d0395b2cc7bc91a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for describing a net: set of nodes representing random variables. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a20ea540a53980f69398ead5613dcc669"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20ea540a53980f69398ead5613dcc669">&#9670;&nbsp;</a></span>Eval_Log_Energy_function()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Node::Node_factory::Eval_Log_Energy_function </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>combination</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>var_order_in_combination</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the logartihmic value of the energy function. </p>
+<p>Energy function E=Pot_1(Y_1,2,....,n) * Pot_2(Y_1,2,....,n) .... * Pot_m(Y_1,2,....,n). The combinations passed as input must contains values for all the variables present in this graph. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td></td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">combination</td><td>set of values in the combination for which the energy function has to be eveluated </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_order_in_combination</td><td>order of variables considered when assembling combination. They must be references to the variables actually wrapped by this graph. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a151ad19a61e17552a52e57017c43700f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a151ad19a61e17552a52e57017c43700f">&#9670;&nbsp;</a></span>Find_Variable() <span class="overload">[1/2]</span></h2>
 
@@ -229,6 +286,35 @@ size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a694d83be785f93fafea6c69c69d9dd3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a694d83be785f93fafea6c69c69d9dd3a">&#9670;&nbsp;</a></span>Get_Log_Z()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Node::Node_factory::Get_Log_Z </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>Z</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function. </p>
+<p>For generic graphs, Z is a function Z(model), while for conditional random field is a function Z(model, X_observations). Z is always recomputed, considering actual structure of the net: avoid calling multiple times for generic graphs don't varying between two intermediate calls. </p>
 
 </div>
 </div>

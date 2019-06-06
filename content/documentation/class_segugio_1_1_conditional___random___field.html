@@ -103,9 +103,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:aa0c0699c704aaa4163a27c4d319eb037"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_conditional___random___field.html#aa0c0699c704aaa4163a27c4d319eb037">Get_Likelihood_estimation</a> (float *result, const std::list&lt; size_t * &gt; &amp;comb_train_set, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var_order)</td></tr>
 <tr class="memdesc:aa0c0699c704aaa4163a27c4d319eb037"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an estimation of the likelihood of the model.  <a href="#aa0c0699c704aaa4163a27c4d319eb037">More...</a><br /></td></tr>
 <tr class="separator:aa0c0699c704aaa4163a27c4d319eb037"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ba9863fb3196bff66a9488f85cd72f2"><td class="memItemLeft" align="right" valign="top"><a id="a0ba9863fb3196bff66a9488f85cd72f2"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_Likelihood_estimation_observations</b> (float *result, size_t *comb_observations, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var_order)</td></tr>
-<tr class="separator:a0ba9863fb3196bff66a9488f85cd72f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac012edb9de9bd0e34a67897532d98e4b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_conditional___random___field.html#ac012edb9de9bd0e34a67897532d98e4b">Get_Likelihood_Observations_estimation</a> (float *result, size_t *comb_observations, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var_order)</td></tr>
+<tr class="memdesc:ac012edb9de9bd0e34a67897532d98e4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an estimation of the likelihood of a particular set of observations given the structure of the model: P(X|model)  <a href="#ac012edb9de9bd0e34a67897532d98e4b">More...</a><br /></td></tr>
+<tr class="separator:ac012edb9de9bd0e34a67897532d98e4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_segugio_1_1_graph___learnable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_graph___learnable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a></td></tr>
 <tr class="memitem:a51bc1d5e324559bb8efd2c204d9700d0 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a51bc1d5e324559bb8efd2c204d9700d0"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_graph___learnable.html#a51bc1d5e324559bb8efd2c204d9700d0">Get_model_size</a> ()</td></tr>
@@ -151,13 +151,17 @@ unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" hr
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a049920a9076d89737bb4793e4795e5e1">Set_Iteration_4_belief_propagation</a> (const unsigned int &amp;iter_to_use)</td></tr>
 <tr class="memdesc:a049920a9076d89737bb4793e4795e5e1 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the value to adopt when performing a loopy belief propagation. <br /></td></tr>
 <tr class="separator:a049920a9076d89737bb4793e4795e5e1 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20ea540a53980f69398ead5613dcc669 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669">Eval_Log_Energy_function</a> (float *result, size_t *combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
+<tr class="memdesc:a20ea540a53980f69398ead5613dcc669 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the logartihmic value of the energy function.  <a href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669">More...</a><br /></td></tr>
+<tr class="separator:a20ea540a53980f69398ead5613dcc669 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aceafa7587a04e516fe7413fc5bbd6972 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="aceafa7587a04e516fe7413fc5bbd6972"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aceafa7587a04e516fe7413fc5bbd6972">Eval_Log_Energy_function</a> (float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
+<tr class="memdesc:aceafa7587a04e516fe7413fc5bbd6972 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as , passing a list instead of an array <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a> <br /></td></tr>
+<tr class="separator:aceafa7587a04e516fe7413fc5bbd6972 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_methods_class_segugio_1_1_graph___learnable"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_segugio_1_1_graph___learnable')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a></td></tr>
-<tr class="memitem:a76d57bb9ce70890d15ce2d207bd2cf36 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a76d57bb9ce70890d15ce2d207bd2cf36"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_Log_activation</b> (float *result, size_t *Y, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;Y_var_order)</td></tr>
-<tr class="separator:a76d57bb9ce70890d15ce2d207bd2cf36 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1574d47c7e757b16fac3ce5c120a30b9 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a1574d47c7e757b16fac3ce5c120a30b9"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot)</td></tr>
 <tr class="separator:a1574d47c7e757b16fac3ce5c120a30b9 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -195,6 +199,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Belief_Propagation</b
 <tr class="memitem:ad12022d0ebfaa8b51df40dd4f70f221a inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="ad12022d0ebfaa8b51df40dd4f70f221a"></a>
 size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_in_case_is_in_observed_set</b> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var)</td></tr>
 <tr class="separator:ad12022d0ebfaa8b51df40dd4f70f221a inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62eb94f9b37a5a67d0395b2cc7bc91a3 inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a62eb94f9b37a5a67d0395b2cc7bc91a3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Recompute_Log_Z</b> (float *result)</td></tr>
+<tr class="separator:a62eb94f9b37a5a67d0395b2cc7bc91a3 inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_attribs_class_segugio_1_1_graph___learnable"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_segugio_1_1_graph___learnable')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a></td></tr>
 <tr class="memitem:a02a5ac62908074100fba0e8718e0dccd inherit pro_attribs_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a02a5ac62908074100fba0e8718e0dccd"></a>
 std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">I_Learning_handler</a> * &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>Model_handlers</b></td></tr>
@@ -255,6 +262,50 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 </dl>
 
 <p>Implements <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a>.</p>
+
+</div>
+</div>
+<a id="ac012edb9de9bd0e34a67897532d98e4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac012edb9de9bd0e34a67897532d98e4b">&#9670;&nbsp;</a></span>Get_Likelihood_Observations_estimation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Conditional_Random_Field::Get_Likelihood_Observations_estimation </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>result</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t *&#160;</td>
+          <td class="paramname"><em>comb_observations</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>comb_var_order</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns an estimation of the likelihood of a particular set of observations given the structure of the model: P(X|model) </p>
+<p>useful for structural learning </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">comb_observations</td><td>combination of observations to consider </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">comb_var_order</td><td>list of variables describing how the values in comb_observations are ordered (they must refere to the variables wrapped by this model). </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>logarithmic estimation of the likelihood </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

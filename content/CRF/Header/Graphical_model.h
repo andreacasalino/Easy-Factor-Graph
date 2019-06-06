@@ -42,8 +42,13 @@ namespace Segugio {
 		* a potential which involves that variable).
 		*/
 		void Insert(Potential_Exp_Shape* pot) { this->Node_factory::Insert_with_size_check<Potential_Exp_Shape>(pot); };
-
+		/*!
+		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
+		 */
 		void Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars) { this->Node_factory::Set_Observation_Set_var(new_observed_vars); };
+		/*!
+		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
+		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
 	};
 
@@ -57,7 +62,6 @@ namespace Segugio {
 		void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 		virtual void    Get_grad_beta_part(float* beta) = 0; //according to last performed belief propagation
 
-		void			Cumul_Log_Activation(float* result, size_t* val_to_consider, const std::list<Categoric_var*>& var_in_set);
 		const Potential_Exp_Shape* get_wrapped_exp_pot() { return this->pwrapped; };
 	protected:
 		I_Learning_handler(Potential_Exp_Shape* pot_to_handle);
@@ -98,9 +102,6 @@ namespace Segugio {
 		 */
 		void Get_structure(std::list<const Potential_Exp_Shape*>* result);
 	protected:
-	
-		void Get_Log_activation(float* result, size_t* Y, const std::list<Categoric_var*>& Y_var_order);
-
 		void Insert(Potential_Exp_Shape* pot);
 		void Insert(Potential_Shape* pot);
 
@@ -168,7 +169,8 @@ namespace Segugio {
 		
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
-		 */		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
+		 */		
+		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
 		/*!
 		 * \brief Returns an estimation of the likelihood of the model
 		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
@@ -179,9 +181,17 @@ namespace Segugio {
 		 * @param[out] result logarithmic estimation of the likelihood
 		 */
 		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
-		void Get_Likelihood_estimation_observations(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order); // estimation of P(X|structure of the net)
+		/*!
+		 * \brief Returns an estimation of the likelihood of a particular set of observations given the structure of the model: P(X|model)
+		 * \details useful for structural learning
+		 * @param[in] comb_observations combination of observations to consider
+		 * @param[in] comb_var_order list of variables describing how the values in comb_observations are ordered (they must refere to the variables wrapped by this model).
+		 * @param[out] result logarithmic estimation of the likelihood
+		 */
+		void Get_Likelihood_Observations_estimation(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order);
 	private:
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
+		virtual void			  Get_Log_Z(float* Z);
 	};
 
 }

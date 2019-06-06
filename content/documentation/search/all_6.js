@@ -9,6 +9,8 @@ var searchData=
   ['get_5finvolved_5fvar_5fsafe',['Get_involved_var_safe',['../class_segugio_1_1_i___potential.html#a5356038aa67433b11d604f3e2df02158',1,'Segugio::I_Potential']]],
   ['get_5fiteration_5f4_5fbelief_5fpropagation',['Get_Iteration_4_belief_propagation',['../class_segugio_1_1_node_1_1_node__factory.html#a582379ec176fc28b7f8666823691f1d0',1,'Segugio::Node::Node_factory']]],
   ['get_5flikelihood_5festimation',['Get_Likelihood_estimation',['../class_segugio_1_1_random___field.html#a183124e53cd2b2e114dc4ec3c861b504',1,'Segugio::Random_Field::Get_Likelihood_estimation()'],['../class_segugio_1_1_conditional___random___field.html#aa0c0699c704aaa4163a27c4d319eb037',1,'Segugio::Conditional_Random_Field::Get_Likelihood_estimation()']]],
+  ['get_5flikelihood_5fobservations_5festimation',['Get_Likelihood_Observations_estimation',['../class_segugio_1_1_conditional___random___field.html#ac012edb9de9bd0e34a67897532d98e4b',1,'Segugio::Conditional_Random_Field']]],
+  ['get_5flog_5fz',['Get_Log_Z',['../class_segugio_1_1_node_1_1_node__factory.html#a694d83be785f93fafea6c69c69d9dd3a',1,'Segugio::Node::Node_factory']]],
   ['get_5fmarginal_5fdistribution',['Get_marginal_distribution',['../class_segugio_1_1_node_1_1_node__factory.html#a1d7545e127e36e8f3ca05667a97e6577',1,'Segugio::Node::Node_factory']]],
   ['get_5fmarginals',['Get_marginals',['../class_segugio_1_1_potential.html#aab35ccb0f9ac2a53dfaf1d1cae858d56',1,'Segugio::Potential']]],
   ['get_5fmodel_5fsize',['Get_model_size',['../class_segugio_1_1_graph___learnable.html#a51bc1d5e324559bb8efd2c204d9700d0',1,'Segugio::Graph_Learnable']]],
