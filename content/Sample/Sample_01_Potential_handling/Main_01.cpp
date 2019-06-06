@@ -17,6 +17,7 @@ using namespace Segugio;
 void Print_Tableau(const list<Potential*>& shapes, const string& name_file);
 
 int main() {
+
 	///////////////////////////////////
 	//			part 01				 //
 	///////////////////////////////////

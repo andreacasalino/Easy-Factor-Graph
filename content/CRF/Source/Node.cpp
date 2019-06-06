@@ -193,10 +193,20 @@ namespace Segugio {
 
 	Potential_Shape* Import_shape(const string& prefix, XML_reader::Tag_readable& tag, const list<Categoric_var*>& vars) {
 
-		Potential_Shape* shape = new Potential_Shape(vars);
-
-		if (tag.Exist_Field("Source"))  shape->Import(prefix + tag.Get_value("Source"));
+		if (tag.Exist_Field("Source"))
+			return new Potential_Shape(vars, prefix + tag.Get_value("Source"));
+		else if (tag.Exist_Field("Correlation")) {
+			if (tag.Get_value("Correlation").compare("T") == 0)
+				return new Potential_Shape(vars, true);
+			else if(tag.Get_value("Correlation").compare("F") == 0)
+				return new Potential_Shape(vars, false);
+			else {
+				system("ECHO invalid correlation type");
+				abort();
+			}
+		}
 		else {
+			Potential_Shape* shape = new Potential_Shape(vars);
 			list<XML_reader::Tag_readable> distr_vals;
 			tag.Get_Nested("Distr_val", &distr_vals);
 			list<string> indices_raw;
@@ -213,9 +223,8 @@ namespace Segugio {
 				shape->Add_value(indices, (float)atof(distr_vals.front().Get_value("D").c_str()));
 				distr_vals.pop_front();
 			}
+			return shape;
 		}
-
-		return shape;
 
 	};
 	void Node::Node_factory::Import_from_XML(XML_reader* reader, const std::string& prefix_config_xml_file) {
@@ -506,8 +515,6 @@ namespace Segugio {
 		}
 
 	}
-
-
 
 	void Node::Node_factory::Belief_Propagation(const bool& sum_or_MAP) {
 
@@ -917,6 +924,19 @@ namespace Segugio {
 
 	}
 
+	void Node::Node_factory::Get_Observation_Set_val(std::list<size_t>* result) {
+
+		if (this->mState != 2) {
+			system("ECHO you cannot get observation vals before setting the values");
+			abort();
+		}
+
+		result->clear();
+		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++)
+			result->push_back(it->Value);
+
+	}
+
 	void Node::Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination) {
 
 		*result = 0.f;
@@ -962,10 +982,16 @@ namespace Segugio {
 
 	void Node::Node_factory::Get_Log_Z(float* Z) {
 
-		this->Set_Observation_Set_var({});
-		this->Set_Observation_Set_val({});
+		list<size_t>		 val_ob_old;
+		this->Get_Observation_Set_val(&val_ob_old);
+		list<Categoric_var*> var_ob_old;
 
-		this->Recompute_Log_Z(Z);
+		list<size_t>		 fake_vals;
+		list<Categoric_var*> fake_vars;
+		this->Recompute_Log_Z(Z, fake_vals, fake_vars);
+
+		this->Set_Observation_Set_var(var_ob_old);
+		this->Set_Observation_Set_val(val_ob_old);
 
 	}
 
@@ -984,23 +1010,17 @@ namespace Segugio {
 		}
 
 	}
-	size_t* merge_vals(const list<size_t>& L1, const list<size_t>& L2) {
+	template<typename T>
+	void append_b_to_a(list<T>* a, const list<T>& b) {
 
-		size_t* res = (size_t*)malloc((L1.size() + L2.size()) * sizeof(size_t));
-		size_t k = 0;
-		for (auto it = L1.begin(); it != L1.end(); it++) {
-			res[k] = *it;
-			k++;
-		}
-		for (auto it = L2.begin(); it != L2.end(); it++) {
-			res[k] = *it;
-			k++;
-		}
-
-		return res;
+		for (auto it = b.begin(); it!=b.end(); it++)
+			a->push_back(*it);
 
 	}
-	void Node::Node_factory::Recompute_Log_Z(float* result) {
+	void Node::Node_factory::Recompute_Log_Z(float* result, std::list<size_t>& new_observed_vals, std::list<Categoric_var*>& new_observed_vars) {
+
+		this->Set_Observation_Set_var(new_observed_vars);
+		this->Set_Observation_Set_val(new_observed_vals);
 
 		//take the first hidden variable in the set
 		Categoric_var* Y = this->Last_hidden_clusters.front().front()->pVariable;
@@ -1012,43 +1032,36 @@ namespace Segugio {
 		get_pos_of_max(&v_max, probs);
 
 		//set Y = v_max as an additional evidence
-		list<Categoric_var*> attual_obs;
-		this->Get_Actual_Observation_Set(&attual_obs);
-		list<size_t>		 attual_ob_vals;
-		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++)
-			attual_ob_vals.push_back(it->Value);
-		attual_obs.push_back(Y);
-		attual_ob_vals.push_back(v_max);
-		this->Set_Observation_Set_var(attual_obs);
-		this->Set_Observation_Set_val(attual_ob_vals);
+		new_observed_vars.push_back(Y);
+		new_observed_vals.push_back(v_max);
+		this->Set_Observation_Set_var(new_observed_vars);
+		this->Set_Observation_Set_val(new_observed_vals);
 
 		float E;
 
-		size_t* comb_temp;
 		list<Categoric_var*> comb_order;
-		if (this->Nodes.size() == attual_obs.size()) {
-			comb_order = attual_obs;
-			comb_temp = merge_vals(attual_ob_vals, {});
-		}
+		if (this->Nodes.size() == new_observed_vars.size())
+			this->Eval_Log_Energy_function(&E, new_observed_vals, new_observed_vars);		
+
 		else {
-			list<size_t> Y_MAP;
-			this->MAP_on_Hidden_set(&Y_MAP);
+			list<size_t> comb_val;
+			this->MAP_on_Hidden_set(&comb_val);
+			list<Categoric_var*> comb_var;
+			this->Get_Actual_Hidden_Set(&comb_var); 
 
-			this->Get_Actual_Hidden_Set(&comb_order);
-			for (auto it = attual_obs.begin(); it != attual_obs.end(); it++)
-				comb_order.push_back(*it);
-			comb_temp = merge_vals(Y_MAP, attual_ob_vals);
+			append_b_to_a(&comb_val , new_observed_vals);
+			append_b_to_a(&comb_var, new_observed_vars);
+
+			this->Eval_Log_Energy_function(&E, comb_val, comb_var);
 		}
 
-		this->Eval_Log_Energy_function(&E, comb_temp, comb_order);
-		free(comb_temp);
 		*result = E - logf(probs.front());
 
 		//clean up
-		attual_obs.pop_back();
-		attual_ob_vals.pop_back();
-		this->Set_Observation_Set_var(attual_obs);
-		this->Set_Observation_Set_val(attual_ob_vals);
+		new_observed_vars.pop_back();
+		new_observed_vals.pop_back();
+		this->Set_Observation_Set_var(new_observed_vars);
+		this->Set_Observation_Set_val(new_observed_vals);
 
 	}
 

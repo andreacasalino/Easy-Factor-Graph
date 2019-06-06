@@ -153,14 +153,16 @@ namespace Segugio {
 		*/
 		Potential_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read);
 
-		/** \details Use this to create a shape for which a simple correlation exists among the set of variables.
-		* All variables must have the same size. The distribution related to this shape assumes 0 for all values
-		* apart from the following combinations: {0,0,...,0}; {1,1,..,1}; ...
+		/** \brief Returns simple correlating or anti_correlating shapes. 
+		* \details A simple correlating shape is a distribution having a value of 1 for every combinations
+		* {0,0,...,0}; {1,1,...,1} etc. and 0 for all other combinations.
+		* A simple anti_correlating shape is a distribution having a value of 0 for every combinations
+		* {0,0,...,0}; {1,1,...,1} etc. and 1 for all other combinations.
 		*
-		* @param[in] var_involved variables involved in the domain of this variables
-		* @param[in] file_to_read textual file to read containing the values for the image
+		* @param[in] var_involved variables involved in the domain of this variables: they must have all the same size
+		* @param[in] correlated_or_not when true produce a simple correlating shape, when false produce a anti_correlating function
 		*/
-		Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& assume_simple_correlation);
+		Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& correlated_or_not);
 
 		/** \details Use this constructor for cloning a shape, but considering a different set of variables.
 		* Variables in var_involved must be equal in number to those in the potential to clone and must have 

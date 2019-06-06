@@ -628,53 +628,13 @@ namespace Segugio {
 
 	}
 
-	/*
-	template<typename T>
-	void append_b_to_a(list<T>* a, const list<T>& b) {
-
-		for (auto it = b.begin(); it != b.end(); it++)
-			a->push_back(*it);
-
-	};
-	void Conditional_Random_Field::Get_Likelihood_estimation_observations(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order) {
-
-		size_t* temp_mall;
-		list<size_t> XY_MAP; list<Categoric_var*> XY_MAP_var;
-		list<size_t> X_real_Y_MAP; list<Categoric_var*> X_real_Y_MAP_var;
-		list<Categoric_var*> obs_var;
-		this->Get_Actual_Observation_Set(&obs_var);
-
-		this->Set_Observation_Set_var({});
-		this->Set_Observation_Set_val({});
-		this->MAP_on_Hidden_set(&XY_MAP);
-		this->Get_Actual_Hidden_Set(&XY_MAP_var);
-		temp_mall = list_2_malloc(XY_MAP);
-		this->Get_Log_activation(result, temp_mall, XY_MAP_var);
-		*result *= -1.f;
-		free(temp_mall);
-
-
-		list<size_t> pos_of_observed_var;
-		find_observed_order(&pos_of_observed_var, obs_var, comb_var_order);
-		list<size_t> obs_temp;
-		extract_observations(&obs_temp, comb_observations, pos_of_observed_var);
-		this->Set_Observation_Set_var(obs_var);
-		this->Set_Observation_Set_val(obs_temp);
-		this->Get_Actual_Hidden_Set(&X_real_Y_MAP_var);
-		this->MAP_on_Hidden_set(&X_real_Y_MAP);
-		append_b_to_a(&X_real_Y_MAP_var, obs_var);
-		append_b_to_a(&X_real_Y_MAP, obs_temp);
-		temp_mall = list_2_malloc(X_real_Y_MAP);
-		float temp;
-		this->Get_Log_activation(&temp, temp_mall, X_real_Y_MAP_var);
-		*result += temp;
-		free(temp_mall);
-
-	}*/
-
 	void Conditional_Random_Field::Get_Log_Z(float* Z) {
 
-		this->Recompute_Log_Z(Z); //computations are done considering the current observations set
+		list<size_t>		 val_ob_old;
+		this->Get_Observation_Set_val(&val_ob_old);
+		list<Categoric_var*> var_ob_old;
+
+		this->Recompute_Log_Z(Z, val_ob_old, var_ob_old);
 
 	}
 

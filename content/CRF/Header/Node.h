@@ -236,7 +236,8 @@ namespace Segugio {
 
 			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
 
-			void					  Recompute_Log_Z(float* result);
+			void					  Get_Observation_Set_val(std::list<size_t>* result);
+			void					  Recompute_Log_Z(float* result, std::list<size_t>& new_observed_vals, std::list<Categoric_var*>& new_observed_vars);
 		private:
 			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);
 			void					  Recompute_clusters();

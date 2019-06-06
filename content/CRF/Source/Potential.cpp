@@ -310,7 +310,7 @@ namespace Segugio {
 
 	}
 
-	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& assume_simple_correlation) :
+	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& correlated_or_not) :
 		Potential_Shape(var_involved) {
 
 		if (var_involved.size() <= 1) {
@@ -328,12 +328,31 @@ namespace Segugio {
 		}
 
 		list<size_t> comb;
-		size_t kk;
-		for (size_t k = 0; k < Size; k++) {
-			comb.clear();
-			for (kk = 0; kk < var_involved.size(); kk++)
-				comb.push_back(k);
-			this->Add_value(comb, 1.f);
+		if (correlated_or_not) {
+			size_t kk;
+			for (size_t k = 0; k < Size; k++) {
+				comb.clear();
+				for (kk = 0; kk < var_involved.size(); kk++)
+					comb.push_back(k);
+				this->Add_value(comb, 1.f);
+			}
+		}
+		else {
+			this->Set_ones();
+			size_t k, L = var_involved.size();
+			bool are_same;
+			for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++) {
+				are_same = true;
+				for (k = 1; k < L; k++) {
+					if ((*it)->Get_indeces()[k] != (*it)->Get_indeces()[0]) {
+						are_same = false;
+						break;
+					}
+				}
+
+				if (are_same)
+					(*it)->Set_val(0.f);
+			}
 		}
 
 	}

@@ -95,8 +95,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:abc062204c3310b9fbf1eb6825091f256"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2c30939ac733790e0f2ba3ec260df24"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#af2c30939ac733790e0f2ba3ec260df24">Potential_Shape</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_involved, const std::string &amp;file_to_read)</td></tr>
 <tr class="separator:af2c30939ac733790e0f2ba3ec260df24"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aff0d7c75dc0d3610884167b3333f5578"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#aff0d7c75dc0d3610884167b3333f5578">Potential_Shape</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_involved, const bool &amp;assume_simple_correlation)</td></tr>
-<tr class="separator:aff0d7c75dc0d3610884167b3333f5578"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aca4e44bf29b49896fb2c1433173e1f90"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#aca4e44bf29b49896fb2c1433173e1f90">Potential_Shape</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_involved, const bool &amp;correlated_or_not)</td></tr>
+<tr class="memdesc:aca4e44bf29b49896fb2c1433173e1f90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns simple correlating or anti_correlating shapes.  <a href="#aca4e44bf29b49896fb2c1433173e1f90">More...</a><br /></td></tr>
+<tr class="separator:aca4e44bf29b49896fb2c1433173e1f90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0cc6505506a5b36d7c23ee791e26e9a0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#a0cc6505506a5b36d7c23ee791e26e9a0">Potential_Shape</a> (const <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *to_copy, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_involved)</td></tr>
 <tr class="separator:a0cc6505506a5b36d7c23ee791e26e9a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb38a9459d31eaf120b2eff64fe2cb2a"><td class="memItemLeft" align="right" valign="top"><a id="aeb38a9459d31eaf120b2eff64fe2cb2a"></a>
@@ -227,8 +228,8 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_entire_dom
 
 </div>
 </div>
-<a id="aff0d7c75dc0d3610884167b3333f5578"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aff0d7c75dc0d3610884167b3333f5578">&#9670;&nbsp;</a></span>Potential_Shape() <span class="overload">[3/4]</span></h2>
+<a id="aca4e44bf29b49896fb2c1433173e1f90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aca4e44bf29b49896fb2c1433173e1f90">&#9670;&nbsp;</a></span>Potential_Shape() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -243,7 +244,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_entire_dom
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool &amp;&#160;</td>
-          <td class="paramname"><em>assume_simple_correlation</em>&#160;</td>
+          <td class="paramname"><em>correlated_or_not</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -252,11 +253,13 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_entire_dom
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Use this to create a shape for which a simple correlation exists among the set of variables. All variables must have the same size. The distribution related to this shape assumes 0 for all values apart from the following combinations: {0,0,...,0}; {1,1,..,1}; ...</p>
+
+<p>Returns simple correlating or anti_correlating shapes. </p>
+<p>A simple correlating shape is a distribution having a value of 1 for every combinations {0,0,...,0}; {1,1,...,1} etc. and 0 for all other combinations. A simple anti_correlating shape is a distribution having a value of 0 for every combinations {0,0,...,0}; {1,1,...,1} etc. and 1 for all other combinations.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">var_involved</td><td>variables involved in the domain of this variables </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">file_to_read</td><td>textual file to read containing the values for the image </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_involved</td><td>variables involved in the domain of this variables: they must have all the same size </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">correlated_or_not</td><td>when true produce a simple correlating shape, when false produce a anti_correlating function </td></tr>
   </table>
   </dd>
 </dl>
