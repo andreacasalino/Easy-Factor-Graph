@@ -1,7 +1,5 @@
 #include "XML_importer.h"
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <sstream>
 
 

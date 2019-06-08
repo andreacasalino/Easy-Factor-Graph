@@ -7,6 +7,8 @@
 #define _XML_IMPORTER_H_
 
 #include <list>
+#include <fstream>
+#include <string>
 
 class XML_reader
 {
