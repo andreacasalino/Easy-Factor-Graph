@@ -985,6 +985,7 @@ namespace Segugio {
 		list<size_t>		 val_ob_old;
 		this->Get_Observation_Set_val(&val_ob_old);
 		list<Categoric_var*> var_ob_old;
+		this->Get_Actual_Observation_Set(&var_ob_old);
 
 		list<size_t>		 fake_vals;
 		list<Categoric_var*> fake_vars;

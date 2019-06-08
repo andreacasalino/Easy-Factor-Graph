@@ -628,11 +628,25 @@ namespace Segugio {
 
 	}
 
+	void Conditional_Random_Field::Get_Likelihood_Observations_estimation(float* result, const std::list<size_t>& comb_observations, const std::list<Categoric_var*>& comb_var_order) {
+
+		size_t* comb = (size_t*)malloc(comb_observations.size() * sizeof(size_t));
+		size_t k = 0;
+		for (auto it = comb_observations.begin(); it != comb_observations.end(); it++) {
+			comb[k] = *it;
+			k++;
+		}
+		this->Get_Likelihood_Observations_estimation(result, comb, comb_var_order);
+		free(comb);
+
+	}
+
 	void Conditional_Random_Field::Get_Log_Z(float* Z) {
 
 		list<size_t>		 val_ob_old;
 		this->Get_Observation_Set_val(&val_ob_old);
 		list<Categoric_var*> var_ob_old;
+		this->Get_Actual_Observation_Set(&var_ob_old);
 
 		this->Recompute_Log_Z(Z, val_ob_old, var_ob_old);
 

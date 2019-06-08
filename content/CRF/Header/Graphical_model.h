@@ -189,6 +189,10 @@ namespace Segugio {
 		 * @param[out] result logarithmic estimation of the likelihood
 		 */
 		void Get_Likelihood_Observations_estimation(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order);
+		/*!
+		 * \brief Same as above but passing a list as input for the observed variables
+		 */
+		void Get_Likelihood_Observations_estimation(float* result, const std::list<size_t>& comb_observations, const std::list<Categoric_var*>& comb_var_order);
 	private:
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 		virtual void			  Get_Log_Z(float* Z);
