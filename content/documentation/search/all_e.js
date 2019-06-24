@@ -6,5 +6,6 @@ var searchData=
   ['set_5fones',['Set_ones',['../class_segugio_1_1_potential___shape.html#aa0243733ac884f15fdf1045c90787155',1,'Segugio::Potential_Shape']]],
   ['set_5frandom',['Set_random',['../class_segugio_1_1_potential___shape.html#afbe21af79b940242b68e76b142be2dbd',1,'Segugio::Potential_Shape']]],
   ['stoch_5fset_5fvariation',['Stoch_Set_variation',['../class_segugio_1_1_stoch___set__variation.html',1,'Segugio']]],
-  ['subset',['subset',['../struct_segugio_1_1_training__set_1_1subset.html',1,'Segugio::Training_set::subset'],['../struct_segugio_1_1_training__set_1_1subset.html#a864a4bd5b0f14e3e381324740600cc02',1,'Segugio::Training_set::subset::subset()']]]
+  ['subset',['subset',['../struct_segugio_1_1_training__set_1_1subset.html',1,'Segugio::Training_set::subset'],['../struct_segugio_1_1_training__set_1_1subset.html#a864a4bd5b0f14e3e381324740600cc02',1,'Segugio::Training_set::subset::subset()']]],
+  ['substitute_5fvariables',['Substitute_variables',['../class_segugio_1_1_potential___shape.html#a2987bb181c040f6e093c93ce418da3d6',1,'Segugio::Potential_Shape::Substitute_variables()'],['../class_segugio_1_1_potential___exp___shape.html#ad790736c7388c29de3ebaa23ad67a437',1,'Segugio::Potential_Exp_Shape::Substitute_variables()']]]
 ];

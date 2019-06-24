@@ -51,8 +51,8 @@ namespace Segugio {
 		for (auto it = this->Temporary_Unary.begin(); it != this->Temporary_Unary.end(); it++)
 			delete *it;
 
-		for (auto it = this->Permanent_Unary.begin(); it != this->Permanent_Unary.end(); it++)
-			delete *it;
+		//for (auto it = this->Permanent_Unary.begin(); it != this->Permanent_Unary.end(); it++)
+		//	delete *it; //this is detroyed by the Node_Factory
 
 		for (auto it = this->Active_connections.begin(); it != this->Active_connections.end(); it++)
 			delete *it;
@@ -60,7 +60,7 @@ namespace Segugio {
 		for (auto it = this->Disabled_connections.begin(); it != this->Disabled_connections.end(); it++)
 			delete *it;
 
-		delete this->pVariable;
+		//delete this->pVariable; //this is detroyed by the Node_Factory
 
 	}
 
@@ -160,11 +160,21 @@ namespace Segugio {
 
 	Node::Node_factory::~Node_factory() {
 
-		for (auto itN = this->Nodes.begin(); itN != this->Nodes.end(); itN++)
-			delete *itN;
+		auto itN = this->Nodes.begin();
+		if (this->bDestroy_Potentials_and_Variables) {
+			for (itN; itN != this->Nodes.end(); itN++) {
+				for (auto itU = (*itN)->Permanent_Unary.begin(); itU != (*itN)->Permanent_Unary.end(); itU++)
+					delete *itU;
 
-		for (auto itP = this->Binary_potentials.begin(); itP != this->Binary_potentials.end(); itP++)
-			delete *itP;
+				delete (*itN)->pVariable;
+			}
+
+			for (auto itP = this->Binary_potentials.begin(); itP != this->Binary_potentials.end(); itP++)
+				delete *itP;
+		}
+
+		for (itN = this->Nodes.begin(); itN != this->Nodes.end(); itN++)
+			delete *itN;
 
 		if (this->Last_propag_info != NULL) delete this->Last_propag_info;
 
@@ -228,6 +238,8 @@ namespace Segugio {
 
 	};
 	void Node::Node_factory::Import_from_XML(XML_reader* reader, const std::string& prefix_config_xml_file) {
+
+		this->bDestroy_Potentials_and_Variables = false;
 
 		auto root = reader->Get_root();
 
@@ -335,6 +347,8 @@ namespace Segugio {
 
 		for (auto it = una_pot.begin(); it != una_pot.end(); it++) this->Insert(*it);
 		for (auto it = una_exp_pot.begin(); it != una_exp_pot.end(); it++) this->Insert(*it);
+
+		this->bDestroy_Potentials_and_Variables = true;
 
 	}
 
@@ -924,6 +938,40 @@ namespace Segugio {
 
 	}
 
+	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<Potential_Shape*>& set_to_insert) {
+
+		struct temp_wrapper {
+			temp_wrapper(Potential_Shape* to_wrap) : Shape_Exp(NULL), Shape(to_wrap) {};
+			temp_wrapper(Potential_Exp_Shape* to_wrap) : Shape_Exp(to_wrap), Shape(NULL) {};
+
+			Potential_Shape*      Shape;
+			Potential_Exp_Shape*  Shape_Exp;
+
+			const std::list<Categoric_var*>*			Get_involved_var_safe() const { return this->pwrapped->Get_involved_var_safe(); };
+		private:
+			I_Potential*		  pwrapped;
+		};
+
+		list<temp_wrapper*> temp, temp_ordered;
+		for (auto it = set_exp_to_insert.begin(); it != set_exp_to_insert.end(); it++)
+			temp.push_back(new temp_wrapper(*it));
+		for (auto it = set_to_insert.begin(); it != set_to_insert.end(); it++)
+			temp.push_back(new temp_wrapper(*it));
+
+		extract_consistent_order(&temp_ordered, temp);
+
+		auto it = temp_ordered.begin();
+		for (it; it != temp_ordered.end(); it++) {
+			if ((*it)->Shape == NULL)
+				this->Insert((*it)->Shape_Exp);
+			else
+				this->Insert((*it)->Shape);
+		}
+		for (it = temp_ordered.begin(); it != temp_ordered.end(); it++)
+			delete *it;
+
+	}
+
 	void Node::Node_factory::Get_Observation_Set_val(std::list<size_t>* result) {
 
 		if (this->mState != 2) {
@@ -975,6 +1023,49 @@ namespace Segugio {
 		}
 
 		this->Eval_Log_Energy_function(result, temp, var_order_in_combination);
+
+		free(temp);
+
+	}
+
+	void Node::Node_factory::Eval_Log_Energy_function_normalized(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		*result = 0.f;
+		list<float> matching;
+
+		//binary potentials
+		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
+			(*it)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+#ifdef _DEBUG
+			if (matching.size() != 1) abort();
+#endif
+			if (matching.front() != 0.f) *result += logf(matching.front() / (*it)->max());
+		}
+
+		//permanent unary potentials
+		list<Potential*>::iterator it_U;
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
+				(*it_U)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+#ifdef _DEBUG
+				if (matching.size() != 1) abort();
+#endif
+				if (matching.front() != 0.f) *result += logf(matching.front() / (*it_U)->max());
+			}
+		}
+
+	}
+
+	void Node::Node_factory::Eval_Log_Energy_function_normalized(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		size_t* temp = (size_t*)malloc(combination.size() * sizeof(size_t));
+		size_t k = 0;
+		for (auto it = combination.begin(); it != combination.end(); it++) {
+			temp[k] = *it;
+			k++;
+		}
+
+		this->Eval_Log_Energy_function_normalized(result, temp, var_order_in_combination);
 
 		free(temp);
 

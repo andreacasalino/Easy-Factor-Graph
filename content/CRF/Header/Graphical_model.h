@@ -20,14 +20,29 @@ namespace Segugio {
 	class Graph : public Node::Node_factory {
 	public:
 		/** \brief empty constructor
+		* @param[in] use_cloning_Insert when is true, every time an Insert of a novel potential is called, a copy of that potential is actually inserted.
+		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
+		* a novel graph is faster.
 		*/
-		Graph() : Node_factory() {};
+		Graph(const bool& use_cloning_Insert = true) : Node_factory(use_cloning_Insert) {};
 		/** \brief The model is built considering the information contained in an xml configuration file.
 		* \details TODO spiegare come è fatto xml
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/
 		Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file = "");
+
+		/** \brief This constructor initializes the graph with the specified potentials passed as input
+		*
+		*
+		* @param[in] potentials the initial set of potentials to insert (can be empty)
+		* @param[in] potentials_exp the initial set of exponential potentials to insert (can be empty)
+		* @param[in] use_cloning_Insert when is true, every time an Insert of a novel potential is called (this includes the passed potentials), 
+		* a copy of that potential is actually inserted.
+		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
+		* a novel graph is faster.
+		*/
+		Graph(const std::list<Potential_Shape*>& potentials, const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert = true);
 
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one 
@@ -79,7 +94,7 @@ namespace Segugio {
 	 */
 	class Graph_Learnable : public Node::Node_factory {
 	public:
-		Graph_Learnable() : Node::Node_factory(), pLast_train_set(NULL) {};
+		Graph_Learnable(const bool& use_cloning_Insert) : Node::Node_factory(use_cloning_Insert), pLast_train_set(NULL) {};
 		~Graph_Learnable();
 
 		struct Weights_Manager {
@@ -129,8 +144,30 @@ namespace Segugio {
 	 */
 	class Random_Field : public Graph_Learnable {
 	public:
-		Random_Field() : Graph_Learnable() {};
+		/** \brief empty constructor
+		* @param[in] use_cloning_Insert when is true, every time an Insert of a novel potential is called, a copy of that potential is actually inserted.
+		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
+		* a novel graph is faster.
+		*/
+		Random_Field(const bool& use_cloning_Insert = true) : Graph_Learnable(use_cloning_Insert) {};
+
+		/** \brief The model is built considering the information contained in an xml configuration file.
+		* \details TODO spiegare come è fatto xml
+		* @param[in] configuration file
+		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
+		*/
 		Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file = "");
+
+		/** \brief This constructor initializes the graph with the specified potentials passed as input
+		*
+		*
+		* @param[in] potentials_exp the initial set of exponential potentials to insert (can be empty)
+		* @param[in] use_cloning_Insert when is true, every time an Insert of a novel potential is called (this includes the passed potentials),
+		* a copy of that potential is actually inserted.
+		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
+		* a novel graph is faster.
+		*/
+		Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert = true);
 		
 		/*!
 		 * \brief see Graph::Insert(Potential_Exp_Shape* pot)
@@ -164,8 +201,24 @@ namespace Segugio {
 	 */
 	class Conditional_Random_Field : public Graph_Learnable {
 	public:
+		/** \brief The model is built considering the information contained in an xml configuration file.
+		* \details TODO spiegare come è fatto xml
+		* @param[in] configuration file
+		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
+		*/
 		Conditional_Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file = "");
-		Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var);
+
+		/** \brief This constructor initializes the graph with the specified potentials passed as input, setting the variables passed as the one observed
+		*
+		*
+		* @param[in] potentials the initial set of exponential potentials to insert (can be empty)
+		* @param[in] observed_var the set of variables to assume as observations
+		* @param[in] use_cloning_Insert when is true, every time an Insert of a novel potential is called (this includes the passed potentials),
+		* a copy of that potential is actually inserted.
+		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
+		* a novel graph is faster.
+		*/
+		Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert = true);
 		
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)

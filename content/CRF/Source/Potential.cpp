@@ -244,17 +244,34 @@ namespace Segugio {
 
 	}
 
+	float I_Potential::max() {
+
+		float temp, max_val;
+		auto Distr = this->Get_distr();
+		auto it = Distr->begin();
+		(*it)->Get_val(&max_val);
+		it++;
+		for (it; it != Distr->end(); it++) {
+			(*it)->Get_val(&temp);
+			if (temp > max_val) {
+				max_val = temp;
+			}
+		}
+		return max_val;
+
+	}
 
 
 
 
 
+	void Set_variable_set(list<Categoric_var*>* var_set, const list<Categoric_var*>& var_involved) {
 
-	Potential_Shape::Potential_Shape(const list<Categoric_var*>& var_involved) {
+		var_set->clear();
 
 		list<Categoric_var*>::iterator itV2;
 		for (auto itV = var_involved.begin(); itV != var_involved.end(); itV++) {
-			for (itV2 = this->Involved_var.begin(); itV2 != this->Involved_var.end(); itV2++) {
+			for (itV2 = var_set->begin(); itV2 != var_set->end(); itV2++) {
 				if (*itV2 == *itV) {
 					system("ECHO all variables in a shape function must be different");
 					abort();
@@ -265,8 +282,14 @@ namespace Segugio {
 				}
 			}
 
-			this->Involved_var.push_back(*itV);
+			var_set->push_back(*itV);
 		}
+
+	}
+
+	Potential_Shape::Potential_Shape(const list<Categoric_var*>& var_involved) {
+
+		Set_variable_set(&this->Involved_var , var_involved);
 
 	}
 
@@ -530,6 +553,26 @@ namespace Segugio {
 				(*it)->Set_val(Rescale * temp);
 			}
 		}
+
+	}
+
+	void Potential_Shape::Substitute_variables(const std::list<Categoric_var*>& new_var) {
+
+		if (this->Involved_var.size() != new_var.size()) {
+			system("ECHO the number of variables is not the same as in the original set");
+			abort();
+		}
+
+		auto it2 = this->Involved_var.begin();
+		for (auto it = new_var.begin(); it != new_var.end(); it++) {
+			if ((*it2)->size() != (*it)->size()) {
+				system("ECHO found variable with a size different from the original one");
+				abort();
+			}
+			it2++;
+		}
+
+		Set_variable_set(&this->Involved_var , new_var);
 
 	}
 

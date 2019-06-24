@@ -28,7 +28,7 @@ namespace Segugio {
 		Categoric_var(const Categoric_var& to_copy) { abort(); };
 		virtual ~Categoric_var() {};
 
-		const size_t& size() { return this->Size; };
+		const size_t& size() const { return this->Size; };
 		const std::string& Get_name() { return this->Name; };
 	protected:
 	// data
@@ -89,6 +89,10 @@ namespace Segugio {
 		* @param[in] Vars_in_domain variables involved whose domain has to be compute
 		*/
 		static void Get_entire_domain(std::list<std::list<size_t>>* domain, const std::list<Categoric_var*>& Vars_in_domain);
+		
+		/** \brief Returns the maximum value in the distribution describing this potential
+		*/
+		float max();
 	protected:
 		I_Potential() {};
 
@@ -198,6 +202,13 @@ namespace Segugio {
 		* Exploited for computing messages
 		*/
 		void Normalize_distribution();
+		/** \brief Use this method for replacing the set of variables this potential must refer.
+		* Variables in new_var must be equal in number to the original set of variables and
+		* must have the same sizes.
+		*
+		* @param[in] new_var variables to consider for the substitution
+		*/
+		void Substitute_variables(const std::list<Categoric_var*>& new_var);
 	protected:
 		void Check_add_value(const std::list<size_t>& indices); //check the specified combination is not already present in the distribution
 
@@ -247,6 +258,14 @@ namespace Segugio {
 			static float*           Get_weight(Potential_Exp_Shape* pot) { return &pot->mWeight; };
 			static Potential_Shape*  Get_shape(Potential_Exp_Shape* pot) { return pot->pwrapped; };
 		};
+
+		/** \brief Use this method for replacing the set of variables this potential must refer.
+		* Variables in new_var must be equal in number to the original set of variables and
+		* must have the same sizes.
+		*
+		* @param[in] new_var variables to consider for the substitution
+		*/
+		void Substitute_variables(const std::list<Categoric_var*>& new_var) { this->pwrapped->Substitute_variables(new_var); };
 	protected:
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
 		void										Wrap(Potential_Shape* shape);

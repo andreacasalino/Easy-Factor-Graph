@@ -5,13 +5,51 @@ using namespace std;
 
 namespace Segugio {
 
-	Graph::Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file) {
+	template<typename P>
+	void extract_binary_and_unary_with_check(list<P*>* binary_edge, list<P*>* unary_edge, const std::list<P*>& potentials) {
+
+		for (auto it = potentials.begin(); it != potentials.end(); it++) {
+			if ((*it)->Get_involved_var_safe()->size() == 1)
+				unary_edge->push_back(*it);
+			else if ((*it)->Get_involved_var_safe()->size() == 2)
+				binary_edge->push_back(*it);
+			else {
+				system("ECHO invalid component to insert in a graph");
+				abort();
+			}
+		}
+
+	}
+
+
+
+
+	Graph::Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file) :
+		Node_factory(true) {
 
 		XML_reader reader(prefix_config_xml_file + config_xml_file);
 		this->Import_from_XML(&reader, prefix_config_xml_file); 
 
 	};
 
+	Graph::Graph(const std::list<Potential_Shape*>& potentials, const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
+		Node_factory(use_cloning_Insert) {
+
+		list<Potential_Exp_Shape*>		binary_exp_edge;
+		list<Potential_Exp_Shape*>		unary_exp_edge;
+		extract_binary_and_unary_with_check(&binary_exp_edge, &unary_exp_edge, potentials_exp);
+		list<Potential_Shape*>		binary_edge;
+		list<Potential_Shape*>		unary_edge;
+		extract_binary_and_unary_with_check(&binary_edge, &unary_edge, potentials);
+
+		this->Node_factory::Insert(binary_exp_edge, binary_edge);
+
+		for (auto it = unary_exp_edge.begin(); it != unary_exp_edge.end(); it++)
+			this->Insert(*it);
+		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
+			this->Insert(*it);
+
+	}
 
 
 
@@ -319,12 +357,25 @@ namespace Segugio {
 
 	};
 
-	Random_Field::Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) {
+	Random_Field::Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) : Graph_Learnable(true) {
 
 		XML_reader reader(prefix_config_xml_file + config_xml_file);
 		this->Import_from_XML(&reader, prefix_config_xml_file);
 
 	};
+
+	Random_Field::Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
+		Graph_Learnable(use_cloning_Insert) {
+
+		list<Potential_Exp_Shape*>		binary_exp_edge;
+		list<Potential_Exp_Shape*>		unary_exp_edge;
+		extract_binary_and_unary_with_check(&binary_exp_edge, &unary_exp_edge, potentials_exp);
+
+		this->Node_factory::Insert(binary_exp_edge);
+		for (auto it = unary_exp_edge.begin(); it != unary_exp_edge.end(); it++)
+			this->Insert(*it);
+
+	}
 
 	void Random_Field::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
@@ -410,7 +461,7 @@ namespace Segugio {
 
 
 
-	Conditional_Random_Field::Conditional_Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) {
+	Conditional_Random_Field::Conditional_Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) : Graph_Learnable(true) {
 
 		XML_reader reader(prefix_config_xml_file + config_xml_file);
 		this->Import_from_XML(&reader, prefix_config_xml_file);
@@ -479,7 +530,8 @@ namespace Segugio {
 
 	};
 
-	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var) {
+	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert) :
+		Graph_Learnable(use_cloning_Insert) {
 
 		list<Potential_Exp_Shape*>		binary_edge;
 		list<Potential_Exp_Shape*>		unary_edge;

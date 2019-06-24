@@ -92,9 +92,14 @@ namespace Segugio {
 			* to the variables actually wrapped by this graph.
 			*/
 			void Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination);
-			/** \brief Same as , passing a list instead of an array Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination)
+			/** \brief Same as Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination), 
+			* passing a list instead of an array Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination)
 			*/
 			void Eval_Log_Energy_function(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
+
+			void Eval_Log_Energy_function_normalized(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination);
+			void Eval_Log_Energy_function_normalized(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
+
 			/** \brief Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function. 
 			* \details For generic graphs, Z is a function Z(model), while for conditional random field is a function Z(model, X_observations). 
 			* Z is always recomputed, considering actual structure of the net: avoid calling multiple times for generic graphs don't varying between
@@ -102,7 +107,8 @@ namespace Segugio {
 			*/
 			virtual void			  Get_Log_Z(float* Z);
 		protected:
-			Node_factory() : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000) {};
+			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
+
 			//Import XML is not inlined in constructor since contains a call to Insert, which is virtual
 			void Import_from_XML(XML_reader* xml_data, const std::string& prefix_config_xml_file);
 
@@ -113,22 +119,29 @@ namespace Segugio {
 
 			void Insert(const std::list<Potential_Shape*>& set_to_insert);
 			void Insert(const std::list<Potential_Exp_Shape*>& set_to_insert);
+			void Insert(const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<Potential_Shape*>& set_to_insert);
 
 			template<typename T>
-			T* Insert_with_size_check(T* pot) { //returns the cloned potential (shape or exponential)
+			T* Insert_with_size_check(T* pot) { //returns the potential actually inserted in the graph (shape or exponential) cloned or not
 
-				T* cloned_to_return = NULL;
+				T* inserted_to_return = NULL;
 
 				size_t var_numb = pot->Get_involved_var_safe()->size();
 				if (var_numb == 1) {
-					//binary potential insertion
+					//unary potential insertion
 					Categoric_var* varU = pot->Get_involved_var_safe()->front();
 					auto itN = this->Nodes.begin();
 					bool node_found = false;
+
 					for (itN; itN != this->Nodes.end(); itN++) {
 						if ((*itN)->Get_var()->Get_name().compare(varU->Get_name()) == 0) {
-							cloned_to_return = new T(pot, { (*itN)->Get_var() });
-							(*itN)->Permanent_Unary.push_back(new Potential(cloned_to_return));
+
+							if (this->bDestroy_Potentials_and_Variables)
+								inserted_to_return = new T(pot, { (*itN)->Get_var() });
+							else
+								inserted_to_return = pot;
+
+							(*itN)->Permanent_Unary.push_back(new Potential(inserted_to_return));
 							node_found = true;
 							break;
 						}
@@ -177,16 +190,26 @@ namespace Segugio {
 					}
 
 					if (peer_A == NULL) {
-						this->Nodes.push_back(new Node(varA));
+						if (this->bDestroy_Potentials_and_Variables)
+							this->Nodes.push_back(new Node(varA));
+						else
+							this->Nodes.push_back(new Node(varA, true));
 						peer_A = this->Nodes.back();
 					}
 					if (peer_B == NULL) {
-						this->Nodes.push_back(new Node(varB));
+						if (this->bDestroy_Potentials_and_Variables)
+							this->Nodes.push_back(new Node(varB));
+						else
+							this->Nodes.push_back(new Node(varB, true));
 						peer_B = this->Nodes.back();
 					}
 
-					cloned_to_return = new T(pot, { peer_A->Get_var(), peer_B->Get_var() });
-					Potential* new_pot = new Potential(cloned_to_return);
+					if (this->bDestroy_Potentials_and_Variables)
+						inserted_to_return = new T(pot, { peer_A->Get_var(), peer_B->Get_var() });
+					else
+						inserted_to_return = pot;
+
+					Potential* new_pot = new Potential(inserted_to_return);
 					//create connection
 					Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
 					A_B->This_Node = peer_A;
@@ -218,7 +241,7 @@ namespace Segugio {
 				this->Last_propag_info = NULL;
 				this->mState = 0;
 
-				return cloned_to_return;
+				return inserted_to_return;
 
 			};
 
@@ -254,6 +277,8 @@ namespace Segugio {
 			};
 
 		// data
+			bool								bDestroy_Potentials_and_Variables;
+
 			size_t								mState;
 			last_belief_propagation_info*		Last_propag_info;
 
@@ -278,6 +303,7 @@ namespace Segugio {
 		void									Compute_neighbourhood_messages(std::list<Potential*>* messages, Node* node_involved_in_connection);
 	private:
 		Node(Categoric_var* var) { this->pVariable = new Categoric_var(var->size(), var->Get_name()); };
+		Node(Categoric_var* var, const bool& dont_clone_var) { this->pVariable = var; };
 	// data
 		Categoric_var*					  pVariable;
 		std::list<Potential*>			  Permanent_Unary;
