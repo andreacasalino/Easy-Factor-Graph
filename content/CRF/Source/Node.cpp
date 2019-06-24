@@ -941,8 +941,8 @@ namespace Segugio {
 	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<Potential_Shape*>& set_to_insert) {
 
 		struct temp_wrapper {
-			temp_wrapper(Potential_Shape* to_wrap) : Shape_Exp(NULL), Shape(to_wrap) {};
-			temp_wrapper(Potential_Exp_Shape* to_wrap) : Shape_Exp(to_wrap), Shape(NULL) {};
+			temp_wrapper(Potential_Shape* to_wrap) : Shape_Exp(NULL), Shape(to_wrap), pwrapped(to_wrap) {};
+			temp_wrapper(Potential_Exp_Shape* to_wrap) : Shape_Exp(to_wrap), Shape(NULL), pwrapped(to_wrap) {};
 
 			Potential_Shape*      Shape;
 			Potential_Exp_Shape*  Shape_Exp;
