@@ -358,7 +358,10 @@ namespace Segugio {
 
 	Categoric_var* Node::Node_factory::Find_Variable(const std::string& var_name) {
 
-		return this->Find_Node(var_name)->pVariable;
+		auto temp = this->Find_Node(var_name);
+		if (temp == NULL) return NULL;
+
+		return temp->pVariable;
 
 	}
 
