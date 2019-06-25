@@ -405,7 +405,7 @@ namespace Segugio {
 			*result += E;
 		}
 		*result = (1.f / (float)comb_train_set.max_size()) * (*result);
-		*result -=  log_Z;
+		*result -= log_Z;
 
 	}
 
@@ -535,16 +535,7 @@ namespace Segugio {
 
 		list<Potential_Exp_Shape*>		binary_edge;
 		list<Potential_Exp_Shape*>		unary_edge;
-		for (auto it = potentials.begin(); it != potentials.end(); it++) {
-			if ((*it)->Get_involved_var_safe()->size() == 1)
-				unary_edge.push_back(*it);
-			else if ((*it)->Get_involved_var_safe()->size() == 2)
-				binary_edge.push_back(*it);
-			else {
-				system("ECHO invalid component to insert in a graph");
-				abort();
-			}
-		}
+		extract_binary_and_unary_with_check(&binary_edge, &unary_edge, potentials);
 
 		this->Node_factory::Insert(binary_edge);
 		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
@@ -648,6 +639,7 @@ namespace Segugio {
 
 	}
 
+	/*
 	void Conditional_Random_Field::Get_Likelihood_Observations_estimation(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order) {
 
 		list<size_t> pos_observ;
@@ -692,6 +684,7 @@ namespace Segugio {
 		free(comb);
 
 	}
+	*/
 
 	void Conditional_Random_Field::Get_Log_Z(float* Z) {
 

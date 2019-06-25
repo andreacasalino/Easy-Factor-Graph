@@ -42,11 +42,13 @@ namespace Segugio {
 		public:
 			virtual ~Node_factory();
 
-			/** \brief Returns a pointer to the variable in this graph with that name
+			/** \brief Returns a pointer to the variable in this graph with that name.
+			* \details Returns NULL when the variable is not present in the graph
 			* @param[in] var_name name to search
 			*/
 			Categoric_var*			  Find_Variable(const std::string& var_name);
 			/** \brief Returns a pointer to the variable in this graph with the same name of the variable passed as input
+			* \details Returns NULL when the variable is not present in the graph
 			* @param[in] var_with_same_name variable having the same of name of the variable to search
 			*/
 			Categoric_var*			  Find_Variable(Categoric_var* var_with_same_name) { return this->Find_Variable(var_with_same_name->Get_name()); };
@@ -83,6 +85,7 @@ namespace Segugio {
 			/** \brief Returns the value to adopt when performing a loopy belief propagation
 			*/
 			void					  Set_Iteration_4_belief_propagation(const unsigned int& iter_to_use);
+			
 			/** \brief Returns the logartihmic value of the energy function.
 			* \details Energy function E=Pot_1(Y_1,2,....,n) * Pot_2(Y_1,2,....,n) .... * Pot_m(Y_1,2,....,n). The combinations passed as input
 			* must contains values for all the variables present in this graph.
@@ -97,7 +100,14 @@ namespace Segugio {
 			*/
 			void Eval_Log_Energy_function(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
 
+			/** \brief Similar as Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination),
+			* but computing the Energy function normalized: E_norm = E(Y_1,2,....,n) / max possible { E }. E_norm is in [0,1]. The logarthmic value of E_norm is actually returned
+			*/
 			void Eval_Log_Energy_function_normalized(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination);
+
+			/** \brief Similar as Eval_Log_Energy_function(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination),
+			* but computing the Energy function normalized. 
+			*/
 			void Eval_Log_Energy_function_normalized(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
 
 			/** \brief Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function. 
@@ -106,6 +116,10 @@ namespace Segugio {
 			* two intermediate calls.
 			*/
 			virtual void			  Get_Log_Z(float* Z);
+
+			/** \brief Returns the attual values set observations. This function can be invokated after a call to void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
+			*/
+			void					  Get_Observation_Set_val(std::list<size_t>* result);
 		protected:
 			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
 
@@ -259,7 +273,6 @@ namespace Segugio {
 
 			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
 
-			void					  Get_Observation_Set_val(std::list<size_t>* result);
 			void					  Recompute_Log_Z(float* result, std::list<size_t>& new_observed_vals, std::list<Categoric_var*>& new_observed_vars);
 		private:
 			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);

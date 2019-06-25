@@ -110,6 +110,7 @@ namespace Segugio {
 		 * \brief Returns the model size, i.e. the number of potentials constituting the net.
 		 */
 		size_t Get_model_size() { return this->Model_handlers.size(); };
+
 		virtual void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) = 0;
 		
 		/*!
@@ -182,8 +183,8 @@ namespace Segugio {
 		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
 		/*!
-		 * \brief Returns an estimation of the likelihood of the model 
-		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference: 
+		 * \brief Returns an estimation of the likelihood of the model
+		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
 		 * P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
 		 * @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
 		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model)
@@ -224,28 +225,17 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */		
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
+
 		/*!
 		 * \brief Returns an estimation of the likelihood of the model
 		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
 		 * P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
 		 * @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
-		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model, 
+		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model,
 		 * considering both the hidden and the observed sets).
 		 * @param[out] result logarithmic estimation of the likelihood
 		 */
 		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
-		/*!
-		 * \brief Returns an estimation of the likelihood of a particular set of observations given the structure of the model: P(X|model)
-		 * \details useful for structural learning
-		 * @param[in] comb_observations combination of observations to consider
-		 * @param[in] comb_var_order list of variables describing how the values in comb_observations are ordered (they must refere to the variables wrapped by this model).
-		 * @param[out] result logarithmic estimation of the likelihood
-		 */
-		void Get_Likelihood_Observations_estimation(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order);
-		/*!
-		 * \brief Same as above but passing a list as input for the observed variables
-		 */
-		void Get_Likelihood_Observations_estimation(float* result, const std::list<size_t>& comb_observations, const std::list<Categoric_var*>& comb_var_order);
 	private:
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 		virtual void			  Get_Log_Z(float* Z);

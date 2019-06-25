@@ -369,8 +369,10 @@ namespace Segugio {
 				return *it;
 		}
 
-		system("ECHO Node::Node_factory::Find_Node, inexistent name");
-		abort();
+		//system("ECHO Node::Node_factory::Find_Node, inexistent name");
+		//abort();
+
+		return NULL;
 
 	}
 
@@ -1039,7 +1041,7 @@ namespace Segugio {
 #ifdef _DEBUG
 			if (matching.size() != 1) abort();
 #endif
-			if (matching.front() != 0.f) *result += logf(matching.front() / (*it)->max());
+			if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it)->max());
 		}
 
 		//permanent unary potentials
@@ -1050,7 +1052,7 @@ namespace Segugio {
 #ifdef _DEBUG
 				if (matching.size() != 1) abort();
 #endif
-				if (matching.front() != 0.f) *result += logf(matching.front() / (*it_U)->max());
+				if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it_U)->max());
 			}
 		}
 
