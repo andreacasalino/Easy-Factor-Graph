@@ -2,6 +2,7 @@ var searchData=
 [
   ['i_5fbelief_5fpropagation_5fstrategy',['I_belief_propagation_strategy',['../class_segugio_1_1_i__belief__propagation__strategy.html',1,'Segugio']]],
   ['i_5fdistribution_5fvalue',['I_Distribution_value',['../struct_segugio_1_1_i___potential_1_1_i___distribution__value.html',1,'Segugio::I_Potential']]],
+  ['i_5fextractor',['I_Extractor',['../class_segugio_1_1_training__set_1_1_i___extractor.html',1,'Segugio::Training_set']]],
   ['i_5flearning_5fhandler',['I_Learning_handler',['../class_segugio_1_1_i___learning__handler.html',1,'Segugio']]],
   ['i_5fpotential',['I_Potential',['../class_segugio_1_1_i___potential.html',1,'Segugio']]],
   ['i_5fpotential_5fdecorator',['I_Potential_Decorator',['../class_segugio_1_1_i___potential___decorator.html',1,'Segugio']]],

@@ -81,6 +81,12 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_training__set_1_1_basic___extractor.html">Basic_Extractor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Basic extractor, see <a class="el" href="class_segugio_1_1_training__set.html#ac1996c96bb4d143d59729f4f0d0a631b" title="Similar to Training_set(const std::string&amp; file_to_import),.">Training_set(const std::list&lt;std::string&gt;&amp; variable_names, std::list&lt;Array&gt; samples, I_Extractor&lt;Array&gt;* extractor)</a>  <a href="class_segugio_1_1_training__set_1_1_basic___extractor.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_training__set_1_1_i___extractor.html">I_Extractor</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class is adopted for parsing a set of samples to import as a novel training set. You have to derive yout custom extractor, implementing the two vritual method.  <a href="class_segugio_1_1_training__set_1_1_i___extractor.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_segugio_1_1_training__set_1_1subset.html">subset</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class is describes a portion of a training set, obtained by sampling values in the original set. Mainly used by stochastic gradient computation strategies.  <a href="struct_segugio_1_1_training__set_1_1subset.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -89,9 +95,13 @@ Classes</h2></td></tr>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a86ff42d656986af038fc30f635c075fb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_training__set.html#a86ff42d656986af038fc30f635c075fb">Training_set</a> (const std::string &amp;file_to_import)</td></tr>
 <tr class="separator:a86ff42d656986af038fc30f635c075fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92665e493ead149da8047ac4922f2c4c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_training__set.html#a92665e493ead149da8047ac4922f2c4c">Training_set</a> (const std::string &amp;file_to_import, const bool &amp;display_after_parsing)</td></tr>
-<tr class="memdesc:a92665e493ead149da8047ac4922f2c4c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="class_segugio_1_1_training__set.html#a86ff42d656986af038fc30f635c075fb">Training_set(const std::string&amp; file_to_import)</a>, with the difference that after importing all the set, this latter is showed. Used mainly for debug.  <a href="#a92665e493ead149da8047ac4922f2c4c">More...</a><br /></td></tr>
-<tr class="separator:a92665e493ead149da8047ac4922f2c4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1996c96bb4d143d59729f4f0d0a631b"><td class="memTemplParams" colspan="2">template&lt;typename Array &gt; </td></tr>
+<tr class="memitem:ac1996c96bb4d143d59729f4f0d0a631b"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_training__set.html#ac1996c96bb4d143d59729f4f0d0a631b">Training_set</a> (const std::list&lt; std::string &gt; &amp;variable_names, std::list&lt; Array &gt; samples, <a class="el" href="class_segugio_1_1_training__set_1_1_i___extractor.html">I_Extractor</a>&lt; Array &gt; *extractor)</td></tr>
+<tr class="memdesc:ac1996c96bb4d143d59729f4f0d0a631b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to <a class="el" href="class_segugio_1_1_training__set.html#a86ff42d656986af038fc30f635c075fb">Training_set(const std::string&amp; file_to_import)</a>,.  <a href="#ac1996c96bb4d143d59729f4f0d0a631b">More...</a><br /></td></tr>
+<tr class="separator:ac1996c96bb4d143d59729f4f0d0a631b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a18ce902299912c3162cb9b6b3a292121"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_training__set.html#a18ce902299912c3162cb9b6b3a292121">Print</a> (const std::string &amp;file_name)</td></tr>
+<tr class="memdesc:a18ce902299912c3162cb9b6b3a292121"><td class="mdescLeft">&#160;</td><td class="mdescRight">This training set is reprinted in the location specified.  <a href="#a18ce902299912c3162cb9b6b3a292121">More...</a><br /></td></tr>
+<tr class="separator:a18ce902299912c3162cb9b6b3a292121"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This class is used for describing a training set for a graph. </p>
@@ -121,23 +131,34 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a92665e493ead149da8047ac4922f2c4c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92665e493ead149da8047ac4922f2c4c">&#9670;&nbsp;</a></span>Training_set() <span class="overload">[2/2]</span></h2>
+<a id="ac1996c96bb4d143d59729f4f0d0a631b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac1996c96bb4d143d59729f4f0d0a631b">&#9670;&nbsp;</a></span>Training_set() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename Array &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">Segugio::Training_set::Training_set </td>
           <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>file_to_import</em>, </td>
+          <td class="paramtype">const std::list&lt; std::string &gt; &amp;&#160;</td>
+          <td class="paramname"><em>variable_names</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const bool &amp;&#160;</td>
-          <td class="paramname"><em>display_after_parsing</em>&#160;</td>
+          <td class="paramtype">std::list&lt; Array &gt;&#160;</td>
+          <td class="paramname"><em>samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_segugio_1_1_training__set_1_1_i___extractor.html">I_Extractor</a>&lt; Array &gt; *&#160;</td>
+          <td class="paramname"><em>extractor</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -145,13 +166,46 @@ Public Member Functions</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
-<p>Same as <a class="el" href="class_segugio_1_1_training__set.html#a86ff42d656986af038fc30f635c075fb">Training_set(const std::string&amp; file_to_import)</a>, with the difference that after importing all the set, this latter is showed. Used mainly for debug. </p>
+<p>Similar to <a class="el" href="class_segugio_1_1_training__set.html#a86ff42d656986af038fc30f635c075fb">Training_set(const std::string&amp; file_to_import)</a>,. </p>
+<p>with the difference that the training set is not red from a textual file but it is imported from a list of container (generic can be list, vector or other) describing the samples of the set. You have to derived your own extractor for managing your particular container. <a class="el" href="class_segugio_1_1_training__set_1_1_basic___extractor.html" title="Basic extractor, see Training_set(const std::list&lt;std::string&gt;&amp; variable_names, std::list&lt;Array&gt; samp...">Basic_Extractor</a> is a baseline extractor that can be used for all those type having the method size() and the operator[]. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">variable_names</td><td>the ordered list of variables to assume for the samples </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">samples</td><td>the list of generic Array representing the samples of the training set </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">extractor</td><td>the particular extractor to use, see <a class="el" href="class_segugio_1_1_training__set_1_1_i___extractor.html" title="This class is adopted for parsing a set of samples to import as a novel training set....">I_Extractor</a> </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a18ce902299912c3162cb9b6b3a292121"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a18ce902299912c3162cb9b6b3a292121">&#9670;&nbsp;</a></span>Print()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Training_set::Print </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>file_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>This training set is reprinted in the location specified. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">file_to_import</td><td>file containing the set to import </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">display_after_parsing</td><td>flag for specifying the import debuggin mode </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">file_name</td><td>is the path of the file where the set must be printed </td></tr>
   </table>
   </dd>
 </dl>

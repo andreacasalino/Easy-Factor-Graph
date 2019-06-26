@@ -1,9 +1,9 @@
 #include "../Header/Training_set.h"
 #include "../XML_reader/XML_importer.h"
 #include <string>
+#include <fstream>
 using namespace std;
 
-#include <iostream>
 namespace Segugio {
 
 	Training_set::~Training_set() {
@@ -69,21 +69,34 @@ namespace Segugio {
 
 	}
 
-	Training_set::Training_set(const std::string& file_to_import, const bool& display_after_parsing) : Training_set(file_to_import) {
+	void Training_set::Print(const std::string& file_name) {
+
+		ofstream f(file_name);
+		if (!f.is_open()) {
+			system("ECHO inexistent file");
+			abort();
+		}
 
 		size_t N_vars = this->Variable_names.size(), k;
 
 		auto itn = this->Variable_names.begin();
-		cout << *itn;
-		for (auto itn = this->Variable_names.begin(); itn != this->Variable_names.end(); itn++)
-			cout << " " << *itn;
-		cout << endl;
+		f << *itn;
+		itn++;
+		for (itn; itn != this->Variable_names.end(); itn++)
+			f << " " << *itn;
+		f << endl;
+		auto it_end = this->Set.end(); 
+		it_end--;
 		for (auto it = this->Set.begin(); it != this->Set.end(); it++) {
-			cout << (*it)[0];
+			f << (*it)[0];
 			for (k = 1; k < N_vars; k++)
-				cout << " " << (*it)[k];
-			cout << endl;
+				f << " " << (*it)[k];
+
+			if(it != it_end)
+				f << endl;
 		}
+
+		f.close();
 
 	}
 
@@ -114,32 +127,6 @@ namespace Segugio {
 		}
 
 	}
-
-//	void Training_set::subset::Get_pos_of_var_in_set(list<size_t>* result, const list<Categoric_var*>& variables) {
-//
-//		result->clear();
-//		list<string>::iterator it_name;
-//		size_t k;
-//		for (auto itV = variables.begin(); itV != variables.end(); itV++) {
-//			k = 0;
-//			for (it_name = this->pVariable_names->begin(); it_name != this->pVariable_names->end(); it_name++ ) {
-//				if (it_name->compare((*itV)->Get_name()) == 0) {
-//					result->push_back(k);
-//					break;
-//				}
-//				k++;
-//			}
-//		}
-//
-//#ifdef _DEBUG
-//		if (result->size() != variables.size()) {
-//			system("ECHO inexistent variable in training set");
-//			abort();
-//		}
-//#endif // DEBUG
-//
-//
-//	}
 
 }
 
