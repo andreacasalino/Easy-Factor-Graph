@@ -43,7 +43,7 @@ int main() {
 	for (auto it_o = domain_of_observed_set.begin(); it_o != domain_of_observed_set.end(); it_o++) {
 		cond_graph.Set_Observation_Set_val(*it_o);
 		cond_graph.Gibbs_Sampling_on_Hidden_set(&samples_temp, 15, 100);
-		for (auto itt = samples_temp.begin(); itt != samples_temp.end(); itt++)
+		for (auto itt = samples_temp.begin(); itt != samples_temp.end(); itt++) 
 			Append_list(&(*itt), *it_o);
 
 		Append_list(&samples, samples_temp);

@@ -237,6 +237,8 @@ namespace Segugio {
 		 */
 		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	private:
+		void __initialize();
+
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 		virtual void			  Get_Log_Z(float* Z);
 	};

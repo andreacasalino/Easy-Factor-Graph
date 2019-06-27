@@ -9,6 +9,9 @@
 
 namespace Segugio {
 
+std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_in_the_net);
+
+
 	/*!
 	 * \brief This class is used for describing a training set for a graph.
 	 * \details A set is described in a textual file, where the first row must contain
@@ -45,7 +48,7 @@ namespace Segugio {
 		* @param[in] extractor the particular extractor to use, see I_Extractor
 		*/
 		template<typename Array>
-		Training_set(const std::list<std::string>& variable_names, std::list<Array> samples, I_Extractor<Array>* extractor) : 
+		Training_set(const std::list<std::string>& variable_names, std::list<Array>& samples, I_Extractor<Array>* extractor) : 
 			Variable_names(variable_names) {
 
 			if(variable_names.empty() || samples.empty()) {
@@ -69,6 +72,13 @@ namespace Segugio {
 			}
 
 		};
+		/**
+		* \brief Same as Training_set(const std::list<std::string>& variable_names, std::list<Array> samples, I_Extractor<Array>* extractor)
+		* passing the variables involved instead of the names
+		*/
+		template<typename Array>
+		Training_set(const std::list<Categoric_var*>& variable_in_the_net, std::list<Array>& samples, I_Extractor<Array>* extractor) :
+			Training_set(extract_names(variable_in_the_net), samples, extractor) {};
 
 		/**
 		* \brief Basic extractor, see Training_set(const std::list<std::string>& variable_names, std::list<Array> samples, I_Extractor<Array>* extractor)

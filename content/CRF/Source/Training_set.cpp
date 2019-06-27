@@ -1,10 +1,19 @@
 #include "../Header/Training_set.h"
-#include "../XML_reader/XML_importer.h"
+#include "../XML_reader/XML_Manager.h"
 #include <string>
 #include <fstream>
 using namespace std;
 
 namespace Segugio {
+
+	std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_in_the_net) {
+
+		list<string> names;
+		for (auto it = variable_in_the_net.begin(); it != variable_in_the_net.end(); it++)
+			names.push_back((*it)->Get_name());
+		return names;
+
+	}
 
 	Training_set::~Training_set() {
 
@@ -30,7 +39,7 @@ namespace Segugio {
 		}
 
 		getline(f_set, line);
-		XML_reader::splitta_riga(line, &this->Variable_names);
+		splitta_riga(line, &this->Variable_names);
 		size_t N_vars = this->Variable_names.size();
 		
 		if (f_set.eof()) {
@@ -42,7 +51,7 @@ namespace Segugio {
 		while (!f_set.eof()) {
 			getline(f_set, line);
 			slices.clear();
-			XML_reader::splitta_riga(line, &slices);
+			splitta_riga(line, &slices);
 
 			if (slices.size() != N_vars) {
 				system(string("ECHO inconsistent data at line " + to_string(line_cont)).c_str());

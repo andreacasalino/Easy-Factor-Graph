@@ -25,7 +25,7 @@
     <ClInclude Include="Header\Potential.h" />
     <ClInclude Include="Header\Trainer.h" />
     <ClInclude Include="Header\Training_set.h" />
-    <ClInclude Include="XML_reader\XML_importer.h" />
+    <ClInclude Include="XML_reader\XML_Manager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Belief_propagation.cpp" />
@@ -34,7 +34,7 @@
     <ClCompile Include="Source\Potential.cpp" />
     <ClCompile Include="Source\Trainer.cpp" />
     <ClCompile Include="Source\Training_set.cpp" />
-    <ClCompile Include="XML_reader\XML_importer.cpp" />
+    <ClCompile Include="XML_reader\XML_Manager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

@@ -12,9 +12,6 @@
     <ClInclude Include="Header\Potential.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="XML_reader\XML_importer.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="Header\Node.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -30,12 +27,12 @@
     <ClInclude Include="Header\Trainer.h">
       <Filter>Header</Filter>
     </ClInclude>
+    <ClInclude Include="XML_reader\XML_Manager.h">
+      <Filter>Header</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Potential.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="XML_reader\XML_importer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\Node.cpp">
@@ -51,6 +48,9 @@
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\Trainer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="XML_reader\XML_Manager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

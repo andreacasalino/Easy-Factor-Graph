@@ -461,40 +461,12 @@ namespace Segugio {
 
 
 
-	Conditional_Random_Field::Conditional_Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) : Graph_Learnable(true) {
-
-		XML_reader reader(prefix_config_xml_file + config_xml_file);
-		this->Import_from_XML(&reader, prefix_config_xml_file);
-
-		//read the observed set
-		list<string> observed_names;
-		XML_reader::Tag_readable root = reader.Get_root();
-		list<XML_reader::Tag_readable> vars;
-		root.Get_Nested("Variable", &vars);
-		string flag;
-		for (auto it = vars.begin(); it != vars.end(); it++) {
-			if (it->Exist_Field("flag")) {
-				flag = it->Get_value("flag");
-				if (flag.compare("O") == 0)
-					observed_names.push_back(it->Get_value("name"));
-			}
-		}
-
-		if (observed_names.empty()) {
-			system("ECHO Found CRF with no observed variables");
-			abort();
-		}
-
-		list<Categoric_var*> observed_vars;
-		for (auto it = observed_names.begin(); it != observed_names.end(); it++)
-			observed_vars.push_back(this->Find_Variable(*it));
-
-		this->Node_factory::Set_Observation_Set_var(observed_vars);
+	void Conditional_Random_Field::__initialize() {
 
 		list<size_t*> temp;
 		list<Categoric_var*>::const_iterator it_temp;
 		auto it_hnd = this->Model_handlers.begin();
-		while(it_hnd != this->Model_handlers.end()){
+		while (it_hnd != this->Model_handlers.end()) {
 			temp.clear();
 			auto vars = (*it_hnd)->Get_involved_var_safe();
 			for (it_temp = vars->begin(); it_temp != vars->end(); it_temp++)
@@ -528,6 +500,40 @@ namespace Segugio {
 			}
 		}
 
+	}
+
+	Conditional_Random_Field::Conditional_Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) : Graph_Learnable(true) {
+
+		XML_reader reader(prefix_config_xml_file + config_xml_file);
+		this->Import_from_XML(&reader, prefix_config_xml_file);
+
+		//read the observed set
+		list<string> observed_names;
+		XML_reader::Tag_readable root = reader.Get_root();
+		list<XML_reader::Tag_readable> vars;
+		root.Get_Nested("Variable", &vars);
+		string flag;
+		for (auto it = vars.begin(); it != vars.end(); it++) {
+			if (it->Exist_Field("flag")) {
+				flag = it->Get_value("flag");
+				if (flag.compare("O") == 0)
+					observed_names.push_back(it->Get_value("name"));
+			}
+		}
+
+		if (observed_names.empty()) {
+			system("ECHO Found CRF with no observed variables");
+			abort();
+		}
+
+		list<Categoric_var*> observed_vars;
+		for (auto it = observed_names.begin(); it != observed_names.end(); it++)
+			observed_vars.push_back(this->Find_Variable(*it));
+
+		this->Node_factory::Set_Observation_Set_var(observed_vars);
+
+		this->__initialize();
+
 	};
 
 	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert) :
@@ -544,7 +550,10 @@ namespace Segugio {
 		list<Categoric_var*> vars_hidden;
 		for (auto it = observed_var.begin(); it != observed_var.end(); it++)
 			vars_hidden.push_back(this->Find_Variable(*it));
+
 		this->Node_factory::Set_Observation_Set_var(vars_hidden);
+
+		this->__initialize();
 
 	}
 
