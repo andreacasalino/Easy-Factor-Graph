@@ -244,7 +244,7 @@ namespace Segugio {
 
 	}
 
-	float I_Potential::max() {
+	float I_Potential::max_in_distribution() {
 
 		float temp, max_val;
 		auto Distr = this->Get_distr();

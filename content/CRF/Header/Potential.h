@@ -92,7 +92,7 @@ namespace Segugio {
 		
 		/** \brief Returns the maximum value in the distribution describing this potential
 		*/
-		float max();
+		float max_in_distribution();
 	protected:
 		I_Potential() {};
 

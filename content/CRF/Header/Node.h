@@ -120,6 +120,11 @@ namespace Segugio {
 			/** \brief Returns the attual values set observations. This function can be invokated after a call to void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 			*/
 			void					  Get_Observation_Set_val(std::list<size_t>* result);
+
+			/*!
+			 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
+			 */
+			void					 Get_structure(std::list<const Potential*>* structure);
 		protected:
 			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
 

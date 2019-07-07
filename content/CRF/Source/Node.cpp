@@ -514,13 +514,10 @@ namespace Segugio {
 
 	void Node::Node_factory::Get_Actual_Observation_Set(std::list<Categoric_var*>* result) {
 
-#ifdef _DEBUG
-		if (this->mState == 0) {
-			abort();
-		}
-#endif // DEBUG
-
 		result->clear();
+		if (this->mState == 0)
+			return;
+
 		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++)
 			result->push_back(it->Involved_node->pVariable);
 
@@ -979,12 +976,15 @@ namespace Segugio {
 
 	void Node::Node_factory::Get_Observation_Set_val(std::list<size_t>* result) {
 
-		if (this->mState != 2) {
+		result->clear();
+
+		/*if (this->mState != 2) {
 			system("ECHO you cannot get observation vals before setting the values");
 			abort();
-		}
+		}*/
+		if (this->mState != 2)
+			return;
 
-		result->clear();
 		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++)
 			result->push_back(it->Value);
 
@@ -1044,7 +1044,7 @@ namespace Segugio {
 #ifdef _DEBUG
 			if (matching.size() != 1) abort();
 #endif
-			if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it)->max());
+			if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it)->max_in_distribution());
 		}
 
 		//permanent unary potentials
@@ -1055,7 +1055,7 @@ namespace Segugio {
 #ifdef _DEBUG
 				if (matching.size() != 1) abort();
 #endif
-				if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it_U)->max());
+				if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it_U)->max_in_distribution());
 			}
 		}
 
@@ -1159,6 +1159,14 @@ namespace Segugio {
 		new_observed_vals.pop_back();
 		this->Set_Observation_Set_var(new_observed_vars);
 		this->Set_Observation_Set_val(new_observed_vals);
+
+	}
+
+	void Node::Node_factory::Get_structure(std::list<const Potential*>* structure) {
+
+		structure->clear();
+		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++)
+			structure->push_back(*it);
 
 	}
 
