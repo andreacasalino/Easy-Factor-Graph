@@ -67,6 +67,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#pro-attribs">Protected Attributes</a> &#124;
 <a href="class_segugio_1_1_trainer___decorator-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -99,6 +100,19 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Clean_Up</b> ()</td><
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Train</b> (<a class="el" href="class_segugio_1_1_graph___learnable.html">Graph_Learnable</a> *model_to_train, <a class="el" href="class_segugio_1_1_training__set.html">Training_set</a> *Train_set, const unsigned int &amp;Max_Iterations=100, std::list&lt; float &gt; *descend_story=NULL)=0</td></tr>
 <tr class="separator:a9a5c223f9b8eab6a7e806d53ced333eb inherit pub_methods_class_segugio_1_1_i___trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a92176db96f66772d78043632039dd78f"><td class="memItemLeft" align="right" valign="top"><a id="a92176db96f66772d78043632039dd78f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>__check_tunable_are_present</b> (<a class="el" href="class_segugio_1_1_graph___learnable.html">Graph_Learnable</a> *model_to_train)</td></tr>
+<tr class="separator:a92176db96f66772d78043632039dd78f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_class_segugio_1_1_i___trainer"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_segugio_1_1_i___trainer')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_segugio_1_1_i___trainer.html">Segugio::I_Trainer</a></td></tr>
+<tr class="memitem:a5949bfa7ddeb9ad5e12461316ba585e8 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memItemLeft" align="right" valign="top"><a id="a5949bfa7ddeb9ad5e12461316ba585e8"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_w_grad</b> (<a class="el" href="class_segugio_1_1_graph___learnable.html">Graph_Learnable</a> *model, std::list&lt; float &gt; *grad_w, const std::list&lt; size_t * &gt; &amp;comb_in_train_set, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var)</td></tr>
+<tr class="separator:a5949bfa7ddeb9ad5e12461316ba585e8 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5158614d778b2c2d7f9d46ec91ef02c5 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memItemLeft" align="right" valign="top"><a id="a5158614d778b2c2d7f9d46ec91ef02c5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Set_w</b> (const std::list&lt; float &gt; &amp;w, <a class="el" href="class_segugio_1_1_graph___learnable.html">Graph_Learnable</a> *model)</td></tr>
+<tr class="separator:a5158614d778b2c2d7f9d46ec91ef02c5 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-attribs"></a>
 Protected Attributes</h2></td></tr>
 <tr class="memitem:a446eb18695108ce96c4ad277e8e37c47"><td class="memItemLeft" align="right" valign="top"><a id="a446eb18695108ce96c4ad277e8e37c47"></a>
@@ -114,13 +128,6 @@ Additional Inherited Members</h2></td></tr>
 <tr class="memitem:a3c036081bd5419451d9e6188a99d53ff inherit pub_static_methods_class_segugio_1_1_i___trainer"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="class_segugio_1_1_i___trainer.html">I_Trainer</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___trainer.html#a3c036081bd5419451d9e6188a99d53ff">Get_BFGS</a> (const float &amp;stoch_grad_percentage=1.f)</td></tr>
 <tr class="memdesc:a3c036081bd5419451d9e6188a99d53ff inherit pub_static_methods_class_segugio_1_1_i___trainer"><td class="mdescLeft">&#160;</td><td class="mdescRight">Creates a <a class="el" href="class_segugio_1_1_b_f_g_s.html">BFGS</a> gradient descend solver (<a href="https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm">https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm</a>)  <a href="class_segugio_1_1_i___trainer.html#a3c036081bd5419451d9e6188a99d53ff">More...</a><br /></td></tr>
 <tr class="separator:a3c036081bd5419451d9e6188a99d53ff inherit pub_static_methods_class_segugio_1_1_i___trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="inherit_header pro_methods_class_segugio_1_1_i___trainer"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_segugio_1_1_i___trainer')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_segugio_1_1_i___trainer.html">Segugio::I_Trainer</a></td></tr>
-<tr class="memitem:a5949bfa7ddeb9ad5e12461316ba585e8 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memItemLeft" align="right" valign="top"><a id="a5949bfa7ddeb9ad5e12461316ba585e8"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_w_grad</b> (<a class="el" href="class_segugio_1_1_graph___learnable.html">Graph_Learnable</a> *model, std::list&lt; float &gt; *grad_w, const std::list&lt; size_t * &gt; &amp;comb_in_train_set, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var)</td></tr>
-<tr class="separator:a5949bfa7ddeb9ad5e12461316ba585e8 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5158614d778b2c2d7f9d46ec91ef02c5 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memItemLeft" align="right" valign="top"><a id="a5158614d778b2c2d7f9d46ec91ef02c5"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Set_w</b> (const std::list&lt; float &gt; &amp;w, <a class="el" href="class_segugio_1_1_graph___learnable.html">Graph_Learnable</a> *model)</td></tr>
-<tr class="separator:a5158614d778b2c2d7f9d46ec91ef02c5 inherit pro_methods_class_segugio_1_1_i___trainer"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_static_methods_class_segugio_1_1_i___trainer"><td colspan="2" onclick="javascript:toggleInherit('pro_static_methods_class_segugio_1_1_i___trainer')"><img src="closed.png" alt="-"/>&#160;Static Protected Member Functions inherited from <a class="el" href="class_segugio_1_1_i___trainer.html">Segugio::I_Trainer</a></td></tr>
 <tr class="memitem:aacca07c1757be018bc88b904c71cb40a inherit pro_static_methods_class_segugio_1_1_i___trainer"><td class="memItemLeft" align="right" valign="top"><a id="aacca07c1757be018bc88b904c71cb40a"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>Clean_Up</b> (<a class="el" href="class_segugio_1_1_i___trainer.html">I_Trainer</a> *to_Clean)</td></tr>

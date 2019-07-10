@@ -66,10 +66,10 @@ int main() {
 
 	list<float> w;
 	cout << "\n\n\n real weights of the model\n";
-	Graph_Learnable::Weights_Manager::Get_w(&w, &cond_graph);
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &cond_graph);
 	print_distribution(w); cout << endl;
 	cout << "\n\n\n learnt weights\n";
-	Graph_Learnable::Weights_Manager::Get_w(&w, &cond_graph_to_learn);
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &cond_graph_to_learn);
 	print_distribution(w); cout << endl;
 	cout << endl;
 

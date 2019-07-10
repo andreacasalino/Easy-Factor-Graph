@@ -38,8 +38,8 @@ namespace Segugio {
 		static void Clean_Up(I_Trainer* to_Clean) { to_Clean->Clean_Up(); };
 
 		void Get_w_grad(Graph_Learnable* model, std::list<float>* grad_w, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
-			Graph_Learnable::Weights_Manager::Get_w_grad(grad_w, model, comb_in_train_set, comb_var); };
-		void Set_w(const std::list<float>& w, Graph_Learnable* model) { Graph_Learnable::Weights_Manager::Set_w(w, model); };
+			Graph_Learnable::Weights_Manager::Get_tunable_w_grad(grad_w, model, comb_in_train_set, comb_var); };
+		void Set_w(const std::list<float>& w, Graph_Learnable* model) { Graph_Learnable::Weights_Manager::Set_tunable_w(w, model); };
 	};
 
 }

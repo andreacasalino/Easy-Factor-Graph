@@ -18,6 +18,7 @@ using namespace Segugio;
 void part_01(const string& prefix);
 void part_02(const string& prefix);
 void part_03(const string& prefix);
+void part_04(const string& prefix);
 
 int main() {
 	string prefix =  compute_prefix() + "Sample_06_Learning_A" + "/";
@@ -47,6 +48,14 @@ int main() {
 	cout << "part 03 \n\n\n";
 	cout << "-----------------------\n";
 	part_03(prefix);
+
+	///////////////////////////////////////////
+	//            part 04 graph_4            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 04 \n\n\n";
+	cout << "-----------------------\n";
+	part_04(prefix);
 
 	system("pause");
 	return 0;
@@ -144,7 +153,7 @@ void part_02(const string& prefix) {
 	Training_set Set(prefix + "Train_set.txt");
 	auto Learner = I_Trainer::Get_fixed_step(1.f);
 	list<float> likelihood_story;
-	Learner->Train(&graph_to_learn, &Set, 50, &likelihood_story);
+	Learner->Train(&graph_to_learn, &Set, 50, &likelihood_story); 
 	delete Learner;
 
 	cout << "\n\n\n evolution of the likelihood of the model during training\n";
@@ -153,10 +162,10 @@ void part_02(const string& prefix) {
 
 	list<float> w;
 	cout << "\n\n\n real weights of the model\n";
-	Graph_Learnable::Weights_Manager::Get_w(&w, &graph_2);
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_2);
 	print_distribution(w); cout << endl;
 	cout << "\n\n\n learnt weights\n";
-	Graph_Learnable::Weights_Manager::Get_w(&w, &graph_to_learn);
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_to_learn);
 	print_distribution(w); cout << endl;
 	cout << endl;
 
@@ -176,6 +185,75 @@ void part_02(const string& prefix) {
 }
 
 void part_03(const string& prefix) {
+
+	//build graph_2
+	Categoric_var A(2, "A");
+	Categoric_var B(2, "B");
+	Categoric_var C(2, "C");
+
+	float alfa = 3.f, beta = 2.f;
+
+	Potential_Exp_Shape Pot_AB(new Potential_Shape({ &A,&B }, prefix + "Shape.txt"), alfa);
+	Potential_Exp_Shape Pot_AC(new Potential_Shape({ &A,&C }, prefix + "Shape.txt"), beta);
+
+	Random_Field graph_2;
+	graph_2.Insert(&Pot_AB);
+	graph_2.Insert(&Pot_AC);
+
+	//extract some samples from the graph with a Gibbs sampling method, for building a train set
+	list<list<size_t>> samples;
+	graph_2.Gibbs_Sampling_on_Hidden_set(&samples, 500, 500);
+	Print_set_as_training_set(prefix + "Train_set.txt", { &A,&B,&C }, samples);
+
+	//build a second graph, with the same potentials, but all weights equal to 1. Then use the previous train set to train 
+	//this model, for obtaining a combination of weights similar to the original ones
+	Categoric_var A2(2, "A");
+	Categoric_var B2(2, "B");
+	Categoric_var C2(2, "C");
+
+	Potential_Exp_Shape Pot_AB_to_learn(new Potential_Shape({ &A2,&B2 }, prefix + "Shape.txt"), alfa);
+	Potential_Exp_Shape Pot_AC_to_learn(new Potential_Shape({ &A2,&C2 }, prefix + "Shape.txt"));
+
+	Random_Field graph_to_learn;
+	graph_to_learn.Insert(&Pot_AB_to_learn, false); // the weight of this potential will be constant
+	graph_to_learn.Insert(&Pot_AC_to_learn);
+
+	//train graph_to_learn with a fixed step gradient descend algorithm
+	Training_set Set(prefix + "Train_set.txt");
+	auto Learner = I_Trainer::Get_fixed_step(1.f);
+	list<float> likelihood_story;
+	Learner->Train(&graph_to_learn, &Set, 50, &likelihood_story);
+	delete Learner;
+
+	cout << "\n\n\n evolution of the likelihood of the model during training\n";
+	for (auto it = likelihood_story.begin(); it != likelihood_story.end(); it++)
+		cout << *it << endl;
+
+	list<float> w;
+	cout << "\n\n\n real weights of the model\n";
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_2);
+	print_distribution(w); cout << endl;
+	cout << "\n\n\n learnt weights\n";
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_to_learn);
+	print_distribution(w); cout << endl;
+	cout << endl;
+
+
+	list<float> marginals;
+	graph_2.Set_Observation_Set_var({ graph_2.Find_Variable("C") });
+	graph_2.Set_Observation_Set_val({ 0 });
+	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("A"));
+	cout << "P(A|C=0) real model    ";
+	print_distribution(marginals); cout << endl;
+
+	graph_to_learn.Set_Observation_Set_var({ graph_to_learn.Find_Variable("C") });
+	graph_to_learn.Set_Observation_Set_val({ 0 });
+	graph_to_learn.Get_marginal_distribution(&marginals, graph_to_learn.Find_Variable("A"));
+	cout << "P(A|C=0) learnt model  ";
+	print_distribution(marginals); cout << endl;
+}
+
+void part_04(const string& prefix) {
 
 	//build graph_3
 	Random_Field graph_3("graph_3.xml", prefix);
@@ -202,10 +280,10 @@ void part_03(const string& prefix) {
 
 	list<float> w;
 	cout << "\n\n\n real weights of the model\n";
-	Graph_Learnable::Weights_Manager::Get_w(&w, &graph_3);
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_3);
 	print_distribution(w); cout << endl;
 	cout << "\n\n\n learnt weights\n";
-	Graph_Learnable::Weights_Manager::Get_w(&w, &graph_to_learn);
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_to_learn);
 	print_distribution(w); cout << endl;
 	cout << endl;
 

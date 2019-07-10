@@ -5,21 +5,21 @@ using namespace std;
 
 namespace Segugio {
 
-	template<typename P>
-	void extract_binary_and_unary_with_check(list<P*>* binary_edge, list<P*>* unary_edge, const std::list<P*>& potentials) {
-
-		for (auto it = potentials.begin(); it != potentials.end(); it++) {
-			if ((*it)->Get_involved_var_safe()->size() == 1)
-				unary_edge->push_back(*it);
-			else if ((*it)->Get_involved_var_safe()->size() == 2)
-				binary_edge->push_back(*it);
-			else {
-				system("ECHO invalid component to insert in a graph");
-				abort();
-			}
-		}
-
-	}
+	//template<typename P>
+	//void extract_binary_and_unary_with_check(list<P*>* binary_edge, list<P*>* unary_edge, const std::list<P*>& potentials) {
+	//
+	//	for (auto it = potentials.begin(); it != potentials.end(); it++) {
+	//		if ((*it)->Get_involved_var_safe()->size() == 1)
+	//			unary_edge->push_back(*it);
+	//		else if ((*it)->Get_involved_var_safe()->size() == 2)
+	//			binary_edge->push_back(*it);
+	//		else {
+	//			system("ECHO invalid component to insert in a graph");
+	//			abort();
+	//		}
+	//	}
+	//
+	//}
 
 
 
@@ -35,19 +35,7 @@ namespace Segugio {
 	Graph::Graph(const std::list<Potential_Shape*>& potentials, const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
 		Node_factory(use_cloning_Insert) {
 
-		list<Potential_Exp_Shape*>		binary_exp_edge;
-		list<Potential_Exp_Shape*>		unary_exp_edge;
-		extract_binary_and_unary_with_check(&binary_exp_edge, &unary_exp_edge, potentials_exp);
-		list<Potential_Shape*>		binary_edge;
-		list<Potential_Shape*>		unary_edge;
-		extract_binary_and_unary_with_check(&binary_edge, &unary_edge, potentials);
-
-		this->Node_factory::Insert(binary_exp_edge, binary_edge);
-
-		for (auto it = unary_exp_edge.begin(); it != unary_exp_edge.end(); it++)
-			this->Insert(*it);
-		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
-			this->Insert(*it);
+		this->Node_factory::Insert(potentials, potentials_exp, {});
 
 	}
 
@@ -237,34 +225,38 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Insert(Potential_Exp_Shape* pot) {
+	void Graph_Learnable::Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable) {
 		
 		pot = this->Insert_with_size_check<Potential_Exp_Shape>(pot);
 
-		auto vars = pot->Get_involved_var_safe();
+		if (is_weight_tunable) {
+			auto vars = pot->Get_involved_var_safe();
 
-		if (vars->size() == 1) {
-			//new unary
-			this->Model_handlers.push_back(new Unary_handler(this->Find_Node(vars->front()->Get_name()), pot));
-		}
-		else {
-			//new binary
-			Node* N1 = this->Find_Node(vars->front()->Get_name());
-			Node* N2 = this->Find_Node(vars->back()->Get_name());
+			if (vars->size() == 1) {
+				//new unary
+				this->Model_handlers.push_back(new Unary_handler(this->Find_Node(vars->front()->Get_name()), pot));
+			}
+			else {
+				//new binary
+				Node* N1 = this->Find_Node(vars->front()->Get_name());
+				Node* N2 = this->Find_Node(vars->back()->Get_name());
 
-			this->Model_handlers.push_back(new Binary_handler(N1, N2, pot));
+				this->Model_handlers.push_back(new Binary_handler(N1, N2, pot));
+			}
 		}
 
 	}
 
 	void Graph_Learnable::Insert(Potential_Shape* pot) {
 
-		system("ECHO you can insert a pure shape function only to general graph and not (Conditional) Random Field ");
-		abort();
+		//system("ECHO you can insert a pure shape function only to general graph and not (Conditional) Random Field ");
+		//abort();
+
+		pot = this->Insert_with_size_check<Potential_Shape>(pot);
 
 	}
 
-	void Graph_Learnable::Weights_Manager::Get_w(std::list<float>* w, Graph_Learnable* model) {
+	void Graph_Learnable::Weights_Manager::Get_tunable_w(std::list<float>* w, Graph_Learnable* model) {
 
 		w->clear();
 		for (auto it = model->Model_handlers.begin(); it != model->Model_handlers.end(); it++) {
@@ -274,7 +266,7 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Weights_Manager::Get_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
+	void Graph_Learnable::Weights_Manager::Get_tunable_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
 		grad_w->clear();
 		model->Graph_Learnable::Get_w_grad(grad_w, comb_train_set, comb_var_order); //here tha alfa part is appended
@@ -293,7 +285,7 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Weights_Manager::Set_w(const std::list<float>& w, Graph_Learnable* model) {
+	void Graph_Learnable::Weights_Manager::Set_tunable_w(const std::list<float>& w, Graph_Learnable* model) {
 
 		auto itw = w.begin();
 		for (auto it = model->Model_handlers.begin(); it != model->Model_handlers.end(); it++) {
@@ -364,16 +356,11 @@ namespace Segugio {
 
 	};
 
-	Random_Field::Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
+	Random_Field::Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask,
+		const std::list<Potential_Shape*>& shapes) :
 		Graph_Learnable(use_cloning_Insert) {
 
-		list<Potential_Exp_Shape*>		binary_exp_edge;
-		list<Potential_Exp_Shape*>		unary_exp_edge;
-		extract_binary_and_unary_with_check(&binary_exp_edge, &unary_exp_edge, potentials_exp);
-
-		this->Node_factory::Insert(binary_exp_edge);
-		for (auto it = unary_exp_edge.begin(); it != unary_exp_edge.end(); it++)
-			this->Insert(*it);
+		this->Node_factory::Insert(shapes, potentials_exp, tunable_mask);
 
 	}
 
@@ -536,16 +523,16 @@ namespace Segugio {
 
 	};
 
-	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert) :
+	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask, 
+		const std::list<Potential_Shape*>& shapes) :
 		Graph_Learnable(use_cloning_Insert) {
 
-		list<Potential_Exp_Shape*>		binary_edge;
-		list<Potential_Exp_Shape*>		unary_edge;
-		extract_binary_and_unary_with_check(&binary_edge, &unary_edge, potentials);
+		this->Node_factory::Insert(shapes, potentials, tunable_mask);
 
-		this->Node_factory::Insert(binary_edge);
-		for (auto it = unary_edge.begin(); it != unary_edge.end(); it++)
-			this->Insert(*it);
+		if (observed_var.empty()) {
+			system("ECHO empty observed set for Conditional random field is not possible");
+			abort();
+		}
 
 		list<Categoric_var*> vars_hidden;
 		for (auto it = observed_var.begin(); it != observed_var.end(); it++)

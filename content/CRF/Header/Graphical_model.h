@@ -56,7 +56,7 @@ namespace Segugio {
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input
 		* a potential which involves that variable).
 		*/
-		void Insert(Potential_Exp_Shape* pot) { this->Node_factory::Insert_with_size_check<Potential_Exp_Shape>(pot); };
+		void Insert(Potential_Exp_Shape* pot) { this->Insert(pot, true); };
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
 		 */
@@ -65,6 +65,8 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
+	private:
+		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable) { this->Node_factory::Insert_with_size_check<Potential_Exp_Shape>(pot); };
 	};
 
 
@@ -90,7 +92,6 @@ namespace Segugio {
 
 	/*!
 	 * \brief Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning.
-	 * Only Potential_Exp_Shape can be inserted into these kind of nets.
 	 */
 	class Graph_Learnable : public Node::Node_factory {
 	public:
@@ -100,14 +101,17 @@ namespace Segugio {
 		struct Weights_Manager {
 			friend class I_Trainer;
 		public:
-			static void Get_w(std::list<float>* w, Graph_Learnable* model);
+			/*!
+			 * \brief Returns the values of the tunable weights, those that can vary when learning the model
+			 */
+			static void Get_tunable_w(std::list<float>* w, Graph_Learnable* model);
 		private:
-			static void Get_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
-			static void Set_w(const std::list<float>& w, Graph_Learnable* model);
+			static void Get_tunable_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
+			static void Set_tunable_w(const std::list<float>& w, Graph_Learnable* model);
 		};
 
 		/*!
-		 * \brief Returns the model size, i.e. the number of potentials constituting the net.
+		 * \brief Returns the model size, i.e. the number of tunable parameters of the model, i.e. the number of weigths that can vary with learning.
 		 */
 		size_t Get_model_size() { return this->Model_handlers.size(); };
 
@@ -118,7 +122,7 @@ namespace Segugio {
 		 */
 		void Get_structure(std::list<const Potential_Exp_Shape*>* result);
 	protected:
-		void Insert(Potential_Exp_Shape* pot);
+		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable);
 		void Insert(Potential_Shape* pot);
 
 	// data
@@ -167,13 +171,19 @@ namespace Segugio {
 		* a copy of that potential is actually inserted.
 		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
 		* a novel graph is faster.
+		* @param[in] tunable_mask when passed as non default value, it is must have the same size of potentials. Every value in this list is true if the corresponfing potential in the
+		* potentials list is tunable, i.e. has a weight whose value can vary with learning
+		* @param[in] shapes A list of additional non learnable potentials to insert in the model
 		*/
-		Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert = true);
+		Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert = true, const std::list<bool>& tunable_mask = {},
+			const std::list<Potential_Shape*>& shapes = {});
 		
 		/*!
-		 * \brief see Graph::Insert(Potential_Exp_Shape* pot)
+		 * \brief Similar to Graph::Insert(Potential_Exp_Shape* pot).  
+		* @param[in] is_weight_tunable When true, you are specifying that this potential has a weight learnable, otherwise the value 
+		* of the weight is assumed constant.
 		 */
-		void Insert(Potential_Exp_Shape* pot) { this->Graph_Learnable::Insert(pot); };
+		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable = true) { this->Graph_Learnable::Insert(pot, is_weight_tunable); };
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
 		 */
@@ -218,8 +228,12 @@ namespace Segugio {
 		* a copy of that potential is actually inserted.
 		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
 		* a novel graph is faster.
+		* @param[in] tunable_mask when passed as non default value, it is must have the same size of potentials. Every value in this list is true if the corresponfing potential in the 
+		* potentials list is tunable, i.e. has a weight whose value can vary with learning
+		* @param[in] shapes A list of additional non learnable potentials to insert in the model
 		*/
-		Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert = true);
+		Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert = true, const std::list<bool>& tunable_mask = {},
+			const std::list<Potential_Shape*>& shapes = {});
 		
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)

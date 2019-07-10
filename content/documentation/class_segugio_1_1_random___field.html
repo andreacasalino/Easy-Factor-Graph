@@ -83,7 +83,7 @@ Inheritance diagram for Segugio::Random_Field:</div>
  <div class="center">
   <img src="class_segugio_1_1_random___field.png" usemap="#Segugio::Random_5FField_map" alt=""/>
   <map id="Segugio::Random_5FField_map" name="Segugio::Random_5FField_map">
-<area href="class_segugio_1_1_graph___learnable.html" title="Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning...." alt="Segugio::Graph_Learnable" shape="rect" coords="0,56,177,80"/>
+<area href="class_segugio_1_1_graph___learnable.html" title="Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning." alt="Segugio::Graph_Learnable" shape="rect" coords="0,56,177,80"/>
 <area href="class_segugio_1_1_node_1_1_node__factory.html" title="Interface for describing a net: set of nodes representing random variables." alt="Segugio::Node::Node_factory" shape="rect" coords="0,0,177,24"/>
   </map>
 </div></div>
@@ -96,13 +96,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afd3aab74a88a273cca57015a7350d272"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#afd3aab74a88a273cca57015a7350d272">Random_Field</a> (const std::string &amp;config_xml_file, const std::string &amp;prefix_config_xml_file=&quot;&quot;)</td></tr>
 <tr class="memdesc:afd3aab74a88a273cca57015a7350d272"><td class="mdescLeft">&#160;</td><td class="mdescRight">The model is built considering the information contained in an xml configuration file.  <a href="#afd3aab74a88a273cca57015a7350d272">More...</a><br /></td></tr>
 <tr class="separator:afd3aab74a88a273cca57015a7350d272"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a130e4517ee584d7e5ffecce8476d46a2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a130e4517ee584d7e5ffecce8476d46a2">Random_Field</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;potentials_exp, const bool &amp;use_cloning_Insert=true)</td></tr>
-<tr class="memdesc:a130e4517ee584d7e5ffecce8476d46a2"><td class="mdescLeft">&#160;</td><td class="mdescRight">This constructor initializes the graph with the specified potentials passed as input.  <a href="#a130e4517ee584d7e5ffecce8476d46a2">More...</a><br /></td></tr>
-<tr class="separator:a130e4517ee584d7e5ffecce8476d46a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e812469bbb6e89cce8f97d6c862b1d0"><td class="memItemLeft" align="right" valign="top"><a id="a9e812469bbb6e89cce8f97d6c862b1d0"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a9e812469bbb6e89cce8f97d6c862b1d0">Insert</a> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot)</td></tr>
-<tr class="memdesc:a9e812469bbb6e89cce8f97d6c862b1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_graph.html#ac732cf67c43bca0d56f097decdfd9f73" title="The model is built considering the information contained in an xml configuration file.">Graph::Insert(Potential_Exp_Shape* pot)</a> <br /></td></tr>
-<tr class="separator:a9e812469bbb6e89cce8f97d6c862b1d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a459a7a280c7b7ca424474a1705da2486"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a459a7a280c7b7ca424474a1705da2486">Random_Field</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;potentials_exp, const bool &amp;use_cloning_Insert=true, const std::list&lt; bool &gt; &amp;tunable_mask={}, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;shapes={})</td></tr>
+<tr class="memdesc:a459a7a280c7b7ca424474a1705da2486"><td class="mdescLeft">&#160;</td><td class="mdescRight">This constructor initializes the graph with the specified potentials passed as input.  <a href="#a459a7a280c7b7ca424474a1705da2486">More...</a><br /></td></tr>
+<tr class="separator:a459a7a280c7b7ca424474a1705da2486"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac373c1f83803ee174ad0690a713d884f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#ac373c1f83803ee174ad0690a713d884f">Insert</a> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;is_weight_tunable=true)</td></tr>
+<tr class="memdesc:ac373c1f83803ee174ad0690a713d884f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to <a class="el" href="class_segugio_1_1_graph.html#ac732cf67c43bca0d56f097decdfd9f73" title="The model is built considering the information contained in an xml configuration file.">Graph::Insert(Potential_Exp_Shape* pot)</a>.  <a href="#ac373c1f83803ee174ad0690a713d884f">More...</a><br /></td></tr>
+<tr class="separator:ac373c1f83803ee174ad0690a713d884f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69194ecd5be55212d011c421a6d9abc7"><td class="memItemLeft" align="right" valign="top"><a id="a69194ecd5be55212d011c421a6d9abc7"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a69194ecd5be55212d011c421a6d9abc7">Set_Observation_Set_var</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;new_observed_vars)</td></tr>
 <tr class="memdesc:a69194ecd5be55212d011c421a6d9abc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node::Node_factory::Set_Observation_Set_var(const std::list&lt;Categoric_var*&gt;&amp; new_observed_vars)</a> <br /></td></tr>
@@ -120,7 +119,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:aa7e9725cde3ec0bfdc641affaceeeddd inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51bc1d5e324559bb8efd2c204d9700d0 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a51bc1d5e324559bb8efd2c204d9700d0"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_graph___learnable.html#a51bc1d5e324559bb8efd2c204d9700d0">Get_model_size</a> ()</td></tr>
-<tr class="memdesc:a51bc1d5e324559bb8efd2c204d9700d0 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the model size, i.e. the number of potentials constituting the net. <br /></td></tr>
+<tr class="memdesc:a51bc1d5e324559bb8efd2c204d9700d0 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the model size, i.e. the number of tunable parameters of the model, i.e. the number of weigths that can vary with learning. <br /></td></tr>
 <tr class="separator:a51bc1d5e324559bb8efd2c204d9700d0 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a719db1e9b170438941c6999956c615f6 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a719db1e9b170438941c6999956c615f6"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_graph___learnable.html#a719db1e9b170438941c6999956c615f6">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; *result)</td></tr>
@@ -184,6 +183,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114">Get_Observation_Set_val</a> (std::list&lt; size_t &gt; *result)</td></tr>
 <tr class="memdesc:a9e7728e7cc7c93e6e1df57f032fa9114 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attual values set observations. This function can be invokated after a call to void <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
 <tr class="separator:a9e7728e7cc7c93e6e1df57f032fa9114 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad418a490e80336123ad5a9ba1eec8a5f inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="ad418a490e80336123ad5a9ba1eec8a5f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential.html">Potential</a> * &gt; *structure)</td></tr>
+<tr class="memdesc:ad418a490e80336123ad5a9ba1eec8a5f inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of potentials constituting the net. Usefull for structural learning. <br /></td></tr>
+<tr class="separator:ad418a490e80336123ad5a9ba1eec8a5f inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -201,12 +204,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Import_from_XML</b> (
 <tr class="memitem:a6b0352799b4bdbe733996afe2e5c5315 inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a6b0352799b4bdbe733996afe2e5c5315"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
 <tr class="separator:a6b0352799b4bdbe733996afe2e5c5315 inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71758aafdbddab73c3c070e95076744e inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a71758aafdbddab73c3c070e95076744e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
-<tr class="separator:a71758aafdbddab73c3c070e95076744e inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad351526af1d785020246d2a39d4ea3ea inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="ad351526af1d785020246d2a39d4ea3ea"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_exp_to_insert, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
-<tr class="separator:ad351526af1d785020246d2a39d4ea3ea inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24bef1e98124c96291c3502e699303fe inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a24bef1e98124c96291c3502e699303fe"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_to_insert, const std::list&lt; bool &gt; &amp;tunability_flags)</td></tr>
+<tr class="separator:a24bef1e98124c96291c3502e699303fe inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87cc3ff9f9b76301ce03027b6dfc6ac9 inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a87cc3ff9f9b76301ce03027b6dfc6ac9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_exp_to_insert, const std::list&lt; bool &gt; &amp;tunability_flags)</td></tr>
+<tr class="separator:a87cc3ff9f9b76301ce03027b6dfc6ac9 inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bdcd12b0c78866ae1a3343086ed9c3a inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memTemplParams" colspan="2"><a id="a5bdcd12b0c78866ae1a3343086ed9c3a"></a>
 template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a5bdcd12b0c78866ae1a3343086ed9c3a inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memTemplItemLeft" align="right" valign="top">T *&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Insert_with_size_check</b> (T *pot)</td></tr>
@@ -310,8 +313,8 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 
 </div>
 </div>
-<a id="a130e4517ee584d7e5ffecce8476d46a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a130e4517ee584d7e5ffecce8476d46a2">&#9670;&nbsp;</a></span>Random_Field() <span class="overload">[3/3]</span></h2>
+<a id="a459a7a280c7b7ca424474a1705da2486"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a459a7a280c7b7ca424474a1705da2486">&#9670;&nbsp;</a></span>Random_Field() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -326,7 +329,19 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const bool &amp;&#160;</td>
-          <td class="paramname"><em>use_cloning_Insert</em> = <code>true</code>&#160;</td>
+          <td class="paramname"><em>use_cloning_Insert</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::list&lt; bool &gt; &amp;&#160;</td>
+          <td class="paramname"><em>tunable_mask</em> = <code>{}</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>shapes</em> = <code>{}</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -341,6 +356,8 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">potentials_exp</td><td>the initial set of exponential potentials to insert (can be empty) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">use_cloning_Insert</td><td>when is true, every time an Insert of a novel potential is called (this includes the passed potentials), a copy of that potential is actually inserted. Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of a novel graph is faster. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">tunable_mask</td><td>when passed as non default value, it is must have the same size of potentials. Every value in this list is true if the corresponfing potential in the potentials list is tunable, i.e. has a weight whose value can vary with learning </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">shapes</td><td>A list of additional non learnable potentials to insert in the model </td></tr>
   </table>
   </dd>
 </dl>
@@ -399,6 +416,52 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 </dl>
 
 <p>Implements <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a>.</p>
+
+</div>
+</div>
+<a id="ac373c1f83803ee174ad0690a713d884f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac373c1f83803ee174ad0690a713d884f">&#9670;&nbsp;</a></span>Insert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Random_Field::Insert </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *&#160;</td>
+          <td class="paramname"><em>pot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool &amp;&#160;</td>
+          <td class="paramname"><em>is_weight_tunable</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Similar to <a class="el" href="class_segugio_1_1_graph.html#ac732cf67c43bca0d56f097decdfd9f73" title="The model is built considering the information contained in an xml configuration file.">Graph::Insert(Potential_Exp_Shape* pot)</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">is_weight_tunable</td><td>When true, you are specifying that this potential has a weight learnable, otherwise the value of the weight is assumed constant. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a>.</p>
 
 </div>
 </div>

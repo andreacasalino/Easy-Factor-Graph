@@ -14,7 +14,8 @@ var searchData=
   ['get_5fmarginals',['Get_marginals',['../class_segugio_1_1_potential.html#aab35ccb0f9ac2a53dfaf1d1cae858d56',1,'Segugio::Potential']]],
   ['get_5fmodel_5fsize',['Get_model_size',['../class_segugio_1_1_graph___learnable.html#a51bc1d5e324559bb8efd2c204d9700d0',1,'Segugio::Graph_Learnable']]],
   ['get_5fobservation_5fset_5fval',['Get_Observation_Set_val',['../class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114',1,'Segugio::Node::Node_factory']]],
-  ['get_5fstructure',['Get_structure',['../class_segugio_1_1_graph___learnable.html#a719db1e9b170438941c6999956c615f6',1,'Segugio::Graph_Learnable']]],
+  ['get_5fstructure',['Get_structure',['../class_segugio_1_1_graph___learnable.html#a719db1e9b170438941c6999956c615f6',1,'Segugio::Graph_Learnable::Get_structure()'],['../class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f',1,'Segugio::Node::Node_factory::Get_structure()']]],
+  ['get_5ftunable_5fw',['Get_tunable_w',['../struct_segugio_1_1_graph___learnable_1_1_weights___manager.html#a65d3022ef747cea603e9286c112f171f',1,'Segugio::Graph_Learnable::Weights_Manager']]],
   ['gibbs_5fsampling_5fon_5fhidden_5fset',['Gibbs_Sampling_on_Hidden_set',['../class_segugio_1_1_node_1_1_node__factory.html#ac0af3793d3db94430667d541c1785ba7',1,'Segugio::Node::Node_factory']]],
   ['graph',['Graph',['../class_segugio_1_1_graph.html#a0b1157ca47f0236c0c42f84267ffad76',1,'Segugio::Graph::Graph(const bool &amp;use_cloning_Insert=true)'],['../class_segugio_1_1_graph.html#a8c0095cc29326070bfa53eaf1c3f30aa',1,'Segugio::Graph::Graph(const std::string &amp;config_xml_file, const std::string &amp;prefix_config_xml_file=&quot;&quot;)'],['../class_segugio_1_1_graph.html#abf6e1342d17def8ee6dc889c5ac59a8a',1,'Segugio::Graph::Graph(const std::list&lt; Potential_Shape * &gt; &amp;potentials, const std::list&lt; Potential_Exp_Shape * &gt; &amp;potentials_exp, const bool &amp;use_cloning_Insert=true)']]]
 ];

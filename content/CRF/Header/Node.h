@@ -134,11 +134,11 @@ namespace Segugio {
 			//when the passed potential involves two variable is interpreted as a new edge, when containing a single a variable is assumed as a new unary potential;
 			//in any other cases is a an error
 			virtual void Insert(Potential_Shape* pot) = 0;
-			virtual void Insert(Potential_Exp_Shape* pot) = 0;
+			virtual void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable) = 0;
 
 			void Insert(const std::list<Potential_Shape*>& set_to_insert);
-			void Insert(const std::list<Potential_Exp_Shape*>& set_to_insert);
-			void Insert(const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<Potential_Shape*>& set_to_insert);
+			void Insert(const std::list<Potential_Exp_Shape*>& set_to_insert, const std::list<bool>& tunability_flags);
+			void Insert(const std::list<Potential_Shape*>& set_to_insert, const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<bool>& tunability_flags ); //tunability flags refer only to the exponential shapes
 
 			template<typename T>
 			T* Insert_with_size_check(T* pot) { //returns the potential actually inserted in the graph (shape or exponential) cloned or not

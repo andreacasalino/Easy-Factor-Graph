@@ -86,7 +86,7 @@ Inheritance diagram for Segugio::Node::Node_factory:</div>
   <img src="class_segugio_1_1_node_1_1_node__factory.png" usemap="#Segugio::Node::Node_5Ffactory_map" alt=""/>
   <map id="Segugio::Node::Node_5Ffactory_map" name="Segugio::Node::Node_5Ffactory_map">
 <area href="class_segugio_1_1_graph.html" title="Interface for managing generic graphs." alt="Segugio::Graph" shape="rect" coords="0,56,214,80"/>
-<area href="class_segugio_1_1_graph___learnable.html" title="Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning...." alt="Segugio::Graph_Learnable" shape="rect" coords="224,56,438,80"/>
+<area href="class_segugio_1_1_graph___learnable.html" title="Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning." alt="Segugio::Graph_Learnable" shape="rect" coords="224,56,438,80"/>
 <area href="class_segugio_1_1_conditional___random___field.html" title="This class describes Conditional Random fields." alt="Segugio::Conditional_Random_Field" shape="rect" coords="112,112,326,136"/>
 <area href="class_segugio_1_1_random___field.html" title="This class describes a generic Random Field, not having a particular set of variables observed." alt="Segugio::Random_Field" shape="rect" coords="336,112,550,136"/>
   </map>
@@ -151,6 +151,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114">Get_Observation_Set_val</a> (std::list&lt; size_t &gt; *result)</td></tr>
 <tr class="memdesc:a9e7728e7cc7c93e6e1df57f032fa9114"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attual values set observations. This function can be invokated after a call to void <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
 <tr class="separator:a9e7728e7cc7c93e6e1df57f032fa9114"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad418a490e80336123ad5a9ba1eec8a5f"><td class="memItemLeft" align="right" valign="top"><a id="ad418a490e80336123ad5a9ba1eec8a5f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential.html">Potential</a> * &gt; *structure)</td></tr>
+<tr class="memdesc:ad418a490e80336123ad5a9ba1eec8a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of potentials constituting the net. Usefull for structural learning. <br /></td></tr>
+<tr class="separator:ad418a490e80336123ad5a9ba1eec8a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -163,18 +167,18 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Import_from_XML</b> (
 <tr class="memitem:a3154727f06fbd401e76730b7adb72a87"><td class="memItemLeft" align="right" valign="top"><a id="a3154727f06fbd401e76730b7adb72a87"></a>
 virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *pot)=0</td></tr>
 <tr class="separator:a3154727f06fbd401e76730b7adb72a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0eef908dd31d1b885dbaa597f72e49de"><td class="memItemLeft" align="right" valign="top"><a id="a0eef908dd31d1b885dbaa597f72e49de"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot)=0</td></tr>
-<tr class="separator:a0eef908dd31d1b885dbaa597f72e49de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27a86dcf7a44361bd0145441b967e172"><td class="memItemLeft" align="right" valign="top"><a id="a27a86dcf7a44361bd0145441b967e172"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;is_weight_tunable)=0</td></tr>
+<tr class="separator:a27a86dcf7a44361bd0145441b967e172"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6b0352799b4bdbe733996afe2e5c5315"><td class="memItemLeft" align="right" valign="top"><a id="a6b0352799b4bdbe733996afe2e5c5315"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
 <tr class="separator:a6b0352799b4bdbe733996afe2e5c5315"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71758aafdbddab73c3c070e95076744e"><td class="memItemLeft" align="right" valign="top"><a id="a71758aafdbddab73c3c070e95076744e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
-<tr class="separator:a71758aafdbddab73c3c070e95076744e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad351526af1d785020246d2a39d4ea3ea"><td class="memItemLeft" align="right" valign="top"><a id="ad351526af1d785020246d2a39d4ea3ea"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_exp_to_insert, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
-<tr class="separator:ad351526af1d785020246d2a39d4ea3ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a24bef1e98124c96291c3502e699303fe"><td class="memItemLeft" align="right" valign="top"><a id="a24bef1e98124c96291c3502e699303fe"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_to_insert, const std::list&lt; bool &gt; &amp;tunability_flags)</td></tr>
+<tr class="separator:a24bef1e98124c96291c3502e699303fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87cc3ff9f9b76301ce03027b6dfc6ac9"><td class="memItemLeft" align="right" valign="top"><a id="a87cc3ff9f9b76301ce03027b6dfc6ac9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_exp_to_insert, const std::list&lt; bool &gt; &amp;tunability_flags)</td></tr>
+<tr class="separator:a87cc3ff9f9b76301ce03027b6dfc6ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5bdcd12b0c78866ae1a3343086ed9c3a"><td class="memTemplParams" colspan="2"><a id="a5bdcd12b0c78866ae1a3343086ed9c3a"></a>
 template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a5bdcd12b0c78866ae1a3343086ed9c3a"><td class="memTemplItemLeft" align="right" valign="top">T *&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Insert_with_size_check</b> (T *pot)</td></tr>

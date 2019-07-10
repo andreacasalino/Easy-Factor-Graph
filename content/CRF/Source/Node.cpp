@@ -269,7 +269,9 @@ namespace Segugio {
 
 		list<Potential_Shape*>	   una_pot;
 		list<Potential_Shape*>	   bin_pot;
+		list<bool>									una_exp_tunability;
 		list<Potential_Exp_Shape*> una_exp_pot;
+		list<bool>									bin_exp_tunability;
 		list<Potential_Exp_Shape*> bin_exp_pot;
 
 		list<Categoric_var*> processed_vars;
@@ -290,6 +292,20 @@ namespace Segugio {
 						abort();
 					}
 					una_exp_pot.push_back(new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone }), w_temp));
+
+					if (itP->Exist_Field("tunability")) {
+						string tun_flag = itP->Get_value("tunability");
+						if (tun_flag.compare("Y") == 0)
+							una_exp_tunability.push_back(true);
+						else if(tun_flag.compare("N") == 0)
+							una_exp_tunability.push_back(false);
+						else {
+							system("ECHO tunability option invalid");
+							abort();
+						}
+					}
+					else
+						una_exp_tunability.push_back(true);
 				}
 				else
 					una_pot.push_back(Import_shape(prefix_config_xml_file, *itP, { temp_clone }));
@@ -321,6 +337,20 @@ namespace Segugio {
 						abort();
 					}
 					bin_exp_pot.push_back(new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }), w_temp));
+
+					if (itP->Exist_Field("tunability")) {
+						string tun_flag = itP->Get_value("tunability");
+						if (tun_flag.compare("Y") == 0)
+							bin_exp_tunability.push_back(true);
+						else if (tun_flag.compare("N") == 0)
+							bin_exp_tunability.push_back(false);
+						else {
+							system("ECHO tunability option invalid");
+							abort();
+						}
+					}
+					else
+						bin_exp_tunability.push_back(true);
 				}
 				else
 					bin_pot.push_back(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }));
@@ -342,11 +372,15 @@ namespace Segugio {
 			abort();
 		}
 
-		this->Insert(bin_pot);
-		this->Insert(bin_exp_pot);
+		this->Insert(bin_pot, bin_exp_pot, bin_exp_tunability);
 
 		for (auto it = una_pot.begin(); it != una_pot.end(); it++) this->Insert(*it);
-		for (auto it = una_exp_pot.begin(); it != una_exp_pot.end(); it++) this->Insert(*it);
+
+		auto it_fl = una_exp_tunability.begin();
+		for (auto it = una_exp_pot.begin(); it != una_exp_pot.end(); it++) {
+			this->Insert(*it, *it_fl);
+			it_fl++;
+		}
 
 		this->bDestroy_Potentials_and_Variables = true;
 
@@ -880,7 +914,22 @@ namespace Segugio {
 		if (set_to_insert.empty()) return;
 
 		auto open_set = set_to_insert;
-		auto it = set_to_insert.begin();
+
+		list<T*> unary_to_append;
+		auto it = open_set.begin();
+		while (it != open_set.end()) {
+			if ((*it)->Get_involved_var_safe()->size() == 1) {
+				unary_to_append.push_back(*it);
+				it = open_set.erase(it);
+			}
+			else if ((*it)->Get_involved_var_safe()->size() == 2)
+				it++;
+			else {
+				system("ECHO potentials to insert can be only binary or unary");
+				abort();
+			}
+		}
+		
 		auto it2 = it;
 		result->push_back(open_set.front());
 		open_set.pop_front();
@@ -915,10 +964,13 @@ namespace Segugio {
 			}
 
 			if (old_size == open_set.size()) {
-				system("ECHO inconsistent set to add CRF");
+				system("ECHO inconsistent set of potentials for initializing the model ");
 				abort();
 			}
 		}
+
+		for (auto it = unary_to_append.begin(); it != unary_to_append.end(); it++)
+			result->push_back(*it);
 
 	}
 
@@ -931,23 +983,43 @@ namespace Segugio {
 
 	}
 
-	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_to_insert) {
+	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_to_insert, const std::list<bool>& tunability_flags) {
+
+		if (set_to_insert.size() != tunability_flags.size())
+			abort();
 
 		list<Potential_Exp_Shape*> temp;
 		extract_consistent_order(&temp, set_to_insert);
-		for (auto it = temp.begin(); it != temp.end(); it++)
-			this->Insert(*it);
+		auto it_fl = tunability_flags.begin();
+		for (auto it = temp.begin(); it != temp.end(); it++) {
+			this->Insert(*it, *it_fl);
+			it_fl++;
+		}
 
 	}
 
-	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<Potential_Shape*>& set_to_insert) {
+	void Node::Node_factory::Insert(const std::list<Potential_Shape*>& set_to_insert, const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<bool>& tunability_flags) {
+
+		const list<bool>* flag_ref = &tunability_flags;
+		list<bool> fake_list;
+		if (tunability_flags.empty()) {
+			for (size_t k = 0; k < set_exp_to_insert.size(); k++)
+				fake_list.push_back(true);
+			flag_ref = &fake_list;
+		}
+		else {
+			if (set_exp_to_insert.size() != tunability_flags.size())
+				abort();
+		}
+
 
 		struct temp_wrapper {
 			temp_wrapper(Potential_Shape* to_wrap) : Shape_Exp(NULL), Shape(to_wrap), pwrapped(to_wrap) {};
-			temp_wrapper(Potential_Exp_Shape* to_wrap) : Shape_Exp(to_wrap), Shape(NULL), pwrapped(to_wrap) {};
+			temp_wrapper(Potential_Exp_Shape* to_wrap, const bool& is_tun) : Shape_Exp(to_wrap), Shape(NULL), pwrapped(to_wrap), is_tunable_w(is_tun) {};
 
 			Potential_Shape*      Shape;
 			Potential_Exp_Shape*  Shape_Exp;
+			bool								is_tunable_w;
 
 			const std::list<Categoric_var*>*			Get_involved_var_safe() const { return this->pwrapped->Get_involved_var_safe(); };
 		private:
@@ -955,8 +1027,11 @@ namespace Segugio {
 		};
 
 		list<temp_wrapper*> temp, temp_ordered;
-		for (auto it = set_exp_to_insert.begin(); it != set_exp_to_insert.end(); it++)
-			temp.push_back(new temp_wrapper(*it));
+		auto it_fl = flag_ref->begin();
+		for (auto it = set_exp_to_insert.begin(); it != set_exp_to_insert.end(); it++) {
+			temp.push_back(new temp_wrapper(*it, *it_fl));
+			it_fl++;
+		}
 		for (auto it = set_to_insert.begin(); it != set_to_insert.end(); it++)
 			temp.push_back(new temp_wrapper(*it));
 
@@ -965,7 +1040,7 @@ namespace Segugio {
 		auto it = temp_ordered.begin();
 		for (it; it != temp_ordered.end(); it++) {
 			if ((*it)->Shape == NULL)
-				this->Insert((*it)->Shape_Exp);
+				this->Insert((*it)->Shape_Exp, (*it)->is_tunable_w);
 			else
 				this->Insert((*it)->Shape);
 		}
