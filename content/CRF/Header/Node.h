@@ -43,7 +43,7 @@ namespace Segugio {
 			virtual ~Node_factory();
 
 			/** \brief Returns a pointer to the variable in this graph with that name.
-			* \details Returns NULL when the variable is not present in the graph
+			* \details Returns NULL when the variable is not present in the graph.
 			* @param[in] var_name name to search
 			*/
 			Categoric_var*			  Find_Variable(const std::string& var_name);
