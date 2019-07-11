@@ -6,7 +6,7 @@
 #define __CRF_NODE_H__
 
 #include "Potential.h"
-#include "../XML_reader/XML_Manager.h"
+#include "../../thirdy_part_lib/XML_reader/XML_Manager.h"
 
 namespace Segugio {
 

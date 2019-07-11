@@ -1,5 +1,5 @@
 #include "../Header/Training_set.h"
-#include "../XML_reader/XML_Manager.h"
+#include "../../thirdy_part_lib/XML_reader/XML_Manager.h"
 #include <string>
 #include <fstream>
 using namespace std;

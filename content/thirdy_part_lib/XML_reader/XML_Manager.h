@@ -1,5 +1,7 @@
 // Author: Andrea Casalino
 // mail: andrecasa91@gmail.com
+//
+// This is a stand alone library for handling xml file. It is taken from this repo: https://github.com/andreacasalino/XML-importer
 
 #pragma once
 

@@ -27,7 +27,7 @@
     <ClInclude Include="Header\Trainer.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="XML_reader\XML_Manager.h">
+    <ClInclude Include="..\thirdy_part_lib\XML_reader\XML_Manager.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,7 +50,7 @@
     <ClCompile Include="Source\Trainer.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="XML_reader\XML_Manager.cpp">
+    <ClCompile Include="..\thirdy_part_lib\XML_reader\XML_Manager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

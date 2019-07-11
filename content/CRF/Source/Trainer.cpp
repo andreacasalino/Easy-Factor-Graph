@@ -1,7 +1,7 @@
 #include "../Header/Trainer.h"
 using namespace std;
 
-#include <Eigen/Dense>
+#include "../../thirdy_part_lib/Eigen/Dense"
 using namespace Eigen;
 
 namespace Segugio {

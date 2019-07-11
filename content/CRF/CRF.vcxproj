@@ -19,22 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\thirdy_part_lib\XML_reader\XML_Manager.h" />
     <ClInclude Include="Header\Belief_propagation.h" />
     <ClInclude Include="Header\Graphical_model.h" />
     <ClInclude Include="Header\Node.h" />
     <ClInclude Include="Header\Potential.h" />
     <ClInclude Include="Header\Trainer.h" />
     <ClInclude Include="Header\Training_set.h" />
-    <ClInclude Include="XML_reader\XML_Manager.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\thirdy_part_lib\XML_reader\XML_Manager.cpp" />
     <ClCompile Include="Source\Belief_propagation.cpp" />
     <ClCompile Include="Source\Graphical_model.cpp" />
     <ClCompile Include="Source\Node.cpp" />
     <ClCompile Include="Source\Potential.cpp" />
     <ClCompile Include="Source\Trainer.cpp" />
     <ClCompile Include="Source\Training_set.cpp" />
-    <ClCompile Include="XML_reader\XML_Manager.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -94,7 +94,6 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./thirdy_part_lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -103,7 +102,6 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./thirdy_part_lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -114,7 +112,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./thirdy_part_lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -129,7 +126,6 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./thirdy_part_lib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
