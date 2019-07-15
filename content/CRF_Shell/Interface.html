@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+  <title>Network | Setting the random seed</title>
+
+  <script type="text/javascript" src="../thirdy_part_lib/vis-4.21.0/dist/vis.js"></script>
+  <link href="../thirdy_part_lib/vis-4.21.0/dist/vis-network.min.css" rel="stylesheet" type="text/css" />
+
+  <style type="text/css">
+    #mynetwork {
+      width: 600px;
+      height: 400px;
+      border: 1px solid lightgray;
+    }
+
+    p {
+      max-width:600px;
+    }
+  </style>
+  
+<div id="mynetwork"></div>
+	
+</head>
+
+<body>
+
+
+<script type="text/javascript">
+
+	var server_key='-';
+	window.onload = function winopen(){ 
+		let handshake_req = new XMLHttpRequest();
+		handshake_req.open('GET', 'http://localhost:8080', false);
+		handshake_req.setRequestHeader('Accept', server_key + '_hello');
+		handshake_req.send();
+		server_key = handshake_req.response;
+		console.log(server_key);
+	}; 
+
+	var network = null;
+	function destroy() {
+		if (network !== null) {
+			network.destroy();
+			network = null;
+		}
+	}
+	
+	function Update_network(new_net){
+		  destroy();
+		  var data = JSON.parse(new_net);
+		  var options = {layout:{randomSeed:2}};
+		  network = new vis.Network(document.getElementById('mynetwork'), data, options);
+	}
+	
+	window.setInterval(function(){
+		
+		console.log('new upd request');
+		var upd_req = new XMLHttpRequest();
+		
+		upd_req.onload = function() {	
+			let x =  upd_req.response;
+			console.log(x);
+				if(x === 'null'){
+					return;
+				}
+				else {
+					Update_network(x);
+				}
+		}
+		
+		upd_req.open('GET', 'http://localhost:8080', true);
+		upd_req.setRequestHeader('Accept', server_key + '_Upd');
+		upd_req.send();
+	}, 500);
+		
+</script>
+
+
+</body>
+</html>

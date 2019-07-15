@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.15"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Segugio; the flexible and efficient tool for reasoning on graphical models: Segugio::Conditional_Random_Field Class Reference</title>
+<title>Segugio; the flexible and efficient tool for reasoning on graphical models: Segugio::Random_Field Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -61,48 +61,58 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>Segugio</b></li><li class="navelem"><a class="el" href="class_segugio_1_1_conditional___random___field.html">Conditional_Random_Field</a></li>  </ul>
+<li class="navelem"><b>Segugio</b></li><li class="navelem"><a class="el" href="class_segugio_1_1_random___field.html">Random_Field</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="class_segugio_1_1_conditional___random___field-members.html">List of all members</a>  </div>
+<a href="class_segugio_1_1_random___field-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Segugio::Conditional_Random_Field Class Reference</div>  </div>
+<div class="title">Segugio::Random_Field Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>This class describes Conditional Random fields.  
- <a href="class_segugio_1_1_conditional___random___field.html#details">More...</a></p>
+<p>This class describes a generic Random Field, not having a particular set of variables observed.  
+ <a href="class_segugio_1_1_random___field.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="_graphical__model_8h_source.html">Graphical_model.h</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for Segugio::Conditional_Random_Field:</div>
+Inheritance diagram for Segugio::Random_Field:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="class_segugio_1_1_conditional___random___field.png" usemap="#Segugio::Conditional_5FRandom_5FField_map" alt=""/>
-  <map id="Segugio::Conditional_5FRandom_5FField_map" name="Segugio::Conditional_5FRandom_5FField_map">
-<area href="class_segugio_1_1_graph___learnable.html" title="Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning." alt="Segugio::Graph_Learnable" shape="rect" coords="0,56,214,80"/>
-<area href="class_segugio_1_1_node_1_1_node__factory.html" title="Interface for describing a net: set of nodes representing random variables." alt="Segugio::Node::Node_factory" shape="rect" coords="0,0,214,24"/>
+  <img src="class_segugio_1_1_random___field.png" usemap="#Segugio::Random_5FField_map" alt=""/>
+  <map id="Segugio::Random_5FField_map" name="Segugio::Random_5FField_map">
+<area href="class_segugio_1_1_graph___learnable.html" title="Interface for managing learnable graphs, i.e. graphs for which it is possible perform learning." alt="Segugio::Graph_Learnable" shape="rect" coords="0,56,177,80"/>
+<area href="class_segugio_1_1_node_1_1_node__factory.html" title="Interface for describing a net: set of nodes representing random variables." alt="Segugio::Node::Node_factory" shape="rect" coords="0,0,177,24"/>
   </map>
 </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad3a3cc127d483540f80f81b63e4b631a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_conditional___random___field.html#ad3a3cc127d483540f80f81b63e4b631a">Conditional_Random_Field</a> (const std::string &amp;config_xml_file, const std::string &amp;prefix_config_xml_file=&quot;&quot;)</td></tr>
-<tr class="memdesc:ad3a3cc127d483540f80f81b63e4b631a"><td class="mdescLeft">&#160;</td><td class="mdescRight">The model is built considering the information contained in an xml configuration file.  <a href="#ad3a3cc127d483540f80f81b63e4b631a">More...</a><br /></td></tr>
-<tr class="separator:ad3a3cc127d483540f80f81b63e4b631a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfcd03265b038df7716c7d86235afc11"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_conditional___random___field.html#acfcd03265b038df7716c7d86235afc11">Conditional_Random_Field</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;potentials, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;observed_var, const bool &amp;use_cloning_Insert=true, const std::list&lt; bool &gt; &amp;tunable_mask={}, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;shapes={})</td></tr>
-<tr class="memdesc:acfcd03265b038df7716c7d86235afc11"><td class="mdescLeft">&#160;</td><td class="mdescRight">This constructor initializes the graph with the specified potentials passed as input, setting the variables passed as the one observed.  <a href="#acfcd03265b038df7716c7d86235afc11">More...</a><br /></td></tr>
-<tr class="separator:acfcd03265b038df7716c7d86235afc11"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aacb2f32114a5da1f51d6590aa45ffdfb"><td class="memItemLeft" align="right" valign="top"><a id="aacb2f32114a5da1f51d6590aa45ffdfb"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_conditional___random___field.html#aacb2f32114a5da1f51d6590aa45ffdfb">Set_Observation_Set_val</a> (const std::list&lt; size_t &gt; &amp;new_observed_vals)</td></tr>
-<tr class="memdesc:aacb2f32114a5da1f51d6590aa45ffdfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Node::Node_factory::Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
-<tr class="separator:aacb2f32114a5da1f51d6590aa45ffdfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0c0699c704aaa4163a27c4d319eb037"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_conditional___random___field.html#aa0c0699c704aaa4163a27c4d319eb037">Get_Likelihood_estimation</a> (float *result, const std::list&lt; size_t * &gt; &amp;comb_train_set, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var_order)</td></tr>
-<tr class="memdesc:aa0c0699c704aaa4163a27c4d319eb037"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an estimation of the likelihood of the model.  <a href="#aa0c0699c704aaa4163a27c4d319eb037">More...</a><br /></td></tr>
-<tr class="separator:aa0c0699c704aaa4163a27c4d319eb037"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4f903d8476854559b726745e8dc1edb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#ae4f903d8476854559b726745e8dc1edb">Random_Field</a> (const bool &amp;use_cloning_Insert=true)</td></tr>
+<tr class="memdesc:ae4f903d8476854559b726745e8dc1edb"><td class="mdescLeft">&#160;</td><td class="mdescRight">empty constructor  <a href="#ae4f903d8476854559b726745e8dc1edb">More...</a><br /></td></tr>
+<tr class="separator:ae4f903d8476854559b726745e8dc1edb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd3aab74a88a273cca57015a7350d272"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#afd3aab74a88a273cca57015a7350d272">Random_Field</a> (const std::string &amp;config_xml_file, const std::string &amp;prefix_config_xml_file=&quot;&quot;)</td></tr>
+<tr class="memdesc:afd3aab74a88a273cca57015a7350d272"><td class="mdescLeft">&#160;</td><td class="mdescRight">The model is built considering the information contained in an xml configuration file.  <a href="#afd3aab74a88a273cca57015a7350d272">More...</a><br /></td></tr>
+<tr class="separator:afd3aab74a88a273cca57015a7350d272"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a459a7a280c7b7ca424474a1705da2486"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a459a7a280c7b7ca424474a1705da2486">Random_Field</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;potentials_exp, const bool &amp;use_cloning_Insert=true, const std::list&lt; bool &gt; &amp;tunable_mask={}, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;shapes={})</td></tr>
+<tr class="memdesc:a459a7a280c7b7ca424474a1705da2486"><td class="mdescLeft">&#160;</td><td class="mdescRight">This constructor initializes the graph with the specified potentials passed as input.  <a href="#a459a7a280c7b7ca424474a1705da2486">More...</a><br /></td></tr>
+<tr class="separator:a459a7a280c7b7ca424474a1705da2486"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac373c1f83803ee174ad0690a713d884f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#ac373c1f83803ee174ad0690a713d884f">Insert</a> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;is_weight_tunable=true)</td></tr>
+<tr class="memdesc:ac373c1f83803ee174ad0690a713d884f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to <a class="el" href="class_segugio_1_1_graph.html#ac732cf67c43bca0d56f097decdfd9f73" title="The model is built considering the information contained in an xml configuration file.">Graph::Insert(Potential_Exp_Shape* pot)</a>.  <a href="#ac373c1f83803ee174ad0690a713d884f">More...</a><br /></td></tr>
+<tr class="separator:ac373c1f83803ee174ad0690a713d884f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69194ecd5be55212d011c421a6d9abc7"><td class="memItemLeft" align="right" valign="top"><a id="a69194ecd5be55212d011c421a6d9abc7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a69194ecd5be55212d011c421a6d9abc7">Set_Observation_Set_var</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;new_observed_vars)</td></tr>
+<tr class="memdesc:a69194ecd5be55212d011c421a6d9abc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node::Node_factory::Set_Observation_Set_var(const std::list&lt;Categoric_var*&gt;&amp; new_observed_vars)</a> <br /></td></tr>
+<tr class="separator:a69194ecd5be55212d011c421a6d9abc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab22afbd9fb93406971aa12fdd6e8b1c7"><td class="memItemLeft" align="right" valign="top"><a id="ab22afbd9fb93406971aa12fdd6e8b1c7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#ab22afbd9fb93406971aa12fdd6e8b1c7">Set_Observation_Set_val</a> (const std::list&lt; size_t &gt; &amp;new_observed_vals)</td></tr>
+<tr class="memdesc:ab22afbd9fb93406971aa12fdd6e8b1c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Node::Node_factory::Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
+<tr class="separator:ab22afbd9fb93406971aa12fdd6e8b1c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a183124e53cd2b2e114dc4ec3c861b504"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a183124e53cd2b2e114dc4ec3c861b504">Get_Likelihood_estimation</a> (float *result, const std::list&lt; size_t * &gt; &amp;comb_train_set, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var_order)</td></tr>
+<tr class="memdesc:a183124e53cd2b2e114dc4ec3c861b504"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an estimation of the likelihood of the model.  <a href="#a183124e53cd2b2e114dc4ec3c861b504">More...</a><br /></td></tr>
+<tr class="separator:a183124e53cd2b2e114dc4ec3c861b504"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_segugio_1_1_graph___learnable"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_graph___learnable')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a></td></tr>
 <tr class="memitem:aa7e9725cde3ec0bfdc641affaceeeddd inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="aa7e9725cde3ec0bfdc641affaceeeddd"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Graph_Learnable</b> (const bool &amp;use_cloning_Insert)</td></tr>
@@ -166,6 +176,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a4af6d668eb57dfd023371e458380f862">Eval_Log_Energy_function_normalized</a> (float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
 <tr class="memdesc:a4af6d668eb57dfd023371e458380f862 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aceafa7587a04e516fe7413fc5bbd6972" title="Same as Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp;...">Eval_Log_Energy_function(float* result, const std::list&lt;size_t&gt;&amp; combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, but computing the Energy function normalized. <br /></td></tr>
 <tr class="separator:a4af6d668eb57dfd023371e458380f862 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a694d83be785f93fafea6c69c69d9dd3a inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a694d83be785f93fafea6c69c69d9dd3a">Get_Log_Z</a> (float *Z)</td></tr>
+<tr class="memdesc:a694d83be785f93fafea6c69c69d9dd3a inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function.  <a href="class_segugio_1_1_node_1_1_node__factory.html#a694d83be785f93fafea6c69c69d9dd3a">More...</a><br /></td></tr>
+<tr class="separator:a694d83be785f93fafea6c69c69d9dd3a inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e7728e7cc7c93e6e1df57f032fa9114 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a9e7728e7cc7c93e6e1df57f032fa9114"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114">Get_Observation_Set_val</a> (std::list&lt; size_t &gt; *result)</td></tr>
 <tr class="memdesc:a9e7728e7cc7c93e6e1df57f032fa9114 inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attual values set observations. This function can be invokated after a call to void <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
@@ -178,9 +191,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
 <tr class="inherit_header pro_methods_class_segugio_1_1_graph___learnable"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_segugio_1_1_graph___learnable')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a></td></tr>
-<tr class="memitem:a5d31c81d086f026ad0de6e7f517b98e3 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a5d31c81d086f026ad0de6e7f517b98e3"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;is_weight_tunable)</td></tr>
-<tr class="separator:a5d31c81d086f026ad0de6e7f517b98e3 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d208f813cd072d4d23a5af5d12aecb4 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a6d208f813cd072d4d23a5af5d12aecb4"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *pot)</td></tr>
 <tr class="separator:a6d208f813cd072d4d23a5af5d12aecb4 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -230,17 +240,50 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 <tr class="separator:a02a5ac62908074100fba0e8718e0dccd inherit pro_attribs_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>This class describes Conditional Random fields. </p>
-<p>Set_Observation_Set_var is depracated: the observed set of variables cannot be changed after construction. </p>
+<div class="textblock"><p>This class describes a generic Random Field, not having a particular set of variables observed. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ad3a3cc127d483540f80f81b63e4b631a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3a3cc127d483540f80f81b63e4b631a">&#9670;&nbsp;</a></span>Conditional_Random_Field() <span class="overload">[1/2]</span></h2>
+<a id="ae4f903d8476854559b726745e8dc1edb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4f903d8476854559b726745e8dc1edb">&#9670;&nbsp;</a></span>Random_Field() <span class="overload">[1/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Segugio::Random_Field::Random_Field </td>
+          <td>(</td>
+          <td class="paramtype">const bool &amp;&#160;</td>
+          <td class="paramname"><em>use_cloning_Insert</em> = <code>true</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>empty constructor </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">use_cloning_Insert</td><td>when is true, every time an Insert of a novel potential is called, a copy of that potential is actually inserted. Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of a novel graph is faster. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="afd3aab74a88a273cca57015a7350d272"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd3aab74a88a273cca57015a7350d272">&#9670;&nbsp;</a></span>Random_Field() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Segugio::Conditional_Random_Field::Conditional_Random_Field </td>
+          <td class="memname">Segugio::Random_Field::Random_Field </td>
           <td>(</td>
           <td class="paramtype">const std::string &amp;&#160;</td>
           <td class="paramname"><em>config_xml_file</em>, </td>
@@ -260,7 +303,7 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 </div><div class="memdoc">
 
 <p>The model is built considering the information contained in an xml configuration file. </p>
-<p>TODO spiegare come è fatto xml </p><dl class="params"><dt>Parameters</dt><dd>
+<p>TODO spiegare come e' fatto xml </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">configuration</td><td>file </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">prefix</td><td>to use. The file prefix_config_xml_file/config_xml_file is searched. </td></tr>
@@ -270,23 +313,17 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 
 </div>
 </div>
-<a id="acfcd03265b038df7716c7d86235afc11"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acfcd03265b038df7716c7d86235afc11">&#9670;&nbsp;</a></span>Conditional_Random_Field() <span class="overload">[2/2]</span></h2>
+<a id="a459a7a280c7b7ca424474a1705da2486"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a459a7a280c7b7ca424474a1705da2486">&#9670;&nbsp;</a></span>Random_Field() <span class="overload">[3/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">Segugio::Conditional_Random_Field::Conditional_Random_Field </td>
+          <td class="memname">Segugio::Random_Field::Random_Field </td>
           <td>(</td>
           <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;&#160;</td>
-          <td class="paramname"><em>potentials</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;&#160;</td>
-          <td class="paramname"><em>observed_var</em>, </td>
+          <td class="paramname"><em>potentials_exp</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -314,11 +351,10 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
       </table>
 </div><div class="memdoc">
 
-<p>This constructor initializes the graph with the specified potentials passed as input, setting the variables passed as the one observed. </p>
+<p>This constructor initializes the graph with the specified potentials passed as input. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">potentials</td><td>the initial set of exponential potentials to insert (can be empty) </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">observed_var</td><td>the set of variables to assume as observations </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">potentials_exp</td><td>the initial set of exponential potentials to insert (can be empty) </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">use_cloning_Insert</td><td>when is true, every time an Insert of a novel potential is called (this includes the passed potentials), a copy of that potential is actually inserted. Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of a novel graph is faster. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">tunable_mask</td><td>when passed as non default value, it is must have the same size of potentials. Every value in this list is true if the corresponfing potential in the potentials list is tunable, i.e. has a weight whose value can vary with learning </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">shapes</td><td>A list of additional non learnable potentials to insert in the model </td></tr>
@@ -329,8 +365,8 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="aa0c0699c704aaa4163a27c4d319eb037"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa0c0699c704aaa4163a27c4d319eb037">&#9670;&nbsp;</a></span>Get_Likelihood_estimation()</h2>
+<a id="a183124e53cd2b2e114dc4ec3c861b504"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a183124e53cd2b2e114dc4ec3c861b504">&#9670;&nbsp;</a></span>Get_Likelihood_estimation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -339,7 +375,7 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void Segugio::Conditional_Random_Field::Get_Likelihood_estimation </td>
+          <td class="memname">void Segugio::Random_Field::Get_Likelihood_estimation </td>
           <td>(</td>
           <td class="paramtype">float *&#160;</td>
           <td class="paramname"><em>result</em>, </td>
@@ -373,13 +409,59 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 <p>(weights describing the wrapped <a class="el" href="class_segugio_1_1_potential___exp___shape.html" title="Represents an exponential potential, wrapping a normal shape one: every value of the domain are assum...">Potential_Exp_Shape</a>), considering a particular training set as reference: P(model | train_set). This method is called by an <a class="el" href="class_segugio_1_1_i___trainer.html" title="This class is used by a Graph_Learnable, to perform training with an instance of a Training_set.">I_Trainer</a> during the gradient descend performed when training the model </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">comb_train_set</td><td>samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">comb_var_order</td><td>list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model, considering both the hidden and the observed sets). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">comb_var_order</td><td>list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model) </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">result</td><td>logarithmic estimation of the likelihood </td></tr>
   </table>
   </dd>
 </dl>
 
 <p>Implements <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a>.</p>
+
+</div>
+</div>
+<a id="ac373c1f83803ee174ad0690a713d884f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac373c1f83803ee174ad0690a713d884f">&#9670;&nbsp;</a></span>Insert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Random_Field::Insert </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *&#160;</td>
+          <td class="paramname"><em>pot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const bool &amp;&#160;</td>
+          <td class="paramname"><em>is_weight_tunable</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Similar to <a class="el" href="class_segugio_1_1_graph.html#ac732cf67c43bca0d56f097decdfd9f73" title="The model is built considering the information contained in an xml configuration file.">Graph::Insert(Potential_Exp_Shape* pot)</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">is_weight_tunable</td><td>When true, you are specifying that this potential has a weight learnable, otherwise the value of the weight is assumed constant. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p>Reimplemented from <a class="el" href="class_segugio_1_1_graph___learnable.html">Segugio::Graph_Learnable</a>.</p>
 
 </div>
 </div>

@@ -125,6 +125,11 @@ namespace Segugio {
 			 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
 			 */
 			void					 Get_structure(std::list<const Potential*>* structure);
+
+			/*!
+			 * \brief Returns the number of potentials constituting the graph, no matter of their type (simple shape, exponential shape fixed or exponential shape tunable)
+			 */
+			size_t					 Get_structure_size();
 		protected:
 			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
 

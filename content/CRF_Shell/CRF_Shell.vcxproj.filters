@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Main_Shell.cpp" />
+    <ClCompile Include="__Source\CRF_Shell.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="__Source\Http_Server.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header">
+      <UniqueIdentifier>{92373cdb-3a5d-4356-a20d-b50d166ed288}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{634db16f-40f0-4eaf-8296-fa8e74c2b647}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="__Header\CRF_Shell.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="__Header\Http_Server.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

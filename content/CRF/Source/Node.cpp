@@ -1243,6 +1243,21 @@ namespace Segugio {
 		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++)
 			structure->push_back(*it);
 
+		list<Potential*>::iterator it_u;
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			for (it_u = (*it)->Permanent_Unary.begin(); it_u != (*it)->Permanent_Unary.end(); it_u++)
+				structure->push_back(*it_u);
+		}
+
+
+	}
+
+	size_t	Node::Node_factory::Get_structure_size() {
+
+		list<const Potential*> structure;
+		this->Get_structure(&structure);
+		return structure.size();
+
 	}
 
 }
