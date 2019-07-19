@@ -26,7 +26,7 @@ namespace Segugio {
 		*/
 		Graph(const bool& use_cloning_Insert = true) : Node_factory(use_cloning_Insert) {};
 		/** \brief The model is built considering the information contained in an xml configuration file.
-		* \details TODO spiegare come e' fatto xml
+		* \details See Structure of the XML describing a model in the documentation
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/
@@ -164,7 +164,7 @@ namespace Segugio {
 		Random_Field(const bool& use_cloning_Insert = true) : Graph_Learnable(use_cloning_Insert) {};
 
 		/** \brief The model is built considering the information contained in an xml configuration file.
-		* \details TODO spiegare come e' fatto xml
+		* \details See Structure of the XML describing a model in the documentation
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/
@@ -216,7 +216,7 @@ namespace Segugio {
 	class Conditional_Random_Field : public Graph_Learnable {
 	public:
 		/** \brief The model is built considering the information contained in an xml configuration file.
-		* \details TODO spiegare come e' fatto xml
+		* \details See Structure of the XML describing a model in the documentation
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/

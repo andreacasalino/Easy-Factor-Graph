@@ -95,8 +95,10 @@ void part_01(const string& prefix) {
 
 	float Z = 2.f*(1.f + expf(w));
 
-	cout << "freq <0,0> " << Get_empirical_frequencies(sample, { 0,0 }) << " theoretical: " << expf(w) / Z << endl;
-	cout << "freq <0,1> " << Get_empirical_frequencies(sample, { 0,1 }) << " theoretical: " << 1.f / Z << endl;
+	list<Categoric_var*> hidden_set;
+	graph_1.Get_Actual_Hidden_Set(&hidden_set);
+	cout << "freq <0,0> " << Get_empirical_frequencies(sample, { 0,0 }, {A_in_graph, B_in_graph}, hidden_set) << " theoretical: " << expf(w) / Z << endl;
+	cout << "freq <0,1> " << Get_empirical_frequencies(sample, { 0,1 }, { A_in_graph, B_in_graph }, hidden_set) << " theoretical: " << 1.f / Z << endl;
 
 }
 
@@ -126,11 +128,13 @@ void part_02(const string& prefix) {
 	//check empirical frequency for some combinations
 	float Z = 2.f*(expf(alfa) + expf(beta) + expf(gamma) + expf(alfa)*expf(beta)*expf(gamma));
 
+	list<Categoric_var*> hidden_set;
+	graph_2.Get_Actual_Hidden_Set(&hidden_set);
 	cout << "Gibbs sampler results\n";
-	cout << "freq <0,0,0> " << Get_empirical_frequencies(samples, { 0,0,0 }) << " theoretical: " << expf(alfa)*expf(beta)*expf(gamma) / Z << endl;
-	cout << "freq <1,0,0> " << Get_empirical_frequencies(samples, { 1,0,0 }) << " theoretical: " << expf(gamma) / Z << endl;
-	cout << "freq <0,1,0> " << Get_empirical_frequencies(samples, { 0,1,0 }) << " theoretical: " << expf(beta) / Z << endl;
-	cout << "freq <1,1,0> " << Get_empirical_frequencies(samples, { 1,1,0 }) << " theoretical: " << expf(alfa) / Z << endl;
+	cout << "freq <0,0,0> " << Get_empirical_frequencies(samples, { 0,0,0 }, {graph_2.Find_Variable("A"),graph_2.Find_Variable("B"), graph_2.Find_Variable("C") }, hidden_set) << " theoretical: " << expf(alfa)*expf(beta)*expf(gamma) / Z << endl;
+	cout << "freq <1,0,0> " << Get_empirical_frequencies(samples, { 1,0,0 }, { graph_2.Find_Variable("A"),graph_2.Find_Variable("B"), graph_2.Find_Variable("C") }, hidden_set) << " theoretical: " << expf(gamma) / Z << endl;
+	cout << "freq <0,1,0> " << Get_empirical_frequencies(samples, { 0,1,0 }, { graph_2.Find_Variable("A"),graph_2.Find_Variable("B"), graph_2.Find_Variable("C") }, hidden_set) << " theoretical: " << expf(beta) / Z << endl;
+	cout << "freq <1,1,0> " << Get_empirical_frequencies(samples, { 1,1,0 }, { graph_2.Find_Variable("A"),graph_2.Find_Variable("B"), graph_2.Find_Variable("C") }, hidden_set) << " theoretical: " << expf(alfa) / Z << endl;
 
 
 

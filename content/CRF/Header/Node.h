@@ -136,15 +136,40 @@ namespace Segugio {
 			public:
 				/*!
 				 * \brief Builds a reduction of the actual net, considering the actual observation values.
-				 * The subgraph is not automatically updated w.r.t. modifications of the originating net: in such cases just create a novel subgraph with the same sub_set of variables involved
+				 * \details The subgraph is not automatically updated w.r.t. modifications of the originating net: in such cases just create a novel subgraph with the same sub_set of variables involved
 				 */
-				_SubGraph(Node_factory* Originating , const std::list<Categoric_var*>& sub_set_to_consider);
+				_SubGraph(Node_factory* Original_graph , const std::list<Categoric_var*>& sub_set_to_consider);
 				~_SubGraph();
 
+				/** \brief Returns the marginal probabilty of a some particular combinations of values assumed by the variables in this subgraph.
+				* \details The marginal probabilities computed are conditioned to the observations set when extracting this subgraph.
+				* @param[out] result the computed marginal probabilities
+				* @param[in] combinations combinations of values for which the marginals are computed: must have same size of var_order_in_combination.
+				* @param[in] var_order_in_combination order of variables considered when assembling the combinations.
+				*/
 				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+				/** \brief Similar to Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination),
+				* passing the combinations as pointer arrays. 
+				*/
 				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+				/** \brief Returns the Maximum a Posteriori estimation of the hidden set in the sugraph.
+				* \details Values are ordered as returned by _SubGraph::Get_All_variables. This MAP
+				* is conditioned to the observations set at the time this subgraph was created.
+				*/
 				void					MAP(std::list<size_t>* result) { this->__SubGraph->MAP_on_Hidden_set(result); };
+				/** \brief Returns a set of samples for the variables involved in this subgraph.
+				* \details Sampling is done considering the marginal probability distribution of this cluster of 
+				* variables, conditioned to the observations set at the time this subgraph was created.
+				* Samples are obtained through Gibbs sampling.
+				* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
+				* @param[in] N_samples number of desired samples
+				* @param[in] initial_sample_to_skip number of samples to skip for performing Gibbs sampling
+				* @param[out] result returned samples: every element of the list is a combination of values for the hidden set, with the same
+				* order returned when calling _SubGraph::Get_All_variables
+				*/
 				void					Gibbs_Sampling(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip) { this->__SubGraph->Gibbs_Sampling_on_Hidden_set(result, N_samples, initial_sample_to_skip); };
+				/** \brief Returns the cluster of varaibles involved in this sub graph.
+				*/
 				void					Get_All_variables(std::list<Categoric_var*>* result) { this->__SubGraph->Get_All_variables_in_model(result); };
 			private:
 				_SubGraph(const _SubGraph&) { abort(); };

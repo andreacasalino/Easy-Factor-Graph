@@ -121,7 +121,7 @@ namespace Segugio {
 		result->clear();
 		this->__SubGraph->Eval_Log_Energy_function(result, combinations, var_order_in_combination);
 		for (auto it = result->begin(); it != result->end(); it++)
-			result->back() = expf(result->back() - *this->logZ);
+			*it = expf(*it - *this->logZ);
 
 	}
 
