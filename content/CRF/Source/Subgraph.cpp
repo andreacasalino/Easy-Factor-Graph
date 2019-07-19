@@ -98,7 +98,7 @@ namespace Segugio {
 
 	}
 
-	void Node::Node_factory::_SubGraph::Get_marginal_prob_combination(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
+	void Node::Node_factory::_SubGraph::Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
 
 		if (this->logZ == NULL) {
 			//compute Z
@@ -122,6 +122,28 @@ namespace Segugio {
 		this->__SubGraph->Eval_Log_Energy_function(result, combinations, var_order_in_combination);
 		for (auto it = result->begin(); it != result->end(); it++)
 			result->back() = expf(result->back() - *this->logZ);
+
+	}
+
+	void Node::Node_factory::_SubGraph::Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		list<size_t*> temp;
+		size_t k, K;
+		list<size_t>::const_iterator it_l;
+		for (auto it = combinations.begin(); it != combinations.end(); it++) {
+			K = it->size();
+			temp.push_back((size_t*)malloc(K * sizeof(size_t)));
+			it_l = it->begin();
+			for (k = 0; k < K; k++) {
+				temp.back()[k] = *it_l;
+				it_l++;
+			}
+		}
+
+		this->Get_marginal_prob_combinations( result, temp, var_order_in_combination);
+
+		for (auto it = temp.begin(); it != temp.end(); it++)
+			free(*it);
 
 	}
 

@@ -141,8 +141,8 @@ namespace Segugio {
 				_SubGraph(Node_factory* Originating , const std::list<Categoric_var*>& sub_set_to_consider);
 				~_SubGraph();
 
-				void					Get_marginal_prob_combination(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
-				void					Get_marginal_prob_combination(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
 				void					MAP(std::list<size_t>* result) { this->__SubGraph->MAP_on_Hidden_set(result); };
 				void					Gibbs_Sampling(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip) { this->__SubGraph->Gibbs_Sampling_on_Hidden_set(result, N_samples, initial_sample_to_skip); };
 				void					Get_All_variables(std::list<Categoric_var*>* result) { this->__SubGraph->Get_All_variables_in_model(result); };

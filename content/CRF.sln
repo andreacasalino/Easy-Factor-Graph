@@ -45,6 +45,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CRF_Shell", "CRF_Shell\CRF_
 		{3FB81309-80A5-452C-A34A-694939BB7D94} = {3FB81309-80A5-452C-A34A-694939BB7D94}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample_09_subgraph_operation", "Sample\Sample_09_subgraph_operation\Sample_09_subgraph_operation.vcxproj", "{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -125,12 +127,20 @@ Global
 		{3FB880DE-7185-4A4C-885A-0C7B7ECC4891}.Release|x64.Build.0 = Release|x64
 		{3FB880DE-7185-4A4C-885A-0C7B7ECC4891}.Release|x86.ActiveCfg = Release|Win32
 		{3FB880DE-7185-4A4C-885A-0C7B7ECC4891}.Release|x86.Build.0 = Release|Win32
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Debug|x64.ActiveCfg = Debug|x64
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Debug|x64.Build.0 = Debug|x64
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Debug|x86.ActiveCfg = Debug|Win32
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Debug|x86.Build.0 = Debug|Win32
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x64.ActiveCfg = Release|x64
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x64.Build.0 = Release|x64
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x86.ActiveCfg = Release|Win32
+		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98A78535-37D4-41D7-88F8-993CF73D529A}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {98A78535-37D4-41D7-88F8-993CF73D529A}
 	EndGlobalSection
 EndGlobal

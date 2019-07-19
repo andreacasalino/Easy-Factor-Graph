@@ -71,20 +71,49 @@ void Get_empirical_frequencies(list<float>* marginals, const list<list<size_t>>&
 
 }
 
-float Get_empirical_frequencies(const list<list<size_t>>& sample, const list<size_t>& combination_to_search) {
+float Get_empirical_frequencies(const list<list<size_t>>& sample, const list<size_t>& combination_to_search, const list<Segugio::Categoric_var*>& vars_to_search, const list<Segugio::Categoric_var*>& vars_in_sample) {
+
+	if (sample.front().size() != vars_in_sample.size())
+		abort();
+	if (combination_to_search.size() != vars_to_search.size())
+		abort();
+
+	list<size_t> positions;
+	list<Segugio::Categoric_var*>::const_iterator itv_2;
+	size_t p;
+	bool found;
+	for (auto itv = vars_to_search.begin(); itv != vars_to_search.end(); itv++) {
+		p = 0;
+		found = false;
+		for (itv_2 = vars_in_sample.begin(); itv_2 != vars_in_sample.end(); itv_2++) {
+			if (*itv_2 == *itv) {
+				positions.push_back(p);
+				found = true;
+				break;
+			}
+			p++;
+		}
+		if (!found)
+			abort();
+	}
+
 
 	float freq = 0;
 	bool match;
 	list<size_t>::const_iterator it1, it2;
+	list<size_t>::iterator it_pos;
 	for (auto it = sample.begin(); it != sample.end(); it++) {
 		match = true;
-		it2 = combination_to_search.begin();
-		for (it1 = it->begin(); it1 != it->end(); it1++) {
+
+		it1 = combination_to_search.begin();
+		for (it_pos = positions.begin(); it_pos != positions.end(); it_pos++) {
+			it2 = it->begin();
+			advance(it2, *it_pos);
 			if (*it2 != *it1) {
 				match = false;
 				break;
 			}
-			it2++;
+			it1++;
 		}
 
 		if (match) freq += 1.f;
