@@ -693,6 +693,28 @@ void JSON_array::__stringify(std::string* result) {
 
 }
 
+void JSON_numerical_array::__stringify(std::string* result) {
+
+	result->push_back('[');
+	size_t L = this->Values.size();
+	if (L > 0) {
+		if (L == 1)
+			(*result) += to_string(this->Values.front());
+		else {
+			auto it = this->Values.begin();
+			for (size_t k = 0; k < (L - 1); k++) {
+				(*result) += to_string(*it);
+				(*result) += ',';
+				it++;
+			}
+			(*result) += to_string(this->Values.back());
+		}
+	}
+
+	result->push_back(']');
+
+}
+
 
 
 

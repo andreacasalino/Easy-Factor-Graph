@@ -96,26 +96,27 @@ namespace Segugio {
 			*/
 			void Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination);
 			/** \brief Same as Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination), 
-			* passing a list instead of an array Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination)
+			* passing a list instead of an array size_t*, a list<size_t> for describing the combination for which you want to evaluate the energy.
 			*/
 			void Eval_Log_Energy_function(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
+			/** \brief Same as Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination),
+			* passing a list of combinations: don't iterate yourself many times using 
+			Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination), but call this function
+			*/
+			void Eval_Log_Energy_function(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
 
 			/** \brief Similar as Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination),
 			* but computing the Energy function normalized: E_norm = E(Y_1,2,....,n) / max possible { E }. E_norm is in [0,1]. The logarthmic value of E_norm is actually returned
 			*/
 			void Eval_Log_Energy_function_normalized(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination);
-
 			/** \brief Similar as Eval_Log_Energy_function(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination),
 			* but computing the Energy function normalized. 
 			*/
 			void Eval_Log_Energy_function_normalized(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination);
-
-			/** \brief Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function. 
-			* \details For generic graphs, Z is a function Z(model), while for conditional random field is a function Z(model, X_observations). 
-			* Z is always recomputed, considering actual structure of the net: avoid calling multiple times for generic graphs don't varying between
-			* two intermediate calls.
+			/** \brief Similar as Eval_Log_Energy_function(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination),
+			* but computing the Energy function normalized.
 			*/
-			virtual void			  Get_Log_Z(float* Z);
+			void Eval_Log_Energy_function_normalized(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
 
 			/** \brief Returns the attual values set observations. This function can be invokated after a call to void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 			*/
@@ -125,149 +126,68 @@ namespace Segugio {
 			 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
 			 */
 			void					 Get_structure(std::list<const Potential*>* structure);
-
 			/*!
 			 * \brief Returns the number of potentials constituting the graph, no matter of their type (simple shape, exponential shape fixed or exponential shape tunable)
 			 */
 			size_t					 Get_structure_size();
+
+
+			class _SubGraph {
+			public:
+				/*!
+				 * \brief Builds a reduction of the actual net, considering the actual observation values.
+				 * The subgraph is not automatically updated w.r.t. modifications of the originating net: in such cases just create a novel subgraph with the same sub_set of variables involved
+				 */
+				_SubGraph(Node_factory* Originating , const std::list<Categoric_var*>& sub_set_to_consider);
+				~_SubGraph();
+
+				void					Get_marginal_prob_combination(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+				void					Get_marginal_prob_combination(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+				void					MAP(std::list<size_t>* result) { this->__SubGraph->MAP_on_Hidden_set(result); };
+				void					Gibbs_Sampling(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip) { this->__SubGraph->Gibbs_Sampling_on_Hidden_set(result, N_samples, initial_sample_to_skip); };
+				void					Get_All_variables(std::list<Categoric_var*>* result) { this->__SubGraph->Get_All_variables_in_model(result); };
+			private:
+				_SubGraph(const _SubGraph&) { abort(); };
+			// data
+				Node_factory*		__SubGraph;
+				float*						logZ; //normalization coefficient for computing marginal probabilities. It is a proxy
+			};
+
 		protected:
 			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
 
 			//Import XML is not inlined in constructor since contains a call to Insert, which is virtual
 			void Import_from_XML(XML_reader* xml_data, const std::string& prefix_config_xml_file);
 
+			struct _Pot_wrapper_4_Insertion {
+				virtual const std::list<Categoric_var*>* Get_involved_var_safe() = 0;
+				virtual Potential*											  Get_Potential_to_Insert(const std::list<Categoric_var*>& var_involved, const bool& get_cloned) = 0;
+			};
+			
 			//when the passed potential involves two variable is interpreted as a new edge, when containing a single a variable is assumed as a new unary potential;
 			//in any other cases is a an error
-			virtual void Insert(Potential_Shape* pot) = 0;
-			virtual void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable) = 0;
+			void Insert(_Pot_wrapper_4_Insertion* element_to_add);
 
-			void Insert(const std::list<Potential_Shape*>& set_to_insert);
-			void Insert(const std::list<Potential_Exp_Shape*>& set_to_insert, const std::list<bool>& tunability_flags);
-			void Insert(const std::list<Potential_Shape*>& set_to_insert, const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<bool>& tunability_flags ); //tunability flags refer only to the exponential shapes
+			void Insert(std::list<_Pot_wrapper_4_Insertion*>& elements_to_add);
 
 			template<typename T>
-			T* Insert_with_size_check(T* pot) { //returns the potential actually inserted in the graph (shape or exponential) cloned or not
-
-				T* inserted_to_return = NULL;
-
-				size_t var_numb = pot->Get_involved_var_safe()->size();
-				if (var_numb == 1) {
-					//unary potential insertion
-					Categoric_var* varU = pot->Get_involved_var_safe()->front();
-					auto itN = this->Nodes.begin();
-					bool node_found = false;
-
-					for (itN; itN != this->Nodes.end(); itN++) {
-						if ((*itN)->Get_var()->Get_name().compare(varU->Get_name()) == 0) {
-
-							if (this->bDestroy_Potentials_and_Variables)
-								inserted_to_return = new T(pot, { (*itN)->Get_var() });
-							else
-								inserted_to_return = pot;
-
-							(*itN)->Permanent_Unary.push_back(new Potential(inserted_to_return));
-							node_found = true;
-							break;
-						}
-					}
-
-					if (!node_found) {
-						system("ECHO the unary potential provided refers to an inexistent node");
-						abort();
-					}
-				}
-				else if (var_numb == 2) {
-					//binary potential insertion
-					Node* peer_A = NULL;
-					Node* peer_B = NULL;
-
-					Categoric_var* varA = pot->Get_involved_var_safe()->front();
-					auto itN = this->Nodes.begin();
-					for (itN; itN != this->Nodes.end(); itN++) {
-						if ((*itN)->Get_var()->Get_name().compare(varA->Get_name()) == 0) {
-							peer_A = *itN;
-							break;
-						}
-					}
-					Categoric_var* varB = pot->Get_involved_var_safe()->back();
-					itN = this->Nodes.begin();
-					for (itN; itN != this->Nodes.end(); itN++) {
-						if ((*itN)->Get_var()->Get_name().compare(varB->Get_name()) == 0) {
-							peer_B = *itN;
-							break;
-						}
-					}
-
-					if ((peer_A != NULL) && (peer_B != NULL)) {
-						//check this potential was not already inserted
-						const std::list<Categoric_var*>* temp_var;
-						for (auto it_bb = this->Binary_potentials.begin();
-							it_bb != this->Binary_potentials.end(); it_bb++) {
-							temp_var = (*it_bb)->Get_involved_var_safe();
-
-							if (((peer_A->Get_var() == temp_var->front()) && (peer_B->Get_var() == temp_var->back())) ||
-								((peer_A->Get_var() == temp_var->back()) && (peer_B->Get_var() == temp_var->front()))) {
-								system("ECHO found clone of an already inserted binary potential");
-								abort();
-							}
-						}
-					}
-
-					if (peer_A == NULL) {
-						if (this->bDestroy_Potentials_and_Variables)
-							this->Nodes.push_back(new Node(varA));
-						else
-							this->Nodes.push_back(new Node(varA, true));
-						peer_A = this->Nodes.back();
-					}
-					if (peer_B == NULL) {
-						if (this->bDestroy_Potentials_and_Variables)
-							this->Nodes.push_back(new Node(varB));
-						else
-							this->Nodes.push_back(new Node(varB, true));
-						peer_B = this->Nodes.back();
-					}
-
-					if (this->bDestroy_Potentials_and_Variables)
-						inserted_to_return = new T(pot, { peer_A->Get_var(), peer_B->Get_var() });
+			struct _Baseline_4_Insertion : public _Pot_wrapper_4_Insertion {
+				_Baseline_4_Insertion(T* wrp) : wrapped(wrp) {};
+				virtual const std::list<Categoric_var*>* Get_involved_var_safe() { return this->wrapped->Get_involved_var_safe(); };
+				virtual Potential*											  Get_Potential_to_Insert(const std::list<Categoric_var*>& var_involved, const bool& get_cloned) {
+					if (get_cloned)
+						return new Potential(new T(this->wrapped , var_involved));
 					else
-						inserted_to_return = pot;
-
-					Potential* new_pot = new Potential(inserted_to_return);
-					//create connection
-					Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
-					A_B->This_Node = peer_A;
-					A_B->Neighbour = peer_B;
-					A_B->Shared_potential = new_pot;
-					A_B->Message_to_this_node = NULL;
-
-					Node::Neighbour_connection* B_A = new Node::Neighbour_connection();
-					B_A->This_Node = peer_B;
-					B_A->Neighbour = peer_A;
-					B_A->Shared_potential = new_pot;
-					B_A->Message_to_this_node = NULL;
-
-					A_B->Message_to_neighbour_node = &B_A->Message_to_this_node;
-					B_A->Message_to_neighbour_node = &A_B->Message_to_this_node;
-
-					peer_A->Active_connections.push_back(A_B);
-					peer_B->Active_connections.push_back(B_A);
-
-					this->Binary_potentials.push_back(new_pot);
-
-				}
-				else {
-					system("ECHO invalid component to insert in a graph");
-					abort();
-				}
-
-				if (this->Last_propag_info != NULL) delete this->Last_propag_info;
-				this->Last_propag_info = NULL;
-				this->mState = 0;
-
-				return inserted_to_return;
-
+						return new Potential(this->wrapped);
+				};
+			protected:
+				T*			wrapped;
 			};
+
+			virtual _Pot_wrapper_4_Insertion* Get_Inserter(Potential_Exp_Shape* pot, const bool& weight_tunability) { return new _Baseline_4_Insertion<Potential_Exp_Shape>(pot); }; //result is created with new
+
+			void Insert(Potential_Shape* pot);
+			void Insert(Potential_Exp_Shape* pot, const bool& weight_tunability);
 
 			Node*					  Find_Node(const std::string& var_name);
 			
@@ -282,8 +202,6 @@ namespace Segugio {
 			void					  Belief_Propagation(const bool& sum_or_MAP);
 
 			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
-
-			void					  Recompute_Log_Z(float* result, std::list<size_t>& new_observed_vals, std::list<Categoric_var*>& new_observed_vars);
 		private:
 			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);
 			void					  Recompute_clusters();
@@ -300,18 +218,18 @@ namespace Segugio {
 			};
 
 		// data
-			bool								bDestroy_Potentials_and_Variables;
+			bool															bDestroy_Potentials_and_Variables;
 
-			size_t								mState;
-			last_belief_propagation_info*		Last_propag_info;
+			size_t															mState;
+			last_belief_propagation_info*				Last_propag_info;
 
-			std::list<std::list<Node*>>			Last_hidden_clusters;
-			std::list<observation_info>			Last_observation_set;
+			std::list<std::list<Node*>>					Last_hidden_clusters;
+			std::list<observation_info>					Last_observation_set;
 
-			std::list<Node*>					Nodes;
-			std::list<Potential*>				Binary_potentials;
+			std::list<Node*>										Nodes;
+			std::list<Potential*>								Binary_potentials;
 
-			unsigned int						Iterations_4_belief_propagation;
+			unsigned int												Iterations_4_belief_propagation;
 		};
 
 
@@ -336,6 +254,8 @@ namespace Segugio {
 	};
 
 
+
+	typedef Node::Node_factory::_SubGraph  SubGraph;
 
 
 

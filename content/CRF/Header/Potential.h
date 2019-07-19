@@ -83,13 +83,21 @@ namespace Segugio {
 		*/
 		void			Find_Comb_in_distribution(std::list<float>* result,
 			const std::list<size_t*>& comb_to_search, const std::list<Categoric_var*>& comb_to_search_var_order);
+		
 		/** \brief get entire domain of a group of variables: list of possible combinations
 		*
 		* @param[out] domain the entire set of possible combinations
 		* @param[in] Vars_in_domain variables involved whose domain has to be compute
 		*/
 		static void Get_entire_domain(std::list<std::list<size_t>>* domain, const std::list<Categoric_var*>& Vars_in_domain);
-		
+		/** \brief Same as Get_entire_domain(std::list<std::list<size_t>>* domain, const std::list<Categoric_var*>& Vars_in_domain),
+		* but adopting array internally allocated with malloc instead of list: remembre to delete combinations.
+		*
+		* @param[out] domain the entire set of possible combinations
+		* @param[in] Vars_in_domain variables involved whose domain has to be compute
+		*/
+		static void Get_entire_domain(std::list<size_t*>* domain, const std::list<Categoric_var*>& Vars_in_domain);
+
 		/** \brief Returns the maximum value in the distribution describing this potential
 		*/
 		float max_in_distribution();
@@ -115,9 +123,6 @@ namespace Segugio {
 
 		virtual const std::list<Categoric_var*>*	  Get_involved_var() const = 0;
 		virtual std::list<I_Distribution_value*>*	Get_distr() = 0;
-
-		//computes all the indices constituting the domain of a group of categorical variables
-		static void Get_entire_domain(std::list<size_t*>* domain, const std::list<Categoric_var*>& Vars_in_domain);
 	};
 
 
@@ -288,6 +293,7 @@ namespace Segugio {
 		* @param[in] pot exponential potential shape to wrap
 		*/
 		Potential(Potential_Exp_Shape* pot) : I_Potential_Decorator(pot) { };
+
 		/** \brief The potential to create is obtained by merging a set of potentials referring to the same variables
 		* (i.e. values in the image are obtained as a product of the ones in the potential_to_merge set)
 		*

@@ -33,6 +33,7 @@
     <ClCompile Include="Source\Graphical_model.cpp" />
     <ClCompile Include="Source\Node.cpp" />
     <ClCompile Include="Source\Potential.cpp" />
+    <ClCompile Include="Source\Subgraph.cpp" />
     <ClCompile Include="Source\Trainer.cpp" />
     <ClCompile Include="Source\Training_set.cpp" />
   </ItemGroup>

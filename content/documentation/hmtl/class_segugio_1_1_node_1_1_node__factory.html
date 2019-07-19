@@ -71,7 +71,7 @@ $(function() {
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="class_segugio_1_1_node_1_1_node__factory-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Segugio::Node::Node_factory Class Reference<span class="mlabels"><span class="mlabel">abstract</span></span></div>  </div>
+<div class="title">Segugio::Node::Node_factory Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
@@ -92,6 +92,15 @@ Inheritance diagram for Segugio::Node::Node_factory:</div>
   </map>
 </div></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___baseline__4___insertion.html">_Baseline_4_Insertion</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html">_SubGraph</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a151ad19a61e17552a52e57017c43700f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a151ad19a61e17552a52e57017c43700f">Find_Variable</a> (const std::string &amp;var_name)</td></tr>
@@ -134,8 +143,12 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:a20ea540a53980f69398ead5613dcc669"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aceafa7587a04e516fe7413fc5bbd6972"><td class="memItemLeft" align="right" valign="top"><a id="aceafa7587a04e516fe7413fc5bbd6972"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aceafa7587a04e516fe7413fc5bbd6972">Eval_Log_Energy_function</a> (float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
-<tr class="memdesc:aceafa7587a04e516fe7413fc5bbd6972"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, passing a list instead of an array <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a> <br /></td></tr>
+<tr class="memdesc:aceafa7587a04e516fe7413fc5bbd6972"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, passing a list instead of an array size_t*, a list&lt;size_t&gt; for describing the combination for which you want to evaluate the energy. <br /></td></tr>
 <tr class="separator:aceafa7587a04e516fe7413fc5bbd6972"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0cf500394b07a07bfaefc3318e72d76"><td class="memItemLeft" align="right" valign="top"><a id="aa0cf500394b07a07bfaefc3318e72d76"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aa0cf500394b07a07bfaefc3318e72d76">Eval_Log_Energy_function</a> (std::list&lt; float &gt; *result, const std::list&lt; size_t * &gt; &amp;combinations, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
+<tr class="memdesc:aa0cf500394b07a07bfaefc3318e72d76"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, passing a list of combinations: don't iterate yourself many times using <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, but call this function. <br /></td></tr>
+<tr class="separator:aa0cf500394b07a07bfaefc3318e72d76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8549fc7809c3e99fb522311358ad6c1c"><td class="memItemLeft" align="right" valign="top"><a id="a8549fc7809c3e99fb522311358ad6c1c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a8549fc7809c3e99fb522311358ad6c1c">Eval_Log_Energy_function_normalized</a> (float *result, size_t *combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
 <tr class="memdesc:a8549fc7809c3e99fb522311358ad6c1c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669" title="Returns the logartihmic value of the energy function.">Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, but computing the Energy function normalized: E_norm = E(Y_1,2,....,n) / max possible { E }. E_norm is in [0,1]. The logarthmic value of E_norm is actually returned. <br /></td></tr>
@@ -144,9 +157,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a4af6d668eb57dfd023371e458380f862">Eval_Log_Energy_function_normalized</a> (float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
 <tr class="memdesc:a4af6d668eb57dfd023371e458380f862"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aceafa7587a04e516fe7413fc5bbd6972" title="Same as Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp;...">Eval_Log_Energy_function(float* result, const std::list&lt;size_t&gt;&amp; combination, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, but computing the Energy function normalized. <br /></td></tr>
 <tr class="separator:a4af6d668eb57dfd023371e458380f862"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a694d83be785f93fafea6c69c69d9dd3a"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a694d83be785f93fafea6c69c69d9dd3a">Get_Log_Z</a> (float *Z)</td></tr>
-<tr class="memdesc:a694d83be785f93fafea6c69c69d9dd3a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function.  <a href="#a694d83be785f93fafea6c69c69d9dd3a">More...</a><br /></td></tr>
-<tr class="separator:a694d83be785f93fafea6c69c69d9dd3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef3f7347721a7d2f7f1e8d1cc81ac390"><td class="memItemLeft" align="right" valign="top"><a id="aef3f7347721a7d2f7f1e8d1cc81ac390"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aef3f7347721a7d2f7f1e8d1cc81ac390">Eval_Log_Energy_function_normalized</a> (std::list&lt; float &gt; *result, const std::list&lt; size_t * &gt; &amp;combinations, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
+<tr class="memdesc:aef3f7347721a7d2f7f1e8d1cc81ac390"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar as <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aa0cf500394b07a07bfaefc3318e72d76" title="Same as Eval_Log_Energy_function(float* result, size_t* combination, const std::list&lt;Categoric_var*&gt;&amp;...">Eval_Log_Energy_function(std::list&lt;float&gt;* result, const std::list&lt;size_t*&gt;&amp; combinations, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, but computing the Energy function normalized. <br /></td></tr>
+<tr class="separator:aef3f7347721a7d2f7f1e8d1cc81ac390"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e7728e7cc7c93e6e1df57f032fa9114"><td class="memItemLeft" align="right" valign="top"><a id="a9e7728e7cc7c93e6e1df57f032fa9114"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114">Get_Observation_Set_val</a> (std::list&lt; size_t &gt; *result)</td></tr>
 <tr class="memdesc:a9e7728e7cc7c93e6e1df57f032fa9114"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attual values set observations. This function can be invokated after a call to void <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
@@ -155,6 +169,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential.html">Potential</a> * &gt; *structure)</td></tr>
 <tr class="memdesc:ad418a490e80336123ad5a9ba1eec8a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of potentials constituting the net. Usefull for structural learning. <br /></td></tr>
 <tr class="separator:ad418a490e80336123ad5a9ba1eec8a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed2b33889f2f08b92e9d254bf163e013"><td class="memItemLeft" align="right" valign="top"><a id="aed2b33889f2f08b92e9d254bf163e013"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aed2b33889f2f08b92e9d254bf163e013">Get_structure_size</a> ()</td></tr>
+<tr class="memdesc:aed2b33889f2f08b92e9d254bf163e013"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of potentials constituting the graph, no matter of their type (simple shape, exponential shape fixed or exponential shape tunable) <br /></td></tr>
+<tr class="separator:aed2b33889f2f08b92e9d254bf163e013"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -164,25 +182,21 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a36ecc4d80f811938103b06a2cecd5a06"><td class="memItemLeft" align="right" valign="top"><a id="a36ecc4d80f811938103b06a2cecd5a06"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Import_from_XML</b> (XML_reader *xml_data, const std::string &amp;prefix_config_xml_file)</td></tr>
 <tr class="separator:a36ecc4d80f811938103b06a2cecd5a06"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3154727f06fbd401e76730b7adb72a87"><td class="memItemLeft" align="right" valign="top"><a id="a3154727f06fbd401e76730b7adb72a87"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *pot)=0</td></tr>
-<tr class="separator:a3154727f06fbd401e76730b7adb72a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a27a86dcf7a44361bd0145441b967e172"><td class="memItemLeft" align="right" valign="top"><a id="a27a86dcf7a44361bd0145441b967e172"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;is_weight_tunable)=0</td></tr>
-<tr class="separator:a27a86dcf7a44361bd0145441b967e172"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b0352799b4bdbe733996afe2e5c5315"><td class="memItemLeft" align="right" valign="top"><a id="a6b0352799b4bdbe733996afe2e5c5315"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert)</td></tr>
-<tr class="separator:a6b0352799b4bdbe733996afe2e5c5315"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24bef1e98124c96291c3502e699303fe"><td class="memItemLeft" align="right" valign="top"><a id="a24bef1e98124c96291c3502e699303fe"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_to_insert, const std::list&lt; bool &gt; &amp;tunability_flags)</td></tr>
-<tr class="separator:a24bef1e98124c96291c3502e699303fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a87cc3ff9f9b76301ce03027b6dfc6ac9"><td class="memItemLeft" align="right" valign="top"><a id="a87cc3ff9f9b76301ce03027b6dfc6ac9"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;set_to_insert, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;set_exp_to_insert, const std::list&lt; bool &gt; &amp;tunability_flags)</td></tr>
-<tr class="separator:a87cc3ff9f9b76301ce03027b6dfc6ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bdcd12b0c78866ae1a3343086ed9c3a"><td class="memTemplParams" colspan="2"><a id="a5bdcd12b0c78866ae1a3343086ed9c3a"></a>
-template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a5bdcd12b0c78866ae1a3343086ed9c3a"><td class="memTemplItemLeft" align="right" valign="top">T *&#160;</td><td class="memTemplItemRight" valign="bottom"><b>Insert_with_size_check</b> (T *pot)</td></tr>
-<tr class="separator:a5bdcd12b0c78866ae1a3343086ed9c3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26033552a4c147d8521b0db4813eab4f"><td class="memItemLeft" align="right" valign="top"><a id="a26033552a4c147d8521b0db4813eab4f"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a> *element_to_add)</td></tr>
+<tr class="separator:a26033552a4c147d8521b0db4813eab4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1df66f8c23d261c264da86bcac17bac7"><td class="memItemLeft" align="right" valign="top"><a id="a1df66f8c23d261c264da86bcac17bac7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (std::list&lt; <a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a> * &gt; &amp;elements_to_add)</td></tr>
+<tr class="separator:a1df66f8c23d261c264da86bcac17bac7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a520b9ea85b4f161c6f3528ecf041c2fc"><td class="memItemLeft" align="right" valign="top"><a id="a520b9ea85b4f161c6f3528ecf041c2fc"></a>
+virtual <a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_Inserter</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;weight_tunability)</td></tr>
+<tr class="separator:a520b9ea85b4f161c6f3528ecf041c2fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9605425bdaa46549135b5c57ddaf2fce"><td class="memItemLeft" align="right" valign="top"><a id="a9605425bdaa46549135b5c57ddaf2fce"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *pot)</td></tr>
+<tr class="separator:a9605425bdaa46549135b5c57ddaf2fce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af74f011c600495f6967ed2782c630573"><td class="memItemLeft" align="right" valign="top"><a id="af74f011c600495f6967ed2782c630573"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;weight_tunability)</td></tr>
+<tr class="separator:af74f011c600495f6967ed2782c630573"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bb31d8d32df501115cc67db0f1db176"><td class="memItemLeft" align="right" valign="top"><a id="a0bb31d8d32df501115cc67db0f1db176"></a>
 <a class="el" href="class_segugio_1_1_node.html">Node</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Node</b> (const std::string &amp;var_name)</td></tr>
 <tr class="separator:a0bb31d8d32df501115cc67db0f1db176"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -200,9 +214,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Belief_Propagation</b
 <tr class="memitem:ad12022d0ebfaa8b51df40dd4f70f221a"><td class="memItemLeft" align="right" valign="top"><a id="ad12022d0ebfaa8b51df40dd4f70f221a"></a>
 size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_in_case_is_in_observed_set</b> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var)</td></tr>
 <tr class="separator:ad12022d0ebfaa8b51df40dd4f70f221a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20aeeb123c75b05f55e13f27ebb8cf52"><td class="memItemLeft" align="right" valign="top"><a id="a20aeeb123c75b05f55e13f27ebb8cf52"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Recompute_Log_Z</b> (float *result, std::list&lt; size_t &gt; &amp;new_observed_vals, std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;new_observed_vars)</td></tr>
-<tr class="separator:a20aeeb123c75b05f55e13f27ebb8cf52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for describing a net: set of nodes representing random variables. </p>
@@ -308,35 +319,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>Recompute_Log_Z</b> (
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a694d83be785f93fafea6c69c69d9dd3a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a694d83be785f93fafea6c69c69d9dd3a">&#9670;&nbsp;</a></span>Get_Log_Z()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Segugio::Node::Node_factory::Get_Log_Z </td>
-          <td>(</td>
-          <td class="paramtype">float *&#160;</td>
-          <td class="paramname"><em>Z</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns the logarithmic value of the ripartition function Z. Prob(comb) = E(comb) / Z. E is the energy function see Node_factory::Eval_Energy_function. </p>
-<p>For generic graphs, Z is a function Z(model), while for conditional random field is a function Z(model, X_observations). Z is always recomputed, considering actual structure of the net: avoid calling multiple times for generic graphs don't varying between two intermediate calls. </p>
 
 </div>
 </div>

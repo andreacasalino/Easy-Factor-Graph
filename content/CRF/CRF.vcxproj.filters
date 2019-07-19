@@ -53,5 +53,8 @@
     <ClCompile Include="..\thirdy_part_lib\XML_reader\XML_Manager.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Subgraph.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

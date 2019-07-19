@@ -72,6 +72,18 @@ private:
 	virtual void __stringify(std::string* result);
 };
 
+//[1,2,3,5,2,4.4,6]
+class JSON_numerical_array : public I_JSON_composite {
+public:
+	JSON_numerical_array() {};
+
+	void Append(const float& to_nest) { this->Values.push_back(to_nest); };
+private:
+	virtual I_JSON_composite*  __copy() const { return new JSON_numerical_array(*this); };
+	virtual void __stringify(std::string* result);
+
+	std::list<float>			Values;
+};
 
 
 

@@ -49,14 +49,14 @@ namespace Segugio {
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input 
 		* a potential which involves that variable).
 		*/
-		void Insert(Potential_Shape* pot) { this->Node_factory::Insert_with_size_check<Potential_Shape>(pot); };
+		void Insert(Potential_Shape* pot) { this->Node_factory::Insert(pot); };
 
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input
 		* a potential which involves that variable).
 		*/
-		void Insert(Potential_Exp_Shape* pot) { this->Insert(pot, true); };
+		void Insert(Potential_Exp_Shape* pot) { this->Node_factory::Insert(pot, false); };
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
 		 */
@@ -65,8 +65,6 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
-	private:
-		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable) { this->Node_factory::Insert_with_size_check<Potential_Exp_Shape>(pot); };
 	};
 
 
@@ -95,7 +93,6 @@ namespace Segugio {
 	 */
 	class Graph_Learnable : public Node::Node_factory {
 	public:
-		Graph_Learnable(const bool& use_cloning_Insert) : Node::Node_factory(use_cloning_Insert), pLast_train_set(NULL) {};
 		~Graph_Learnable();
 
 		struct Weights_Manager {
@@ -115,16 +112,26 @@ namespace Segugio {
 		 */
 		size_t Get_model_size() { return this->Model_handlers.size(); };
 
-		virtual void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) = 0;
-		
+		/*
+		* \brief Returns an estimation of the likelihood of the model
+		* \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
+		* P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
+		* @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
+		* @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model)
+		* @param[out] result logarithmic estimation of the likelihood
+		*/
+		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
+
 		/*!
 		 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
 		 */
 		void Get_structure(std::list<const Potential_Exp_Shape*>* result);
 	protected:
-		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable);
-		void Insert(Potential_Shape* pot);
+		virtual _Pot_wrapper_4_Insertion* Get_Inserter(Potential_Exp_Shape* pot, const bool& weight_tunability);
 
+		Graph_Learnable(const bool& use_cloning_Insert) : Node::Node_factory(use_cloning_Insert), pLast_train_set(NULL) {};
+		Graph_Learnable(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert , const std::list<bool>& tunable_mask,
+			const std::list<Potential_Shape*>& shapes);
 	// data
 		std::list<I_Learning_handler*>   Model_handlers;
 	private:
@@ -177,13 +184,18 @@ namespace Segugio {
 		*/
 		Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert = true, const std::list<bool>& tunable_mask = {},
 			const std::list<Potential_Shape*>& shapes = {});
-		
+
+		/*!
+		 * \brief Similar to Graph::Insert(Potential_Shape* pot)
+		 */
+		void Insert(Potential_Shape* pot) { this->Node_factory::Insert(pot); };
 		/*!
 		 * \brief Similar to Graph::Insert(Potential_Exp_Shape* pot).  
 		* @param[in] is_weight_tunable When true, you are specifying that this potential has a weight learnable, otherwise the value 
 		* of the weight is assumed constant.
 		 */
 		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable = true) { this->Graph_Learnable::Insert(pot, is_weight_tunable); };
+		
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
 		 */
@@ -192,15 +204,6 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
-		/*!
-		 * \brief Returns an estimation of the likelihood of the model
-		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
-		 * P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
-		 * @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
-		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model)
-		 * @param[out] result logarithmic estimation of the likelihood
-		 */
-		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	private:
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	};
@@ -239,22 +242,10 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */		
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
-
-		/*!
-		 * \brief Returns an estimation of the likelihood of the model
-		 * \details (weights describing the wrapped Potential_Exp_Shape), considering a particular training set as reference:
-		 * P(model | train_set). This method is called by an I_Trainer during the gradient descend performed when training the model
-		 * @param[in] comb_train_set samples contained in a training set, obtained calling Training_set::subset::Handler::Get_list
-		 * @param[in] comb_var_order list of variables describing how the values in comb_train_set are ordered (they must refere to the variables wrapped by this model,
-		 * considering both the hidden and the observed sets).
-		 * @param[out] result logarithmic estimation of the likelihood
-		 */
-		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	private:
 		void __initialize();
 
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
-		virtual void			  Get_Log_Z(float* Z);
 	};
 
 }

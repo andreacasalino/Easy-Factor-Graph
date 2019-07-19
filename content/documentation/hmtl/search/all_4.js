@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['entire_5fset',['Entire_Set',['../class_segugio_1_1_entire___set.html',1,'Segugio']]],
-  ['eval_5flog_5fenergy_5ffunction',['Eval_Log_Energy_function',['../class_segugio_1_1_node_1_1_node__factory.html#a20ea540a53980f69398ead5613dcc669',1,'Segugio::Node::Node_factory::Eval_Log_Energy_function(float *result, size_t *combination, const std::list&lt; Categoric_var * &gt; &amp;var_order_in_combination)'],['../class_segugio_1_1_node_1_1_node__factory.html#aceafa7587a04e516fe7413fc5bbd6972',1,'Segugio::Node::Node_factory::Eval_Log_Energy_function(float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; Categoric_var * &gt; &amp;var_order_in_combination)']]],
-  ['eval_5flog_5fenergy_5ffunction_5fnormalized',['Eval_Log_Energy_function_normalized',['../class_segugio_1_1_node_1_1_node__factory.html#a8549fc7809c3e99fb522311358ad6c1c',1,'Segugio::Node::Node_factory::Eval_Log_Energy_function_normalized(float *result, size_t *combination, const std::list&lt; Categoric_var * &gt; &amp;var_order_in_combination)'],['../class_segugio_1_1_node_1_1_node__factory.html#a4af6d668eb57dfd023371e458380f862',1,'Segugio::Node::Node_factory::Eval_Log_Energy_function_normalized(float *result, const std::list&lt; size_t &gt; &amp;combination, const std::list&lt; Categoric_var * &gt; &amp;var_order_in_combination)']]]
+  ['distribution',['Distribution',['../class_segugio_1_1_potential___exp___shape.html#ac37317179ee17e86d3299aee941d9bd9',1,'Segugio::Potential_Exp_Shape']]],
+  ['distribution_5fexp_5fvalue',['Distribution_exp_value',['../struct_segugio_1_1_distribution__exp__value.html',1,'Segugio']]],
+  ['distribution_5fvalue',['Distribution_value',['../struct_segugio_1_1_distribution__value.html',1,'Segugio']]]
 ];

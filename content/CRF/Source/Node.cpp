@@ -267,16 +267,12 @@ namespace Segugio {
 		root.Get_Nested("Potential", &Pot_tags);
 		list<string> var_names;
 
-		list<Potential_Shape*>	   una_pot;
-		list<Potential_Shape*>	   bin_pot;
-		list<bool>									una_exp_tunability;
-		list<Potential_Exp_Shape*> una_exp_pot;
-		list<bool>									bin_exp_tunability;
-		list<Potential_Exp_Shape*> bin_exp_pot;
+		list<_Pot_wrapper_4_Insertion*> structure;
 
 		list<Categoric_var*> processed_vars;
 		float w_temp;
 		bool b_temp;
+		bool exist_at_least_a_binary = false;
 		for (auto itP = Pot_tags.begin(); itP != Pot_tags.end(); itP++) {
 			itP->Get_values_specific_field_name("var", &var_names);
 			if (var_names.size() == 1) { //new unary potential to read
@@ -291,29 +287,34 @@ namespace Segugio {
 						system("ECHO weight of potential must be positive");
 						abort();
 					}
-					una_exp_pot.push_back(new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone }), w_temp));
 
+					b_temp = true;
 					if (itP->Exist_Field("tunability")) {
 						string tun_flag = itP->Get_value("tunability");
 						if (tun_flag.compare("Y") == 0)
-							una_exp_tunability.push_back(true);
-						else if(tun_flag.compare("N") == 0)
-							una_exp_tunability.push_back(false);
+							b_temp = true;
+						else if (tun_flag.compare("N") == 0)
+							b_temp = false;
 						else {
 							system("ECHO tunability option invalid");
 							abort();
 						}
 					}
-					else
-						una_exp_tunability.push_back(true);
+
+					structure.push_back(this->Get_Inserter(
+						new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone }), w_temp)
+						, b_temp));
 				}
 				else
-					una_pot.push_back(Import_shape(prefix_config_xml_file, *itP, { temp_clone }));
+					structure.push_back(new _Baseline_4_Insertion<Potential_Shape>(
+						Import_shape(prefix_config_xml_file, *itP, { temp_clone })
+						)  );
 
 				exist_in_list(&b_temp, processed_vars, temp_clone);
 				if (!b_temp) processed_vars.push_back(temp_clone);
 			}
 			else if (var_names.size() == 2) { //new binary potential to read
+				exist_at_least_a_binary = true;
 				temp_clone = Find_by_name(variables, var_names.front());
 				if (temp_clone == NULL) {
 					system("ECHO potential refers to an inexistent variable");
@@ -336,24 +337,28 @@ namespace Segugio {
 						system("ECHO weight of potential must be positive");
 						abort();
 					}
-					bin_exp_pot.push_back(new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }), w_temp));
 
+					b_temp = true;
 					if (itP->Exist_Field("tunability")) {
 						string tun_flag = itP->Get_value("tunability");
 						if (tun_flag.compare("Y") == 0)
-							bin_exp_tunability.push_back(true);
+							b_temp = true;
 						else if (tun_flag.compare("N") == 0)
-							bin_exp_tunability.push_back(false);
+							b_temp = false;
 						else {
 							system("ECHO tunability option invalid");
 							abort();
 						}
 					}
-					else
-						bin_exp_tunability.push_back(true);
+
+					structure.push_back(this->Get_Inserter(
+						new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }), w_temp)
+						, b_temp));
 				}
 				else
-					bin_pot.push_back(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }));
+					structure.push_back(new _Baseline_4_Insertion<Potential_Shape>(
+						Import_shape(prefix_config_xml_file, *itP, { temp_clone,temp_clone2 })
+						));
 
 			}
 			else {
@@ -367,22 +372,17 @@ namespace Segugio {
 			abort();
 		}
 
-		if (bin_pot.empty() && bin_exp_pot.empty()) {
+		if (!exist_at_least_a_binary) {
 			system("ECHO at least one binary potential must be present in a config file");
 			abort();
 		}
 
-		this->Insert(bin_pot, bin_exp_pot, bin_exp_tunability);
-
-		for (auto it = una_pot.begin(); it != una_pot.end(); it++) this->Insert(*it);
-
-		auto it_fl = una_exp_tunability.begin();
-		for (auto it = una_exp_pot.begin(); it != una_exp_pot.end(); it++) {
-			this->Insert(*it, *it_fl);
-			it_fl++;
-		}
+		this->Insert(structure);
 
 		this->bDestroy_Potentials_and_Variables = true;
+
+		for (auto it = structure.begin(); it != structure.end(); it++)
+			delete *it;
 
 	}
 
@@ -907,31 +907,141 @@ namespace Segugio {
 		return NULL;
 		
 	}
+	
+	void Node::Node_factory::Insert(_Pot_wrapper_4_Insertion* pot) {
 
-	template<typename T>
-	void extract_consistent_order(list<T*>* result, const list<T*>& set_to_insert) {
+		size_t var_numb = pot->Get_involved_var_safe()->size();
+		if (var_numb == 1) {
+			//unary potential insertion
+			Categoric_var* varU = pot->Get_involved_var_safe()->front();
+			auto itN = this->Nodes.begin();
+			bool node_found = false;
+
+			for (itN; itN != this->Nodes.end(); itN++) {
+				if ((*itN)->Get_var()->Get_name().compare(varU->Get_name()) == 0) {
+					(*itN)->Permanent_Unary.push_back(pot->Get_Potential_to_Insert({(*itN)->Get_var()}, this->bDestroy_Potentials_and_Variables));
+					node_found = true;
+					break;
+				}
+			}
+
+			if (!node_found) {
+				system("ECHO the unary potential provided refers to an inexistent node");
+				abort();
+			}
+		}
+		else if (var_numb == 2) {
+			//binary potential insertion
+			Node* peer_A = NULL;
+			Node* peer_B = NULL;
+
+			Categoric_var* varA = pot->Get_involved_var_safe()->front();
+			auto itN = this->Nodes.begin();
+			for (itN; itN != this->Nodes.end(); itN++) {
+				if ((*itN)->Get_var()->Get_name().compare(varA->Get_name()) == 0) {
+					peer_A = *itN;
+					break;
+				}
+			}
+			Categoric_var* varB = pot->Get_involved_var_safe()->back();
+			itN = this->Nodes.begin();
+			for (itN; itN != this->Nodes.end(); itN++) {
+				if ((*itN)->Get_var()->Get_name().compare(varB->Get_name()) == 0) {
+					peer_B = *itN;
+					break;
+				}
+			}
+
+			if ((peer_A != NULL) && (peer_B != NULL)) {
+				//check this potential was not already inserted
+				const std::list<Categoric_var*>* temp_var;
+				for (auto it_bb = this->Binary_potentials.begin();
+					it_bb != this->Binary_potentials.end(); it_bb++) {
+					temp_var = (*it_bb)->Get_involved_var_safe();
+
+					if (((peer_A->Get_var() == temp_var->front()) && (peer_B->Get_var() == temp_var->back())) ||
+						((peer_A->Get_var() == temp_var->back()) && (peer_B->Get_var() == temp_var->front()))) {
+						system("ECHO found clone of an already inserted binary potential");
+						abort();
+					}
+				}
+			}
+
+			if (peer_A == NULL) {
+				if (this->bDestroy_Potentials_and_Variables)
+					this->Nodes.push_back(new Node(varA));
+				else
+					this->Nodes.push_back(new Node(varA, true));
+				peer_A = this->Nodes.back();
+			}
+			if (peer_B == NULL) {
+				if (this->bDestroy_Potentials_and_Variables)
+					this->Nodes.push_back(new Node(varB));
+				else
+					this->Nodes.push_back(new Node(varB, true));
+				peer_B = this->Nodes.back();
+			}
+
+			auto new_pot = pot->Get_Potential_to_Insert({ peer_A->Get_var(), peer_B->Get_var() }, this->bDestroy_Potentials_and_Variables);
+			//create connection
+			Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
+			A_B->This_Node = peer_A;
+			A_B->Neighbour = peer_B;
+			A_B->Shared_potential = new_pot;
+			A_B->Message_to_this_node = NULL;
+
+			Node::Neighbour_connection* B_A = new Node::Neighbour_connection();
+			B_A->This_Node = peer_B;
+			B_A->Neighbour = peer_A;
+			B_A->Shared_potential = new_pot;
+			B_A->Message_to_this_node = NULL;
+
+			A_B->Message_to_neighbour_node = &B_A->Message_to_this_node;
+			B_A->Message_to_neighbour_node = &A_B->Message_to_this_node;
+
+			peer_A->Active_connections.push_back(A_B);
+			peer_B->Active_connections.push_back(B_A);
+
+			this->Binary_potentials.push_back(new_pot);
+
+		}
+		else {
+			system("ECHO invalid component to insert in a graph");
+			abort();
+		}
+
+		if (this->Last_propag_info != NULL) delete this->Last_propag_info;
+		this->Last_propag_info = NULL;
+		this->mState = 0;
+
+	}
+
+	void Node::Node_factory::Insert(std::list<_Pot_wrapper_4_Insertion*>& set_to_insert) {
 
 		if (set_to_insert.empty()) return;
 
 		auto open_set = set_to_insert;
 
-		list<T*> unary_to_append;
+		list<_Pot_wrapper_4_Insertion*> unary_to_append;
 		auto it = open_set.begin();
+		size_t S;
 		while (it != open_set.end()) {
-			if ((*it)->Get_involved_var_safe()->size() == 1) {
+			S = (*it)->Get_involved_var_safe()->size();
+			if (S== 1) {
 				unary_to_append.push_back(*it);
 				it = open_set.erase(it);
 			}
-			else if ((*it)->Get_involved_var_safe()->size() == 2)
+			else if (S == 2)
 				it++;
 			else {
 				system("ECHO potentials to insert can be only binary or unary");
 				abort();
 			}
 		}
-		
+
+		list<_Pot_wrapper_4_Insertion*> binary_to_append;
 		auto it2 = it;
-		result->push_back(open_set.front());
+		binary_to_append.push_back(open_set.front());
 		open_set.pop_front();
 		size_t old_size;
 		bool insert;
@@ -944,7 +1054,7 @@ namespace Segugio {
 			it = open_set.begin();
 			while (it != open_set.end()) {
 				insert = false;
-				for (it2 = result->begin(); it2 != result->end(); it2++) {
+				for (it2 = binary_to_append.begin(); it2 != binary_to_append.end(); it2++) {
 					matching[0] = ((*it2)->Get_involved_var_safe()->front() == (*it)->Get_involved_var_safe()->front());
 					matching[1] = ((*it2)->Get_involved_var_safe()->back() == (*it)->Get_involved_var_safe()->front());
 					matching[2] = ((*it2)->Get_involved_var_safe()->front() == (*it)->Get_involved_var_safe()->back());
@@ -957,7 +1067,7 @@ namespace Segugio {
 				}
 
 				if (insert) {
-					result->push_back(*it);
+					binary_to_append.push_back(*it);
 					it = open_set.erase(it);
 				}
 				else it++;
@@ -969,83 +1079,26 @@ namespace Segugio {
 			}
 		}
 
+		for (auto it = binary_to_append.begin(); it != binary_to_append.end(); it++)
+			this->Insert(*it);
+
 		for (auto it = unary_to_append.begin(); it != unary_to_append.end(); it++)
-			result->push_back(*it);
-
-	}
-
-	void Node::Node_factory::Insert(const std::list<Potential_Shape*>& set_to_insert) {
-
-		list<Potential_Shape*> temp;
-		extract_consistent_order(&temp, set_to_insert);
-		for (auto it = temp.begin(); it != temp.end(); it++)
 			this->Insert(*it);
 
 	}
 
-	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& set_to_insert, const std::list<bool>& tunability_flags) {
-
-		if (set_to_insert.size() != tunability_flags.size())
-			abort();
-
-		list<Potential_Exp_Shape*> temp;
-		extract_consistent_order(&temp, set_to_insert);
-		auto it_fl = tunability_flags.begin();
-		for (auto it = temp.begin(); it != temp.end(); it++) {
-			this->Insert(*it, *it_fl);
-			it_fl++;
-		}
+	void Node::Node_factory::Insert(Potential_Shape* pot) {
+		
+		_Baseline_4_Insertion<Potential_Shape> temp(pot);
+		this->Insert(&temp);
 
 	}
 
-	void Node::Node_factory::Insert(const std::list<Potential_Shape*>& set_to_insert, const std::list<Potential_Exp_Shape*>& set_exp_to_insert, const std::list<bool>& tunability_flags) {
+	void Node::Node_factory::Insert(Potential_Exp_Shape* pot, const bool& weight_tunability) {
 
-		const list<bool>* flag_ref = &tunability_flags;
-		list<bool> fake_list;
-		if (tunability_flags.empty()) {
-			for (size_t k = 0; k < set_exp_to_insert.size(); k++)
-				fake_list.push_back(true);
-			flag_ref = &fake_list;
-		}
-		else {
-			if (set_exp_to_insert.size() != tunability_flags.size())
-				abort();
-		}
-
-
-		struct temp_wrapper {
-			temp_wrapper(Potential_Shape* to_wrap) : Shape_Exp(NULL), Shape(to_wrap), pwrapped(to_wrap) {};
-			temp_wrapper(Potential_Exp_Shape* to_wrap, const bool& is_tun) : Shape_Exp(to_wrap), Shape(NULL), pwrapped(to_wrap), is_tunable_w(is_tun) {};
-
-			Potential_Shape*      Shape;
-			Potential_Exp_Shape*  Shape_Exp;
-			bool								is_tunable_w;
-
-			const std::list<Categoric_var*>*			Get_involved_var_safe() const { return this->pwrapped->Get_involved_var_safe(); };
-		private:
-			I_Potential*		  pwrapped;
-		};
-
-		list<temp_wrapper*> temp, temp_ordered;
-		auto it_fl = flag_ref->begin();
-		for (auto it = set_exp_to_insert.begin(); it != set_exp_to_insert.end(); it++) {
-			temp.push_back(new temp_wrapper(*it, *it_fl));
-			it_fl++;
-		}
-		for (auto it = set_to_insert.begin(); it != set_to_insert.end(); it++)
-			temp.push_back(new temp_wrapper(*it));
-
-		extract_consistent_order(&temp_ordered, temp);
-
-		auto it = temp_ordered.begin();
-		for (it; it != temp_ordered.end(); it++) {
-			if ((*it)->Shape == NULL)
-				this->Insert((*it)->Shape_Exp, (*it)->is_tunable_w);
-			else
-				this->Insert((*it)->Shape);
-		}
-		for (it = temp_ordered.begin(); it != temp_ordered.end(); it++)
-			delete *it;
+		auto temp = this->Get_Inserter(pot, weight_tunability);
+		this->Insert(temp);
+		delete temp;
 
 	}
 
@@ -1108,6 +1161,74 @@ namespace Segugio {
 
 	}
 
+	void Node::Node_factory::Eval_Log_Energy_function(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		list<list<float>> distr_vals;
+		//binary potentials
+		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
+			distr_vals.push_back(list<float>());
+			(*it)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
+		}
+		//permanent unary potentials
+		list<Potential*>::iterator it_U;
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
+				distr_vals.push_back(list<float>());
+				(*it_U)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
+			}
+		}
+
+		result->clear();
+		auto it_val = distr_vals.begin();
+		float temp;
+		while (!distr_vals.front().empty()) {
+			temp = 0.f;
+			for (it_val = distr_vals.begin(); it_val != distr_vals.end(); it_val++) {
+				temp += logf(it_val->front());
+				it_val->pop_front();
+			}
+			result->push_back(temp);
+		}
+
+	};
+
+	void Node::Node_factory::Eval_Log_Energy_function_normalized(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		list<list<float>> distr_vals;
+		list<float> max_vals;
+		//binary potentials
+		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
+			distr_vals.push_back(list<float>());
+			(*it)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
+			max_vals.push_back((*it)->max_in_distribution());
+		}
+		//permanent unary potentials
+		list<Potential*>::iterator it_U;
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
+				distr_vals.push_back(list<float>());
+				(*it_U)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
+				max_vals.push_back((*it_U)->max_in_distribution());
+			}
+		}
+
+		result->clear();
+		auto it_val = distr_vals.begin();
+		auto it_val_max = max_vals.begin();
+		float temp;
+		while (!distr_vals.front().empty()) {
+			temp = 0.f;
+			it_val_max = max_vals.begin();
+			for (it_val = distr_vals.begin(); it_val != distr_vals.end(); it_val++) {
+				temp += logf(it_val->front()) - logf(*it_val_max);
+				it_val->pop_front();
+				it_val_max++;
+			}
+			result->push_back(temp);
+		}
+
+	}
+
 	void Node::Node_factory::Eval_Log_Energy_function_normalized(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination) {
 
 		*result = 0.f;
@@ -1148,92 +1269,6 @@ namespace Segugio {
 		this->Eval_Log_Energy_function_normalized(result, temp, var_order_in_combination);
 
 		free(temp);
-
-	}
-
-	void Node::Node_factory::Get_Log_Z(float* Z) {
-
-		list<size_t>		 val_ob_old;
-		this->Get_Observation_Set_val(&val_ob_old);
-		list<Categoric_var*> var_ob_old;
-		this->Get_Actual_Observation_Set(&var_ob_old);
-
-		list<size_t>		 fake_vals;
-		list<Categoric_var*> fake_vars;
-		this->Recompute_Log_Z(Z, fake_vals, fake_vars);
-
-		this->Set_Observation_Set_var(var_ob_old);
-		this->Set_Observation_Set_val(val_ob_old);
-
-	}
-
-	void get_pos_of_max(size_t* p, const list<float>& L) {
-
-		*p = 0;
-		const float* max_val = &L.front();
-		auto it = L.begin(); it++;
-		size_t k = 1;
-		for (it; it != L.end(); it++) {
-			if (*it > *max_val) {
-				*p = k;
-				max_val = &(*it);
-			}
-			k++;
-		}
-
-	}
-	template<typename T>
-	void append_b_to_a(list<T>* a, const list<T>& b) {
-
-		for (auto it = b.begin(); it!=b.end(); it++)
-			a->push_back(*it);
-
-	}
-	void Node::Node_factory::Recompute_Log_Z(float* result, std::list<size_t>& new_observed_vals, std::list<Categoric_var*>& new_observed_vars) {
-
-		this->Set_Observation_Set_var(new_observed_vars);
-		this->Set_Observation_Set_val(new_observed_vals);
-
-		//take the first hidden variable in the set
-		Categoric_var* Y = this->Last_hidden_clusters.front().front()->pVariable;
-
-		//compute marginal probabilities P(Y)
-		list<float> probs;
-		this->Get_marginal_distribution(&probs, Y);
-		size_t v_max;
-		get_pos_of_max(&v_max, probs);
-
-		//set Y = v_max as an additional evidence
-		new_observed_vars.push_back(Y);
-		new_observed_vals.push_back(v_max);
-		this->Set_Observation_Set_var(new_observed_vars);
-		this->Set_Observation_Set_val(new_observed_vals);
-
-		float E;
-
-		list<Categoric_var*> comb_order;
-		if (this->Nodes.size() == new_observed_vars.size())
-			this->Eval_Log_Energy_function(&E, new_observed_vals, new_observed_vars);		
-
-		else {
-			list<size_t> comb_val;
-			this->MAP_on_Hidden_set(&comb_val);
-			list<Categoric_var*> comb_var;
-			this->Get_Actual_Hidden_Set(&comb_var); 
-
-			append_b_to_a(&comb_val , new_observed_vals);
-			append_b_to_a(&comb_var, new_observed_vars);
-
-			this->Eval_Log_Energy_function(&E, comb_val, comb_var);
-		}
-
-		*result = E - logf(probs.front());
-
-		//clean up
-		new_observed_vars.pop_back();
-		new_observed_vals.pop_back();
-		this->Set_Observation_Set_var(new_observed_vars);
-		this->Set_Observation_Set_val(new_observed_vals);
 
 	}
 

@@ -134,6 +134,9 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a5dfd03b6e97fe4ea62e6756da8a5a332"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential.html#a5dfd03b6e97fe4ea62e6756da8a5a332">Get_entire_domain</a> (std::list&lt; std::list&lt; size_t &gt;&gt; *domain, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;Vars_in_domain)</td></tr>
 <tr class="memdesc:a5dfd03b6e97fe4ea62e6756da8a5a332"><td class="mdescLeft">&#160;</td><td class="mdescRight">get entire domain of a group of variables: list of possible combinations  <a href="#a5dfd03b6e97fe4ea62e6756da8a5a332">More...</a><br /></td></tr>
 <tr class="separator:a5dfd03b6e97fe4ea62e6756da8a5a332"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae40c7005f07dd5ee152323d0ed6aa6e4"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential.html#ae40c7005f07dd5ee152323d0ed6aa6e4">Get_entire_domain</a> (std::list&lt; size_t * &gt; *domain, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;Vars_in_domain)</td></tr>
+<tr class="memdesc:ae40c7005f07dd5ee152323d0ed6aa6e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Same as <a class="el" href="class_segugio_1_1_i___potential.html#a5dfd03b6e97fe4ea62e6756da8a5a332" title="get entire domain of a group of variables: list of possible combinations">Get_entire_domain(std::list&lt;std::list&lt;size_t&gt;&gt;* domain, const std::list&lt;Categoric_var*&gt;&amp; Vars_in_domain)</a>, but adopting array internally allocated with malloc instead of list: remembre to delete combinations.  <a href="#ae40c7005f07dd5ee152323d0ed6aa6e4">More...</a><br /></td></tr>
+<tr class="separator:ae40c7005f07dd5ee152323d0ed6aa6e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -152,9 +155,6 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_d
 <tr class="memitem:a52d8d8985bb652e555f076e015fc333c"><td class="memItemLeft" align="right" valign="top"><a id="a52d8d8985bb652e555f076e015fc333c"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_distribution</b> (std::list&lt; <a class="el" href="struct_segugio_1_1_i___potential_1_1_i___distribution__value.html">I_Distribution_value</a> * &gt; *result, size_t *partial_comb_to_search, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;partial_comb_to_search_var_order, <a class="el" href="class_segugio_1_1_i___potential.html">I_Potential</a> *pot)</td></tr>
 <tr class="separator:a52d8d8985bb652e555f076e015fc333c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae40c7005f07dd5ee152323d0ed6aa6e4"><td class="memItemLeft" align="right" valign="top"><a id="ae40c7005f07dd5ee152323d0ed6aa6e4"></a>
-static void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_entire_domain</b> (std::list&lt; size_t * &gt; *domain, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;Vars_in_domain)</td></tr>
-<tr class="separator:ae40c7005f07dd5ee152323d0ed6aa6e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Abstract interface for potentials handled by graphs. </p>
@@ -202,7 +202,7 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_entire_dom
 </div>
 </div>
 <a id="a5dfd03b6e97fe4ea62e6756da8a5a332"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5dfd03b6e97fe4ea62e6756da8a5a332">&#9670;&nbsp;</a></span>Get_entire_domain()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dfd03b6e97fe4ea62e6756da8a5a332">&#9670;&nbsp;</a></span>Get_entire_domain() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -236,6 +236,51 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_entire_dom
 </div><div class="memdoc">
 
 <p>get entire domain of a group of variables: list of possible combinations </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">domain</td><td>the entire set of possible combinations </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Vars_in_domain</td><td>variables involved whose domain has to be compute </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae40c7005f07dd5ee152323d0ed6aa6e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae40c7005f07dd5ee152323d0ed6aa6e4">&#9670;&nbsp;</a></span>Get_entire_domain() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static void Segugio::I_Potential::Get_entire_domain </td>
+          <td>(</td>
+          <td class="paramtype">std::list&lt; size_t * &gt; *&#160;</td>
+          <td class="paramname"><em>domain</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>Vars_in_domain</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Same as <a class="el" href="class_segugio_1_1_i___potential.html#a5dfd03b6e97fe4ea62e6756da8a5a332" title="get entire domain of a group of variables: list of possible combinations">Get_entire_domain(std::list&lt;std::list&lt;size_t&gt;&gt;* domain, const std::list&lt;Categoric_var*&gt;&amp; Vars_in_domain)</a>, but adopting array internally allocated with malloc instead of list: remembre to delete combinations. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">domain</td><td>the entire set of possible combinations </td></tr>

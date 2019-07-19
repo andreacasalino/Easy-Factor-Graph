@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['potential',['Potential',['../class_segugio_1_1_potential.html',1,'Segugio']]],
-  ['potential_5fexp_5fshape',['Potential_Exp_Shape',['../class_segugio_1_1_potential___exp___shape.html',1,'Segugio']]],
-  ['potential_5fshape',['Potential_Shape',['../class_segugio_1_1_potential___shape.html',1,'Segugio']]]
+  ['neighbour_5fconnection',['Neighbour_connection',['../struct_segugio_1_1_node_1_1_neighbour__connection.html',1,'Segugio::Node']]],
+  ['node',['Node',['../class_segugio_1_1_node.html',1,'Segugio']]],
+  ['node_5ffactory',['Node_factory',['../class_segugio_1_1_node_1_1_node__factory.html',1,'Segugio::Node']]]
 ];

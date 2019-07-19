@@ -5,24 +5,13 @@ using namespace std;
 
 namespace Segugio {
 
-	//template<typename P>
-	//void extract_binary_and_unary_with_check(list<P*>* binary_edge, list<P*>* unary_edge, const std::list<P*>& potentials) {
-	//
-	//	for (auto it = potentials.begin(); it != potentials.end(); it++) {
-	//		if ((*it)->Get_involved_var_safe()->size() == 1)
-	//			unary_edge->push_back(*it);
-	//		else if ((*it)->Get_involved_var_safe()->size() == 2)
-	//			binary_edge->push_back(*it);
-	//		else {
-	//			system("ECHO invalid component to insert in a graph");
-	//			abort();
-	//		}
-	//	}
-	//
-	//}
+	template<typename T>
+	void clean_collection(list<T*>& coll) {
 
+		for (auto it = coll.begin(); it != coll.end(); it++)
+			delete *it;
 
-
+	}
 
 	Graph::Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file) :
 		Node_factory(true) {
@@ -35,7 +24,14 @@ namespace Segugio {
 	Graph::Graph(const std::list<Potential_Shape*>& potentials, const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
 		Node_factory(use_cloning_Insert) {
 
-		this->Node_factory::Insert(potentials, potentials_exp, {});
+		list<_Pot_wrapper_4_Insertion*> temp;
+		for (auto it = potentials.begin(); it != potentials.end(); it++)
+			temp.push_back(new _Baseline_4_Insertion<Potential_Shape>(*it));
+		for (auto it = potentials_exp.begin(); it != potentials_exp.end(); it++)
+			temp.push_back(new _Baseline_4_Insertion<Potential_Exp_Shape>(*it));
+
+		this->Node_factory::Insert(temp);
+		clean_collection(temp);
 
 	}
 
@@ -225,35 +221,74 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable) {
-		
-		pot = this->Insert_with_size_check<Potential_Exp_Shape>(pot);
+	Graph_Learnable::_Pot_wrapper_4_Insertion* Graph_Learnable::Get_Inserter(Potential_Exp_Shape* pot, const bool& weight_tunability) {
 
-		if (is_weight_tunable) {
-			auto vars = pot->Get_involved_var_safe();
+		struct Insertion_Handler : public _Baseline_4_Insertion<Potential_Exp_Shape> {
+			Insertion_Handler(Potential_Exp_Shape* wrp, Graph_Learnable* graph, const bool& tunab) : 
+				_Baseline_4_Insertion<Potential_Exp_Shape>(wrp), pt_to_graph(graph) , tunability(tunab){};
+			virtual Potential*		Get_Potential_to_Insert(const std::list<Categoric_var*>& var_involved, const bool& get_cloned) {
+				Potential_Exp_Shape* pot_exp_to_insert;
+				if (get_cloned)
+					pot_exp_to_insert = new Potential_Exp_Shape(this->wrapped, var_involved);
+				else
+					pot_exp_to_insert = this->wrapped;
 
-			if (vars->size() == 1) {
-				//new unary
-				this->Model_handlers.push_back(new Unary_handler(this->Find_Node(vars->front()->Get_name()), pot));
-			}
-			else {
-				//new binary
-				Node* N1 = this->Find_Node(vars->front()->Get_name());
-				Node* N2 = this->Find_Node(vars->back()->Get_name());
+				if (tunability) {
+					auto vars = pot_exp_to_insert->Get_involved_var_safe();
 
-				this->Model_handlers.push_back(new Binary_handler(N1, N2, pot));
-			}
-		}
+					if (vars->size() == 1) {
+						//new unary
+						this->pt_to_graph->Model_handlers.push_back(new Unary_handler(this->pt_to_graph->Find_Node(vars->front()->Get_name()), pot_exp_to_insert));
+					}
+					else {
+						//new binary
+						Node* N1 = this->pt_to_graph->Find_Node(vars->front()->Get_name());
+						Node* N2 = this->pt_to_graph->Find_Node(vars->back()->Get_name());
+
+						this->pt_to_graph->Model_handlers.push_back(new Binary_handler(N1, N2, pot_exp_to_insert));
+					}
+				}
+
+				return new Potential(pot_exp_to_insert);
+			};
+		private:
+			Graph_Learnable* pt_to_graph;
+			bool						   tunability;
+		};
+
+		return new Insertion_Handler(pot, this, weight_tunability);
 
 	}
 
-	void Graph_Learnable::Insert(Potential_Shape* pot) {
+	Graph_Learnable::Graph_Learnable(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask,
+		const std::list<Potential_Shape*>& shapes) : Graph_Learnable(use_cloning_Insert) {
 
-		//system("ECHO you can insert a pure shape function only to general graph and not (Conditional) Random Field ");
-		//abort();
+		list<bool>* tun_to_use = NULL;
+		const	list<bool>* pt_tun_to_use = &tunable_mask;
+		if (tunable_mask.empty()) {
+			tun_to_use = new list<bool>();
+			for (size_t k = 0; k < potentials_exp.size(); k++)
+				tun_to_use->push_back(true);
+			pt_tun_to_use = tun_to_use;
+		}
+		else {
+			if (tunable_mask.size() != potentials_exp.size())
+				abort();
+		}
 
-		pot = this->Insert_with_size_check<Potential_Shape>(pot);
+		list<_Pot_wrapper_4_Insertion*> temp;
+		for (auto it = shapes.begin(); it != shapes.end(); it++)
+			temp.push_back(new _Baseline_4_Insertion<Potential_Shape>(*it));
+		auto it_tun = pt_tun_to_use->begin();
+		for (auto it = potentials_exp.begin(); it != potentials_exp.end(); it++) {
+			temp.push_back(this->Get_Inserter(*it, *it_tun));
+			it_tun++;
+		}
+		if (tunable_mask.empty())
+			delete tun_to_use;
 
+		this->Node_factory::Insert(temp);
+		clean_collection(temp);
 	}
 
 	void Graph_Learnable::Weights_Manager::Get_tunable_w(std::list<float>* w, Graph_Learnable* model) {
@@ -334,6 +369,17 @@ namespace Segugio {
 
 	}
 
+	void Graph_Learnable::Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
+
+		list<float> temp;
+		this->Eval_Log_Energy_function_normalized(&temp, comb_train_set, comb_var_order);
+		*result = 0.f;
+		for (auto it = temp.begin(); it != temp.end(); it++)
+			*result += *it;
+		*result = *result / (float)comb_train_set.max_size();
+
+	};
+
 
 
 
@@ -358,11 +404,7 @@ namespace Segugio {
 
 	Random_Field::Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask,
 		const std::list<Potential_Shape*>& shapes) :
-		Graph_Learnable(use_cloning_Insert) {
-
-		this->Node_factory::Insert(shapes, potentials_exp, tunable_mask);
-
-	}
+		Graph_Learnable(potentials_exp, use_cloning_Insert, tunable_mask, shapes) { };
 
 	void Random_Field::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
@@ -380,21 +422,7 @@ namespace Segugio {
 
 	}
 
-	void Random_Field::Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
-		float log_Z;
-		this->Get_Log_Z(&log_Z);
-
-		float E;
-		*result = 0.f;
-		for (auto it_set = comb_train_set.begin(); it_set != comb_train_set.end(); it_set++) {
-			this->Eval_Log_Energy_function(&E, *it_set, comb_var_order);
-			*result += E;
-		}
-		*result = (1.f / (float)comb_train_set.max_size()) * (*result);
-		*result -= log_Z;
-
-	}
 
 
 
@@ -525,9 +553,7 @@ namespace Segugio {
 
 	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask, 
 		const std::list<Potential_Shape*>& shapes) :
-		Graph_Learnable(use_cloning_Insert) {
-
-		this->Node_factory::Insert(shapes, potentials, tunable_mask);
+		Graph_Learnable(potentials, use_cloning_Insert, tunable_mask, shapes) { 
 
 		if (observed_var.empty()) {
 			system("ECHO empty observed set for Conditional random field is not possible");
@@ -607,89 +633,6 @@ namespace Segugio {
 
 			it_grad++;
 		}
-
-	}
-
-	void Conditional_Random_Field::Get_Likelihood_estimation(float* result,const std::list<size_t*>& comb_train_set,const std::list<Categoric_var*>& comb_var_order) {
-
-		list<size_t> pos_observ;
-		list<Categoric_var*> observed_var_temp;
-		this->Get_Actual_Observation_Set(&observed_var_temp);
-		find_observed_order(&pos_observ, observed_var_temp, comb_var_order);
-
-		float log_Z;
-		float E;
-		*result = 0.f;
-		list<size_t> obsv_temp;
-		for (auto it_set = comb_train_set.begin(); it_set != comb_train_set.end(); it_set++) {
-			//compute logZ according to these observations
-			extract_observations(&obsv_temp, *it_set, pos_observ);
-			this->Set_Observation_Set_val(obsv_temp);
-			this->Get_Log_Z(&log_Z);
-			*result -= log_Z;
-
-			this->Eval_Log_Energy_function(&E, *it_set, comb_var_order);
-			*result += E;
-		}
-		*result = (1.f / (float)comb_train_set.max_size()) * (*result);
-
-	}
-
-	/*
-	void Conditional_Random_Field::Get_Likelihood_Observations_estimation(float* result, size_t* comb_observations, const std::list<Categoric_var*>& comb_var_order) {
-
-		list<size_t> pos_observ;
-		list<Categoric_var*> observed_var_temp;
-		this->Get_Actual_Observation_Set(&observed_var_temp);
-		find_observed_order(&pos_observ, observed_var_temp, comb_var_order);
-
-		list<size_t> MAP_val;
-		extract_observations(&MAP_val, comb_observations, pos_observ);
-		this->Set_Observation_Set_val(MAP_val);
-
-		float E;
-		list<Categoric_var*> Hidden_vars;
-		this->Get_Actual_Hidden_Set(&Hidden_vars);
-		list<Categoric_var*> MAP_var = observed_var_temp;
-		for (auto it = Hidden_vars.begin(); it != Hidden_vars.end(); it++)
-			MAP_var.push_back(*it);
-		list<size_t> Hidden_MAP;
-		this->MAP_on_Hidden_set(&Hidden_MAP);
-		for (auto it = Hidden_MAP.begin(); it != Hidden_MAP.end(); it++)
-			MAP_val.push_back(*it);
-		this->Eval_Log_Energy_function(&E, MAP_val, MAP_var);
-
-		float Z_tot;
-		this->Node_factory::Get_Log_Z(&Z_tot);
-		this->Set_Observation_Set_var(observed_var_temp);
-
-		*result = E;
-		*result -= Z_tot;
-
-	}
-
-	void Conditional_Random_Field::Get_Likelihood_Observations_estimation(float* result, const std::list<size_t>& comb_observations, const std::list<Categoric_var*>& comb_var_order) {
-
-		size_t* comb = (size_t*)malloc(comb_observations.size() * sizeof(size_t));
-		size_t k = 0;
-		for (auto it = comb_observations.begin(); it != comb_observations.end(); it++) {
-			comb[k] = *it;
-			k++;
-		}
-		this->Get_Likelihood_Observations_estimation(result, comb, comb_var_order);
-		free(comb);
-
-	}
-	*/
-
-	void Conditional_Random_Field::Get_Log_Z(float* Z) {
-
-		list<size_t>		 val_ob_old;
-		this->Get_Observation_Set_val(&val_ob_old);
-		list<Categoric_var*> var_ob_old;
-		this->Get_Actual_Observation_Set(&var_ob_old);
-
-		this->Recompute_Log_Z(Z, val_ob_old, var_ob_old);
 
 	}
 
