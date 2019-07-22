@@ -86,10 +86,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memdesc:a11cfa324b00fe9c806ea4942ce0e316b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to <a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#ad00a71ca024be91c571ec568fb794dd6" title="Returns the marginal probabilty of a some particular combinations of values assumed by the variables ...">Get_marginal_prob_combinations(std::list&lt;float&gt;* result, const std::list &lt; std::list&lt;size_t&gt;&gt;&amp; combinations, const std::list&lt;Categoric_var*&gt;&amp; var_order_in_combination)</a>, passing the combinations as pointer arrays. <br /></td></tr>
 <tr class="separator:a11cfa324b00fe9c806ea4942ce0e316b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1dc432967acb47a3e52e455ce950c393"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a1dc432967acb47a3e52e455ce950c393">MAP</a> (std::list&lt; size_t &gt; *result)</td></tr>
-<tr class="memdesc:a1dc432967acb47a3e52e455ce950c393"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Maximum a Posteriori estimation of the hidden set in the sugraph.  <a href="#a1dc432967acb47a3e52e455ce950c393">More...</a><br /></td></tr>
+<tr class="memdesc:a1dc432967acb47a3e52e455ce950c393"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Maximum a Posteriori estimation of the hidden set in the sugraph..  <a href="#a1dc432967acb47a3e52e455ce950c393">More...</a><br /></td></tr>
 <tr class="separator:a1dc432967acb47a3e52e455ce950c393"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43c59bede90f47d575c161cf3d3f18e1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a43c59bede90f47d575c161cf3d3f18e1">Gibbs_Sampling</a> (std::list&lt; std::list&lt; size_t &gt;&gt; *result, const unsigned int &amp;N_samples, const unsigned int &amp;initial_sample_to_skip)</td></tr>
-<tr class="memdesc:a43c59bede90f47d575c161cf3d3f18e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a set of samples for the variables involved in this subgraph.  <a href="#a43c59bede90f47d575c161cf3d3f18e1">More...</a><br /></td></tr>
+<tr class="memdesc:a43c59bede90f47d575c161cf3d3f18e1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a set of samples for the variables involved in this subgraph..  <a href="#a43c59bede90f47d575c161cf3d3f18e1">More...</a><br /></td></tr>
 <tr class="separator:a43c59bede90f47d575c161cf3d3f18e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab3015d680f056c1722d08b6c27d80e8"><td class="memItemLeft" align="right" valign="top"><a id="aab3015d680f056c1722d08b6c27d80e8"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#aab3015d680f056c1722d08b6c27d80e8">Get_All_variables</a> (std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; *result)</td></tr>
@@ -213,7 +213,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table>
 </div><div class="memdoc">
 
-<p>Returns a set of samples for the variables involved in this subgraph. </p>
+<p>Returns a set of samples for the variables involved in this subgraph.. </p>
 <p>Sampling is done considering the marginal probability distribution of this cluster of variables, conditioned to the observations set at the time this subgraph was created. Samples are obtained through Gibbs sampling. Calculations are done considering the last last observations set (see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node_factory::Set_Observation_Set_var</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">N_samples</td><td>number of desired samples </td></tr>
@@ -249,7 +249,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </table>
 </div><div class="memdoc">
 
-<p>Returns the Maximum a Posteriori estimation of the hidden set in the sugraph. </p>
+<p>Returns the Maximum a Posteriori estimation of the hidden set in the sugraph.. </p>
 <p>Values are ordered as returned by <a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#aab3015d680f056c1722d08b6c27d80e8" title="Returns the cluster of varaibles involved in this sub graph.">_SubGraph::Get_All_variables</a>. This MAP is conditioned to the observations set at the time this subgraph was created. </p>
 
 </div>

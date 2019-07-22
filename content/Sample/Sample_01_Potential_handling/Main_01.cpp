@@ -2,7 +2,7 @@
 #include <string>
 using namespace std;
 
-#include "../../CRF/Header/Potential.h"
+#include "../../CRF/Header/Graphical_model.h"
 #include "../Prefix_path.h"
 using namespace Segugio;
 #ifdef _DEBUG
@@ -12,150 +12,160 @@ using namespace Segugio;
 #endif // DEBUG
 
 
-
-
-void Print_Tableau(const list<Potential*>& shapes, const string& name_file);
+void part_01();
+void part_02();
+void part_03();
 
 int main() {
-
-	///////////////////////////////////
+	
+	//////////////////////////
 	//			part 01				 //
-	///////////////////////////////////
+	//////////////////////////
 	cout << "-----------------------\n";
 	cout << "part 01 \n\n\n";
 	cout << "-----------------------\n";
-
-	string prefix = compute_prefix() + "Sample_01_Potential_handling" + "/";
-
-
-	//degfine a categorical variable, specifying its domain
-	Categoric_var V(6, "V");
-
-	//define a shape function involving variable V
-	Potential_Shape* Phi1 = new Potential_Shape({ &V }); //allocated with new since will be then wrapped in an exponential pot, that will destroy it
-	// add some random values to the distribution
-	for (size_t k = 0; k < 3; k++)
-		Phi1->Add_value({ k }, (float)rand() / (float)RAND_MAX);
-	cout << "Phi1 \n";
-	Phi1->Print_distribution(cout);
-	cout << endl << endl << endl;
-
-
-	//define an exponential potential wrapping the previous shape function
-	Potential_Exp_Shape Psi1(Phi1); //a weight W equal to 1 is assumed, i.e. Psi(x) = exp(W*Phi(x)) = exp(Phi(x))
-	cout << "Psi1 \n";
-	Psi1.Print_distribution(cout);
-	cout << endl << endl << endl;
-
-
-	//define two other variables
-	Categoric_var V2(4, "V2");
-	Categoric_var V3(5, "V3");
-
-	//read from file a shape function involving V,V2 and V3
-	Potential_Shape* Phi2 = new Potential_Shape({ &V,&V2 ,&V3 }); //allocated with new since will be then wrapped in an exponential pot, that will destroy it
-	Phi2->Import(prefix + "Ternary_Shape_function.txt");
-	cout << "Phi2 \n";
-	Phi2->Print_distribution(cout);
-	cout << endl << endl << endl;
-
-	//define an exponential potential wrapping the previous shape function
-	Potential_Exp_Shape Psi2(Phi2, 2.f); //a weight W equal to 2 is assumed, i.e. Psi(x) = exp(W*Phi(x)) = exp(2*Phi(x))
-	cout << "Psi2 \n";
-	Psi2.Print_distribution(cout);
-	cout << endl << endl << endl;
-
-	//define a shape function with all values in the domain equal to 1 
-	Potential_Shape Phi3({ &V, &V2 });
-	Phi3.Set_ones();
-	cout << "Phi3 \n";
-	Phi3.Print_distribution(cout);
-	cout << endl << endl << endl;
-
+	part_01();
+	cout << endl << endl;
 	system("pause");
 
-
-	///////////////////////////////////
-	//			part 02				 //
-	///////////////////////////////////
+	//////////////////////////
+	//			part 02    			 //
+	//////////////////////////
 	cout << "-----------------------\n";
 	cout << "part 02 \n\n\n";
 	cout << "-----------------------\n";
-
-	int Dom_size = 4;
-	int Numb_shapes = 4;
-
-	// create Numb_shapes random unary shape
-	Categoric_var VV((size_t)Dom_size, "VV");
-	list<Potential*> shapes;
-	for (int k = 0; k < Numb_shapes; k++) {
-		Potential_Shape* temp_shape = new Potential_Shape({ &VV });
-		temp_shape->Set_random(0.7f);
-		shapes.push_back(new Potential(temp_shape));
-	}
-	//print the unary shape sampled in a ordered tableau
-	Print_Tableau(shapes, prefix + "Tableau.xls");
-	string temp_comm = "\"C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs\\Microsoft Office\\Microsoft Excel 2010.lnk\" \"" + compute_prefix() + "Sample_01_Potential_handling/Tableau.xls\"";
-	ofstream f_bat("comm_temp.bat");
-	f_bat << temp_comm;
-	f_bat.close();
-	system("comm_temp.bat");
-	system("CLS");
-	system("DEL comm_temp.bat");
-
-	//compute a unary potential which is the product of the unary shapes computed above
-	Potential shape_product(shapes);
-	shape_product.Print_distribution(cout);
-	cout << endl;
-
-	//clean up
-	for (auto it = shapes.begin(); it != shapes.end(); it++)
-		delete *it;
-
+	part_02();
+	cout << endl << endl;
 	system("pause");
+
+	//////////////////////////
+	//			part 03				 //
+	//////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 03 \n\n\n";
+	cout << "-----------------------\n";
+	part_03();
+	cout << endl << endl;
+	system("pause");
+
+
+
 	return 0;
 }
 
-void Print_Tableau(const list<Potential*>& shapes, const string& name_file) {
+void part_01() {
 
-	ofstream f(name_file);
-	if (!f.is_open()) {
-		system("ECHO unable to write Tableau");
-		abort();
+	//create a couple of variables with Dom size equal to 4
+	Categoric_var A(4, "A");
+	Categoric_var B(4, "B");
+
+	//create a Simple shape involving A and B
+	Potential_Shape Phi_AB({&A, &B});
+	// at this point the image of Phi_AB have all values equal to 0
+	//add values in order to have for Phi_AB(a,b) = a + 2*b
+	size_t ka, kb;
+	for (ka = 0; ka < A.size(); ka++) {
+		for (kb = 0; kb < B.size(); kb++)
+			Phi_AB.Add_value({ ka, kb }, (float)(ka + 2 * kb));  //combinations must follow the same order used for building the factor
 	}
+	//print the distribution
+	cout << "Phi_AB\n";
+	Phi_AB.Print_distribution(cout);
+	cout << endl;
 
-	Categoric_var* V = shapes.front()->Get_involved_var_safe()->front();
-	size_t V_size = V->size();
-
-	list<size_t*> val_to_search;
-	for (size_t k = 0; k < V_size; k++) {
-		val_to_search.push_back((size_t*)malloc(sizeof(size_t)));
-		val_to_search.back()[0] = k;
+	//the same distribution can be red from a file in order to build the same factor
+	//create the file to read with the same values 
+	ofstream f("__temp_file");
+	for (ka = 0; ka < A.size(); ka++) {
+		for (kb = 0; kb < B.size(); kb++)
+			f << ka << " " << kb << " " << (float)(ka + 2 * kb) << endl;
 	}
-
-	list<list<float>> Vals;
-	for (auto it = shapes.begin(); it != shapes.end(); it++) {
-		Vals.push_back(list<float>());
-		(*it)->Find_Comb_in_distribution(&Vals.back(), val_to_search, { V });
-	}
-
-	float prod;
-	auto it = Vals.begin();
-	list<list<float>>::iterator it_distr;
-	for (size_t k = 0; k < V_size; k++) {
-		f << k << "\t\t";
-
-		prod = 1.f;
-		for (it_distr = Vals.begin(); it_distr != Vals.end(); it_distr++) {
-			prod *= it_distr->front();
-
-			f << it_distr->front() << "\t";
-			it_distr->pop_front();
-		}
-
-		f << "\t\t" << prod << endl;
-	}
-
 	f.close();
+	Potential_Shape Phi_AB_bis({ &A, &B }, string("__temp_file"));
+	//delete that file (works on Windows, change the syntax for different OS)
+	system("DEL __temp_file");
+	//print the distribution
+	cout << "\n\nPhi_AB_bis\n";
+	Phi_AB_bis.Print_distribution(cout);
+	cout << endl;
 
-};
+	//get the maximum in the image of Phi_AB
+	float max_Phi_AB_image = Phi_AB.max_in_distribution();
+	cout << "\n\n max value in the image of Phi_AB is " << max_Phi_AB_image << endl;
+
+	//normalize the factor
+	Phi_AB.Normalize_distribution();
+	cout << "\n\nPhi_AB normalized\n";
+	Phi_AB.Print_distribution(cout);
+	cout << endl;
+
+	//define another couple of variable with the same Dom size if A and B
+	Categoric_var X(A.size(), "A"), Y(B.size(), "B");
+	//build Phi_XY, which has the same image of Phi_AB, but considering the realizations of X and Y
+	Potential_Shape Phi_XY(&Phi_AB, { &X, &Y }); 
+	cout << "\n\nPhi_XY\n";
+	Phi_XY.Print_distribution(cout);
+	cout << endl;
+
+}
+
+void part_02() {
+
+	//define a group of variables with a Dom size equal to 3
+	list<Categoric_var*> Group_1;
+	size_t group_size = 4;
+	for (size_t k = 0; k < group_size; k++)
+		Group_1.push_back(new Categoric_var(3, "V" + to_string(k)));
+
+	//build a factor involving Group_1, considering a simple correlating distribution: the values of the image are equal to 1 only for those
+	//combinations for which all variables assume the same realization number
+	Potential_Shape Phi_corr(Group_1, true);
+	cout << "Phi_corr \n";
+	Phi_corr.Print_distribution(cout); //by default only the combination having an image value non null are showed. You can change it invoking Phi_corr.Print_distribution(cout, true)
+	cout << endl;
+
+	//now the factor expressing an anticorrelation for the variables in Group1 is built
+	Potential_Shape Phi_anti_corr(Group_1, false);
+	cout << "\n\nPhi_anit_corr \n";
+	Phi_anti_corr.Print_distribution(cout); //by default only the combination having an image value non null are showed. You can change it invoking Phi_corr.Print_distribution(cout, true)
+	cout << endl;
+
+}
+
+void part_03() {
+
+	//build Phi_b(A,B)
+	Categoric_var A(3, "A");
+	Categoric_var B(5, "B");
+	Potential_Shape Phi_b({ &A, &B });
+	list<list<size_t>> combinations;
+	list<float> image;
+	combinations.push_back({ 0,0 }); image.push_back(1.f);
+	combinations.push_back({ 1,1 }); image.push_back(1.f);
+	combinations.push_back({ 2,4 }); image.push_back(1.f);
+	combinations.push_back({ 0,1 }); image.push_back(4.f);
+	combinations.push_back({ 2,2 }); image.push_back(5.f);
+	auto it_image = image.begin();
+	for (auto it_com = combinations.begin(); it_com != combinations.end(); it_com++) {
+		Phi_b.Add_value(*it_com, *it_image);
+		it_image++;
+	}
+
+	// compute a model having only Phi_b as potentials
+	Graph G;
+	G.Insert(&Phi_b); //in this way Phi_b is internally copied
+	// set the hidden set equal to an  empty set
+	G.Set_Observation_Set_var({});
+	G.Set_Observation_Set_val({});
+	//build a subgraph involving A and B just for computing the joint distribution of A and B
+	SubGraph G2(&G, { G.Find_Variable("A"), G.Find_Variable("B") }); //A and B must be found in the graph since the potential was cloned when inserting: it would be incorrect to pass {&A, &B}
+	list<float> marginals;
+ 	G2.Get_marginal_prob_combinations(&marginals, combinations, { G.Find_Variable("A"), G.Find_Variable("B") });
+	cout << "Prob(combinations)\n";
+	auto it_m = marginals.begin();
+	for (auto it_com = combinations.begin(); it_com != combinations.end(); it_com++) {
+		cout << "<" << it_com->front() << "  ,   " << it_com->back() << ">     Prob: " << *it_m << endl;
+		it_m++;
+	}
+
+}

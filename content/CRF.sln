@@ -45,7 +45,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CRF_Shell", "CRF_Shell\CRF_
 		{3FB81309-80A5-452C-A34A-694939BB7D94} = {3FB81309-80A5-452C-A34A-694939BB7D94}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample_09_subgraph_operation", "Sample\Sample_09_subgraph_operation\Sample_09_subgraph_operation.vcxproj", "{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample_08_subgraph_operation", "Sample\Sample_08_subgraph_operation\Sample_08_subgraph_operation.vcxproj", "{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

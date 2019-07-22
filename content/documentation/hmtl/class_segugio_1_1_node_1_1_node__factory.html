@@ -125,10 +125,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memdesc:a1d7545e127e36e8f3ca05667a97e6577"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the marginal probabilty of the variable passed P(var|model, observations),.  <a href="#a1d7545e127e36e8f3ca05667a97e6577">More...</a><br /></td></tr>
 <tr class="separator:a1d7545e127e36e8f3ca05667a97e6577"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeda178e3db30596c5f54ca783b43848d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aeda178e3db30596c5f54ca783b43848d">MAP_on_Hidden_set</a> (std::list&lt; size_t &gt; *result)</td></tr>
-<tr class="memdesc:aeda178e3db30596c5f54ca783b43848d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Maximum a Posteriori estimation of the hidden set.  <a href="#aeda178e3db30596c5f54ca783b43848d">More...</a><br /></td></tr>
+<tr class="memdesc:aeda178e3db30596c5f54ca783b43848d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the Maximum a Posteriori estimation of the hidden set..  <a href="#aeda178e3db30596c5f54ca783b43848d">More...</a><br /></td></tr>
 <tr class="separator:aeda178e3db30596c5f54ca783b43848d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0af3793d3db94430667d541c1785ba7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac0af3793d3db94430667d541c1785ba7">Gibbs_Sampling_on_Hidden_set</a> (std::list&lt; std::list&lt; size_t &gt;&gt; *result, const unsigned int &amp;N_samples, const unsigned int &amp;initial_sample_to_skip)</td></tr>
-<tr class="memdesc:ac0af3793d3db94430667d541c1785ba7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables).  <a href="#ac0af3793d3db94430667d541c1785ba7">More...</a><br /></td></tr>
+<tr class="memdesc:ac0af3793d3db94430667d541c1785ba7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables)..  <a href="#ac0af3793d3db94430667d541c1785ba7">More...</a><br /></td></tr>
 <tr class="separator:ac0af3793d3db94430667d541c1785ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a582379ec176fc28b7f8666823691f1d0"><td class="memItemLeft" align="right" valign="top"><a id="a582379ec176fc28b7f8666823691f1d0"></a>
 unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a582379ec176fc28b7f8666823691f1d0">Get_Iteration_4_belief_propagation</a> ()</td></tr>
@@ -385,7 +385,7 @@ size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_
       </table>
 </div><div class="memdoc">
 
-<p>Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables). </p>
+<p>Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables).. </p>
 <p>Samples are obtained through Gibbs sampling. Calculations are done considering the last last observations set (see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node_factory::Set_Observation_Set_var</a>) </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">N_samples</td><td>number of desired samples </td></tr>
@@ -413,7 +413,7 @@ size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_
       </table>
 </div><div class="memdoc">
 
-<p>Returns the Maximum a Posteriori estimation of the hidden set. </p>
+<p>Returns the Maximum a Posteriori estimation of the hidden set.. </p>
 <p>Values are ordered as returned by <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6e83e2daa84c45c65ed687bf2115f1ff" title="Returns the current set of hidden variables.">Node_factory::Get_Actual_Hidden_Set</a>. Calculations are done considering the last last observations set (see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node_factory::Set_Observation_Set_var</a>) </p>
 
 </div>

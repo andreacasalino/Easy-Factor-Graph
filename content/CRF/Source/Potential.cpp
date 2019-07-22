@@ -420,19 +420,21 @@ namespace Segugio {
 		size_t var_numb_expected = this->Involved_var.size();
 		while (!f.eof()) {
 			getline(f, line);
-			Import_line(line, &slices, &temp_val);
-			if (var_numb_expected != slices.size()) {
-				system("ECHO I_Potential::Import: mismatch");
-				abort();
+
+			if (line.compare("") != 0) {
+				Import_line(line, &slices, &temp_val);
+				if (var_numb_expected != slices.size()) {
+					system("ECHO I_Potential::Import: mismatch");
+					abort();
+				}
+
+				if (temp_val < 0.f) {
+					system("ECHO negative value not admitted for potential");
+					abort();
+				}
+
+				this->Add_value(slices, temp_val);
 			}
-
-			if (temp_val < 0.f) {
-				system("ECHO negative value not admitted for potential");
-				abort();
-			}
-
-			this->Add_value(slices, temp_val);
-
 		}
 
 		f.close();

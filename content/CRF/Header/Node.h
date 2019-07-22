@@ -65,12 +65,12 @@ namespace Segugio {
 			* \details on the basis of the last observations set (see Node_factory::Set_Observation_Set_var)
 			*/
 			void					  Get_marginal_distribution(std::list<float>* result, Categoric_var* var);
-			/** \brief Returns the Maximum a Posteriori estimation of the hidden set.
+			/** \brief Returns the Maximum a Posteriori estimation of the hidden set. @latexonly\label{MAP_method}@endlatexonly
 			* \details Values are ordered as returned by Node_factory::Get_Actual_Hidden_Set.
 			* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
 			*/
 			void					  MAP_on_Hidden_set(std::list<size_t>* result);
-			/** \brief Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables).
+			/** \brief Returns a set of samples of the conditional distribution P(hidden variables | model, observed variables). @latexonly\label{Gibbs_method}@endlatexonly 
 			* \details Samples are obtained through Gibbs sampling. 
 			* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
 			* @param[in] N_samples number of desired samples
@@ -152,12 +152,12 @@ namespace Segugio {
 				* passing the combinations as pointer arrays. 
 				*/
 				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
-				/** \brief Returns the Maximum a Posteriori estimation of the hidden set in the sugraph.
+				/** \brief Returns the Maximum a Posteriori estimation of the hidden set in the sugraph. @latexonly\label{MAP_sub_method}@endlatexonly
 				* \details Values are ordered as returned by _SubGraph::Get_All_variables. This MAP
 				* is conditioned to the observations set at the time this subgraph was created.
 				*/
 				void					MAP(std::list<size_t>* result) { this->__SubGraph->MAP_on_Hidden_set(result); };
-				/** \brief Returns a set of samples for the variables involved in this subgraph.
+				/** \brief Returns a set of samples for the variables involved in this subgraph. @latexonly\label{Gibbs_sub_method}@endlatexonly
 				* \details Sampling is done considering the marginal probability distribution of this cluster of 
 				* variables, conditioned to the observations set at the time this subgraph was created.
 				* Samples are obtained through Gibbs sampling.

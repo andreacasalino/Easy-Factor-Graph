@@ -72,7 +72,7 @@ namespace Segugio {
 		* @param[in] print_entire_domain
 		*/
 		void Print_distribution(std::ostream& f, const bool& print_entire_domain = false); 
-		/** \brief return list of references to the variables representing the domain of this Potential
+		/** \brief return list of references to the variables representing the domain of this Potential 
 		*/
 		const std::list<Categoric_var*>*			Get_involved_var_safe() const {  return this->Get_involved_var(); };
 		/**
@@ -162,7 +162,7 @@ namespace Segugio {
 		*/
 		Potential_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read);
 
-		/** \brief Returns simple correlating or anti_correlating shapes. 
+		/** \brief Returns simple correlating or anti_correlating shapes.  @latexonly\label{corr_anti_corr_Pot_constructor}@endlatexonly
 		* \details A simple correlating shape is a distribution having a value of 1 for every combinations
 		* {0,0,...,0}; {1,1,...,1} etc. and 0 for all other combinations.
 		* A simple anti_correlating shape is a distribution having a value of 0 for every combinations

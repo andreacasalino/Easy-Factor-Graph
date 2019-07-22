@@ -25,8 +25,8 @@ namespace Segugio {
 		* a novel graph is faster.
 		*/
 		Graph(const bool& use_cloning_Insert = true) : Node_factory(use_cloning_Insert) {};
-		/** \brief The model is built considering the information contained in an xml configuration file.
-		* \details See Structure of the XML describing a model in the documentation
+		/** \brief The model is built considering the information contained in an xml configuration file. @latexonly\label{Graph_XML}@endlatexonly
+		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/
@@ -163,8 +163,8 @@ namespace Segugio {
 		*/
 		Random_Field(const bool& use_cloning_Insert = true) : Graph_Learnable(use_cloning_Insert) {};
 
-		/** \brief The model is built considering the information contained in an xml configuration file.
-		* \details See Structure of the XML describing a model in the documentation
+		/** \brief The model is built considering the information contained in an xml configuration file. @latexonly\label{RF_XML}@endlatexonly
+		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/
@@ -215,8 +215,8 @@ namespace Segugio {
 	 */
 	class Conditional_Random_Field : public Graph_Learnable {
 	public:
-		/** \brief The model is built considering the information contained in an xml configuration file.
-		* \details See Structure of the XML describing a model in the documentation
+		/** \brief The model is built considering the information contained in an xml configuration file.  @latexonly\label{CRF_XML}@endlatexonly
+		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
 		* @param[in] configuration file
 		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
 		*/
