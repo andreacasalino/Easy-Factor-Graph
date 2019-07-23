@@ -24,39 +24,39 @@ void part_05(const string& prefix); //shared weight
 int main() {
 	string prefix =  compute_prefix() + "Sample_06_Learning_A" + "/";
 
-	///////////////////////////////////////////
-	//            part 01 graph_1            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 01 \n\n\n";
-	cout << "-----------------------\n";
-	part_01(prefix);
-	system("pause");
+	/////////////////////////////////////////////
+	////            part 01 graph_1            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 01 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_01(prefix);
+	//system("pause");
 
-	///////////////////////////////////////////
-	//            part 02 graph_2            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 02 \n\n\n";
-	cout << "-----------------------\n";
-	part_02(prefix);
-	system("pause");
+	/////////////////////////////////////////////
+	////            part 02 graph_2            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 02 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_02(prefix);
+	//system("pause");
 
-	///////////////////////////////////////////
-	//            part 03 graph_3            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 03 \n\n\n";
-	cout << "-----------------------\n";
-	part_03(prefix);
+	/////////////////////////////////////////////
+	////            part 03 graph_3            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 03 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_03(prefix);
 
-	///////////////////////////////////////////
-	//            part 04 graph_4            //
-	///////////////////////////////////////////
-	cout << "-----------------------\n";
-	cout << "part 04 \n\n\n";
-	cout << "-----------------------\n";
-	part_04(prefix);
+	/////////////////////////////////////////////
+	////            part 04 graph_4            //
+	/////////////////////////////////////////////
+	//cout << "-----------------------\n";
+	//cout << "part 04 \n\n\n";
+	//cout << "-----------------------\n";
+	//part_04(prefix);
 
 	///////////////////////////////////////////
 	//            part 05 graph_5            //
@@ -318,7 +318,64 @@ void part_04(const string& prefix) {
 
 void part_05(const string& prefix) {
 
-	abort();
-	//TODO
+	//example of net having many potentials sharing the same weight
+
+	float alfa = 2.f;
+	float beta = 1.f;
+
+	Categoric_var Y1(2, "Y1"); Categoric_var Y2(2, "Y2"); Categoric_var Y3(2, "Y3");
+	Categoric_var X1(2, "X1"); Categoric_var X2(2, "X2"); Categoric_var X3(2, "X3");
+
+	Potential_Exp_Shape XY1(new Potential_Shape({ &Y1, &X1 }, true), beta);
+	Potential_Exp_Shape XY2(new Potential_Shape({ &Y2, &X2 }, true));
+	Potential_Exp_Shape XY3(new Potential_Shape({ &Y3, &X3 }, true));
+	Potential_Exp_Shape YY1(new Potential_Shape({ &Y1, &Y2 }, true), alfa);
+	Potential_Exp_Shape YY2(new Potential_Shape({ &Y2, &Y3 }, true));
+	Random_Field graph_5(false); //potentials are not cloned when Insert is used
+	graph_5.Insert(&XY1);
+	graph_5.Insert(&XY2, { &X1, &Y1 }); // the same weight of XY1 is assumed
+	graph_5.Insert(&XY3, { &X1, &Y1 }); // the same weight of XY1 is assumed
+	graph_5.Insert(&YY1);
+	graph_5.Insert(&YY2, { &Y1, &Y2 }); // the same weight of YY1 is assumed
+
+	//extract some samples from the graph with a Gibbs sampling method, for building a train set
+	list<list<size_t>> samples;
+	list<Categoric_var*> vars;
+	graph_5.Get_All_variables_in_model(&vars);
+	graph_5.Gibbs_Sampling_on_Hidden_set(&samples, 500, 500);
+	Print_set_as_training_set(prefix + "Train_set.txt", vars, samples);
+
+
+	//build a model having the same structure (sharing of potential) with different values for the weight
+	Potential_Exp_Shape XY1_bis(new Potential_Shape({ &Y1, &X1 }, true), 0.1f * beta);
+	Potential_Exp_Shape XY2_bis(new Potential_Shape({ &Y2, &X2 }, true));
+	Potential_Exp_Shape XY3_bis(new Potential_Shape({ &Y3, &X3 }, true));
+	Potential_Exp_Shape YY1_bis(new Potential_Shape({ &Y1, &Y2 }, true), 1.5f * alfa);
+	Potential_Exp_Shape YY2_bis(new Potential_Shape({ &Y2, &Y3 }, true));
+	Random_Field graph_to_learn(false); //potentials are not cloned when Insert is used
+	graph_to_learn.Insert(&XY1_bis);
+	graph_to_learn.Insert(&XY2_bis, { &X1, &Y1 }); // the same weight of XY1 is assumed
+	graph_to_learn.Insert(&XY3_bis, { &X1, &Y1 }); // the same weight of XY1 is assumed
+	graph_to_learn.Insert(&YY1_bis);
+	graph_to_learn.Insert(&YY2_bis, { &Y1, &Y2 }); // the same weight of YY1 is assumed
+
+	Training_set Set(prefix + "Train_set.txt");
+	auto Learner = I_Trainer::Get_fixed_step(1.f); // Random_Field::I_Training::Get_BFGS();  //
+	list<float> likelihood_story;
+	Learner->Train(&graph_to_learn, &Set, 50, &likelihood_story);
+	delete Learner;
+
+	cout << "\n\n\n evolution of the likelihood during training\n";
+	for (auto it = likelihood_story.begin(); it != likelihood_story.end(); it++)
+		cout << *it << endl;
+
+	list<float> w;
+	cout << "\n\n\n real weights of the model\n";
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_5); //only and alfa and beta are free parameters
+	print_distribution(w); cout << endl;
+	cout << "\n\n\n learnt weights\n";
+	Graph_Learnable::Weights_Manager::Get_tunable_w(&w, &graph_to_learn);
+	print_distribution(w); cout << endl;
+	cout << endl;
 
 }

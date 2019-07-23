@@ -107,7 +107,7 @@ namespace Segugio {
 		virtual void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 		virtual void			Get_grad_beta_part(float* beta);
 
-		void Append(atomic_Learning_handler* to_add) { this->Components.push_back(to_add); to_add->Set_weight(this->Components.front()->Get_weight()); };
+		void Append(atomic_Learning_handler* to_add);
 		bool			is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
 		std::list<atomic_Learning_handler*>* Get_components() { return &this->Components; };
 	private:
