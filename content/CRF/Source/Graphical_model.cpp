@@ -39,7 +39,10 @@ namespace Segugio {
 
 
 
-	I_Learning_handler::I_Learning_handler(Potential_Exp_Shape* pot_to_handle) : I_Potential_Decorator(pot_to_handle) {
+
+
+
+	atomic_Learning_handler::atomic_Learning_handler(Potential_Exp_Shape* pot_to_handle) : I_Potential_Decorator(pot_to_handle) {
 
 		this->Destroy_wrapped = false; //this exponential shape will be wrapped also by a Potential to be stored in the graphical model
 		this->pWeight = this->Potential_Exp_Shape::Getter_weight_and_shape::Get_weight(pot_to_handle);
@@ -52,10 +55,7 @@ namespace Segugio {
 
 	}
 
-	I_Learning_handler::I_Learning_handler(I_Learning_handler* other) :
-		I_Learning_handler(other->pwrapped) {  };
-
-	void I_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
+	void atomic_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
 
 		list<I_Distribution_value*> val_in_train_set;
 		Find_Comb_in_distribution(&val_in_train_set, comb_in_train_set, comb_var, this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
@@ -72,6 +72,100 @@ namespace Segugio {
 
 	}
 
+	bool atomic_Learning_handler::is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
+
+		if (vars_of_pot_whose_weight_is_to_share.size() == 1) {
+			if (vars_of_pot_whose_weight_is_to_share.front() == this->Get_involved_var_safe()->front())
+				return true;
+			else
+				return false;
+		}
+		else {
+			auto vars = this->Get_involved_var_safe();
+
+			if ((vars_of_pot_whose_weight_is_to_share.front() == vars->front()) && (vars_of_pot_whose_weight_is_to_share.back() == vars->back()))
+				return true;
+
+			if ((vars_of_pot_whose_weight_is_to_share.front() == vars->back()) && (vars_of_pot_whose_weight_is_to_share.back() == vars->front()))
+				return true;
+
+			return false;
+
+		}
+
+	}
+
+
+
+
+
+	composite_Learning_handler::~composite_Learning_handler() {
+
+		for (auto it = this->Components.begin(); it != this->Components.end(); it++)
+			delete *it;
+
+	}
+
+	composite_Learning_handler::composite_Learning_handler(atomic_Learning_handler* initial_A, atomic_Learning_handler* initial_B) {
+
+		this->Components.push_back(initial_A);
+		this->Append(initial_B);
+
+	}
+
+	void composite_Learning_handler::Set_weight(const float& w_new) {
+
+		for (auto it = this->Components.begin(); it != this->Components.end(); it++)
+			(*it)->Set_weight(w_new);
+
+	}
+
+	void composite_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
+
+		*alfa = 0.f;
+		float temp;
+		for (auto it = this->Components.begin(); it != this->Components.end(); it++) {
+			(*it)->Get_grad_alfa_part(&temp, comb_in_train_set, comb_var);
+			*alfa += temp;
+		}
+
+	}
+
+	void composite_Learning_handler::Get_grad_beta_part(float* beta) {
+
+		*beta = 0.f;
+		float temp;
+		for (auto it = this->Components.begin(); it != this->Components.end(); it++) {
+			(*it)->Get_grad_beta_part(&temp);
+			*beta += temp;
+		}
+
+	}
+
+	bool composite_Learning_handler::is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
+
+		for (auto it = this->Components.begin(); it != this->Components.end(); it++) {
+			if ((*it)->is_here_Pot_to_share(vars_of_pot_whose_weight_is_to_share))
+				return true;
+		}
+		return false;
+
+	}
+
+	void composite_Learning_handler::Append(atomic_Learning_handler* to_add) {
+
+		this->Components.push_back(to_add); 
+		float temp;
+		this->Components.front()->Get_weight(&temp);
+		to_add->Set_weight(temp); 
+
+	};
+
+
+
+
+
+
 	void Dot_with_Prob(float* result, const list<float>& marginal_prob, const list<I_Potential::I_Distribution_value*>& shape) {
 
 		*result = 0.f;
@@ -86,13 +180,12 @@ namespace Segugio {
 			itP++;
 		}
 
-	}
+	};
 
 
-
-	class Unary_handler : public I_Learning_handler {
+	class Unary_handler : public atomic_Learning_handler {
 	public:
-		Unary_handler(Node* N, Potential_Exp_Shape* pot_to_handle) : I_Learning_handler(pot_to_handle), pNode(N) {};
+		Unary_handler(Node* N, Potential_Exp_Shape* pot_to_handle) : atomic_Learning_handler(pot_to_handle), pNode(N) {};
 	private:
 		void    Get_grad_beta_part(float* beta);
 	// data
@@ -113,7 +206,7 @@ namespace Segugio {
 
 
 
-	class Binary_handler : public I_Learning_handler {
+	class Binary_handler : public atomic_Learning_handler {
 	public:
 		Binary_handler(Node* N1, Node* N2, Potential_Exp_Shape* pot_to_handle);
 		~Binary_handler() { delete this->Binary_for_group_marginal_computation; };
@@ -126,7 +219,7 @@ namespace Segugio {
 		Potential*						Binary_for_group_marginal_computation;
 	};
 
-	Binary_handler::Binary_handler(Node* N1, Node* N2, Potential_Exp_Shape* pot_to_handle) : I_Learning_handler(pot_to_handle), pNode1(N1), pNode2(N2) {
+	Binary_handler::Binary_handler(Node* N1, Node* N2, Potential_Exp_Shape* pot_to_handle) : atomic_Learning_handler(pot_to_handle), pNode1(N1), pNode2(N2) {
 
 		if (N1->Get_var() != pot_to_handle->Get_involved_var_safe()->front()) {
 			Node* C = N2;
@@ -238,14 +331,22 @@ namespace Segugio {
 
 					if (vars->size() == 1) {
 						//new unary
-						this->pt_to_graph->Model_handlers.push_back(new Unary_handler(this->pt_to_graph->Find_Node(vars->front()->Get_name()), pot_exp_to_insert));
+						auto new_atomic = new Unary_handler(this->pt_to_graph->Find_Node(vars->front()->Get_name()), pot_exp_to_insert);
+						pt_to_graph->Atomic_Learner.push_back(Graph_Learnable::Learner_info<atomic_Learning_handler>());
+						pt_to_graph->Atomic_Learner.back().pos_in_Model_handlers = pt_to_graph->Model_handlers.size();
+						pt_to_graph->Atomic_Learner.back().Ref_to_learner = new_atomic;
+						this->pt_to_graph->Model_handlers.push_back(new_atomic);
 					}
 					else {
 						//new binary
 						Node* N1 = this->pt_to_graph->Find_Node(vars->front()->Get_name());
 						Node* N2 = this->pt_to_graph->Find_Node(vars->back()->Get_name());
 
-						this->pt_to_graph->Model_handlers.push_back(new Binary_handler(N1, N2, pot_exp_to_insert));
+						auto new_atomic = new Binary_handler(N1, N2, pot_exp_to_insert);
+						pt_to_graph->Atomic_Learner.push_back(Graph_Learnable::Learner_info<atomic_Learning_handler>());
+						pt_to_graph->Atomic_Learner.back().pos_in_Model_handlers = pt_to_graph->Model_handlers.size();
+						pt_to_graph->Atomic_Learner.back().Ref_to_learner = new_atomic;
+						this->pt_to_graph->Model_handlers.push_back(new_atomic);
 					}
 				}
 
@@ -257,6 +358,55 @@ namespace Segugio {
 		};
 
 		return new Insertion_Handler(pot, this, weight_tunability);
+
+	}
+
+	void Graph_Learnable::Share_weight(I_Learning_handler* pot_involved, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
+
+		auto it_to_share = this->Atomic_Learner.begin();
+		bool found = false;
+		for (it_to_share; it_to_share != this->Atomic_Learner.end(); it_to_share++) {
+			if (it_to_share->Ref_to_learner == pot_involved) {
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			system("ECHO warning: inexistent potential for sharing the weight");
+			return;
+		}
+
+		auto to_share = it_to_share->Ref_to_learner;
+		auto it_M = this->Model_handlers.begin();
+		advance(it_M, it_to_share->pos_in_Model_handlers);
+		this->Model_handlers.erase(it_M);
+		this->Atomic_Learner.erase(it_to_share);
+
+		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
+			if (it->Ref_to_learner->is_here_Pot_to_share(vars_of_pot_whose_weight_is_to_share)) {
+				auto comp_temp = new composite_Learning_handler(it->Ref_to_learner, to_share);
+
+				this->Composite_Learner.push_back(Learner_info<composite_Learning_handler>());
+				this->Composite_Learner.back().Ref_to_learner = comp_temp;
+				this->Composite_Learner.back().pos_in_Model_handlers = it->pos_in_Model_handlers;
+				it_M = this->Model_handlers.begin();
+				advance(it_M, it->pos_in_Model_handlers);
+				*it_M = comp_temp;
+
+				this->Atomic_Learner.erase(it);
+				return;
+			}
+		}
+
+		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+			if (it->Ref_to_learner->is_here_Pot_to_share(vars_of_pot_whose_weight_is_to_share)) {
+				it->Ref_to_learner->Append(to_share);
+				return;
+			}
+		}
+
+		system("ECHO was not able to find the potential whose weight is to share");
+		abort();
 
 	}
 
@@ -361,14 +511,6 @@ namespace Segugio {
 
 	}
 
-	void Graph_Learnable::Get_structure(std::list<const Potential_Exp_Shape*>* result) {
-
-		result->clear();
-		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
-			result->push_back((*it)->get_wrapped_exp_pot());
-
-	}
-
 	void Graph_Learnable::Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
 
 		list<float> temp;
@@ -379,6 +521,107 @@ namespace Segugio {
 		*result = *result / (float)comb_train_set.max_size();
 
 	};
+
+	void Graph_Learnable::Get_complete_atomic_handler_list(std::list<atomic_Learning_handler*>* atomic_list) {
+
+		atomic_list->clear();
+		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++)
+			atomic_list->push_back(it->Ref_to_learner);
+
+		list<atomic_Learning_handler*>* temp;
+		list<atomic_Learning_handler*>::iterator it_temp;
+		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+			temp = it->Ref_to_learner->Get_components();
+			for (it_temp = temp->begin(); it_temp != temp->end(); it_temp++)
+				atomic_list->push_back(*it_temp);
+		}
+
+	}
+
+	void Graph_Learnable::Remove(atomic_Learning_handler* to_remove) {
+
+		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
+			if (to_remove == it->Ref_to_learner) {
+				delete it->Ref_to_learner;
+				auto it_M = this->Model_handlers.begin();
+				advance(it_M, it->pos_in_Model_handlers);
+				this->Model_handlers.erase(it_M);
+				this->Atomic_Learner.erase(it);
+				return;
+			}
+		}
+
+		list<atomic_Learning_handler*>* temp;
+		list<atomic_Learning_handler*>::iterator it_temp;
+		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+			temp = it->Ref_to_learner->Get_components();
+			for (it_temp = temp->begin(); it_temp != temp->end(); it_temp++) {
+				if (to_remove == *it_temp) {
+					delete to_remove;
+					temp->erase(it_temp);
+
+					if (temp->empty()) {
+						auto it_M = this->Model_handlers.begin();
+						advance(it_M, it->pos_in_Model_handlers);
+						this->Model_handlers.erase(it_M);
+						this->Composite_Learner.erase(it);
+					}
+
+					return;
+				}
+			}
+		}
+
+	}
+
+	void Graph_Learnable::Import_XML_sharing_weight_info(XML_reader& reader) {
+
+		list<XML_reader::Tag_readable> potentials;
+		auto root = reader.Get_root();
+		root.Get_Nested("Potential", &potentials);
+
+		list<string> vars_this;
+		list<Categoric_var*> Vars_this;
+		list<string> vars_sharing;
+		list<Categoric_var*> Vars_sharing;
+		list<string>::iterator it2;
+		I_Learning_handler* hndl;
+		auto it_atomic = this->Atomic_Learner.begin();
+		for (auto it = potentials.begin(); it != potentials.end(); it++) {
+			if (it->Exist_Field("w")) {
+				if (it->Exist_Nested_tag("Share")) {
+					it->Get_values_specific_field_name("var", &vars_this);
+					it->Get_Nested("Share").Get_values_specific_field_name("var", &vars_sharing);
+
+					hndl = NULL;
+					if (vars_this.size() == vars_sharing.size()) {
+						Vars_this.clear();
+						for (it2 = vars_this.begin(); it2 != vars_this.end(); it2++)
+							Vars_this.push_back(this->Find_Variable(*it2));
+						Vars_sharing.clear();
+						for (it2 = vars_sharing.begin(); it2 != vars_sharing.end(); it2++)
+							Vars_sharing.push_back(this->Find_Variable(*it2));
+
+						for (it_atomic = this->Atomic_Learner.begin(); it_atomic != this->Atomic_Learner.end(); it_atomic++) {
+							if (it_atomic->Ref_to_learner->is_here_Pot_to_share(Vars_this)) {
+								hndl = it_atomic->Ref_to_learner;
+								break;
+							}
+						}
+
+						if(hndl == NULL)
+							system("ECHO Import_XML_sharing_weight_info inconsistency detected");
+						else
+							this->Share_weight(hndl, Vars_sharing);
+					}
+					else
+						system("ECHO Import_XML_sharing_weight_info inconsistency detected");
+
+				}
+			}
+		}
+
+	}
 
 
 
@@ -399,6 +642,7 @@ namespace Segugio {
 
 		XML_reader reader(prefix_config_xml_file + config_xml_file);
 		this->Import_from_XML(&reader, prefix_config_xml_file);
+		this->Import_XML_sharing_weight_info(reader);
 
 	};
 
@@ -422,13 +666,21 @@ namespace Segugio {
 
 	}
 
+	void Random_Field::Insert(Potential_Exp_Shape* pot, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
+
+		this->Node_factory::Insert(pot, true);
+
+		this->Share_weight( this->Model_handlers.back(), vars_of_pot_whose_weight_is_to_share);
+
+	};
 
 
 
 
-	class Binary_handler_with_Observation : public I_Learning_handler {
+
+	class Binary_handler_with_Observation : public atomic_Learning_handler {
 	public:
-		Binary_handler_with_Observation(Node* Hidden_var, size_t* observed_val, I_Learning_handler* handle_to_substitute);
+		Binary_handler_with_Observation(Node* Hidden_var, size_t* observed_val, atomic_Learning_handler* handle_to_substitute);
 	private:
 		void    Get_grad_beta_part(float* beta);
 	// data
@@ -436,8 +688,8 @@ namespace Segugio {
 		size_t*				ref_to_val_observed;
 	};
 
-	Binary_handler_with_Observation::Binary_handler_with_Observation(Node* Hidden_var, size_t* observed_val, I_Learning_handler* handle_to_substitute) :
-		I_Learning_handler(handle_to_substitute), pNode_hidden(Hidden_var), ref_to_val_observed(observed_val) {
+	Binary_handler_with_Observation::Binary_handler_with_Observation(Node* Hidden_var, size_t* observed_val, atomic_Learning_handler* handle_to_substitute) :
+		atomic_Learning_handler(handle_to_substitute), pNode_hidden(Hidden_var), ref_to_val_observed(observed_val) {
 
 		delete handle_to_substitute;
 
@@ -478,10 +730,13 @@ namespace Segugio {
 
 	void Conditional_Random_Field::__initialize() {
 
+		list<atomic_Learning_handler*> atomic_list;
+		this->Get_complete_atomic_handler_list(&atomic_list);
+
 		list<size_t*> temp;
 		list<Categoric_var*>::const_iterator it_temp;
-		auto it_hnd = this->Model_handlers.begin();
-		while (it_hnd != this->Model_handlers.end()) {
+		auto it_hnd = atomic_list.begin();
+		while (it_hnd != atomic_list.end()) {
 			temp.clear();
 			auto vars = (*it_hnd)->Get_involved_var_safe();
 			for (it_temp = vars->begin(); it_temp != vars->end(); it_temp++)
@@ -490,8 +745,7 @@ namespace Segugio {
 			if (temp.size() == 1) {
 				if (temp.front() != NULL) {
 					//remove this unary handler since is attached to an observation
-					delete *it_hnd;
-					it_hnd = this->Model_handlers.erase(it_hnd);
+					this->Remove(*it_hnd);
 					system("ECHO warning: detected redundant potentials attached to observed variables");
 				}
 				else it_hnd++;
@@ -499,8 +753,7 @@ namespace Segugio {
 			else {
 				if ((temp.front() != NULL) && (temp.back() != NULL)) {
 					//remove this binary handler since is attached to an observation
-					delete *it_hnd;
-					it_hnd = this->Model_handlers.erase(it_hnd);
+					this->Remove(*it_hnd);
 					system("ECHO warning: detected redundant potentials attached to observed variables");
 				}
 				else if (temp.front() != NULL) {
@@ -521,6 +774,7 @@ namespace Segugio {
 
 		XML_reader reader(prefix_config_xml_file + config_xml_file);
 		this->Import_from_XML(&reader, prefix_config_xml_file);
+		this->Import_XML_sharing_weight_info(reader);
 
 		//read the observed set
 		list<string> observed_names;

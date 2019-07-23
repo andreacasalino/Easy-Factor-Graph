@@ -69,23 +69,52 @@ namespace Segugio {
 
 
 
-	class I_Learning_handler : public I_Potential_Decorator<Potential_Exp_Shape>, public Potential_Exp_Shape::Getter_weight_and_shape {
+	class I_Learning_handler {
 	public:
-		void			Get_weight(float* w) { *w = *this->pWeight; };
-		void			Set_weight(const float& w_new) { *this->pWeight = w_new; };
+		virtual void			Get_weight(float* w) = 0;
+		virtual void			Set_weight(const float& w_new) = 0;
 
-		void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
-		virtual void    Get_grad_beta_part(float* beta) = 0; //according to last performed belief propagation
+		virtual void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) = 0;
+		virtual void			Get_grad_beta_part(float* beta) = 0; //according to last performed belief propagation
+	};
 
-		const Potential_Exp_Shape* get_wrapped_exp_pot() { return this->pwrapped; };
+	class atomic_Learning_handler : public I_Learning_handler, public I_Potential_Decorator<Potential_Exp_Shape>, public Potential_Exp_Shape::Getter_weight_and_shape {
+	public:
+		virtual void			Get_weight(float* w) { *w = *this->pWeight; };
+		virtual void			Set_weight(const float& w_new) { *this->pWeight = w_new; };
+
+		virtual void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
+
+		bool			is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
 	protected:
-		I_Learning_handler(Potential_Exp_Shape* pot_to_handle);
-		I_Learning_handler(I_Learning_handler* other);
-	// data
-		float*								          pWeight;
-	// cache
+		atomic_Learning_handler(Potential_Exp_Shape* pot_to_handle);
+		atomic_Learning_handler(atomic_Learning_handler* other) : atomic_Learning_handler(other->pwrapped) {  };
+
+		// data
+		float*															pWeight;
+		// cache
 		std::list<I_Distribution_value*>			  Extended_shape_domain; //for computing beta part of gradient
 	};
+
+	class composite_Learning_handler : public  I_Learning_handler {
+	public:
+		~composite_Learning_handler();
+		composite_Learning_handler(atomic_Learning_handler* initial_A, atomic_Learning_handler* initial_B);
+
+		virtual void			Get_weight(float* w) { this->Components.front()->Get_weight(w); };
+		virtual void			Set_weight(const float& w_new);
+
+		virtual void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
+		virtual void			Get_grad_beta_part(float* beta);
+
+		void Append(atomic_Learning_handler* to_add) { this->Components.push_back(to_add); to_add->Set_weight(this->Components.front()->Get_weight()); };
+		bool			is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
+		std::list<atomic_Learning_handler*>* Get_components() { return &this->Components; };
+	private:
+		// data
+		std::list<atomic_Learning_handler*>  Components;
+	};
+
 
 
 	/*!
@@ -121,23 +150,33 @@ namespace Segugio {
 		* @param[out] result logarithmic estimation of the likelihood
 		*/
 		void Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
-
-		/*!
-		 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
-		 */
-		void Get_structure(std::list<const Potential_Exp_Shape*>* result);
 	protected:
 		virtual _Pot_wrapper_4_Insertion* Get_Inserter(Potential_Exp_Shape* pot, const bool& weight_tunability);
 
 		Graph_Learnable(const bool& use_cloning_Insert) : Node::Node_factory(use_cloning_Insert), pLast_train_set(NULL) {};
 		Graph_Learnable(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert , const std::list<bool>& tunable_mask,
 			const std::list<Potential_Shape*>& shapes);
+
 	// data
-		std::list<I_Learning_handler*>   Model_handlers;
+		std::list<I_Learning_handler*>		Model_handlers;
+
+		void Get_complete_atomic_handler_list(std::list<atomic_Learning_handler*>* atomic_list);
+		void Remove(atomic_Learning_handler* to_remove);
+		void Share_weight(I_Learning_handler* pot_involved, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
+		void Import_XML_sharing_weight_info(XML_reader& reader);
 	private:
 
 		//as baseline behaviour the alfa part of gradient is recomputed in case train set has changed, and is added to the result
 		virtual void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
+
+    // data for managing weight sharing for exponential potentials
+		template<typename T>
+		struct Learner_info {
+			T*			Ref_to_learner;
+			size_t		pos_in_Model_handlers;
+		};
+		std::list<Learner_info<atomic_Learning_handler>>  Atomic_Learner;
+		std::list<Learner_info<composite_Learning_handler>> Composite_Learner;
 
 	// cache for gradient computation
 		struct proxy_gradient_info { 
@@ -194,8 +233,16 @@ namespace Segugio {
 		* @param[in] is_weight_tunable When true, you are specifying that this potential has a weight learnable, otherwise the value 
 		* of the weight is assumed constant.
 		 */
-		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable = true) { this->Graph_Learnable::Insert(pot, is_weight_tunable); };
-		
+		void Insert(Potential_Exp_Shape* pot, const bool& is_weight_tunable = true) { this->Node_factory::Insert(pot, is_weight_tunable); };
+		/*!
+		 * \brief Insert a tunable exponential shape, whose weight is shared with another already inserted tunable shape.
+		 * \details This allows having many exponential tunable potetials which share the value of the weight: this is automatically account for when
+		 * performing learning.
+		* @param[in] vars_of_pot_whose_weight_is_to_share the list of varaibles involved in a potential already inserted whose weight is to share with the 
+		* potential passed. They must be references to the variables actually wrapped into the model.
+		 */
+		void Insert(Potential_Exp_Shape* pot, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
+
 		/*!
 		 * \brief see Node::Node_factory::Set_Observation_Set_var(const std::list<Categoric_var*>& new_observed_vars)
 		 */

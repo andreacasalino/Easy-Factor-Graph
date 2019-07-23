@@ -14,7 +14,7 @@ var searchData=
   ['get_5fmarginals',['Get_marginals',['../class_segugio_1_1_potential.html#aab35ccb0f9ac2a53dfaf1d1cae858d56',1,'Segugio::Potential']]],
   ['get_5fmodel_5fsize',['Get_model_size',['../class_segugio_1_1_graph___learnable.html#a51bc1d5e324559bb8efd2c204d9700d0',1,'Segugio::Graph_Learnable']]],
   ['get_5fobservation_5fset_5fval',['Get_Observation_Set_val',['../class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114',1,'Segugio::Node::Node_factory']]],
-  ['get_5fstructure',['Get_structure',['../class_segugio_1_1_graph___learnable.html#a719db1e9b170438941c6999956c615f6',1,'Segugio::Graph_Learnable::Get_structure()'],['../class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f',1,'Segugio::Node::Node_factory::Get_structure()']]],
+  ['get_5fstructure',['Get_structure',['../class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f',1,'Segugio::Node::Node_factory']]],
   ['get_5fstructure_5fsize',['Get_structure_size',['../class_segugio_1_1_node_1_1_node__factory.html#aed2b33889f2f08b92e9d254bf163e013',1,'Segugio::Node::Node_factory']]],
   ['get_5ftunable_5fw',['Get_tunable_w',['../struct_segugio_1_1_graph___learnable_1_1_weights___manager.html#a65d3022ef747cea603e9286c112f171f',1,'Segugio::Graph_Learnable::Weights_Manager']]],
   ['gibbs_5fsampling',['Gibbs_Sampling',['../class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a43c59bede90f47d575c161cf3d3f18e1',1,'Segugio::Node::Node_factory::_SubGraph']]],

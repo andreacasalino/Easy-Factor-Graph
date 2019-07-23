@@ -19,6 +19,7 @@ void part_01(const string& prefix);
 void part_02(const string& prefix);
 void part_03(const string& prefix);
 void part_04(const string& prefix);
+void part_05(const string& prefix); //shared weight
 
 int main() {
 	string prefix =  compute_prefix() + "Sample_06_Learning_A" + "/";
@@ -56,6 +57,14 @@ int main() {
 	cout << "part 04 \n\n\n";
 	cout << "-----------------------\n";
 	part_04(prefix);
+
+	///////////////////////////////////////////
+	//            part 05 graph_5            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 05 \n\n\n";
+	cout << "-----------------------\n";
+	part_05(prefix);
 
 	system("pause");
 	return 0;
@@ -304,5 +313,12 @@ void part_04(const string& prefix) {
 	graph_to_learn.Get_marginal_distribution(&marginals, graph_to_learn.Find_Variable("v1"));
 	cout << "P(A|C=0) learnt model  ";
 	print_distribution(marginals); cout << endl;
+
+}
+
+void part_05(const string& prefix) {
+
+	abort();
+	//TODO
 
 }

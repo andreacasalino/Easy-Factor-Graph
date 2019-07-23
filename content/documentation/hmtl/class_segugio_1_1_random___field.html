@@ -106,6 +106,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:ac373c1f83803ee174ad0690a713d884f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#ac373c1f83803ee174ad0690a713d884f">Insert</a> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;is_weight_tunable=true)</td></tr>
 <tr class="memdesc:ac373c1f83803ee174ad0690a713d884f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Similar to <a class="el" href="class_segugio_1_1_graph.html#ac732cf67c43bca0d56f097decdfd9f73" title="The model is built considering the information contained in an xml configuration file.">Graph::Insert(Potential_Exp_Shape* pot)</a>.  <a href="#ac373c1f83803ee174ad0690a713d884f">More...</a><br /></td></tr>
 <tr class="separator:ac373c1f83803ee174ad0690a713d884f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1427f55234d888fbfac3bcd627852b45"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a1427f55234d888fbfac3bcd627852b45">Insert</a> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;vars_of_pot_whose_weight_is_to_share)</td></tr>
+<tr class="memdesc:a1427f55234d888fbfac3bcd627852b45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Insert a tunable exponential shape, whose weight is shared with another already inserted tunable shape.  <a href="#a1427f55234d888fbfac3bcd627852b45">More...</a><br /></td></tr>
+<tr class="separator:a1427f55234d888fbfac3bcd627852b45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69194ecd5be55212d011c421a6d9abc7"><td class="memItemLeft" align="right" valign="top"><a id="a69194ecd5be55212d011c421a6d9abc7"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_random___field.html#a69194ecd5be55212d011c421a6d9abc7">Set_Observation_Set_var</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;new_observed_vars)</td></tr>
 <tr class="memdesc:a69194ecd5be55212d011c421a6d9abc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node::Node_factory::Set_Observation_Set_var(const std::list&lt;Categoric_var*&gt;&amp; new_observed_vars)</a> <br /></td></tr>
@@ -122,10 +125,6 @@ size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="cl
 <tr class="memitem:a6539cd3a0da92c59a2456a1430d42ce3 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a6539cd3a0da92c59a2456a1430d42ce3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_Likelihood_estimation</b> (float *result, const std::list&lt; size_t * &gt; &amp;comb_train_set, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;comb_var_order)</td></tr>
 <tr class="separator:a6539cd3a0da92c59a2456a1430d42ce3 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a719db1e9b170438941c6999956c615f6 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="a719db1e9b170438941c6999956c615f6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_graph___learnable.html#a719db1e9b170438941c6999956c615f6">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; *result)</td></tr>
-<tr class="memdesc:a719db1e9b170438941c6999956c615f6 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of potentials constituting the net. Usefull for structural learning. <br /></td></tr>
-<tr class="separator:a719db1e9b170438941c6999956c615f6 inherit pub_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_segugio_1_1_node_1_1_node__factory"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_node_1_1_node__factory')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html">Segugio::Node::Node_factory</a></td></tr>
 <tr class="memitem:a151ad19a61e17552a52e57017c43700f inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a151ad19a61e17552a52e57017c43700f">Find_Variable</a> (const std::string &amp;var_name)</td></tr>
 <tr class="memdesc:a151ad19a61e17552a52e57017c43700f inherit pub_methods_class_segugio_1_1_node_1_1_node__factory"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer to the variable in this graph with that name.  <a href="class_segugio_1_1_node_1_1_node__factory.html#a151ad19a61e17552a52e57017c43700f">More...</a><br /></td></tr>
@@ -210,6 +209,18 @@ virtual <a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot_
 <tr class="memitem:afe5964d2597e56e843e7eb6dacedc48a inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="afe5964d2597e56e843e7eb6dacedc48a"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Graph_Learnable</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;potentials_exp, const bool &amp;use_cloning_Insert, const std::list&lt; bool &gt; &amp;tunable_mask, const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;shapes)</td></tr>
 <tr class="separator:afe5964d2597e56e843e7eb6dacedc48a inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afae27d27e562f1ebe967bd66aef413f7 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="afae27d27e562f1ebe967bd66aef413f7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Get_complete_atomic_handler_list</b> (std::list&lt; <a class="el" href="class_segugio_1_1atomic___learning__handler.html">atomic_Learning_handler</a> * &gt; *atomic_list)</td></tr>
+<tr class="separator:afae27d27e562f1ebe967bd66aef413f7 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add9360a995a59fead375bacd83506bd3 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="add9360a995a59fead375bacd83506bd3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Remove</b> (<a class="el" href="class_segugio_1_1atomic___learning__handler.html">atomic_Learning_handler</a> *to_remove)</td></tr>
+<tr class="separator:add9360a995a59fead375bacd83506bd3 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af0f1e65f8fe2bd6755d87152aef540b0 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="af0f1e65f8fe2bd6755d87152aef540b0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Share_weight</b> (<a class="el" href="class_segugio_1_1_i___learning__handler.html">I_Learning_handler</a> *pot_involved, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;vars_of_pot_whose_weight_is_to_share)</td></tr>
+<tr class="separator:af0f1e65f8fe2bd6755d87152aef540b0 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6d0ecc37ccb9c567a03d12c80d67fc9 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memItemLeft" align="right" valign="top"><a id="af6d0ecc37ccb9c567a03d12c80d67fc9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Import_XML_sharing_weight_info</b> (XML_reader &amp;reader)</td></tr>
+<tr class="separator:af6d0ecc37ccb9c567a03d12c80d67fc9 inherit pro_methods_class_segugio_1_1_graph___learnable"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_class_segugio_1_1_node_1_1_node__factory"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_class_segugio_1_1_node_1_1_node__factory')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html">Segugio::Node::Node_factory</a></td></tr>
 <tr class="memitem:a55358d87f14ac34d4fea9bdeda354c7c inherit pro_methods_class_segugio_1_1_node_1_1_node__factory"><td class="memItemLeft" align="right" valign="top"><a id="a55358d87f14ac34d4fea9bdeda354c7c"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Node_factory</b> (const bool &amp;use_cloning_Insert)</td></tr>
@@ -378,7 +389,7 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="ac373c1f83803ee174ad0690a713d884f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac373c1f83803ee174ad0690a713d884f">&#9670;&nbsp;</a></span>Insert()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac373c1f83803ee174ad0690a713d884f">&#9670;&nbsp;</a></span>Insert() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -415,6 +426,42 @@ std::list&lt; <a class="el" href="class_segugio_1_1_i___learning__handler.html">
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">is_weight_tunable</td><td>When true, you are specifying that this potential has a weight learnable, otherwise the value of the weight is assumed constant. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1427f55234d888fbfac3bcd627852b45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1427f55234d888fbfac3bcd627852b45">&#9670;&nbsp;</a></span>Insert() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Random_Field::Insert </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *&#160;</td>
+          <td class="paramname"><em>pot</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;&#160;</td>
+          <td class="paramname"><em>vars_of_pot_whose_weight_is_to_share</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Insert a tunable exponential shape, whose weight is shared with another already inserted tunable shape. </p>
+<p>This allows having many exponential tunable potetials which share the value of the weight: this is automatically account for when performing learning. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">vars_of_pot_whose_weight_is_to_share</td><td>the list of varaibles involved in a potential already inserted whose weight is to share with the potential passed. They must be references to the variables actually wrapped into the model. </td></tr>
   </table>
   </dd>
 </dl>
