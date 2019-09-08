@@ -17,6 +17,7 @@ var searchData=
   ['get_5fstructure',['Get_structure',['../class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f',1,'Segugio::Node::Node_factory']]],
   ['get_5fstructure_5fsize',['Get_structure_size',['../class_segugio_1_1_node_1_1_node__factory.html#aed2b33889f2f08b92e9d254bf163e013',1,'Segugio::Node::Node_factory']]],
   ['get_5ftunable_5fw',['Get_tunable_w',['../struct_segugio_1_1_graph___learnable_1_1_weights___manager.html#a65d3022ef747cea603e9286c112f171f',1,'Segugio::Graph_Learnable::Weights_Manager']]],
+  ['get_5fweight',['get_weight',['../class_segugio_1_1_potential___exp___shape.html#ac9407332f4929a2846f48d59b11bada0',1,'Segugio::Potential_Exp_Shape']]],
   ['getter_5f4_5fdecorator',['Getter_4_Decorator',['../struct_segugio_1_1_i___potential_1_1_getter__4___decorator.html',1,'Segugio::I_Potential']]],
   ['getter_5fweight_5fand_5fshape',['Getter_weight_and_shape',['../struct_segugio_1_1_potential___exp___shape_1_1_getter__weight__and__shape.html',1,'Segugio::Potential_Exp_Shape']]],
   ['gibbs_5fsampling',['Gibbs_Sampling',['../class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a43c59bede90f47d575c161cf3d3f18e1',1,'Segugio::Node::Node_factory::_SubGraph']]],

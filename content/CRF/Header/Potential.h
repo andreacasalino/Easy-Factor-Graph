@@ -263,6 +263,9 @@ namespace Segugio {
 			static float*           Get_weight(Potential_Exp_Shape* pot) { return &pot->mWeight; };
 			static Potential_Shape*  Get_shape(Potential_Exp_Shape* pot) { return pot->pwrapped; };
 		};
+		/** \brief Returns the weight assigned to this potential
+		*/
+		const float& get_weight() { return this->mWeight; };
 
 		/** \brief Use this method for replacing the set of variables this potential must refer.
 		* Variables in new_var must be equal in number to the original set of variables and
