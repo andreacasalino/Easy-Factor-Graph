@@ -9,29 +9,43 @@ namespace Segugio {
 	Categoric_var::Categoric_var(const size_t& size, const std::string& name):Size(size), Name(name) {
 
 		if (name.compare("") == 0) {
+#ifdef _DEBUG
 			system("ECHO empty name for Categoric variable is not valid");
-			abort();
+#endif // DEBUG
+			this->validity_flag = false;
 		}
 
 		if (size == 0) {
+#ifdef _DEBUG
 			system("ECHO null size of categorical variable is not allowed");
-			abort();
+#endif // DEBUG
+			this->validity_flag = true;
 		}
 
 	}
 
-	const float& Categoric_domain::operator[](const size_t& pos) {
+	Categoric_var::Categoric_var(const Categoric_var& to_copy) {
 
 #ifdef _DEBUG
-		if (pos > this->Size) {
-			system("ECHO out of bounds");
-			abort();
-		}
-#endif 
-
-		return this->Domain[pos];
+		system("ECHO Categoric variable cannot be copied");
+#endif // DEBUG
+		this->Size = 0;
+		this->validity_flag = false;
 
 	}
+
+//	const float& Categoric_domain::operator[](const size_t& pos) {
+//
+//#ifdef _DEBUG
+//		if (pos > this->Size) {
+//			system("ECHO out of bounds");
+//			abort();
+//		}
+//#endif 
+//
+//		return this->Domain[pos];
+//
+//	}
 
 
 
@@ -188,8 +202,12 @@ namespace Segugio {
 		}
 
 		if (comb_pos.size() != distr_pos.size()) {
-			system("ECHO soma variables were not found when searching for matchings");
-			abort();
+#ifdef _DEBUG
+			system("ECHO some variables were not found when searching for matchings");
+#endif // DEBUG
+
+			result->clear();
+			return;
 		}
 
 		__find_Comb_in_distribution(result, comb_to_search, comb_pos, pot->Get_distr(), distr_pos, true);
@@ -219,8 +237,12 @@ namespace Segugio {
 		}
 
 		if (comb_pos.size() != distr_pos.size()) {
-			system("ECHO soma variables were not found when searching for matchings");
-			abort();
+#ifdef _DEBUG
+			system("ECHO some variables were not found when searching for matchings");
+#endif // DEBUG
+
+			result->clear();
+			return;
 		}
 
 		__find_Comb_in_distribution(result, { partial_comb_to_search }, comb_pos, pot->Get_distr(), distr_pos, false);
@@ -261,61 +283,157 @@ namespace Segugio {
 
 	}
 
+	I_Potential::I_Potential(const I_Potential& to_copy) {
+
+#ifdef _DEBUG
+		system("ECHO Potential of any kind cannot be copied");
+#endif // DEBUG
+		this->validity_flag = false;
+
+	}
 
 
 
 
-	void Set_variable_set(list<Categoric_var*>* var_set, const list<Categoric_var*>& var_involved) {
 
-		var_set->clear();
+	bool Are_all_different(const list<Categoric_var*>& variables) {
 
-		list<Categoric_var*>::iterator itV2;
-		for (auto itV = var_involved.begin(); itV != var_involved.end(); itV++) {
-			for (itV2 = var_set->begin(); itV2 != var_set->end(); itV2++) {
-				if (*itV2 == *itV) {
-					system("ECHO all variables in a shape function must be different");
-					abort();
-				}
-				if ((*itV2)->Get_name().compare((*itV)->Get_name()) == 0) {
-					system("ECHO all variables in a shape function must have a different name");
-					abort();
-				}
+		if (variables.size())
+			return true;
+
+		auto it = variables.begin();
+		it++;
+		auto it2 = it;
+		for (it; it != variables.end(); it++) {
+			for (it2 = variables.begin(); it2 != it; it++) {
+				if ((*it2 == *it) || ((*it2)->Get_name().compare((*it)->Get_name()) == 0) )
+					return false;
 			}
-
-			var_set->push_back(*itV);
+			if ((*it2 == *it) || ((*it2)->Get_name().compare((*it)->Get_name()) == 0))
+				return false;
 		}
+		return true;
+
+	}
+
+	bool Is_consistent_substitution(const list<Categoric_var*>& original, const list<Categoric_var*>& novel) {
+
+		if(original.size() != novel.size())
+			return false;
+
+		auto it = original.begin();
+		list<Categoric_var*> inserted;
+		for (auto it2 = novel.begin(); it2 != novel.end(); it2++) {
+			if ((*it)->size() != (*it2)->size())
+				return false;
+			it++;
+		}
+		return true;
 
 	}
 
 	Potential_Shape::Potential_Shape(const list<Categoric_var*>& var_involved) {
 
-		Set_variable_set(&this->Involved_var , var_involved);
+		if (Are_all_different(var_involved))
+			this->Involved_var = var_involved;
+		else {
+#ifdef _DEBUG
+			system("ECHO Inconsistent set of variables");
+#endif // DEBUG
+			this->validity_flag = false;
+		}
 
 	}
 
+	void Import_line(const string& line, list<size_t>* indices, float* val) {
+
+		indices->clear();
+		istringstream iss(line);
+		string temp;
+		while (true) {
+			if (iss.eof()) {
+				break;
+			}
+
+			iss >> temp;
+			indices->push_back((size_t)atoi(temp.c_str()));
+		}
+
+		indices->pop_back();
+		*val = (float)atof(temp.c_str());
+
+	};
 	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read):
 		Potential_Shape(var_involved) {
 
-		this->Import(file_to_read);
+		if (this->validity_flag) {
+			ifstream f(file_to_read);
+			if (!f.is_open()) {
+#ifdef _DEBUG
+				system("ECHO invalid file for importing shape");
+#endif // DEBUG
+				this->validity_flag = false;
+				return;
+			}
+
+			string line;
+			list<size_t> slices;
+			float temp_val;
+			size_t var_numb_expected = this->Involved_var.size();
+			bool insert;
+			while (!f.eof()) {
+				getline(f, line);
+
+				if (line.compare("") != 0) {
+					Import_line(line, &slices, &temp_val);
+					insert = true;
+					if (var_numb_expected != slices.size()) {
+#ifdef _DEBUG
+						system("ECHO found invalid lines when importing shape : number of values mismatch");
+#endif // DEBUG
+						insert = false;
+					}
+
+					if (temp_val < 0.f) {
+#ifdef _DEBUG
+						system("ECHO found invalid lines when importing shape : negative balue");
+#endif // DEBUG
+						insert = false;
+					}
+
+					if(insert) this->Add_value(slices, temp_val);
+				}
+			}
+
+			f.close();
+		}
 
 	}
 
 	Potential_Shape::Potential_Shape(const Potential_Shape* to_copy, const std::list<Categoric_var*>& var_involved) {
-
-		auto var_list = &to_copy->Involved_var;
-		if (var_involved.size() != var_list->size()) {
-			system("ECHO invalid set of new variables when cloning Potential");
-			abort();
+		
+		if (!Are_all_different(var_involved)) {
+#ifdef _DEBUG
+			system("ECHO Inconsistent set of variables");
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
-		auto it2 = var_list->begin();
-		for (auto it = var_involved.begin(); it != var_involved.end(); it++) {
-			if((*it)->size() != (*it2)->size()) {
-				system("ECHO invalid set of new variables when cloning Potential");
-				abort();
-			}
-			it2++;
+
+		if (!Is_consistent_substitution(to_copy->Involved_var, var_involved)) {
+#ifdef _DEBUG
+			system("ECHO Inconsistent set of variables");
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
 		this->Involved_var = var_involved;
+
+		if (!this->Distribution.empty()) {
+			for (auto it_d = this->Distribution.begin(); it_d != this->Distribution.end(); it_d++)
+				delete *it_d;
+			this->Distribution.clear();
+		}
 
 		size_t* temp, * temp2;
 		int k_temp;
@@ -336,17 +454,26 @@ namespace Segugio {
 	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& correlated_or_not) :
 		Potential_Shape(var_involved) {
 
+		if (!this->validity_flag) 
+			return;
+
 		if (var_involved.size() <= 1) {
+#ifdef _DEBUG
 			system("ECHO simple correlation shapes must involve at least two variables");
-			abort();
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
 
 		auto it = var_involved.begin();
 		size_t Size = (*it)->size(); it++;
 		for (it; it != var_involved.end(); it++) {
 			if ((*it)->size() != Size) {
+#ifdef _DEBUG
 				system("ECHO variables in a simple correlating potential must have all same sizes");
-				abort();
+#endif // DEBUG
+				this->validity_flag = false;
+				return;
 			}
 		}
 
@@ -387,67 +514,11 @@ namespace Segugio {
 
 	}
 
-	void Import_line(const string& line, list<size_t>* indices, float* val) {
-
-		indices->clear();
-		istringstream iss(line);
-		string temp;
-		while (true) {
-			if (iss.eof()) {
-				break;
-			}
-
-			iss >> temp;
-			indices->push_back((size_t)atoi(temp.c_str()));
-		}
-
-		indices->pop_back();
-		*val = (float)atof(temp.c_str());
-
-	};
-
-	void Potential_Shape::Import(const std::string& file_to_read) {
-
-		ifstream f(file_to_read);
-		if (!f.is_open()) {
-			system("ECHO I_Potential::Import: invalid file");
-			abort();
-		}
-
-		string line;
-		list<size_t> slices;
-		float temp_val;
-		size_t var_numb_expected = this->Involved_var.size();
-		while (!f.eof()) {
-			getline(f, line);
-
-			if (line.compare("") != 0) {
-				Import_line(line, &slices, &temp_val);
-				if (var_numb_expected != slices.size()) {
-					system("ECHO I_Potential::Import: mismatch");
-					abort();
-				}
-
-				if (temp_val < 0.f) {
-					system("ECHO negative value not admitted for potential");
-					abort();
-				}
-
-				this->Add_value(slices, temp_val);
-			}
-		}
-
-		f.close();
-
-	}
-
-	void Potential_Shape::Check_add_value(const std::list<size_t>& indices) {
+	bool Potential_Shape::__Check_add_value(const std::list<size_t>& indices) {
 
 		size_t var_numb = this->Involved_var.size();
-		if (indices.size() != var_numb) {
-			system("ECHO You tried to insert a new value with wrong dimension");
-			abort();
-		}
+		if (indices.size() != var_numb)
+			return false;
 
 		bool match;
 		size_t k;
@@ -463,32 +534,34 @@ namespace Segugio {
 				it_ind++;
 			}
 
-			if (match) {
-				system("ECHO You tried to add a value already inserted in a potential");
-				abort();
-			}
+			if (match)
+				return false;
 		}
 
 		auto itV = this->Involved_var.begin();
 		for (it_ind = indices.begin(); it_ind != indices.end(); it_ind++) {
 			if (*it_ind >= (*itV)->size()) {
-				system("ECHO indice out of bound");
-				abort();
+				return false;
 			}
 
 			itV++;
 		}
+
+		return true;
 
 	}
 
 	void Potential_Shape::Add_value(const std::list<size_t>& new_indeces, const float& new_val) {
 
 		if (new_val < 0.f) {
+#ifdef _DEBUG
 			system("ECHO negative value not admitted for potential");
-			abort();
+#endif // DEBUG
+			return;
 		}
 
-		this->Check_add_value(new_indeces);
+		if (!this->__Check_add_value(new_indeces))
+			return;
 
 		size_t* temp = (size_t*)malloc(sizeof(size_t)*this->Involved_var.size());
 		auto it_ind = new_indeces.begin();
@@ -560,21 +633,23 @@ namespace Segugio {
 
 	void Potential_Shape::Substitute_variables(const std::list<Categoric_var*>& new_var) {
 
-		if (this->Involved_var.size() != new_var.size()) {
-			system("ECHO the number of variables is not the same as in the original set");
-			abort();
+		if (!Are_all_different(new_var)){
+#ifdef _DEBUG
+			system("ECHO Inconsistent set of variables");
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
 
-		auto it2 = this->Involved_var.begin();
-		for (auto it = new_var.begin(); it != new_var.end(); it++) {
-			if ((*it2)->size() != (*it)->size()) {
-				system("ECHO found variable with a size different from the original one");
-				abort();
-			}
-			it2++;
+		if (!Is_consistent_substitution(this->Involved_var, new_var)) {
+#ifdef _DEBUG
+			system("ECHO Inconsistent set of variables");
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
 
-		Set_variable_set(&this->Involved_var , new_var);
+		this->Involved_var = new_var;
 
 	}
 
@@ -593,6 +668,9 @@ namespace Segugio {
 	void Potential_Exp_Shape::Wrap(Potential_Shape* shape) {
 
 		this->pwrapped = shape;
+		this->validity_flag = this->pwrapped->get_validity();
+		if (!this->validity_flag)
+			return;
 
 		list<size_t*> entire_domain;
 		Get_entire_domain(&entire_domain, *this->I_Potential::Getter_4_Decorator::Get_involved_var(shape));
@@ -625,8 +703,7 @@ namespace Segugio {
 	Potential_Exp_Shape::Potential_Exp_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read, const float& w):
 		I_Potential_Decorator(NULL), mWeight(w) {
 
-		Potential_Shape* temp = new Potential_Shape(var_involved);
-		temp->Import(file_to_read);
+		Potential_Shape* temp = new Potential_Shape(var_involved, file_to_read);
 		this->Wrap(temp);
 
 	}
@@ -634,8 +711,8 @@ namespace Segugio {
 	Potential_Exp_Shape::Potential_Exp_Shape(const Potential_Exp_Shape* to_copy, const std::list<Categoric_var*>& var_involved) :
 		I_Potential_Decorator(NULL), mWeight(to_copy->mWeight) {
 
-		this->Wrap(new Potential_Shape(to_copy->pwrapped, var_involved));
-
+		auto new_shape = new Potential_Shape(to_copy->pwrapped, var_involved);
+		this->Wrap(new_shape);
 
 	};
 
@@ -646,9 +723,11 @@ namespace Segugio {
 	Potential::Potential(const std::list<Potential*>& potential_to_merge, const bool& use_sparse_format) : I_Potential_Decorator(NULL) {
 
 		if (potential_to_merge.empty()) {
-			return;
+#ifdef _DEBUG
 			system("ECHO empty set to merge");
-			abort();
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
 
 		const list<Categoric_var*>* front_vars = this->I_Potential::Getter_4_Decorator::Get_involved_var(potential_to_merge.front());
@@ -723,17 +802,21 @@ namespace Segugio {
 
 	Potential::Potential(const std::list<size_t>& val_observed, const std::list<Categoric_var*>& var_observed, Potential* pot_to_reduce) : I_Potential_Decorator(NULL) {
 
-#ifdef _DEBUG
 		if (val_observed.size() != var_observed.size()) {
+#ifdef _DEBUG
 			system("ECHO val observed mismatch with var observed");
-			abort();
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
 
-		if (val_observed.size() >= this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_reduce)->size() ) {
+		if (val_observed.size() >= this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_reduce)->size()) {
+#ifdef _DEBUG
 			system("ECHO at least one non observed variable must exist");
-			abort();
+#endif // DEBUG
+			this->validity_flag = false;
+			return;
 		}
-#endif // _DEBUG	
 
 		size_t* index_to_find = (size_t*)malloc(sizeof(size_t)*var_observed.size());
 		auto val_ob = val_observed.begin();
@@ -799,12 +882,12 @@ namespace Segugio {
 		prob_distr->clear();
 
 		auto distr = this->Get_distr();
-#ifdef _DEBUG
 		if (distr->empty()) {
-			system("ECHO empty distribution not possible");
-			abort();
-		}
+#ifdef _DEBUG
+			system("ECHO found empty distribution when evaluating marginals");
 #endif // _DEBUG
+			return;
+		}
 
 		float Z = 0.f;
 		for (auto itD = distr->begin(); itD != distr->end(); itD++) {
@@ -826,6 +909,13 @@ namespace Segugio {
 		}
 
 	}
+
+
+
+
+
+
+
 
 
 
@@ -914,11 +1004,11 @@ namespace Segugio {
 		this->pwrapped = merged_pot;
 
 	}
-	
+
 	Potential_Shape* Message_Unary::merge_binary_and_unary(Potential* binary_to_merge, Potential* unary, const bool& Sum_or_MAP) {
 
 		Categoric_var* var_to_marginalize = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->front(),
-					 * var_to_remain = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->back();
+			*var_to_remain = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->back();
 		size_t         pos_to_marginalize = 0, pos_to_remain = 1;
 		if (var_to_remain == this->I_Potential::Getter_4_Decorator::Get_involved_var(unary)->front()) {
 			Categoric_var* C = var_to_remain;
@@ -983,6 +1073,13 @@ namespace Segugio {
 		return shape_temp;
 
 	}
+
+
+
+
+
+
+
 
 
 

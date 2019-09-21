@@ -15,7 +15,6 @@ namespace Segugio {
 	public:
 		~Node();
 
-
 		struct Neighbour_connection {
 			friend class Node;
 			friend class I_belief_propagation_strategy;
@@ -35,6 +34,7 @@ namespace Segugio {
 			std::list<Neighbour_connection*>    Neighbourhood;
 		};
 
+
 		/*!
 		 * \brief Interface for describing a net: set of nodes representing random variables
 		 */
@@ -47,11 +47,6 @@ namespace Segugio {
 			* @param[in] var_name name to search
 			*/
 			Categoric_var*			  Find_Variable(const std::string& var_name);
-			/** \brief Returns a pointer to the variable in this graph with the same name of the variable passed as input
-			* \details Returns NULL when the variable is not present in the graph
-			* @param[in] var_with_same_name variable having the same of name of the variable to search
-			*/
-			Categoric_var*			  Find_Variable(Categoric_var* var_with_same_name) { return this->Find_Variable(var_with_same_name->Get_name()); };
 			/** \brief Returns the current set of hidden variables
 			*/
 			void					  Get_Actual_Hidden_Set(std::list<Categoric_var*>* result);
@@ -132,91 +127,66 @@ namespace Segugio {
 			size_t					 Get_structure_size();
 
 
-			class _SubGraph {
-			public:
-				/*!
-				 * \brief Builds a reduction of the actual net, considering the actual observation values.
-				 * \details The subgraph is not automatically updated w.r.t. modifications of the originating net: in such cases just create a novel subgraph with the same sub_set of variables involved
-				 */
-				_SubGraph(Node_factory* Original_graph , const std::list<Categoric_var*>& sub_set_to_consider);
-				~_SubGraph();
+			//class _SubGraph {
+			//public:
+			//	/*!
+			//	 * \brief Builds a reduction of the actual net, considering the actual observation values.
+			//	 * \details The subgraph is not automatically updated w.r.t. modifications of the originating net: in such cases just create a novel subgraph with the same sub_set of variables involved
+			//	 */
+			//	_SubGraph(Node_factory* Original_graph , const std::list<Categoric_var*>& sub_set_to_consider);
+			//	~_SubGraph();
 
-				/** \brief Returns the marginal probabilty of a some particular combinations of values assumed by the variables in this subgraph.
-				* \details The marginal probabilities computed are conditioned to the observations set when extracting this subgraph.
-				* @param[out] result the computed marginal probabilities
-				* @param[in] combinations combinations of values for which the marginals are computed: must have same size of var_order_in_combination.
-				* @param[in] var_order_in_combination order of variables considered when assembling the combinations.
-				*/
-				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
-				/** \brief Similar to Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination),
-				* passing the combinations as pointer arrays. 
-				*/
-				void					Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
-				/** \brief Returns the Maximum a Posteriori estimation of the hidden set in the sugraph. @latexonly\label{MAP_sub_method}@endlatexonly
-				* \details Values are ordered as returned by _SubGraph::Get_All_variables. This MAP
-				* is conditioned to the observations set at the time this subgraph was created.
-				*/
-				void					MAP(std::list<size_t>* result) { this->__SubGraph->MAP_on_Hidden_set(result); };
-				/** \brief Returns a set of samples for the variables involved in this subgraph. @latexonly\label{Gibbs_sub_method}@endlatexonly
-				* \details Sampling is done considering the marginal probability distribution of this cluster of 
-				* variables, conditioned to the observations set at the time this subgraph was created.
-				* Samples are obtained through Gibbs sampling.
-				* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
-				* @param[in] N_samples number of desired samples
-				* @param[in] initial_sample_to_skip number of samples to skip for performing Gibbs sampling
-				* @param[out] result returned samples: every element of the list is a combination of values for the hidden set, with the same
-				* order returned when calling _SubGraph::Get_All_variables
-				*/
-				void					Gibbs_Sampling(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip) { this->__SubGraph->Gibbs_Sampling_on_Hidden_set(result, N_samples, initial_sample_to_skip); };
-				/** \brief Returns the cluster of varaibles involved in this sub graph.
-				*/
-				void					Get_All_variables(std::list<Categoric_var*>* result) { this->__SubGraph->Get_All_variables_in_model(result); };
-			private:
-				_SubGraph(const _SubGraph&) { abort(); };
-			// data
-				Node_factory*		__SubGraph;
-				float*						logZ; //normalization coefficient for computing marginal probabilities. It is a proxy
-			};
+			//	/** \brief Returns the marginal probabilty of a some particular combinations of values assumed by the variables in this subgraph.
+			//	* \details The marginal probabilities computed are conditioned to the observations set when extracting this subgraph.
+			//	* @param[out] result the computed marginal probabilities
+			//	* @param[in] combinations combinations of values for which the marginals are computed: must have same size of var_order_in_combination.
+			//	* @param[in] var_order_in_combination order of variables considered when assembling the combinations.
+			//	*/
+			//	void					Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+			//	/** \brief Similar to Get_marginal_prob_combinations(std::list<float>* result, const std::list < std::list<size_t>>& combinations, const std::list<Categoric_var*>& var_order_in_combination),
+			//	* passing the combinations as pointer arrays. 
+			//	*/
+			//	void					Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination);
+			//	/** \brief Returns the Maximum a Posteriori estimation of the hidden set in the sugraph. @latexonly\label{MAP_sub_method}@endlatexonly
+			//	* \details Values are ordered as returned by _SubGraph::Get_All_variables. This MAP
+			//	* is conditioned to the observations set at the time this subgraph was created.
+			//	*/
+			//	void					MAP(std::list<size_t>* result) { this->__SubGraph->MAP_on_Hidden_set(result); };
+			//	/** \brief Returns a set of samples for the variables involved in this subgraph. @latexonly\label{Gibbs_sub_method}@endlatexonly
+			//	* \details Sampling is done considering the marginal probability distribution of this cluster of 
+			//	* variables, conditioned to the observations set at the time this subgraph was created.
+			//	* Samples are obtained through Gibbs sampling.
+			//	* Calculations are done considering the last last observations set (see Node_factory::Set_Observation_Set_var)
+			//	* @param[in] N_samples number of desired samples
+			//	* @param[in] initial_sample_to_skip number of samples to skip for performing Gibbs sampling
+			//	* @param[out] result returned samples: every element of the list is a combination of values for the hidden set, with the same
+			//	* order returned when calling _SubGraph::Get_All_variables
+			//	*/
+			//	void					Gibbs_Sampling(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip) { this->__SubGraph->Gibbs_Sampling_on_Hidden_set(result, N_samples, initial_sample_to_skip); };
+			//	/** \brief Returns the cluster of varaibles involved in this sub graph.
+			//	*/
+			//	void					Get_All_variables(std::list<Categoric_var*>* result) { this->__SubGraph->Get_All_variables_in_model(result); };
+			//private:
+			//	_SubGraph(const _SubGraph&) { abort(); };
+			//// data
+			//	Node_factory*		__SubGraph;
+			//	float*						logZ; //normalization coefficient for computing marginal probabilities. It is a proxy
+			//};
 
 		protected:
 			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
 
 			//Import XML is not inlined in constructor since contains a call to Insert, which is virtual
 			void Import_from_XML(XML_reader* xml_data, const std::string& prefix_config_xml_file);
-
-			struct _Pot_wrapper_4_Insertion {
-				virtual const std::list<Categoric_var*>* Get_involved_var_safe() = 0;
-				virtual Potential*											  Get_Potential_to_Insert(const std::list<Categoric_var*>& var_involved, const bool& get_cloned) = 0;
-			};
 			
-			//when the passed potential involves two variable is interpreted as a new edge, when containing a single a variable is assumed as a new unary potential;
-			//in any other cases is a an error
-			void Insert(_Pot_wrapper_4_Insertion* element_to_add);
-
-			void Insert(std::list<_Pot_wrapper_4_Insertion*>& elements_to_add);
-
-			template<typename T>
-			struct _Baseline_4_Insertion : public _Pot_wrapper_4_Insertion {
-				_Baseline_4_Insertion(T* wrp) : wrapped(wrp) {};
-				virtual const std::list<Categoric_var*>* Get_involved_var_safe() { return this->wrapped->Get_involved_var_safe(); };
-				virtual Potential*											  Get_Potential_to_Insert(const std::list<Categoric_var*>& var_involved, const bool& get_cloned) {
-					if (get_cloned)
-						return new Potential(new T(this->wrapped , var_involved));
-					else
-						return new Potential(this->wrapped);
-				};
-			protected:
-				T*			wrapped;
-			};
-
-			virtual _Pot_wrapper_4_Insertion* Get_Inserter(Potential_Exp_Shape* pot, const bool& weight_tunability) { return new _Baseline_4_Insertion<Potential_Exp_Shape>(pot); }; //result is created with new
-
-			void Insert(Potential_Shape* pot);
-			void Insert(Potential_Exp_Shape* pot, const bool& weight_tunability);
-
-			Node*					  Find_Node(const std::string& var_name);
+			Node*					  __Find_Node(Categoric_var* var);
 			
 		//methods having an effect on mState
+
+			virtual void __Insert(Potential_Shape* pot) { this->___Insert(pot); };
+			virtual void __Insert(Potential_Exp_Shape* pot, const bool& weight_tunability, Potential_Exp_Shape** actually_inserted) { *actually_inserted = this->___Insert(pot); };
+			void Insert(const std::list<Potential_Exp_Shape*>& exponential_potentials, const std::list<bool>& tunability);
+			void Insert(const std::list<Potential_Shape*>&				    simple_potentials);
 
 			/** \brief Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val
 			*/
@@ -224,12 +194,106 @@ namespace Segugio {
 			/** \brief Set the observation set: which variables are treated like evidence when performing belief propagation
 			*/
 			void					  Set_Observation_Set_val(const std::list<size_t>& new_observed_vals); //assuming the same observed set last time
-			void					  Belief_Propagation(const bool& sum_or_MAP);
+			void					  Belief_Propagation(const bool& sum_or_MAP, bool* is_propagation_possible);
 
-			size_t*					  Get_observed_val_in_case_is_in_observed_set(Categoric_var* var); //return NULL in case the involved variable is hidden
 		private:
 			bool					  Belief_Propagation_Redo_checking(const bool& sum_or_MAP);
 			void					  Recompute_clusters();
+
+			bool					  Create_new_node(Categoric_var* var);
+			template<typename T>
+			Potential* Get_for_insertion(T* pot, T** actually_used) {
+
+				*actually_used = pot;
+				if (this->bDestroy_Potentials_and_Variables) 
+					*actually_used = new T(*actually_used, *pot->Get_involved_var_safe());
+				return new Potential(*actually_used);
+
+			};
+			template<typename T>
+			T* ___Insert(T* pot) { //returns a reference to the real potential inserted
+
+				if (!pot->get_validity()) {
+#ifdef _DEBUG
+					system("ECHO Insertion failed");
+#endif // DEBUG
+					return NULL;
+				}
+
+				T* inserted = NULL;
+				auto var_involved = pot->Get_involved_var_safe();
+				if (var_involved->size() == 1) {
+//unary potential insertion
+					auto node = this->__Find_Node(var_involved->front());
+					if (node == NULL) {
+						if (this->Create_new_node(var_involved->front()))
+							this->Nodes.back()->Permanent_Unary.push_back(this->Get_for_insertion(pot, &inserted));
+						else return NULL;
+					}
+					else  node->Permanent_Unary.push_back(this->Get_for_insertion(pot, &inserted));
+				}
+				else if (var_involved->size() == 2) {
+//binary potential insertion
+					Node* peer_A = this->__Find_Node(pot->Get_involved_var_safe()->front());
+					Node* peer_B = this->__Find_Node(pot->Get_involved_var_safe()->back());
+
+					if ((peer_A != NULL) && (peer_B != NULL)) {
+						// this potential was already inserted
+#ifdef _DEBUG
+						system("ECHO found clone of an already inserted binary potential");
+#endif // DEBUG
+						return NULL;
+					}
+
+					if (peer_A == NULL) {
+						if (!this->Create_new_node(pot->Get_involved_var_safe()->front()))
+							return NULL;
+						peer_A = this->Nodes.back();
+					}
+					if (peer_B == NULL) {
+						if (!this->Create_new_node(pot->Get_involved_var_safe()->back()))
+							return NULL;
+						peer_B = this->Nodes.back();
+					}
+
+					auto new_pot = this->Get_for_insertion(pot, &inserted);
+
+					//create connection
+					Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
+					A_B->This_Node = peer_A;
+					A_B->Neighbour = peer_B;
+					A_B->Shared_potential = new_pot;
+					A_B->Message_to_this_node = NULL;
+
+					Node::Neighbour_connection* B_A = new Node::Neighbour_connection();
+					B_A->This_Node = peer_B;
+					B_A->Neighbour = peer_A;
+					B_A->Shared_potential = new_pot;
+					B_A->Message_to_this_node = NULL;
+
+					A_B->Message_to_neighbour_node = &B_A->Message_to_this_node;
+					B_A->Message_to_neighbour_node = &A_B->Message_to_this_node;
+
+					peer_A->Active_connections.push_back(A_B);
+					peer_B->Active_connections.push_back(B_A);
+
+					this->Binary_potentials.push_back(new_pot);
+
+				}
+				else {
+#ifdef _DEBUG
+					system("ECHO Only binary or unary potential can be inserted");
+#endif // DEBUG
+					return NULL;
+				}
+
+				if (this->Last_propag_info != NULL) delete this->Last_propag_info;
+				this->Last_propag_info = NULL;
+				this->mState = 0;
+				return inserted;
+
+			}
+
 
 			struct observation_info {
 				Node*  Involved_node;
@@ -257,7 +321,6 @@ namespace Segugio {
 			unsigned int												Iterations_4_belief_propagation;
 		};
 
-
 		Categoric_var*							Get_var() { return this->pVariable; };
 		void									Gather_all_Unaries(std::list<Potential*>* result); 
 		void									Append_temporary_permanent_Unaries(std::list<Potential*>* result); //append to existing list all the temporary and permanent uanry potentials, excluding messages
@@ -270,17 +333,17 @@ namespace Segugio {
 	private:
 		Node(Categoric_var* var) { this->pVariable = new Categoric_var(var->size(), var->Get_name()); };
 		Node(Categoric_var* var, const bool& dont_clone_var) { this->pVariable = var; };
-	// data
-		Categoric_var*					  pVariable;
-		std::list<Potential*>			  Permanent_Unary;
-		std::list<Potential*>			  Temporary_Unary; //those coming from marginalizing some observed variables
+	// data												
+		Categoric_var*									 pVariable;
+		std::list<Potential*>							 Permanent_Unary;
+		std::list<Potential*>							 Temporary_Unary; //those coming from marginalizing some observed variables
 		std::list<Neighbour_connection*>  Active_connections;
 		std::list<Neighbour_connection*>  Disabled_connections;
 	};
 
 
 
-	typedef Node::Node_factory::_SubGraph  SubGraph;
+	//typedef Node::Node_factory::_SubGraph  SubGraph;
 
 
 

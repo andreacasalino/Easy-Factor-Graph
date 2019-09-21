@@ -100,6 +100,8 @@ namespace Segugio {
 
 	void Entire_Set::Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) {
 
+		if (!Train_set->Get_validity_flag()) return;
+
 		this->__check_tunable_are_present(model_to_train);
 
 		this->Wrapped->Reset();
@@ -123,6 +125,8 @@ namespace Segugio {
 	}
 
 	void Stoch_Set_variation::Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) {
+
+		if (!Train_set->Get_validity_flag()) return;
 
 		this->__check_tunable_are_present(model_to_train);
 

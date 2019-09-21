@@ -1,19 +1,24 @@
-#include "../CRF/Header/Graphical_model.h"
-#include "__Header/CRF_Shell.h"
+#include "__Header/Shell_Clients.h"
+#include "__Header/Client_terminal.h"
+#include "__Header/Client_socket.h"
 using namespace std;
-
-#ifdef _DEBUG
-#pragma comment (lib, "../x64/Debug/CRF.lib")
-#else
-#pragma comment (lib, "../x64/Release/CRF.lib")
-#endif // DEBUG
-using namespace Segugio;
-
 
 int main() {
 
-	Shell_Debugger Shell_dbg;
-	Shell_dbg.do_staff();
+	CRF_Shell shell;
+	Client_Terminal debug_terminal(&shell);
+	shell.Activate_loop();
+
+
+	//char next_instruction[1000];
+	//while (true)
+	//{
+	//	fgets(&next_instruction[0], sizeof(next_instruction), stdin);
+	//	string command(next_instruction);
+	//	Command comm(command);
+	//	comm.Print();
+	//}
+
 
 	system("pause");
 	return 0;

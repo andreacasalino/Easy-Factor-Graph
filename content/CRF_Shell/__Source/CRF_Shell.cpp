@@ -5,9 +5,11 @@
 using namespace std;
 using namespace Segugio;
 
+#define PORT_SERVER string("8080")
 
 
-JS_interface::JS_interface(CRF_Shell* to_process) : Connection("8080"), life(true), inteface_closed(false), ref_to_shell(to_process) {
+
+JS_interface::JS_interface(CRF_Shell* to_process, const std::string& port) : Connection(port), life(true), inteface_closed(false), ref_to_shell(to_process) {
 
 	this->_Reactor = new Reactor(this);
 	this->pmutex = new mutex();
@@ -603,7 +605,7 @@ void Init_Commands(list<CRF_Shell::Command*>* comms, CRF_Shell* shell) {
 
 			if (this->get_data()->Interface == NULL) {
 				this->get_data()->update_needed = true;
-				this->get_data()->Interface = new JS_interface(this->ref_to_shell);
+				this->get_data()->Interface = new JS_interface(this->ref_to_shell, PORT_SERVER);
 			}
 
 		}

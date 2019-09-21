@@ -13,11 +13,18 @@
 class CRF_Shell;
 class JS_interface {
 public:
-	JS_interface(CRF_Shell* to_process);
+	JS_interface(CRF_Shell* to_process, const std::string& port);
 	~JS_interface();
 
 private:
 	void __comm_loop();
+
+	struct Reactor : public Http_Server::Reaction_Handler {
+		Reactor(JS_interface* intrf) : pInterface(intrf) {};
+		void get_reponse(std::string* response, const std::string& request);
+	private:
+		JS_interface*   pInterface;
+	};
 
 // data
 	bool							life;
@@ -25,15 +32,9 @@ private:
 	std::mutex*				pmutex;
 	std::thread*				comm_loop;
 
-	Http_Server		Connection;
-	struct Reactor : public Http_Server::Reaction_Handler {
-		Reactor(JS_interface* intrf) : pInterface(intrf) {};
-		void get_reponse(std::string* response, const std::string& request);
-	private:
-		JS_interface*   pInterface;
-	};
-	Reactor*			_Reactor;
-	CRF_Shell*	   ref_to_shell;
+	Http_Server				Connection;
+	Reactor*					Reactor;
+	CRF_Shell*				ref_to_shell;
 };
 
 

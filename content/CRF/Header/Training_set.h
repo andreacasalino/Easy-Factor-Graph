@@ -49,19 +49,21 @@ std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_i
 		*/
 		template<typename Array>
 		Training_set(const std::list<std::string>& variable_names, std::list<Array>& samples, I_Extractor<Array>* extractor) : 
-			Variable_names(variable_names) {
+			Variable_names(variable_names), Is_training_set_valid(true) {
 
 			if(variable_names.empty() || samples.empty()) {
-				system("ECHO empty training set");
-				abort();
+				system("ECHO Warning: empty training set");
+				this->Is_training_set_valid = false;
+				return;
 			}
 
 			size_t vec_size = variable_names.size(), k;
 			size_t* temp;
 			for (auto it = samples.begin(); it != samples.end(); it++) {
 				if (extractor->get_size(*it) != vec_size) {
-					system("ECHO inconsistent data");
-					abort();
+					system("ECHO Warning: inconsistent training set data");
+					this->Is_training_set_valid = false;
+					return;
 				}
 
 				temp = (size_t*)malloc(sizeof(size_t) * vec_size);
@@ -121,10 +123,16 @@ std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_i
 		 * @param[in] file_name is the path of the file where the set must be printed
 		 */
 		void Print(const std::string& file_name);
+
+		/*!
+		 * \brief Returns true in case this set can be used for performing the training of a model, otherwise is false
+		 */
+		const bool& Get_validity_flag() { return this->Is_training_set_valid; };
 	private:
 	// data
+		bool								Is_training_set_valid;
 		std::list<std::string>	Variable_names;
-		std::list<size_t*>		Set;
+		std::list<size_t*>			Set;
 	};
 
 }

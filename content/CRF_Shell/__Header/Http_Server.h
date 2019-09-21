@@ -48,7 +48,7 @@ public:
 	JSON_tag() {};
 
 	void Add_field(const std::string& name, const std::string& value);
-	void Add_nested(const std::string& name, const I_JSON_composite* to_nest);
+	void Add_nested(const std::string& name, const I_JSON_composite& to_nest);
 private:
 	virtual I_JSON_composite*  __copy() const;
 	virtual void __stringify(std::string* result);
@@ -66,7 +66,7 @@ class JSON_array : public I_JSON_composite {
 public:
 	JSON_array() {};
 
-	void Append(const I_JSON_composite* to_nest);
+	void Append(const I_JSON_composite& to_nest);
 private:
 	virtual I_JSON_composite*  __copy() const;
 	virtual void __stringify(std::string* result);
@@ -76,9 +76,12 @@ private:
 class JSON_numerical_array : public I_JSON_composite {
 public:
 	JSON_numerical_array() {};
+	JSON_numerical_array(const std::list<float>& vals) { this->Values = vals; };
 
 	void Append(const float& to_nest) { this->Values.push_back(to_nest); };
 private:
+	JSON_numerical_array(const JSON_numerical_array& to_clone) { this->Values = to_clone.Values; };
+
 	virtual I_JSON_composite*  __copy() const { return new JSON_numerical_array(*this); };
 	virtual void __stringify(std::string* result);
 
@@ -96,7 +99,12 @@ public:
 		virtual void get_reponse(std::string* response, const std::string& request) = 0; // return false when shut down command is received
 	};
 
+	//here the request the next command is received and the response is also sent, after the reactor computed it
 	void React_to_client(Reaction_Handler* reactor);
+
+	void Recv_request(std::string* request);
+	//call it only after Recv_request
+	void Send_response(const std::string& response);
 private:
 	struct __Headers_t;
 	__Headers_t __GET_next(std::string* request_without_key , const ULONG& size_of_request = 2048);
@@ -111,6 +119,7 @@ private:
 	std::string										port_to_accept;
 	bool												Is_initialized;
 	std::string										server_process_ID;
+	__Headers_t*								pending_request;
 };
 
 #endif // !_HASH_ENCODER_H__

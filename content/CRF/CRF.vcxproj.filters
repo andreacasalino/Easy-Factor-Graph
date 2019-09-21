@@ -21,12 +21,6 @@
     <ClInclude Include="Header\Graphical_model.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="Header\Training_set.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Trainer.h">
-      <Filter>Header</Filter>
-    </ClInclude>
     <ClInclude Include="..\thirdy_part_lib\XML_reader\XML_Manager.h">
       <Filter>Header</Filter>
     </ClInclude>
@@ -44,16 +38,7 @@
     <ClCompile Include="Source\Graphical_model.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Training_set.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Trainer.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
     <ClCompile Include="..\thirdy_part_lib\XML_reader\XML_Manager.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Subgraph.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>

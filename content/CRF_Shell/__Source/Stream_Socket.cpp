@@ -1,4 +1,4 @@
-#include "../Header/Stream_Socket.h"
+#include "../__Header/Stream_Socket.h"
 #include <iostream>
 
 #pragma comment (lib, "Ws2_32.lib")
@@ -48,7 +48,7 @@ void I_Stream_Socket::throw_recv_error() {
 
 }
 
-void I_Stream_Socket::Send(char* sendbuf, const int& N_byte) {
+void I_Stream_Socket::Send(const char* sendbuf, const int& N_byte) {
 
 	if (N_byte <= 0) {
 		std::cout << "N_byte cannot be less than 0 \n";

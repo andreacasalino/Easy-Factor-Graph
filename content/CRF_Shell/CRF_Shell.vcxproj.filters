@@ -2,10 +2,19 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="Main_Shell.cpp" />
-    <ClCompile Include="__Source\CRF_Shell.cpp">
+    <ClCompile Include="__Source\Http_Server.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="__Source\Http_Server.cpp">
+    <ClCompile Include="__Source\Shell_Clients.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="__Source\Client_terminal.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="__Source\Client_socket.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="__Source\Stream_Socket.cpp">
       <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
@@ -18,10 +27,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="__Header\CRF_Shell.h">
+    <ClInclude Include="__Header\Http_Server.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="__Header\Http_Server.h">
+    <ClInclude Include="__Header\Shell_Clients.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="__Header\Client_terminal.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="__Header\Client_socket.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="__Header\Stream_Socket.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

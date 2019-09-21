@@ -26,11 +26,13 @@
 
 
 <script type="text/javascript">
+	var server_port='8080';
+
 
 	var server_key='-';
 	window.onload = function winopen(){ 
 		let handshake_req = new XMLHttpRequest();
-		handshake_req.open('GET', 'http://localhost:8080', false);
+		handshake_req.open('GET', 'http://localhost:'+server_port, false);
 		handshake_req.setRequestHeader('Accept', server_key + '_hello');
 		handshake_req.send();
 		server_key = handshake_req.response;
@@ -38,40 +40,40 @@
 	}; 
 
 	var network = null;
-	function destroy() {
+	function Refresh_network(new_net){
 		if (network !== null) {
 			network.destroy();
 			network = null;
 		}
-	}
-	
-	function Update_network(new_net){
-		  destroy();
-		  var data = JSON.parse(new_net);
-		  var options = {layout:{randomSeed:2}};
-		  network = new vis.Network(document.getElementById('mynetwork'), data, options);
+		
+	  var data = JSON.parse(new_net);
+	  var options = {layout:{randomSeed:2}};
+	  network = new vis.Network(document.getElementById('mynetwork'), data, options);
 	}
 	
 	window.setInterval(function(){
 		
-		console.log('new upd request');
+		//console.log('new upd request');
 		var upd_req = new XMLHttpRequest();
 		
 		upd_req.onload = function() {	
 			let x =  upd_req.response;
-			console.log(x);
-				if(x === 'null'){
-					return;
-				}
-				else {
-					Update_network(x);
-				}
+			//console.log(x);
+			if(x === 'null'){
+				return;
+			}
+			else if(x === 'end'){
+				window.close();
+			}				
+			else {
+				Refresh_network(x);
+			}
 		}
 		
-		upd_req.open('GET', 'http://localhost:8080', true);
-		upd_req.setRequestHeader('Accept', server_key + '_Upd');
+		upd_req.open('GET', 'http://localhost:'+server_port, true);
+		upd_req.setRequestHeader('Accept', server_key + '_U');
 		upd_req.send();
-	}, 500);
+	}, 200);
 		
 </script>
 

@@ -151,7 +151,6 @@ namespace Segugio {
 		system("ECHO inexsistent neighbour node");
 		abort();
 
-
 	}
 
 
@@ -182,12 +181,11 @@ namespace Segugio {
 
 	void Node::Node_factory::Set_Iteration_4_belief_propagation(const unsigned int& iter_to_use) {
 
-		if (iter_to_use < 10) {
-			system("ECHO iterations for belief propagation are too low");
-			abort();
-		}
+		unsigned int temp = iter_to_use;
+		if (temp < 10)
+			temp = 10;
 
-		this->Iterations_4_belief_propagation = iter_to_use;
+		this->Iterations_4_belief_propagation = temp;
 
 	}
 
@@ -200,214 +198,199 @@ namespace Segugio {
 		return NULL;
 
 	};
+	void parse_Variable(list<Categoric_var*>* variables, XML_reader::Tag_readable& tag) {
 
-	Potential_Shape* Import_shape(const string& prefix, XML_reader::Tag_readable& tag, const list<Categoric_var*>& vars) {
+		string val = tag.Get_value("Size");
+		if (val.empty()) {
+#ifdef _DEBUG
+			system("ECHO found unsized variable");
+#endif // DEBUG
+			return;
+		}
+		size_t Size = (size_t)atoi(val.c_str());
+		if (Size == 0) {
+#ifdef _DEBUG
+			system("ECHO found zero dimension variable");
+#endif // DEBUG
+			return;
+		}
 
-		if (tag.Exist_Field("Source"))
-			return new Potential_Shape(vars, prefix + tag.Get_value("Source"));
-		else if (tag.Exist_Field("Correlation")) {
-			if (tag.Get_value("Correlation").compare("T") == 0)
-				return new Potential_Shape(vars, true);
-			else if(tag.Get_value("Correlation").compare("F") == 0)
-				return new Potential_Shape(vars, false);
-			else {
-				system("ECHO invalid correlation type");
-				abort();
+		val = tag.Get_value("name");
+		if (val.empty()) {
+#ifdef _DEBUG
+			system("ECHO found unamed variable");
+#endif // DEBUG
+			return;
+		}
+		if (Find_by_name(*variables, val) != NULL) {
+#ifdef _DEBUG
+			system("ECHO found multiple variables with the same name");
+#endif // DEBUG
+			return;
+		}
+
+		variables->push_back(new Categoric_var(Size, val));
+
+	}
+	Potential_Shape* Import_shape(const string& prefix, XML_reader::Tag_readable& tag,  list<Categoric_var*>& vars) {
+
+		list<Categoric_var*> var_involved;
+		list<string> names;
+		tag.Get_values_specific_field_name("var", &names);
+		if (names.empty()) {
+#ifdef _DEBUG
+			system("ECHO found potential with invalid var set");
+#endif // DEBUG
+			return NULL;
+		}
+		else if (names.size() == 1) {
+			var_involved.push_back(Find_by_name(vars, names.front()));
+			if (var_involved.front() == NULL) {
+#ifdef _DEBUG
+				system("ECHO found potential with invalid var set");
+#endif // DEBUG
+				return NULL;
 			}
 		}
-		else {
-			Potential_Shape* shape = new Potential_Shape(vars);
-			list<XML_reader::Tag_readable> distr_vals;
-			tag.Get_Nested("Distr_val", &distr_vals);
-			list<string> indices_raw;
-			list<size_t> indices;
-			while (!distr_vals.empty()) {
-				indices.clear();
-				distr_vals.front().Get_values_specific_field_name("v", &indices_raw);
+		else if (names.size() == 2) {
+			var_involved.push_back(Find_by_name(vars, names.front()));
+			if (var_involved.back() == NULL) {
+#ifdef _DEBUG
+				system("ECHO found potential with invalid var set");
+#endif // DEBUG
+				return NULL;
+			}
 
+			var_involved.push_back(Find_by_name(vars, names.back()));
+			if (var_involved.back() == NULL) {
+#ifdef _DEBUG
+				system("ECHO found potential with invalid var set");
+#endif // DEBUG
+				return NULL;
+			}
+		}
+
+		auto val = tag.Get_value("Source");
+		if (!val.empty()) 
+			return new Potential_Shape(var_involved, prefix + tag.Get_value("Source"));
+
+		val = tag.Get_value("Correlation");
+		if (!val.empty()) {
+
+			if (val.compare("T") == 0) 
+				return new Potential_Shape(var_involved, true);
+			else if (val.compare("F") == 0)
+				return new Potential_Shape(var_involved, false);
+			else {
+#ifdef _DEBUG
+				system("ECHO found potential with invalid options");
+#endif // DEBUG
+				return NULL;
+			}
+		}
+
+		auto shape = new Potential_Shape(var_involved);
+		list<XML_reader::Tag_readable> distr_vals;
+		tag.Get_Nested("Distr_val", &distr_vals);
+		list<string> indices_raw;
+		list<size_t> indices;
+		string temp_D;
+		while (!distr_vals.empty()) {
+			indices.clear();
+			distr_vals.front().Get_values_specific_field_name("v", &indices_raw);
+			temp_D = distr_vals.front().Get_value("D");
+			if (!temp_D.empty()) {
 				while (!indices_raw.empty()) {
 					indices.push_back((size_t)atoi(indices_raw.front().c_str()));
 					indices_raw.pop_front();
 				}
 
-				shape->Add_value(indices, (float)atof(distr_vals.front().Get_value("D").c_str()));
+				shape->Add_value(indices, (float)atof(temp_D.c_str()));
 				distr_vals.pop_front();
 			}
-			return shape;
 		}
+		return shape;
 
 	};
 	void Node::Node_factory::Import_from_XML(XML_reader* reader, const std::string& prefix_config_xml_file) {
 
-		this->bDestroy_Potentials_and_Variables = false;
-
-		auto root = reader->Get_root();
-
-		//import variables
-		list<Categoric_var*>	variables;
-		Categoric_var* temp_clone, * temp_clone2;
-		list<XML_reader::Tag_readable> Var_tags;
-		root.Get_Nested("Variable", &Var_tags);
-		string var_name;
-		for (auto itV = Var_tags.begin(); itV != Var_tags.end(); itV++) {
-			var_name = itV->Get_value("name");
-			temp_clone = Find_by_name(variables, var_name);
-
-			if (temp_clone != NULL) {
-				system("ECHO found clone of a varibale when parsing xml graph");
-				abort();
-			}
-
-			variables.push_back(new Categoric_var((size_t)atoi(itV->Get_value("Size").c_str()), var_name));
-
-		}
-
-		//import potentials
-		list<XML_reader::Tag_readable> Pot_tags;
-		root.Get_Nested("Potential", &Pot_tags);
-		list<string> var_names;
-
-		list<_Pot_wrapper_4_Insertion*> structure;
-
-		list<Categoric_var*> processed_vars;
-		float w_temp;
-		bool b_temp;
-		bool exist_at_least_a_binary = false;
-		for (auto itP = Pot_tags.begin(); itP != Pot_tags.end(); itP++) {
-			itP->Get_values_specific_field_name("var", &var_names);
-			if (var_names.size() == 1) { //new unary potential to read
-				temp_clone = Find_by_name(variables, var_names.front());
-				if (temp_clone == NULL) {
-					system("ECHO potential refers to an inexistent variable");
-					abort();
-				}
-				if (itP->Exist_Field("weight")) {
-					w_temp = (float)atof(itP->Get_value("weight").c_str());
-					if (w_temp < 0.f) {
-						system("ECHO weight of potential must be positive");
-						abort();
-					}
-
-					b_temp = true;
-					if (itP->Exist_Field("tunability")) {
-						string tun_flag = itP->Get_value("tunability");
-						if (tun_flag.compare("Y") == 0)
-							b_temp = true;
-						else if (tun_flag.compare("N") == 0)
-							b_temp = false;
-						else {
-							system("ECHO tunability option invalid");
-							abort();
-						}
-					}
-
-					structure.push_back(this->Get_Inserter(
-						new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone }), w_temp)
-						, b_temp));
-				}
-				else
-					structure.push_back(new _Baseline_4_Insertion<Potential_Shape>(
-						Import_shape(prefix_config_xml_file, *itP, { temp_clone })
-						)  );
-
-				exist_in_list(&b_temp, processed_vars, temp_clone);
-				if (!b_temp) processed_vars.push_back(temp_clone);
-			}
-			else if (var_names.size() == 2) { //new binary potential to read
-				exist_at_least_a_binary = true;
-				temp_clone = Find_by_name(variables, var_names.front());
-				if (temp_clone == NULL) {
-					system("ECHO potential refers to an inexistent variable");
-					abort();
-				}
-				exist_in_list(&b_temp, processed_vars, temp_clone);
-				if (!b_temp) processed_vars.push_back(temp_clone);
-
-				temp_clone2 = Find_by_name(variables, var_names.back());
-				if (temp_clone2 == NULL) {
-					system("ECHO potential refers to an inexistent variable");
-					abort();
-				}
-				exist_in_list(&b_temp, processed_vars, temp_clone2);
-				if (!b_temp) processed_vars.push_back(temp_clone2);
-
-				if (itP->Exist_Field("weight")) {
-					w_temp = (float)atof(itP->Get_value("weight").c_str());
-					if (w_temp < 0.f) {
-						system("ECHO weight of potential must be positive");
-						abort();
-					}
-
-					b_temp = true;
-					if (itP->Exist_Field("tunability")) {
-						string tun_flag = itP->Get_value("tunability");
-						if (tun_flag.compare("Y") == 0)
-							b_temp = true;
-						else if (tun_flag.compare("N") == 0)
-							b_temp = false;
-						else {
-							system("ECHO tunability option invalid");
-							abort();
-						}
-					}
-
-					structure.push_back(this->Get_Inserter(
-						new Potential_Exp_Shape(Import_shape(prefix_config_xml_file, *itP, { temp_clone, temp_clone2 }), w_temp)
-						, b_temp));
-				}
-				else
-					structure.push_back(new _Baseline_4_Insertion<Potential_Shape>(
-						Import_shape(prefix_config_xml_file, *itP, { temp_clone,temp_clone2 })
-						));
-
-			}
-			else {
-				system("ECHO valid potentials must refer only to 1 or 2 variables");
-				abort();
-			}
-		}
-
-		if (processed_vars.size() != variables.size()) {
-			system("ECHO some variables declared in the config file were not included in any potentials");
-			abort();
-		}
-
-		if (!exist_at_least_a_binary) {
-			system("ECHO at least one binary potential must be present in a config file");
-			abort();
-		}
-
-		this->Insert(structure);
-
 		this->bDestroy_Potentials_and_Variables = true;
 
-		for (auto it = structure.begin(); it != structure.end(); it++)
+	//import variables
+		list<Categoric_var*>	variables;
+		list<XML_reader::Tag_readable> Nested;
+		reader->Get_root().Get_Nested("Variable", &Nested);
+		for (auto it = Nested.begin(); it != Nested.end(); it++)
+			parse_Variable(&variables, *it);
+
+	//import potentials
+		list<Potential_Shape*>			shp_list;
+		list<Potential_Exp_Shape*> exp_list;
+		list<bool>									tunability;
+		Potential_Shape* temp_shape;
+		reader->Get_root().Get_Nested("Potential", &Nested);
+		string w_temp;
+		float w_val_temp;
+		string tun_temp;
+		for (auto it = Nested.begin(); it != Nested.end(); it++) {
+			temp_shape = Import_shape(prefix_config_xml_file, *it, variables);
+			if (temp_shape == NULL) {
+#ifdef _DEBUG
+				system("ECHO found invalid potential");
+#endif // DEBUG
+			}
+			else if (!temp_shape->get_validity()) {
+#ifdef _DEBUG
+				system("ECHO found invalid potential");
+#endif // DEBUG
+				delete temp_shape;
+			}
+			else {
+				w_temp = it->Get_value("weight");
+				if (w_temp.empty()) 
+					shp_list.push_back(temp_shape);
+				else {
+					w_val_temp = (float)atof(w_temp.c_str());
+					auto temp_exp_shape = new Potential_Exp_Shape(temp_shape, w_val_temp);
+					if (!temp_exp_shape->get_validity()) {
+#ifdef _DEBUG
+						system("ECHO found invalid potential");
+#endif // DEBUG
+						delete temp_exp_shape;
+					}
+					else {
+						exp_list.push_back(temp_exp_shape);
+						tunability.push_back(true);
+						tun_temp = it->Get_value("tunability");
+						if (tun_temp.compare("N") == 0)
+							tunability.back() = false;
+					}
+				}
+			}
+		}
+
+		this->Insert(shp_list);
+		this->Insert(exp_list, tunability);
+
+		//TODO
+		//controllare se peso di exp è condiviso con altro potenziale
+		abort();
+
+		for (auto it = shp_list.begin(); it != shp_list.end(); it++)
+			delete *it;
+		for (auto it = exp_list.begin(); it != exp_list.end(); it++)
+			delete *it;
+		for (auto it = variables.begin(); it != variables.end(); it++)
 			delete *it;
 
 	}
 
-
-
-
-
-	Categoric_var* Node::Node_factory::Find_Variable(const std::string& var_name) {
-
-		auto temp = this->Find_Node(var_name);
-		if (temp == NULL) return NULL;
-
-		return temp->pVariable;
-
-	}
-
-	Node* Node::Node_factory::Find_Node(const std::string& var_name) {
+	Node* Node::Node_factory::__Find_Node(Categoric_var* var) {
 
 		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
-			if ((*it)->Get_var()->Get_name().compare(var_name) == 0)
+			if ((*it)->Get_var() == var)
 				return *it;
 		}
-
-		//system("ECHO Node::Node_factory::Find_Node, inexistent name");
-		//abort();
 
 		return NULL;
 
@@ -468,10 +451,10 @@ namespace Segugio {
 				}
 			}
 
-			if (not_managed) {
-				system("ECHO inexistent variable observed");
-				abort();
-			}
+			//if (not_managed) {
+			//	system("ECHO inexistent variable observed");
+			//	abort();
+			//}
 		}
 
 		//recompute all neighbourhood
@@ -484,9 +467,18 @@ namespace Segugio {
 
 	void Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) {
 
+		if (new_observed_vals.size() != this->Last_observation_set.size()) {
+#ifdef _DEBUG
+			system("ECHO Inconsistent number of observations, ignored");
+#endif // DEBUG
+			return;
+		}
+
 		if (this->mState == 0) {
-			system("ECHO you cannot set values before defining observation set");
-			abort();
+#ifdef _DEBUG
+			system("you cannot set values before defining observation set, ignored");
+#endif // DEBUG
+			return;
 		}
 		else if (this->mState == 1) {
 			this->mState = 2;
@@ -494,12 +486,6 @@ namespace Segugio {
 		else if (this->mState == 2) {
 			if (this->Last_propag_info != NULL) delete this->Last_propag_info;
 			this->Last_propag_info = NULL;
-		}
-
-
-		if (new_observed_vals.size() != this->Last_observation_set.size()) {
-			system("ECHO Inconsistent number of observations");
-			abort();
 		}
 
 		//delete all previous temporary messages
@@ -531,13 +517,17 @@ namespace Segugio {
 
 	void Node::Node_factory::Get_Actual_Hidden_Set(std::list<Categoric_var*>* result) {
 
-#ifdef _DEBUG
+		result->clear();
+
 		if (this->mState == 0) {
-			abort();
+#ifdef _DEBUG
+			system("ECHO  Asked for hidden set before setting it");
+#endif // DEBUG
+			return;
 		}
+#ifdef _DEBUG
 #endif // DEBUG
 
-		result->clear();
 		list<Node*>::iterator itN;
 		for (auto itC = this->Last_hidden_clusters.begin(); itC != this->Last_hidden_clusters.end(); itC++) {
 			for (itN = itC->begin(); itN != itC->end(); itN++)
@@ -566,11 +556,15 @@ namespace Segugio {
 
 	}
 
-	void Node::Node_factory::Belief_Propagation(const bool& sum_or_MAP) {
+	void Node::Node_factory::Belief_Propagation(const bool& sum_or_MAP, bool* is_propagation_possible) {
 
+		*is_propagation_possible = true;
 		if (this->Nodes.empty()) {
-			system("ECHO empty structure");
-			abort();
+#ifdef _DEBUG
+			system("ECHO you asked belief propagation on an empty structure");
+#endif // DEBUG
+			*is_propagation_possible = false;
+			return;
 		}
 
 		if (this->mState == 0) {
@@ -579,8 +573,11 @@ namespace Segugio {
 			this->mState = 2;
 		}
 		else if (this->mState == 1) {
+#ifdef _DEBUG
 			system("ECHO You tried to make belief propoagation before setting observations");
-			abort();
+#endif
+			*is_propagation_possible = false;
+			return;
 		}
 		else if (this->mState == 2) {
 			if (this->Belief_Propagation_Redo_checking(sum_or_MAP)) return;
@@ -683,7 +680,15 @@ namespace Segugio {
 
 	void Node::Node_factory::Get_marginal_distribution(std::list<float>* result, Categoric_var* var) {
 
-		this->Belief_Propagation(true);
+		result->clear();
+		bool is_possible;
+		this->Belief_Propagation(true, &is_possible);
+		if (!is_possible) {
+#ifdef _DEBUG
+			system("ECHO marginal compuation not possible");
+#endif // DEBUG
+			return;
+		}
 
 		list<Node*>::iterator itN;
 		for (auto it_cluster = this->Last_hidden_clusters.begin(); it_cluster != this->Last_hidden_clusters.end(); it_cluster++) {
@@ -698,8 +703,9 @@ namespace Segugio {
 			}
 		}
 
-		system("ECHO You Asked to inference for a variable not in the hidden set");
-		abort();
+#ifdef _DEBUG
+		system("ECHO You asked the marginals of a variable not in the hidden set");
+#endif
 
 	}
 
@@ -707,7 +713,14 @@ namespace Segugio {
 
 		result->clear();
 
-		this->Belief_Propagation(false);
+		bool is_possible;
+		this->Belief_Propagation(false, &is_possible);
+		if (!is_possible) {
+#ifdef _DEBUG
+			system("ECHO MAP computation not possible");
+#endif // DEBUG
+			return;
+		}
 
 		list<float> marginals;
 		list<float>::iterator it_m;
@@ -813,7 +826,14 @@ namespace Segugio {
 
 		result->clear();
 
-		this->Belief_Propagation(true);
+		bool is_possible;
+		this->Belief_Propagation(true, &is_possible);
+		if (!is_possible) {
+#ifdef _DEBUG
+			system("ECHO Gibbs sampling not possible");
+#endif // DEBUG
+			return;
+		}
 
 		list<info_neighbourhood> Infoes;
 
@@ -897,208 +917,52 @@ namespace Segugio {
 		free(X);
 
 	}
-
-	size_t* Node::Node_factory::Get_observed_val_in_case_is_in_observed_set(Categoric_var* var) {
-
-		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++) {
-			if (it->Involved_node->Get_var() == var) return &it->Value;
-		}
-
-		return NULL;
-		
-	}
 	
-	void Node::Node_factory::Insert(_Pot_wrapper_4_Insertion* pot) {
+	Categoric_var* Node::Node_factory::Find_Variable(const std::string& var_name) {
 
-		size_t var_numb = pot->Get_involved_var_safe()->size();
-		if (var_numb == 1) {
-			//unary potential insertion
-			Categoric_var* varU = pot->Get_involved_var_safe()->front();
-			auto itN = this->Nodes.begin();
-			bool node_found = false;
-
-			for (itN; itN != this->Nodes.end(); itN++) {
-				if ((*itN)->Get_var()->Get_name().compare(varU->Get_name()) == 0) {
-					(*itN)->Permanent_Unary.push_back(pot->Get_Potential_to_Insert({(*itN)->Get_var()}, this->bDestroy_Potentials_and_Variables));
-					node_found = true;
-					break;
-				}
-			}
-
-			if (!node_found) {
-				system("ECHO the unary potential provided refers to an inexistent node");
-				abort();
-			}
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			if ((*it)->Get_var()->Get_name().compare(var_name) == 0) 
+				return (*it)->Get_var();
 		}
-		else if (var_numb == 2) {
-			//binary potential insertion
-			Node* peer_A = NULL;
-			Node* peer_B = NULL;
-
-			Categoric_var* varA = pot->Get_involved_var_safe()->front();
-			auto itN = this->Nodes.begin();
-			for (itN; itN != this->Nodes.end(); itN++) {
-				if ((*itN)->Get_var()->Get_name().compare(varA->Get_name()) == 0) {
-					peer_A = *itN;
-					break;
-				}
-			}
-			Categoric_var* varB = pot->Get_involved_var_safe()->back();
-			itN = this->Nodes.begin();
-			for (itN; itN != this->Nodes.end(); itN++) {
-				if ((*itN)->Get_var()->Get_name().compare(varB->Get_name()) == 0) {
-					peer_B = *itN;
-					break;
-				}
-			}
-
-			if ((peer_A != NULL) && (peer_B != NULL)) {
-				//check this potential was not already inserted
-				const std::list<Categoric_var*>* temp_var;
-				for (auto it_bb = this->Binary_potentials.begin();
-					it_bb != this->Binary_potentials.end(); it_bb++) {
-					temp_var = (*it_bb)->Get_involved_var_safe();
-
-					if (((peer_A->Get_var() == temp_var->front()) && (peer_B->Get_var() == temp_var->back())) ||
-						((peer_A->Get_var() == temp_var->back()) && (peer_B->Get_var() == temp_var->front()))) {
-						system("ECHO found clone of an already inserted binary potential");
-						abort();
-					}
-				}
-			}
-
-			if (peer_A == NULL) {
-				if (this->bDestroy_Potentials_and_Variables)
-					this->Nodes.push_back(new Node(varA));
-				else
-					this->Nodes.push_back(new Node(varA, true));
-				peer_A = this->Nodes.back();
-			}
-			if (peer_B == NULL) {
-				if (this->bDestroy_Potentials_and_Variables)
-					this->Nodes.push_back(new Node(varB));
-				else
-					this->Nodes.push_back(new Node(varB, true));
-				peer_B = this->Nodes.back();
-			}
-
-			auto new_pot = pot->Get_Potential_to_Insert({ peer_A->Get_var(), peer_B->Get_var() }, this->bDestroy_Potentials_and_Variables);
-			//create connection
-			Node::Neighbour_connection* A_B = new Node::Neighbour_connection();
-			A_B->This_Node = peer_A;
-			A_B->Neighbour = peer_B;
-			A_B->Shared_potential = new_pot;
-			A_B->Message_to_this_node = NULL;
-
-			Node::Neighbour_connection* B_A = new Node::Neighbour_connection();
-			B_A->This_Node = peer_B;
-			B_A->Neighbour = peer_A;
-			B_A->Shared_potential = new_pot;
-			B_A->Message_to_this_node = NULL;
-
-			A_B->Message_to_neighbour_node = &B_A->Message_to_this_node;
-			B_A->Message_to_neighbour_node = &A_B->Message_to_this_node;
-
-			peer_A->Active_connections.push_back(A_B);
-			peer_B->Active_connections.push_back(B_A);
-
-			this->Binary_potentials.push_back(new_pot);
-
-		}
-		else {
-			system("ECHO invalid component to insert in a graph");
-			abort();
-		}
-
-		if (this->Last_propag_info != NULL) delete this->Last_propag_info;
-		this->Last_propag_info = NULL;
-		this->mState = 0;
+		return NULL;
 
 	}
 
-	void Node::Node_factory::Insert(std::list<_Pot_wrapper_4_Insertion*>& set_to_insert) {
+	bool Node::Node_factory::Create_new_node(Categoric_var* var) {
 
-		if (set_to_insert.empty()) return;
-
-		auto open_set = set_to_insert;
-
-		list<_Pot_wrapper_4_Insertion*> unary_to_append;
-		auto it = open_set.begin();
-		size_t S;
-		while (it != open_set.end()) {
-			S = (*it)->Get_involved_var_safe()->size();
-			if (S== 1) {
-				unary_to_append.push_back(*it);
-				it = open_set.erase(it);
-			}
-			else if (S == 2)
-				it++;
-			else {
-				system("ECHO potentials to insert can be only binary or unary");
-				abort();
+		if (this->bDestroy_Potentials_and_Variables)
+			this->Nodes.push_back(new Node(var));
+		else
+			this->Nodes.push_back(new Node(var, true));
+		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			if ((*it)->Get_var()->Get_name().compare(var->Get_name()) == 0) {
+#ifdef _DEBUG
+				system("ECHO insertion failed due to multiple variables with same name");
+#endif // DEBUG
+				delete this->Nodes.back();
+				this->Nodes.pop_back();
+				return false;
 			}
 		}
-
-		list<_Pot_wrapper_4_Insertion*> binary_to_append;
-		auto it2 = it;
-		binary_to_append.push_back(open_set.front());
-		open_set.pop_front();
-		size_t old_size;
-		bool insert;
-		bool matching[4];
-		while (true) {
-			if (open_set.empty()) break;
-
-			old_size = open_set.size();
-
-			it = open_set.begin();
-			while (it != open_set.end()) {
-				insert = false;
-				for (it2 = binary_to_append.begin(); it2 != binary_to_append.end(); it2++) {
-					matching[0] = ((*it2)->Get_involved_var_safe()->front() == (*it)->Get_involved_var_safe()->front());
-					matching[1] = ((*it2)->Get_involved_var_safe()->back() == (*it)->Get_involved_var_safe()->front());
-					matching[2] = ((*it2)->Get_involved_var_safe()->front() == (*it)->Get_involved_var_safe()->back());
-					matching[3] = ((*it2)->Get_involved_var_safe()->back() == (*it)->Get_involved_var_safe()->back());
-
-					if (matching[0] || matching[1] || matching[2] || matching[3]) {
-						insert = true;
-						break;
-					}
-				}
-
-				if (insert) {
-					binary_to_append.push_back(*it);
-					it = open_set.erase(it);
-				}
-				else it++;
-			}
-
-			if (old_size == open_set.size()) {
-				system("ECHO inconsistent set of potentials for initializing the model ");
-				abort();
-			}
-		}
-
-		for (auto it = binary_to_append.begin(); it != binary_to_append.end(); it++)
-			this->Insert(*it);
-
-		for (auto it = unary_to_append.begin(); it != unary_to_append.end(); it++)
-			this->Insert(*it);
+		return true;
 
 	}
 
-	void Node::Node_factory::Insert(Potential_Shape* pot) {
-		
-		_Baseline_4_Insertion<Potential_Shape> temp(pot);
-		this->Insert(&temp);
+	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& exponential_potentials, const std::list<bool>& tunability) {
+
+		auto it_tun = tunability.begin();
+		Potential_Exp_Shape* temp;
+		for (auto it = exponential_potentials.begin(); it != exponential_potentials.end(); it++) {
+			this->__Insert(*it , *it_tun, &temp);
+			it_tun++;
+		}
 
 	}
 
-	void Node::Node_factory::Insert(Potential_Exp_Shape* pot, const bool& weight_tunability) {
+	void Node::Node_factory::Insert(const std::list<Potential_Shape*>& simple_potentials) {
 
-		auto temp = this->Get_Inserter(pot, weight_tunability);
-		this->Insert(temp);
-		delete temp;
+		for (auto it = simple_potentials.begin(); it != simple_potentials.end(); it++) 
+			this->__Insert(*it);
 
 	}
 
@@ -1126,9 +990,15 @@ namespace Segugio {
 		//binary potentials
 		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
 			(*it)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+
+			if (matching.size() != 1) {
 #ifdef _DEBUG
-			if (matching.size() != 1) abort();
+				system("ECHO combination not found");
 #endif
+				*result = 0.f;
+				return;
+			}
+
 			if (matching.front() != 0.f) *result += logf(matching.front());
 		}
 
@@ -1137,9 +1007,15 @@ namespace Segugio {
 		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
 			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
 				(*it_U)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+
+				if (matching.size() != 1) {
 #ifdef _DEBUG
-				if (matching.size() != 1) abort();
+					system("ECHO combination not found");
 #endif
+					*result = 0.f;
+					return;
+				}
+
 				if (matching.front() != 0.f) *result += logf(matching.front());
 			}
 		}
@@ -1237,9 +1113,15 @@ namespace Segugio {
 		//binary potentials
 		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
 			(*it)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+
+			if (matching.size() != 1) {
 #ifdef _DEBUG
-			if (matching.size() != 1) abort();
+				system("ECHO combination not found");
 #endif
+				*result = 0.f;
+				return;
+			}
+
 			if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it)->max_in_distribution());
 		}
 
@@ -1248,9 +1130,15 @@ namespace Segugio {
 		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
 			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
 				(*it_U)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+
+				if (matching.size() != 1) {
 #ifdef _DEBUG
-				if (matching.size() != 1) abort();
+					system("ECHO combination not found");
 #endif
+					*result = 0.f;
+					return;
+				}
+
 				if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it_U)->max_in_distribution());
 			}
 		}

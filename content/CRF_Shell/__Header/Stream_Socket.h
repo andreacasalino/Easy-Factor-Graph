@@ -17,7 +17,7 @@ public:
 	virtual void InitConnection() = 0;
 
 	void Recv(char* recvbuf, const int& N_byte);
-	void Send(char* sendbuf, const int& N_byte);
+	void Send(const char* sendbuf, const int& N_byte);
 
 	virtual void Recv(int* data); //can change deriving (Big-Little endian)
 	virtual void Send(const int& data); //can change deriving (Big-Little endian)

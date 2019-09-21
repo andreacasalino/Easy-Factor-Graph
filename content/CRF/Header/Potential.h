@@ -11,12 +11,21 @@
 
 namespace Segugio {
 	
+	class Object_Validity {
+	public:
+		const bool& get_validity() { return this->validity_flag; };
+	protected:
+		Object_Validity() : validity_flag(true) {};
+		bool		validity_flag;
+	};
+
+
 	/*!
 	 * \brief Describes a categoric variable
 	 * \details , having a finite set as domain,
 	 * assumed by default as {0,1,2,3,...,size}
 	 */
-	class Categoric_var {
+	class Categoric_var : public Object_Validity {
 		/** \brief domain is assumed to be {0,1,2,3,...,size}
 		 */
 	public:
@@ -25,7 +34,6 @@ namespace Segugio {
 		* @param[in] name name to attach to this variable. It cannot be an empty string ""
 		*/
 		Categoric_var(const size_t& size, const std::string& name);
-		Categoric_var(const Categoric_var& to_copy) { abort(); };
 		virtual ~Categoric_var() {};
 
 		const size_t& size() const { return this->Size; };
@@ -34,26 +42,28 @@ namespace Segugio {
 	// data
 		size_t		Size; /** domain size */
 		std::string Name; /** name associated to the variable */
-	};
-
-
-	class Categoric_domain : public Categoric_var {
-	public:
-	//domain is assumed to be {Domain[0],Domain[1],...,Domain[size]}
-		~Categoric_domain() { free(Domain); };
-
-		const float& operator[](const size_t& pos);
 	private:
-		float*      Domain;
+		Categoric_var(const Categoric_var& to_copy);
 	};
+
+
+	//class Categoric_domain : public Categoric_var {
+	//public:
+	////domain is assumed to be {Domain[0],Domain[1],...,Domain[size]}
+	//	~Categoric_domain() { free(Domain); };
+
+	//	const float& operator[](const size_t& pos);
+	//private:
+	//	float*      Domain;
+	//};
 
 
 	/*!
 	 * \brief Abstract interface for potentials handled by graphs
 	 */
-	class I_Potential {
+	class I_Potential : public Object_Validity {
 	public:
-		I_Potential(const I_Potential& to_copy) { abort(); };
+		I_Potential(const I_Potential& to_copy);
 		virtual ~I_Potential() {};
 		
 		/*!
@@ -101,6 +111,12 @@ namespace Segugio {
 		/** \brief Returns the maximum value in the distribution describing this potential
 		*/
 		float max_in_distribution();
+
+		/** \brief Returns the potential type of this potential: 
+		* \details  0-> Simple shape
+		* \details  1-> Exponential shape
+		*/
+		virtual size_t	Get_potential_type() const = 0;
 	protected:
 		I_Potential() {};
 
@@ -133,14 +149,16 @@ namespace Segugio {
 	class I_Potential_Decorator : public I_Potential, public I_Potential::Getter_4_Decorator {
 	public:
 		~I_Potential_Decorator() { if (Destroy_wrapped) delete this->pwrapped; };
+
+		virtual size_t	Get_potential_type() const { return this->pwrapped->Get_potential_type(); };
 	protected:
-		I_Potential_Decorator(Wrapped_Type* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) {};
+		I_Potential_Decorator(Wrapped_Type* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) { this->validity_flag = to_wrap->get_validity(); };
 
 		virtual const std::list<Categoric_var*>*    Get_involved_var() const { return this->I_Potential::Getter_4_Decorator::Get_involved_var(pwrapped); };
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return this->I_Potential::Getter_4_Decorator::Get_distr(pwrapped); };
 	protected:
 	// data
-		bool			Destroy_wrapped; /** when false, the wrapped abstract potential is wrapped also in another decorator, whihc is in charge of deleting the wrapped potential */
+		bool						Destroy_wrapped; /** when false, the wrapped abstract potential is wrapped also in another decorator, whihc is in charge of deleting the wrapped potential */
 		Wrapped_Type*	pwrapped;		 /** the object wrapped by this decorator*/
 	};
 
@@ -174,7 +192,7 @@ namespace Segugio {
 		Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& correlated_or_not);
 
 		/** \details Use this constructor for cloning a shape, but considering a different set of variables.
-		* Variables in var_involved must be equal in number to those in the potential to clone and must have 
+		* Variables in var_involved must be equal in number to those in the potential to clone and must have
 		* the same sizes of the variables involved in the potential to clone.
 		*
 		* @param[in] to_copy shape to clone
@@ -182,14 +200,9 @@ namespace Segugio {
 		*/
 		Potential_Shape(const Potential_Shape* to_copy, const std::list<Categoric_var*>& var_involved);
 
-		Potential_Shape(const Potential_Shape& to_copy) { abort(); };
+		//Potential_Shape(const Potential_Shape& to_copy) { abort(); }; //unecessary since copy constructor of I_Potential was already inibited
 		~Potential_Shape();
 
-		/** \brief For populating the image of the domain with the values reported in the textual file
-		*
-		* @param[in] file_to_read textual file to read containing the values for the image
-		*/
-		void Import(const std::string& file_to_read);
 		/** \brief Add a new value in the image set
 		*
 		* @param[in] new_indices combination related to the new value to add for the image
@@ -214,8 +227,11 @@ namespace Segugio {
 		* @param[in] new_var variables to consider for the substitution
 		*/
 		void Substitute_variables(const std::list<Categoric_var*>& new_var);
+
+		/** \brief see  I_Potential::Get_potential_type*/
+		virtual size_t	Get_potential_type() const { return 0; };
 	protected:
-		void Check_add_value(const std::list<size_t>& indices); //check the specified combination is not already present in the distribution
+		bool __Check_add_value(const std::list<size_t>& indices); //check the specified combination is not already present in the distribution
 
 		virtual const std::list<Categoric_var*>*	Get_involved_var() const { return &this->Involved_var; };
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
@@ -247,11 +263,12 @@ namespace Segugio {
 		* @param[in] w weight of the exponential
 		*/
 		Potential_Exp_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read, const float& w = 1.f);
-		/** \details Use this constructor for cloning an exponential shape, but considering a different set of variables.
+
+		/** \details Use this constructor for cloning a shape, but considering a different set of variables.
 		* Variables in var_involved must be equal in number to those in the potential to clone and must have
 		* the same sizes of the variables involved in the potential to clone.
 		*
-		* @param[in] to_copy shape to clone
+		* @param[in] to_copy exp_shape to clone
 		* @param[in] var_involved new set of variables to consider when cloning
 		*/
 		Potential_Exp_Shape(const Potential_Exp_Shape* to_copy, const std::list<Categoric_var*>& var_involved);
@@ -274,11 +291,14 @@ namespace Segugio {
 		* @param[in] new_var variables to consider for the substitution
 		*/
 		void Substitute_variables(const std::list<Categoric_var*>& new_var) { this->pwrapped->Substitute_variables(new_var); };
+
+		/** \brief see  I_Potential::Get_potential_type*/
+		virtual size_t	Get_potential_type() const { return 1; };
 	protected:
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
 		void										Wrap(Potential_Shape* shape);
 	// data
-		float								    mWeight;		/** Weight assumed for modulating the exponential (see description of the class) */
+		float														    mWeight;		/** Weight assumed for modulating the exponential (see description of the class) */
 		std::list<I_Distribution_value*>		Distribution;   /** Every element describes: a combination in the domain and its corresponding value in the image */
 	};
 
@@ -323,40 +343,25 @@ namespace Segugio {
 	};
 
 
-	/*! 
-	\brief This class is adopted by belief propagation algorithms. It is the message incoming to a node of the graph. Every node of a graph refers to a single Categorical variable.
-	* Internally it keeps track of the difference in time of the messages produced, in order to arrest loopy belief propagation. 
-	*/
+
 	class Message_Unary : public Potential { //adopted by belief propagation algorithms
-	public:
-		/** \brief Creates a Message with all 1 as values for the image
-		*
-		* @param[in] var_involved the only variable in the domain
-		*/
+	public: //private:
+		// Creates a Message with all 1 as values for the image
 		Message_Unary(Categoric_var* var_involved);
-		/** \brief Firstly, all potential_to_merge are merged together using Potential::Potential(potential_to_merge, false) obtaining a merged potential.
-		* Secondly, the product of binary_to_merge and the merged potential is obtained. 
+		/* Firstly, all potential_to_merge are merged together using Potential::Potential(potential_to_merge, false) obtaining a merged potential.
+		* Secondly, the product of binary_to_merge and the merged potential is obtained.
 		* Finally the message is obtained by marginalizing from the second product, the variable of potential_to_merge, adopting a sum or a MAP.
 		* Exploited by message passing algorithms
-		*
-		* @param[in] binary_to_merge binaty potential to consider
-		* @param[in] potential_to_merge list of potentials to merge. The must be unary potentials
 		*/
 		Message_Unary(Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP = true);
-		/** \brief Same as Message_Unary::Message_Unary(Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP = true),
+		/* Same as Message_Unary::Message_Unary(Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP = true),
 		* but in the case potential_to_merge is empty
 		*/
 		Message_Unary(Potential* binary_to_merge, Categoric_var* var_to_marginalize, const bool& Sum_or_MAP = true); //use this when the unary set is empty
 
-		/** \brief Adopted by loopy belief propagation
-		*
-		* @param[out] diff_to_previous The difference with respect to the previous message camptation
-		*/
-		void Update(float* diff_to_previous , Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP = true);
-		/** \brief Adopted by loopy belief propagation
-		*
-		* @param[out] diff_to_previous The difference with respect to the previous message camptation
-		*/
+		/* Adopted by loopy belief propagation */
+		void Update(float* diff_to_previous, Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP = true);
+		/* Adopted by loopy belief propagation */
 		void Update(float* diff_to_previous, Potential* binary_to_merge, Categoric_var* var_to_marginalize, const bool& Sum_or_MAP = true);
 	private:
 		Potential_Shape* merge_binary_and_unary(Potential* binary_to_merge, Potential* unary, const bool& Sum_or_MAP);
