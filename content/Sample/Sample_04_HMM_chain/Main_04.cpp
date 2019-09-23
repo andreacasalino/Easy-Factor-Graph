@@ -16,6 +16,7 @@ using namespace Segugio;
 void create_HMM_as_xml(const string& name_file, const int& chain_size, const string& dyna_funct_shape_location);
 
 int main(int argc, char *argv[]) {
+
 	string prefix = compute_prefix() + "Sample_04_HMM_chain" + "/";
 
 	if (argc < 2) {

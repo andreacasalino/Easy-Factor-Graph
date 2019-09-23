@@ -55,10 +55,13 @@ public:
 
 		virtual void			__get_next_command(std::string* command) = 0;
 		virtual void			__send_response(const std::string& response)= 0;
+
+		void						__allow_loop_to_start();
 	private:
 		void						__loop();
 		void						__write_command_and_wait_response();
 // data
+		bool						__loop_can_start;
 		Client_Data			Data;
 		std::thread*			th__loop;
 	};

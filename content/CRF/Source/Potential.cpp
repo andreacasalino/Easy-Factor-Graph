@@ -910,6 +910,55 @@ namespace Segugio {
 
 	}
 
+	void Potential::clone_distribution(Potential_Shape* shape) {
+
+		if (!this->validity_flag) {
+#ifdef _DEBUG
+			system("ECHO impossible to clone the values of an non valid potential");
+#endif // DEBUG
+			return;
+		}
+
+		auto var_in_shape = shape->Get_involved_var_safe();
+		auto var_in_this = this->Get_involved_var();
+		auto it = var_in_this->begin();
+		size_t k;
+		list<size_t> pos_in_this;
+		for (auto it2 = var_in_shape->begin(); it2 != var_in_shape->end(); it2++) {
+			k = 0;
+			for (it = var_in_this->begin(); it != var_in_this->end(); it++) {
+				if (*it == *it2) {
+					pos_in_this.push_back(k);
+					break;
+				}
+				k++;
+			}
+		}
+		if (pos_in_this.size() != var_in_shape->size()) {
+#ifdef _DEBUG
+			system("ECHO the variables involved in the shape passed are not the same of the potentials to clone");
+#endif // DEBUG
+			return;
+		}
+
+		auto distr_this = this->Get_distr();
+		list<size_t> val_temp;
+		float vall_temp;
+		list<size_t>::iterator it_pos;
+		size_t* comb_temp;
+		for (auto it_d = distr_this->begin(); it_d != distr_this->end(); it_d++) {
+			val_temp.clear();
+			comb_temp = (*it_d)->Get_indeces();
+			for (it_pos = pos_in_this.begin(); it_pos != pos_in_this.end(); it_pos++) {
+				val_temp.push_back(comb_temp[*it_pos]);
+			}
+			(*it_d)->Get_val(&vall_temp);
+
+			shape->Add_value(val_temp, vall_temp);
+		}
+
+	}
+
 
 
 

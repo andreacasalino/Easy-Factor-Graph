@@ -160,7 +160,7 @@ void part_03() {
 	//build a subgraph involving A and B just for computing the joint distribution of A and B
 	SubGraph G2(&G, { G.Find_Variable("A"), G.Find_Variable("B") }); //A and B must be found in the graph since the potential was cloned when inserting: it would be incorrect to pass {&A, &B}
 	list<float> marginals;
- 	G2.Get_marginal_prob_combinations(&marginals, combinations, { G.Find_Variable("A"), G.Find_Variable("B") });
+ 	G2.Get_marginal_prob_combinations(&marginals, combinations, { G2.Find_Variable("A"), G2.Find_Variable("B") });
 	cout << "Prob(combinations)\n";
 	auto it_m = marginals.begin();
 	for (auto it_com = combinations.begin(); it_com != combinations.end(); it_com++) {

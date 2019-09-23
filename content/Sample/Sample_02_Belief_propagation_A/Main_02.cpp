@@ -176,10 +176,10 @@ void process_chain(const size_t& chain_size, const size_t& var_size, const float
 		it1++; it2++;
 	}
 
-	graph.Set_Observation_Set_var({ graph.Find_Variable(Y.front())  });
+	graph.Set_Observation_Set_var({ graph.Find_Variable(Y.front()->Get_name())  });
 	graph.Set_Observation_Set_val({ 0 });
 	list<float> prob;
-	graph.Get_marginal_distribution(&prob, graph.Find_Variable(Y.back()));
+	graph.Get_marginal_distribution(&prob, graph.Find_Variable(Y.back()->Get_name()));
 
 	print_distribution(prob);
 	cout << endl;

@@ -372,10 +372,6 @@ namespace Segugio {
 		this->Insert(shp_list);
 		this->Insert(exp_list, tunability);
 
-		//TODO
-		//controllare se peso di exp è condiviso con altro potenziale
-		abort();
-
 		for (auto it = shp_list.begin(); it != shp_list.end(); it++)
 			delete *it;
 		for (auto it = exp_list.begin(); it != exp_list.end(); it++)
@@ -390,6 +386,14 @@ namespace Segugio {
 		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
 			if ((*it)->Get_var() == var)
 				return *it;
+		}
+
+		if (this->bDestroy_Potentials_and_Variables) {
+			for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+				if ((*it)->Get_var()->Get_name().compare(var->Get_name()) == 0) {
+					if ((*it)->Get_var()->size() == var->size()) return *it;
+				}
+			}
 		}
 
 		return NULL;
@@ -525,8 +529,6 @@ namespace Segugio {
 #endif // DEBUG
 			return;
 		}
-#ifdef _DEBUG
-#endif // DEBUG
 
 		list<Node*>::iterator itN;
 		for (auto itC = this->Last_hidden_clusters.begin(); itC != this->Last_hidden_clusters.end(); itC++) {
@@ -685,7 +687,7 @@ namespace Segugio {
 		this->Belief_Propagation(true, &is_possible);
 		if (!is_possible) {
 #ifdef _DEBUG
-			system("ECHO marginal compuation not possible");
+			system("ECHO marginal computation not possible");
 #endif // DEBUG
 			return;
 		}
@@ -930,10 +932,6 @@ namespace Segugio {
 
 	bool Node::Node_factory::Create_new_node(Categoric_var* var) {
 
-		if (this->bDestroy_Potentials_and_Variables)
-			this->Nodes.push_back(new Node(var));
-		else
-			this->Nodes.push_back(new Node(var, true));
 		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
 			if ((*it)->Get_var()->Get_name().compare(var->Get_name()) == 0) {
 #ifdef _DEBUG
@@ -944,16 +942,26 @@ namespace Segugio {
 				return false;
 			}
 		}
+		if (this->bDestroy_Potentials_and_Variables)
+			this->Nodes.push_back(new Node(var));
+		else
+			this->Nodes.push_back(new Node(var, true));
 		return true;
 
 	}
 
 	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& exponential_potentials, const std::list<bool>& tunability) {
 
+		if (exponential_potentials.size() != tunability.size()) {
+#ifdef _DEBUG
+			system("ECHO tunability flags mismatch with number of potentials");
+#endif // DEBUG
+			return;
+		}
+
 		auto it_tun = tunability.begin();
-		Potential_Exp_Shape* temp;
 		for (auto it = exponential_potentials.begin(); it != exponential_potentials.end(); it++) {
-			this->__Insert(*it , *it_tun, &temp);
+			this->__Insert(*it, *it_tun);
 			it_tun++;
 		}
 
@@ -1180,6 +1188,18 @@ namespace Segugio {
 		list<const Potential*> structure;
 		this->Get_structure(&structure);
 		return structure.size();
+
+	}
+
+	size_t* Node::Node_factory::__Get_observed_val(Categoric_var* var) {
+
+		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++) {
+			if (it->Involved_node->pVariable == var) {
+				return &it->Value;
+				break;
+			}
+		}
+		return NULL;
 
 	}
 

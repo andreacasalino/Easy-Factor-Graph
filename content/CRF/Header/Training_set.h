@@ -52,7 +52,9 @@ std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_i
 			Variable_names(variable_names), Is_training_set_valid(true) {
 
 			if(variable_names.empty() || samples.empty()) {
+#ifdef _DEBUG
 				system("ECHO Warning: empty training set");
+#endif
 				this->Is_training_set_valid = false;
 				return;
 			}
@@ -61,7 +63,9 @@ std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_i
 			size_t* temp;
 			for (auto it = samples.begin(); it != samples.end(); it++) {
 				if (extractor->get_size(*it) != vec_size) {
+#ifdef _DEBUG
 					system("ECHO Warning: inconsistent training set data");
+#endif
 					this->Is_training_set_valid = false;
 					return;
 				}
@@ -107,15 +111,17 @@ std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_i
 
 			struct Handler {
 			protected:
-				static std::list<size_t*>*		Get_list(subset* sub_set) { return &sub_set->Sub_Set; };
-				static std::list<std::string>*	Get_names(subset* sub_set) { return sub_set->pVariable_names; };
-				static std::list<std::string>*	Get_names(Training_set* set) { return &set->Variable_names; };
+				static std::list<size_t*>*		Get_list(subset* sub_set) { if (!sub_set->Is_sub_set_valid) return NULL; else  return &sub_set->Sub_Set; };
+				static std::list<std::string>*	Get_names(subset* sub_set) { if (!sub_set->Is_sub_set_valid) return NULL; else   return sub_set->pVariable_names; };
+				static std::list<std::string>*	Get_names(Training_set* set) { if (!set->Is_training_set_valid) return NULL; else   return &set->Variable_names; };
 			};
 
 			//void Get_pos_of_var_in_set(std::list<size_t>* result, const std::list<Categoric_var*>& variables);
+			const bool& Get_validity() { return this->Is_sub_set_valid; };
 		private:
+			bool									Is_sub_set_valid; //inherited form the originating training set
 			std::list<std::string>*		pVariable_names;
-			std::list<size_t*>			Sub_Set;
+			std::list<size_t*>				Sub_Set;
 		};
 
 		/*!
@@ -127,7 +133,7 @@ std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_i
 		/*!
 		 * \brief Returns true in case this set can be used for performing the training of a model, otherwise is false
 		 */
-		const bool& Get_validity_flag() { return this->Is_training_set_valid; };
+		const bool& Get_validity() { return this->Is_training_set_valid; };
 	private:
 	// data
 		bool								Is_training_set_valid;

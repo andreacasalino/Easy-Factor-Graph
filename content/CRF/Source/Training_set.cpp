@@ -24,27 +24,38 @@ namespace Segugio {
 
 	Training_set::Training_set(const std::string& file_to_import) {
 
+		this->Is_training_set_valid = false;
+
 		ifstream f_set(file_to_import);
 		if (!f_set.is_open()) {
+#ifdef _DEBUG
 			system("ECHO impossible to open training set file");
-			abort();
+#endif // DEBUG
+			f_set.close();
+			return;
 		}
 
 		string line;
 		list<string> slices;
 
 		if (f_set.eof()) {
-			system("ECHO empty training set");
-			abort();
+#ifdef _DEBUG
+			system("ECHO found empty training set");
+#endif // DEBUG
+			f_set.close();
+			return;
 		}
 
 		getline(f_set, line);
 		splitta_riga(line, &this->Variable_names);
 		size_t N_vars = this->Variable_names.size();
-		
+
 		if (f_set.eof()) {
-			system("ECHO empty training set");
-			abort();
+#ifdef _DEBUG
+			system("ECHO found empty training set");
+#endif // DEBUG
+			f_set.close();
+			return;
 		}
 
 		size_t line_cont = 2, k;
@@ -54,8 +65,11 @@ namespace Segugio {
 			splitta_riga(line, &slices);
 
 			if (slices.size() != N_vars) {
-				system(string("ECHO inconsistent data at line " + to_string(line_cont)).c_str());
-				abort();
+#ifdef _DEBUG
+				system(string("ECHO inconsistent data when reading training set at line " + to_string(line_cont)).c_str());
+#endif // DEBUG
+				f_set.close();
+				return;
 			}
 
 			this->Set.push_back(NULL);
@@ -72,9 +86,13 @@ namespace Segugio {
 		f_set.close();
 
 		if (this->Set.empty()) {
-			system("ECHO empty train set parsed");
-			abort();
+#ifdef _DEBUG
+			system("ECHO found empty training set");
+#endif // DEBUG
+			return;
 		}
+
+		this->Is_training_set_valid = true;
 
 	}
 
@@ -82,8 +100,11 @@ namespace Segugio {
 
 		ofstream f(file_name);
 		if (!f.is_open()) {
-			system("ECHO inexistent file");
-			abort();
+#ifdef _DEBUG
+			system("ECHO inexistent file to print training set");
+#endif
+			return;
+			f.close();
 		}
 
 		size_t N_vars = this->Variable_names.size(), k;
@@ -110,17 +131,33 @@ namespace Segugio {
 	}
 
 	Training_set::subset::subset(Training_set* set, const float& size_percentage):
-		pVariable_names(&set->Variable_names) {
+		pVariable_names(&set->Variable_names), Is_sub_set_valid(set->Is_training_set_valid) {
 
-		if ((size_percentage < 0.f) || (size_percentage > 1.f)) {
-			system("ECHO invalid percentage for computing training subset");
-			abort();
+		if (!this->Is_sub_set_valid) {
+#ifdef _DEBUG
+			system("ECHO asked to create a sub set from an invalid training set");
+#endif // DEBUG
+			return;
 		}
 
-		if (size_percentage == 1.f)
+		float percentage_to_use = size_percentage;
+		if (size_percentage < 0.f) {
+#ifdef _DEBUG
+			system("ECHO percentage for computing training subset must be at least equal to 0.0001");
+#endif // DEBUG
+			percentage_to_use = 0.0001f;
+		}
+		if (size_percentage > 1.f) {
+#ifdef _DEBUG
+			system("ECHO percentage for computing training subset must be lower than 1.0, 1.0 is assumed");
+#endif // DEBUG
+			percentage_to_use = 1.f;
+		}
+
+		if (percentage_to_use == 1.f)
 			Sub_Set = set->Set;
 		else {
-			size_t subset_size = (size_t)floor(set->Set.size() * size_percentage);
+			size_t subset_size = (size_t)floor(set->Set.size() * percentage_to_use);
 			if (subset_size == 0) subset_size = 1;
 
 			auto open_set = set->Set;

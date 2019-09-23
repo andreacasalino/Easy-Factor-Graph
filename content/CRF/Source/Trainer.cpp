@@ -55,21 +55,32 @@ namespace Segugio {
 
 		void Clean_Up() { this->I_Trainer::Clean_Up(Wrapped); };
 	protected:
-		void __check_tunable_are_present(Graph_Learnable* model_to_train);
+		bool __is_training_possible(Graph_Learnable* model_to_train, Training_set* Train_set);
 	// data
 		Advancer_Concrete*		  Wrapped;
 	};
 
 
 
-	void Trainer_Decorator::__check_tunable_are_present(Graph_Learnable* model_to_train) {
+	bool Trainer_Decorator::__is_training_possible(Graph_Learnable* model_to_train, Training_set* Train_set) {
 
 		list<float> w;
 		Graph_Learnable::Weights_Manager::Get_tunable_w(&w, model_to_train);
 		if (w.empty()) {
-			system("ECHO no tunable paramters are present in the model");
-			abort();
+#ifdef _DEBUG
+			system("ECHO asked tor training on a model without tunable parameters: command was ignored ");
+#endif // DEBUG
+			return false;
 		}
+
+		if (!Train_set->Get_validity()) {
+#ifdef _DEBUG
+			system("ECHO asked tor training on an invalid set: commad was ignored");
+#endif // DEBUG
+			return false;
+		}
+
+		return true;
 
 	}
 
@@ -100,9 +111,8 @@ namespace Segugio {
 
 	void Entire_Set::Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) {
 
-		if (!Train_set->Get_validity_flag()) return;
-
-		this->__check_tunable_are_present(model_to_train);
+		if (!this->__is_training_possible(model_to_train, Train_set))
+			return;
 
 		this->Wrapped->Reset();
 		Training_set::subset Set(Train_set);
@@ -126,9 +136,8 @@ namespace Segugio {
 
 	void Stoch_Set_variation::Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) {
 
-		if (!Train_set->Get_validity_flag()) return;
-
-		this->__check_tunable_are_present(model_to_train);
+		if (!this->__is_training_possible(model_to_train, Train_set))
+			return;
 
 		this->Wrapped->Reset();
 		list<Categoric_var*>	  order_of_variable_in_train_set;

@@ -6,7 +6,7 @@
 
 class Client_Terminal : public CRF_Shell::Client {
 public:
-	Client_Terminal(CRF_Shell* shell_to_link) : Client(shell_to_link) {};
+	Client_Terminal(CRF_Shell* shell_to_link) : Client(shell_to_link) { this->__allow_loop_to_start(); };
 private:
 	virtual void			__get_next_command(std::string* command);
 	virtual void			__send_response(const std::string& response);

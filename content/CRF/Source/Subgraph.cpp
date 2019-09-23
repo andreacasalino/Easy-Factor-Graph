@@ -23,37 +23,46 @@ namespace Segugio {
 			}
 		}
 
-		system("ECHO found variable not in the hidden set");
-		abort();
+		return NULL;
 
 	}
 	Node::Node_factory::_SubGraph::_SubGraph(Node_factory* Originating, const std::list<Categoric_var*>& sub_set_to_consider) : 
 		logZ(NULL), __SubGraph(NULL) {
-
-		if (Originating->mState != 2)
-			abort();
+		
+		bool is_possible;
+		Originating->Belief_Propagation(true, &is_possible);
+		if (!is_possible) {
+#ifdef _DEBUG
+			system("ECHO the subgraph computation is not possible since the hidden set (variables and values) were not already defined");
+#endif // DEBUG
+			return;
+		}
 
 		list<Node*> nodes_in_sub_structure;
 		for (auto it_V = sub_set_to_consider.begin();
-			it_V != sub_set_to_consider.end(); it_V++) 
-			nodes_in_sub_structure.push_back(find_among_hidden(Originating->Last_hidden_clusters , *it_V));
-
-		struct Potential_4_Insertion : public _Pot_wrapper_4_Insertion {
-			Potential_4_Insertion(Potential* wrp) : wrapped(wrp) {};
-			virtual const std::list<Categoric_var*>* Get_involved_var_safe() { return this->wrapped->Get_involved_var_safe(); };
-			virtual Potential*											  Get_Potential_to_Insert(const std::list<Categoric_var*>& var_involved, const bool& get_cloned) {
-				return wrapped;
-			};
-		private:
-			Potential*			wrapped;
-		};
+			it_V != sub_set_to_consider.end(); it_V++) {
+			auto node_to_add = find_among_hidden(Originating->Last_hidden_clusters, *it_V);
+			if (node_to_add == NULL) {
+#ifdef _DEBUG
+				system("ECHO passed a variable not in the hidden set for creating sub graph, command ignored");
+#endif // DEBUG
+			}
+			else
+				nodes_in_sub_structure.push_back(node_to_add);
+		}
+		if (nodes_in_sub_structure.empty()) {
+#ifdef _DEBUG
+			system("ECHO detected empty set of variables for the subgraph construction");
+#endif // DEBUG
+			return;
+		}
 
 		list<Potential*> sub_structure;
 		list<Potential*>::iterator itC;
 		list<Node::Neighbour_connection*>::iterator it_neigh;
 		list<Node*>::iterator itN;
 		bool insert;
-		bool is_in_hidden;
+		bool is_in_subgraph;
 		for (auto it = nodes_in_sub_structure.begin(); it != nodes_in_sub_structure.end(); it++) {
 			for (itC = (*it)->Temporary_Unary.begin(); itC != (*it)->Temporary_Unary.end(); itC++)
 				sub_structure.push_back(*itC);
@@ -63,15 +72,15 @@ namespace Segugio {
 			//find binary potential included in the substructure
 			for (it_neigh = (*it)->Active_connections.begin();
 				it_neigh != (*it)->Active_connections.end(); it_neigh++) {
-				is_in_hidden = false;
+				is_in_subgraph = false;
 				for (itN = nodes_in_sub_structure.begin(); itN != nodes_in_sub_structure.end(); itN++) {
 					if (*itN == (*it_neigh)->Neighbour) {
-						is_in_hidden = true;
+						is_in_subgraph = true;
 						break;
 					}
 				}
 
-				if (is_in_hidden) { //è dentro lista di subset
+				if (is_in_subgraph) { //è dentro lista di subset
 					insert = true;
 				//check this potential was not already inserted
 					for (itC = sub_structure.begin(); itC != sub_structure.end(); itC++) {
@@ -83,22 +92,30 @@ namespace Segugio {
 					if (insert)
 						sub_structure.push_back((*it_neigh)->Shared_potential);
 				}
+				else //add the message incoming from this node
+					sub_structure.push_back((*it_neigh)->Message_to_this_node);
 			}
 		}
 
-		list<_Pot_wrapper_4_Insertion*> sub_structure2;
-		for (auto it = sub_structure.begin(); it != sub_structure.end(); it++)
-			sub_structure2.push_back(new Potential_4_Insertion(*it));
-
-		this->__SubGraph = new Node_factory(false);
-		this->__SubGraph->Insert(sub_structure2);
-
-		for (auto it = sub_structure2.begin(); it != sub_structure2.end(); it++)
-			delete *it;
+		this->__SubGraph = new Node_factory(true); //potentials are all cloned
+		for (auto itt = sub_structure.begin(); itt != sub_structure.end(); itt++) {
+			Potential_Shape temp(*(*itt)->Get_involved_var_safe());
+			(*itt)->clone_distribution(&temp);
+			this->__SubGraph->__Insert(&temp);
+		}
 
 	}
 
 	void Node::Node_factory::_SubGraph::Get_marginal_prob_combinations(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
+
+		result->clear();
+
+		if (this->__SubGraph == NULL) {
+#ifdef _DEBUG
+			system("ECHO asked marginals for invalid sub graph");
+#endif // DEBUG
+			return;
+		}
 
 		if (this->logZ == NULL) {
 			//compute Z
@@ -110,6 +127,14 @@ namespace Segugio {
 			this->logZ = new float(0.f);
 			list<float> distr_vals;
 			this->__SubGraph->Eval_Log_Energy_function(&distr_vals, domain, var_order_in_combination);
+			if (distr_vals.empty()) {
+#ifdef _DEBUG
+				system("ECHO variables not found in sub graph structure");
+#endif // DEBUG
+				delete this->logZ;
+				this->logZ = NULL;
+				return;
+			}
 			for (auto it = distr_vals.begin(); it != distr_vals.end(); it++)
 				*this->logZ += expf(*it);
 			*this->logZ = logf(*this->logZ);
@@ -118,7 +143,6 @@ namespace Segugio {
 				free(*it);
 		}
 
-		result->clear();
 		this->__SubGraph->Eval_Log_Energy_function(result, combinations, var_order_in_combination);
 		for (auto it = result->begin(); it != result->end(); it++)
 			*it = expf(*it - *this->logZ);
@@ -144,6 +168,59 @@ namespace Segugio {
 
 		for (auto it = temp.begin(); it != temp.end(); it++)
 			free(*it);
+
+	}
+
+	void Node::Node_factory::_SubGraph::MAP(std::list<size_t>* result) { 
+
+		result->clear();
+
+		if (this->__SubGraph == NULL) {
+#ifdef _DEBUG
+			system("ECHO asked MAP for invalid sub graph");
+#endif // DEBUG
+			return;
+		}
+
+		this->__SubGraph->MAP_on_Hidden_set(result); 
+
+	};
+
+	void Node::Node_factory::_SubGraph::Gibbs_Sampling(std::list<std::list<size_t>>* result, const unsigned int& N_samples, const unsigned int& initial_sample_to_skip) {
+
+		result->clear();
+
+		if (this->__SubGraph == NULL) {
+#ifdef _DEBUG
+			system("ECHO asked Gibbs sampling on invalid sub graph");
+#endif // DEBUG
+			return;
+		}
+
+		this->__SubGraph->Gibbs_Sampling_on_Hidden_set(result, N_samples, initial_sample_to_skip); 
+
+	};
+
+	void Node::Node_factory::_SubGraph::Get_All_variables_in_model(std::list<Categoric_var*>* result) {
+
+		result->clear();
+		if (this->__SubGraph == NULL) return;
+
+		this->__SubGraph->Get_All_variables_in_model(result);
+
+	}
+
+	Categoric_var*	Node::Node_factory::_SubGraph::Find_Variable(const std::string& var_name) {
+
+		if (this->__SubGraph == NULL) {
+#ifdef _DEBUG
+			system("ECHO asked varaible in a non valid subgraph");
+#endif // DEBUG
+
+			return NULL;
+		}
+
+		return this->__SubGraph->Find_Variable(var_name);
 
 	}
 

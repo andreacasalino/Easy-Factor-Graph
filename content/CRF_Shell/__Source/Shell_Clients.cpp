@@ -8,8 +8,8 @@ using namespace std;
 #endif // DEBUG
 using namespace Segugio;
 
-#define SHOW_PARSED_COMMAND
-#define JS_INTERFACE_PORT string("8080")
+//#define SHOW_PARSED_COMMAND
+#define JS_INTERFACE_PORT string("185")
 
 
 
@@ -138,6 +138,7 @@ CRF_Shell::Client::Client(CRF_Shell* shell_to_link) {
 
 	shell_to_link->Requests.push_back(&this->Data);
 
+	this->__loop_can_start = false;
 	this->th__loop = new thread(&Client::__loop, this);
 
 }
@@ -153,6 +154,15 @@ CRF_Shell::Client::~Client() {
 }
 
 void	CRF_Shell::Client::__loop() {
+
+	bool btemp;
+	while (true) {
+		this->Data.Mutex->lock();
+		btemp = this->__loop_can_start;
+		this->Data.Mutex->unlock();
+		if (btemp)
+			break;
+	}
 
 	string next_comm;
 	while (true) {
@@ -202,11 +212,18 @@ void	CRF_Shell::Client::__write_command_and_wait_response() {
 		this->Data.Mutex->unlock();
 
 		if (b_copy) {
-			this->Data.bResponse = false;
 			delete this->Data.Request;
 			break;
 		}
 	}
+
+}
+
+void	CRF_Shell::Client::__allow_loop_to_start() {
+
+	this->Data.Mutex->lock();
+	this->__loop_can_start = true;
+	this->Data.Mutex->unlock();
 
 }
 
@@ -284,7 +301,12 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 			// import xml structure	
 			auto folder = command->Get_value('p');
 			auto config_file = command->Get_value('f');
-			if (config_file == NULL) return;
+			if (config_file == NULL) {
+				if (this->Graph != NULL) delete this->Graph;
+				this->Graph = new Segugio::Graph();
+				this->Graph_has_changed = true;
+				return;
+			}
 
 			Segugio::Graph* new_graph;
 			if (folder == NULL)
@@ -579,6 +601,7 @@ JS_Client::JS_Client(CRF_Shell* shell_to_link) : Client(shell_to_link) , Listene
 	f << "Interface.hmtl";
 	f.close();
 	system("__temp.bat");
+	this->__allow_loop_to_start();
 	system("DEL __temp.bat");
 
 };

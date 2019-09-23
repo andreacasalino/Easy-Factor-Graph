@@ -15,7 +15,7 @@ using namespace Segugio;
 
 
 int main() {
-	string prefix = compute_prefix() + "Sample_09_subgraph_operation" + "/";
+	string prefix = compute_prefix() + "Sample_08_subgraph_operation" + "/";
 
 //build the graph
 	Random_Field graph("graph.xml", prefix);
@@ -37,7 +37,7 @@ int main() {
 	SubGraph* sub_A_1234 = new SubGraph(&graph, Var_A1234);
 // compute the marginal probabilities of the follwoing two combinations (values refer to varaibles in the subgraph, i.e. A1, 2, 3, 4)
 	list<list<size_t>> sub_A_1234_combinations = { {0,0,0,0}, {1,1,0,0} };
-	sub_A_1234->Get_marginal_prob_combinations(&marginal_probs, sub_A_1234_combinations, Var_A1234);
+	sub_A_1234->Get_marginal_prob_combinations(&marginal_probs, sub_A_1234_combinations, { sub_A_1234->Find_Variable("A1") ,sub_A_1234->Find_Variable("A2") ,sub_A_1234->Find_Variable("A3") ,sub_A_1234->Find_Variable("A4") });
 
 	cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=0,X2=0) empirical   ";
 	cout << Get_empirical_frequencies(sample, sub_A_1234_combinations.front(), Var_A1234, Entire_Hidden_set) ;
@@ -52,7 +52,7 @@ int main() {
 	SubGraph* sub_B_123 = new SubGraph(&graph, Var_B123);
 	// compute the marginal probabilities of the follwoing two combinations (values refer to varaibles in the subgraph, i.e. A1, 2, 3, 4)
 	list<list<size_t>> sub_B_123_combinations = { {0,0,0}, {1,1,0} };
-	sub_B_123->Get_marginal_prob_combinations(&marginal_probs, sub_B_123_combinations, Var_B123);
+	sub_B_123->Get_marginal_prob_combinations(&marginal_probs, sub_B_123_combinations, { sub_B_123->Find_Variable("B1") ,sub_B_123->Find_Variable("B2") ,sub_B_123->Find_Variable("B3") });
 
 	cout << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0) empirical   ";
 	cout << Get_empirical_frequencies(sample, sub_B_123_combinations.front(), Var_B123, Entire_Hidden_set) ;
@@ -75,7 +75,7 @@ int main() {
 	delete sub_A_1234;
 	sub_A_1234 = new SubGraph(&graph, Var_A1234);
 	sub_A_1234_combinations = { {0,0,0,0}, {1,1,0,0} };
-	sub_A_1234->Get_marginal_prob_combinations(&marginal_probs, sub_A_1234_combinations, Var_A1234);
+	sub_A_1234->Get_marginal_prob_combinations(&marginal_probs, sub_A_1234_combinations, { sub_A_1234->Find_Variable("A1") ,sub_A_1234->Find_Variable("A2") ,sub_A_1234->Find_Variable("A3") ,sub_A_1234->Find_Variable("A4") });
 
 	cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=1,X2=1) empirical   ";
 	cout << Get_empirical_frequencies(sample, sub_A_1234_combinations.front(), Var_A1234, Entire_Hidden_set) ;

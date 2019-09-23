@@ -152,7 +152,7 @@ namespace Segugio {
 
 		virtual size_t	Get_potential_type() const { return this->pwrapped->Get_potential_type(); };
 	protected:
-		I_Potential_Decorator(Wrapped_Type* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) { this->validity_flag = to_wrap->get_validity(); };
+		I_Potential_Decorator(Wrapped_Type* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) { if (to_wrap != NULL) this->validity_flag = to_wrap->get_validity(); };
 
 		virtual const std::list<Categoric_var*>*    Get_involved_var() const { return this->I_Potential::Getter_4_Decorator::Get_involved_var(pwrapped); };
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return this->I_Potential::Getter_4_Decorator::Get_distr(pwrapped); };
@@ -338,6 +338,14 @@ namespace Segugio {
 		* @param[in] prob_distr marginals
 		*/
 		void Get_marginals(std::list<float>* prob_distr);
+
+		/** \brief Transfer the values in the distirbution of a potential into a simple shape.
+		*\details The variables involved in the shape passed must be the same of this potential
+		* when considering this potential only
+		*
+		* @param[in] shape the potential shape that will received the cloned values
+		*/
+		void clone_distribution(Potential_Shape* shape);
 	protected:
 		Potential() : I_Potential_Decorator(NULL) {};
 	};

@@ -24,6 +24,8 @@
     <ClInclude Include="Header\Graphical_model.h" />
     <ClInclude Include="Header\Node.h" />
     <ClInclude Include="Header\Potential.h" />
+    <ClInclude Include="Header\Trainer.h" />
+    <ClInclude Include="Header\Training_set.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\thirdy_part_lib\XML_reader\XML_Manager.cpp" />
@@ -31,6 +33,9 @@
     <ClCompile Include="Source\Graphical_model.cpp" />
     <ClCompile Include="Source\Node.cpp" />
     <ClCompile Include="Source\Potential.cpp" />
+    <ClCompile Include="Source\Subgraph.cpp" />
+    <ClCompile Include="Source\Trainer.cpp" />
+    <ClCompile Include="Source\Training_set.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>

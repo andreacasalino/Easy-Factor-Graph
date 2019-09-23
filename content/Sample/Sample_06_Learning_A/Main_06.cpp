@@ -24,39 +24,39 @@ void part_05(const string& prefix); //shared weight
 int main() {
 	string prefix =  compute_prefix() + "Sample_06_Learning_A" + "/";
 
-	/////////////////////////////////////////////
-	////            part 01 graph_1            //
-	/////////////////////////////////////////////
-	//cout << "-----------------------\n";
-	//cout << "part 01 \n\n\n";
-	//cout << "-----------------------\n";
-	//part_01(prefix);
-	//system("pause");
+	///////////////////////////////////////////
+	//            part 01 graph_1            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 01 \n\n\n";
+	cout << "-----------------------\n";
+	part_01(prefix);
+	system("pause");
 
-	/////////////////////////////////////////////
-	////            part 02 graph_2            //
-	/////////////////////////////////////////////
-	//cout << "-----------------------\n";
-	//cout << "part 02 \n\n\n";
-	//cout << "-----------------------\n";
-	//part_02(prefix);
-	//system("pause");
+	///////////////////////////////////////////
+	//            part 02 graph_2            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 02 \n\n\n";
+	cout << "-----------------------\n";
+	part_02(prefix);
+	system("pause");
 
-	/////////////////////////////////////////////
-	////            part 03 graph_3            //
-	/////////////////////////////////////////////
-	//cout << "-----------------------\n";
-	//cout << "part 03 \n\n\n";
-	//cout << "-----------------------\n";
-	//part_03(prefix);
+	///////////////////////////////////////////
+	//            part 03 graph_3            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 03 \n\n\n";
+	cout << "-----------------------\n";
+	part_03(prefix);
 
-	/////////////////////////////////////////////
-	////            part 04 graph_4            //
-	/////////////////////////////////////////////
-	//cout << "-----------------------\n";
-	//cout << "part 04 \n\n\n";
-	//cout << "-----------------------\n";
-	//part_04(prefix);
+	///////////////////////////////////////////
+	//            part 04 graph_4            //
+	///////////////////////////////////////////
+	cout << "-----------------------\n";
+	cout << "part 04 \n\n\n";
+	cout << "-----------------------\n";
+	part_04(prefix);
 
 	///////////////////////////////////////////
 	//            part 05 graph_5            //
@@ -352,7 +352,7 @@ void part_05(const string& prefix) {
 	Potential_Exp_Shape XY3_bis(new Potential_Shape({ &Y3, &X3 }, true));
 	Potential_Exp_Shape YY1_bis(new Potential_Shape({ &Y1, &Y2 }, true), 1.5f * alfa);
 	Potential_Exp_Shape YY2_bis(new Potential_Shape({ &Y2, &Y3 }, true));
-	Random_Field graph_to_learn(false); //potentials are not cloned when Insert is used
+ 	Random_Field graph_to_learn(false); //potentials are not cloned when Insert is used
 	graph_to_learn.Insert(&XY1_bis);
 	graph_to_learn.Insert(&XY2_bis, { &X1, &Y1 }); // the same weight of XY1 is assumed
 	graph_to_learn.Insert(&XY3_bis, { &X1, &Y1 }); // the same weight of XY1 is assumed
