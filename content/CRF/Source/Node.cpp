@@ -1168,26 +1168,35 @@ namespace Segugio {
 
 	}
 
-	void Node::Node_factory::Get_structure(std::list<const Potential*>* structure) {
+	void Node::Node_factory::Get_structure(std::list<const Potential_Shape*>* shapes, std::list<std::list<const Potential_Exp_Shape*>>* learnable_exp, std::list<const Potential_Exp_Shape*>* constant_exp) {
 
-		structure->clear();
-		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++)
-			structure->push_back(*it);
+		shapes->clear();
+		list<Potential_Shape*> temp_shp;
+		this->__Get_simple_shapes(&temp_shp);
+		for (auto it = temp_shp.begin(); it != temp_shp.end(); it++)
+			shapes->push_back(*it);
 
-		list<Potential*>::iterator it_u;
-		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
-			for (it_u = (*it)->Permanent_Unary.begin(); it_u != (*it)->Permanent_Unary.end(); it_u++)
-				structure->push_back(*it_u);
+		learnable_exp->clear();
+		constant_exp->clear();
+		list<list<Potential_Exp_Shape*>> temp_clusters;
+		list<Potential_Exp_Shape*>				temp_exp;
+		this->__Get_exponential_shapes(&temp_clusters, &temp_exp);
+		if (!temp_clusters.empty()) {
+			auto it2 = temp_clusters.front().begin();
+			for (auto it = temp_clusters.begin(); it != temp_clusters.end(); it++) {
+				learnable_exp->push_back(list<const Potential_Exp_Shape*>());
+				for (it2 = it->begin(); it2 != it->end(); it2++)
+					learnable_exp->back().push_back(*it2);
+			}
 		}
-
+		for (auto it = temp_exp.begin(); it != temp_exp.end(); it++)
+			constant_exp->push_back(*it);
 
 	}
 
 	size_t	Node::Node_factory::Get_structure_size() {
 
-		list<const Potential*> structure;
-		this->Get_structure(&structure);
-		return structure.size();
+		return this->__Exponential_shapes.size() + this->__Simple_shapes.size();
 
 	}
 
@@ -1200,6 +1209,56 @@ namespace Segugio {
 			}
 		}
 		return NULL;
+
+	}
+
+	void Node::Node_factory::__Absorb(Node_factory* to_absorb) {
+
+		if (to_absorb == this)
+			return;
+
+		for (auto it = to_absorb->__Simple_shapes.begin(); it != to_absorb->__Simple_shapes.end(); it++)
+			this->__Insert(*it);
+
+		list<list<Potential_Exp_Shape*>> tunable_clusters;
+		list<Potential_Exp_Shape*>			constant_exp;
+		to_absorb->__Get_exponential_shapes(&tunable_clusters, &constant_exp);
+
+		if (!tunable_clusters.empty()) {
+			auto it2 = tunable_clusters.front().begin();
+			for (auto it = tunable_clusters.begin(); it != tunable_clusters.end(); it++) {
+				for (it2 = it->begin(); it2 != it->end(); it2++) {
+					this->__Insert(*it2, true);
+				}
+			}
+		}
+
+		for (auto it = constant_exp.begin(); it != constant_exp.end(); it++)
+			this->__Insert(*it, false);
+
+	}
+
+	void Node::Node_factory::__Insert(Potential_Shape* pot) {
+
+		auto temp = this->___Insert(pot);
+		if (temp != NULL)
+			this->__Simple_shapes.push_back(temp);
+
+	};
+
+	Potential_Exp_Shape* Node::Node_factory::__Insert(Potential_Exp_Shape* pot, const bool& weight_tunability) {
+
+		auto temp = this->___Insert(pot); 
+		if (temp != NULL)
+			this->__Exponential_shapes.push_back(temp);
+		return temp;
+
+	};
+
+	void Node::Node_factory::__Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp) {
+
+		learnable_exp->clear();
+		*constant_exp = this->__Exponential_shapes;
 
 	}
 

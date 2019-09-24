@@ -601,6 +601,69 @@ namespace Segugio {
 
 	}
 
+	void Graph_Learnable::__Absorb(Node_factory* to_absorb) {
+
+		if (to_absorb == this)
+			return;
+
+		list<Potential_Shape*> shp;
+		Node_factory::__Get_simple_shapes(&shp, to_absorb);
+		for (auto it = shp.begin(); it != shp.end(); it++)
+			this->Node_factory::__Insert(*it);
+
+		list<list<Potential_Exp_Shape*>> clusters;
+		list<Potential_Exp_Shape*> constant;
+		Node_factory::__Get_exponential_shapes(&clusters, &constant);
+
+		if (!clusters.empty()) {
+			auto it2 = clusters.front().begin();
+			for (auto it = clusters.begin(); it != clusters.end(); it++) {
+				if (it->size() == 1)
+					this->Node_factory::__Insert(it->front(), true);
+				else {
+					//it's a cluster
+					Potential_Exp_Shape* first_inserted_with_sucess = NULL;
+					it2 = it->begin();
+					for (it2; it2 != it->end(); it++) {
+						first_inserted_with_sucess = this->Graph_Learnable::__Insert(*it2, true);
+						if (first_inserted_with_sucess != NULL)
+							break;
+					}
+
+					if (first_inserted_with_sucess != NULL) {
+						for (it2; it2 != it->end(); it++) {
+							if (this->Graph_Learnable::__Insert(*it2, true) != NULL)
+								this->Share_weight(this->Model_handlers.back(), *first_inserted_with_sucess->Get_involved_var_safe());
+						}
+					}
+				}
+			}
+		}
+
+		for (auto it = constant.begin(); it != constant.end(); it++)
+			this->Graph_Learnable::__Insert(*it, false);
+
+	}
+
+	void Graph_Learnable::__Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp) {
+
+		this->__Get_exponential_shapes(learnable_exp, constant_exp);
+		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
+			constant_exp->remove(it->Ref_to_learner->Get_wrapped());
+			learnable_exp->push_back({ it->Ref_to_learner->Get_wrapped() });
+		}
+
+		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+			learnable_exp->push_back(list<Potential_Exp_Shape*>());
+			auto components = it->Ref_to_learner->Get_Components();
+			for (auto it2 = components->begin(); it2 != components->end(); it2++) {
+				constant_exp->remove((*it2)->Get_wrapped());
+				learnable_exp->back().push_back((*it2)->Get_wrapped());
+			}
+		}
+
+	}
+
 
 
 

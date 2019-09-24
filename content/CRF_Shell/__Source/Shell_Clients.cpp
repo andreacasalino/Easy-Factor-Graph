@@ -253,6 +253,23 @@ void CRF_Shell::Activate_loop() {
 
 }
 
+Graph*		Import_from_config_file(const Command* command) {
+
+	// import xml structure	
+	auto folder = command->Get_value('p');
+	auto config_file = command->Get_value('f');
+	if (config_file == NULL) {
+		return NULL;
+	}
+
+	Segugio::Graph* new_graph;
+	if (folder == NULL)
+		new_graph = new Segugio::Graph(*config_file);
+	else
+		new_graph = new Segugio::Graph(*config_file, *folder);
+	return new_graph;
+
+}
 void CRF_Shell::__get_response(const Command* command, std::string* JSON_result) {
 
 	char symbol = command->Get_name();
@@ -300,27 +317,18 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 
 		else if (symbol == 'X') {
 			// import xml structure	
-			auto folder = command->Get_value('p');
-			auto config_file = command->Get_value('f');
-			if (config_file == NULL) {
-				if (this->Graph != NULL) delete this->Graph;
-				this->Graph = new Segugio::Graph();
-				this->Graph_has_changed = true;
+			Segugio::Graph* new_graph = Import_from_config_file(command);
+			if (new_graph == NULL) 
 				return;
-			}
 
-			Segugio::Graph* new_graph;
-			if (folder == NULL)
-				new_graph = new Segugio::Graph(*config_file);
-			else
-				new_graph = new Segugio::Graph(*config_file, *folder);
+			if (this->Graph != NULL) delete this->Graph;
+			this->Graph = new Segugio::Graph();
 			new_graph->Set_Observation_Set_var({});
 			new_graph->Set_Observation_Set_val({});
 
 			for (auto it = this->Open_set.begin(); it != this->Open_set.end(); it++)
 				delete *it;
 			this->Open_set.clear();
-			if (this->Graph != NULL) delete this->Graph;
 			this->Graph = new_graph;
 			this->Graph_has_changed = true;
 		}
@@ -490,6 +498,19 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 			}
 		}
 
+		else if (symbol == 'A') {
+			// absorb the structure in a config file
+			Segugio::Graph* to_absorb = Import_from_config_file(command);
+			if (to_absorb == NULL)
+				return;
+
+			if (this->Graph == NULL)
+				this->Graph = new Segugio::Graph();
+			this->Graph->Absorb(to_absorb);
+			delete to_absorb;
+			this->Graph_has_changed = true;
+		}
+
 	}
 }
 
@@ -510,15 +531,56 @@ size_t Get_node_id(const std::list<Categoric_var*>& hidden_set, const std::list<
 	return string::npos;
 
 }
+template<typename T>
+void add_potentials(JSON_array& edges, JSON_array& nodes, const list<const T*>& potentials, list<Categoric_var*>& hidden_set, list<Categoric_var*>& observed_set, size_t& k, const string& edge_image) {
+
+	for (auto it = potentials.begin(); it != potentials.end(); it++) {
+		JSON_tag temp;
+		temp.Add_field("label", "");
+		temp.Add_field("shape", "image");
+		temp.Add_field("image", edge_image);
+
+		temp.Add_field("color", "#000000");
+		temp.Add_field("id", to_string(k));
+		nodes.Append(temp);
+
+		JSON_tag temp2;
+		temp2.Add_field("from", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var_safe()->front())));
+		temp2.Add_field("to", to_string(k));
+		edges.Append(temp2);
+		if ((*it)->Get_involved_var_safe()->size() > 1) {
+			temp2.Add_field("from", to_string(k));
+			temp2.Add_field("to", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var_safe()->back())));
+			edges.Append(temp2);
+		}
+
+		k++;
+	}
+
+}
 void CRF_Shell::__get_graph_JSON(std::string* graph_JSON) {
 
 	if (this->Graph_has_changed) {
-		list<const Potential*> potentials;
-		this->Graph->Get_structure(&potentials);
+		list<const Potential_Shape*> shapes;
+		list<list<const Potential_Exp_Shape*>> exp_tunable_clusters;
+		list<const Potential_Exp_Shape*> exp_constant;
+		this->Graph->Get_structure(&shapes, &exp_tunable_clusters, &exp_constant);
+		list<const Potential_Exp_Shape*> exp_tunable;
+		if (!exp_tunable.empty()) {
+			auto it2 = exp_tunable_clusters.begin()->begin();
+			for (auto it = exp_tunable_clusters.begin(); it != exp_tunable_clusters.end(); it++) {
+				for (it2 = it->begin(); it2 != it->end(); it2++)
+					exp_tunable.push_back(*it2);
+			}
+		}
+
+
 
 		list<Categoric_var*> hidden_set, observed_set;
 		this->Graph->Get_Actual_Hidden_Set(&hidden_set);
 		this->Graph->Get_Actual_Observation_Set(&observed_set);
+		list<size_t> observed_vals;
+		this->Graph->Get_Observation_Set_val(&observed_vals);
 		if (hidden_set.empty() && observed_set.empty())
 			this->Graph->Get_All_variables_in_model(&hidden_set);
 
@@ -534,15 +596,17 @@ void CRF_Shell::__get_graph_JSON(std::string* graph_JSON) {
 			nodes.Append(temp);
 			k++;
 		}
+		auto it_val = observed_vals.begin();
 		for (auto it = observed_set.begin(); it != observed_set.end(); it++) {
 			JSON_tag temp;
-			temp.Add_field("label", (*it)->Get_name());
+			temp.Add_field("label", (*it)->Get_name() + " = " + to_string(*it_val));
 			temp.Add_field("shape", "image");
 			temp.Add_field("image", "./image/Variable_Observed.svg");
 			temp.Add_field("color", "#000000");
 			temp.Add_field("id", to_string(k));
 			nodes.Append(temp);
 			k++;
+			it_val++;
 		}
 		for (auto it = this->Open_set.begin(); it != this->Open_set.end(); it++) {
 			JSON_tag temp;
@@ -556,28 +620,9 @@ void CRF_Shell::__get_graph_JSON(std::string* graph_JSON) {
 		}
 
 		JSON_array edges;
-		for (auto it = potentials.begin(); it != potentials.end(); it++) {
-			JSON_tag temp;
-			temp.Add_field("label", "");
-			temp.Add_field("shape", "image");
-			if ((*it)->Get_potential_type() == 0)
-				temp.Add_field("image", "./image/Potential_Shape.svg");
-			else
-				temp.Add_field("image", "./image/Potential_Exp_Shape_tunable.svg");
-			temp.Add_field("color", "#000000");
-			temp.Add_field("id", to_string(k));
-			nodes.Append(temp);
-
-			JSON_tag temp2;
-			temp2.Add_field("from", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var_safe()->front())));
-			temp2.Add_field("to", to_string(k));
-			edges.Append(temp2);
-			temp2.Add_field("from", to_string(k));
-			temp2.Add_field("to", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var_safe()->back())));
-			edges.Append(temp2);
-
-			k++;
-		}
+		add_potentials(edges, nodes, shapes, hidden_set, observed_set, k, "./image/Potential_Shape.svg");
+		add_potentials(edges, nodes, exp_tunable, hidden_set, observed_set, k, "./image/Potential_Exp_Shape_tunable.svg");
+		add_potentials(edges, nodes, exp_constant, hidden_set, observed_set, k, "./image/Potential_Exp_Shape_fixed.svg");
 
 		JSON_tag graph;
 		graph.Add_nested("nodes", nodes);

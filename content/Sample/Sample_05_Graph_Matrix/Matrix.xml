@@ -49,235 +49,88 @@
 	<Variable name="v46" Size="2"></Variable>
 	<Variable name="v47" Size="2"></Variable>
 	<Variable name="v48" Size="2"></Variable>
-	<Variable name="v49" Size="2"></Variable>
-	<Variable name="v50" Size="2"></Variable>
-	<Variable name="v51" Size="2"></Variable>
-	<Variable name="v52" Size="2"></Variable>
-	<Variable name="v53" Size="2"></Variable>
-	<Variable name="v54" Size="2"></Variable>
-	<Variable name="v55" Size="2"></Variable>
-	<Variable name="v56" Size="2"></Variable>
-	<Variable name="v57" Size="2"></Variable>
-	<Variable name="v58" Size="2"></Variable>
-	<Variable name="v59" Size="2"></Variable>
-	<Variable name="v60" Size="2"></Variable>
-	<Variable name="v61" Size="2"></Variable>
-	<Variable name="v62" Size="2"></Variable>
-	<Variable name="v63" Size="2"></Variable>
-	<Variable name="v64" Size="2"></Variable>
-	<Variable name="v65" Size="2"></Variable>
-	<Variable name="v66" Size="2"></Variable>
-	<Variable name="v67" Size="2"></Variable>
-	<Variable name="v68" Size="2"></Variable>
-	<Variable name="v69" Size="2"></Variable>
-	<Variable name="v70" Size="2"></Variable>
-	<Variable name="v71" Size="2"></Variable>
-	<Variable name="v72" Size="2"></Variable>
-	<Variable name="v73" Size="2"></Variable>
-	<Variable name="v74" Size="2"></Variable>
-	<Variable name="v75" Size="2"></Variable>
-	<Variable name="v76" Size="2"></Variable>
-	<Variable name="v77" Size="2"></Variable>
-	<Variable name="v78" Size="2"></Variable>
-	<Variable name="v79" Size="2"></Variable>
-	<Variable name="v80" Size="2"></Variable>
-	<Variable name="v81" Size="2"></Variable>
-	<Variable name="v82" Size="2"></Variable>
-	<Variable name="v83" Size="2"></Variable>
-	<Variable name="v84" Size="2"></Variable>
-	<Variable name="v85" Size="2"></Variable>
-	<Variable name="v86" Size="2"></Variable>
-	<Variable name="v87" Size="2"></Variable>
-	<Variable name="v88" Size="2"></Variable>
-	<Variable name="v89" Size="2"></Variable>
-	<Variable name="v90" Size="2"></Variable>
-	<Variable name="v91" Size="2"></Variable>
-	<Variable name="v92" Size="2"></Variable>
-	<Variable name="v93" Size="2"></Variable>
-	<Variable name="v94" Size="2"></Variable>
-	<Variable name="v95" Size="2"></Variable>
-	<Variable name="v96" Size="2"></Variable>
-	<Variable name="v97" Size="2"></Variable>
-	<Variable name="v98" Size="2"></Variable>
-	<Variable name="v99" Size="2"></Variable>
   	<Potential var="v0" var="v1"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v0" var="v10"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v0" var="v7"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v1" var="v2"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v1" var="v11"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v1" var="v8"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v2" var="v3"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v2" var="v12"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v2" var="v9"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v3" var="v4"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v3" var="v13"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v3" var="v10"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v4" var="v5"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v4" var="v14"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v4" var="v11"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v5" var="v6"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v5" var="v15"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v6" var="v7"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v6" var="v16"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v5" var="v12"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v6" var="v13"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v7" var="v8"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v7" var="v17"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v7" var="v14"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v8" var="v9"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v8" var="v18"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v9" var="v19"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v8" var="v15"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v9" var="v10"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v9" var="v16"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v10" var="v11"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v10" var="v20"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v10" var="v17"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v11" var="v12"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v11" var="v21"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v11" var="v18"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v12" var="v13"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v12" var="v22"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v13" var="v14"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v13" var="v23"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v12" var="v19"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v13" var="v20"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v14" var="v15"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v14" var="v24"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v14" var="v21"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v15" var="v16"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v15" var="v25"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v15" var="v22"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v16" var="v17"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v16" var="v26"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v16" var="v23"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v17" var="v18"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v17" var="v27"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v17" var="v24"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v18" var="v19"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v18" var="v28"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v19" var="v29"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v20" var="v21"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v20" var="v30"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v18" var="v25"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v19" var="v20"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v19" var="v26"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v20" var="v27"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v21" var="v22"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v21" var="v31"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v21" var="v28"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v22" var="v23"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v22" var="v32"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v22" var="v29"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v23" var="v24"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v23" var="v33"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v23" var="v30"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v24" var="v25"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v24" var="v34"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v24" var="v31"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v25" var="v26"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v25" var="v35"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v25" var="v32"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v26" var="v27"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v26" var="v36"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v27" var="v28"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v27" var="v37"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v26" var="v33"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v27" var="v34"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v28" var="v29"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v28" var="v38"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v29" var="v39"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v28" var="v35"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v29" var="v30"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v29" var="v36"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v30" var="v31"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v30" var="v40"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v30" var="v37"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v31" var="v32"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v31" var="v41"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v31" var="v38"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v32" var="v33"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v32" var="v42"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v32" var="v39"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v33" var="v34"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v33" var="v43"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v34" var="v35"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v34" var="v44"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v33" var="v40"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v34" var="v41"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v35" var="v36"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v35" var="v45"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v35" var="v42"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v36" var="v37"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v36" var="v46"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v36" var="v43"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v37" var="v38"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v37" var="v47"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v37" var="v44"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v38" var="v39"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v38" var="v48"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v39" var="v49"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v38" var="v45"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v39" var="v40"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v39" var="v46"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v40" var="v41"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v40" var="v50"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v41" var="v42"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v41" var="v51"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v40" var="v47"  weight="1.0"  Source="binary_shape.txt"></Potential>
+  	<Potential var="v41" var="v48"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v42" var="v43"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v42" var="v52"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v43" var="v44"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v43" var="v53"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v44" var="v45"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v44" var="v54"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v45" var="v46"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v45" var="v55"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v46" var="v47"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v46" var="v56"  weight="1.0"  Source="binary_shape.txt"></Potential>
   	<Potential var="v47" var="v48"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v47" var="v57"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v48" var="v49"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v48" var="v58"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v49" var="v59"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v50" var="v51"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v50" var="v60"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v51" var="v52"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v51" var="v61"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v52" var="v53"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v52" var="v62"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v53" var="v54"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v53" var="v63"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v54" var="v55"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v54" var="v64"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v55" var="v56"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v55" var="v65"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v56" var="v57"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v56" var="v66"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v57" var="v58"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v57" var="v67"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v58" var="v59"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v58" var="v68"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v59" var="v69"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v60" var="v61"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v60" var="v70"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v61" var="v62"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v61" var="v71"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v62" var="v63"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v62" var="v72"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v63" var="v64"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v63" var="v73"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v64" var="v65"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v64" var="v74"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v65" var="v66"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v65" var="v75"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v66" var="v67"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v66" var="v76"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v67" var="v68"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v67" var="v77"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v68" var="v69"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v68" var="v78"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v69" var="v79"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v70" var="v71"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v70" var="v80"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v71" var="v72"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v71" var="v81"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v72" var="v73"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v72" var="v82"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v73" var="v74"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v73" var="v83"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v74" var="v75"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v74" var="v84"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v75" var="v76"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v75" var="v85"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v76" var="v77"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v76" var="v86"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v77" var="v78"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v77" var="v87"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v78" var="v79"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v78" var="v88"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v79" var="v89"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v80" var="v81"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v80" var="v90"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v81" var="v82"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v81" var="v91"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v82" var="v83"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v82" var="v92"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v83" var="v84"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v83" var="v93"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v84" var="v85"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v84" var="v94"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v85" var="v86"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v85" var="v95"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v86" var="v87"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v86" var="v96"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v87" var="v88"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v87" var="v97"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v88" var="v89"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v88" var="v98"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v89" var="v99"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v90" var="v91"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v91" var="v92"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v92" var="v93"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v93" var="v94"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v94" var="v95"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v95" var="v96"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v96" var="v97"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v97" var="v98"  weight="1.0"  Source="binary_shape.txt"></Potential>
-  	<Potential var="v98" var="v99"  weight="1.0"  Source="binary_shape.txt"></Potential>
 </Matrix>

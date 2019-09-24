@@ -65,6 +65,12 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
+
+		/** \brief Absorbs all the variables and the potentials contained in the model passed as input
+		* \details Consistency checks are performed: it is possible that some inconsistent components in the model passed
+		* will be not absorbed. All the potentials and variables are cloned and inserted into this model.
+		*/
+		void			  Absorb(Node_factory* to_absorb) { this->__Absorb(to_absorb); };
 	};
 
 
@@ -87,6 +93,7 @@ namespace Segugio {
 		virtual void			Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 
 		bool			is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
+		Potential_Exp_Shape* Get_wrapped() { return this->pwrapped; };
 	protected:
 		atomic_Learning_handler(Potential_Exp_Shape* pot_to_handle);
 		atomic_Learning_handler(atomic_Learning_handler* other) : atomic_Learning_handler(other->pwrapped) {  };
@@ -165,7 +172,11 @@ namespace Segugio {
 		void Remove(atomic_Learning_handler* to_remove);
 		void Share_weight(I_Learning_handler* pot_involved, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share);
 		void Import_XML_sharing_weight_info(XML_reader& reader);
+
+		virtual void			  __Absorb(Node_factory* to_absorb);
 	private:
+
+		virtual void			  __Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp);
 
 		//as baseline behaviour the alfa part of gradient is recomputed in case train set has changed, and is added to the result
 		virtual void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
@@ -252,6 +263,12 @@ namespace Segugio {
 		 * \brief see Node::Node_factory::Set_Observation_Set_val(const std::list<size_t>& new_observed_vals)
 		 */
 		void Set_Observation_Set_val(const std::list<size_t>& new_observed_vals) { this->Node_factory::Set_Observation_Set_val(new_observed_vals); };
+	
+		/** \brief Absorbs all the variables and the potentials contained in the model passed as input
+		* \details Consistency checks are performed: it is possible that some inconsistent components in the model passed
+		* will be not absorbed. All the potentials and variables are cloned and inserted into this model.
+		*/
+		void			  Absorb(Node_factory* to_absorb) { this->__Absorb(to_absorb); };
 	private:
 		void Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order);
 	};

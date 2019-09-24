@@ -17,6 +17,7 @@ void process_sample_2();
 void process_sample_3();
 
 int main() {
+
 	///////////////////////////////////////////
 	// part 01 graph with a single potential //	
 	///////////////////////////////////////////

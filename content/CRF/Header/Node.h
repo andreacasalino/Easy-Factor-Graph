@@ -118,9 +118,15 @@ namespace Segugio {
 			void					  Get_Observation_Set_val(std::list<size_t>* result);
 
 			/*!
-			 * \brief Returns the list of potentials constituting the net. Usefull for structural learning
+			 * \brief Returns the list of potentials constituting the net.
+			 \details The potentials returned cannot be used for initializing a model. For performing such a task
+			 * you can build an empty  model and then use Absorb.
+			 * 
+			 * @param[out] shapes list of Simple shapes contained in the  model
+			 * @param[out] learnable_exp list of Exponential tunable potentials contained in the model: every sub group share the same weight
+			 * @param[out] constant_exp list of Exponential constant potentials contained in the model
 			 */
-			void					 Get_structure(std::list<const Potential*>* structure);
+			void					 Get_structure(std::list<const Potential_Shape*>* shapes, std::list<std::list<const Potential_Exp_Shape*>>* learnable_exp, std::list<const Potential_Exp_Shape*>* constant_exp);
 			/*!
 			 * \brief Returns the number of potentials constituting the graph, no matter of their type (simple shape, exponential shape fixed or exponential shape tunable)
 			 */
@@ -186,16 +192,23 @@ namespace Segugio {
 		protected:
 			Node_factory(const bool& use_cloning_Insert) : mState(0), Last_propag_info(NULL), Iterations_4_belief_propagation(1000), bDestroy_Potentials_and_Variables(use_cloning_Insert) {};
 
+			virtual void			  __Absorb(Node_factory* to_absorb);
+
 			//Import XML is not inlined in constructor since contains a call to Insert, which is virtual
-			void Import_from_XML(XML_reader* xml_data, const std::string& prefix_config_xml_file);
+			void						  Import_from_XML(XML_reader* xml_data, const std::string& prefix_config_xml_file);
 			
 			Node*					  __Find_Node(Categoric_var* var);
 			size_t*					  __Get_observed_val(Categoric_var* var); //return NULL when the variable is not part of the observed set
+
+			void						  __Get_simple_shapes(std::list<Potential_Shape*>* shapes) { *shapes = this->__Simple_shapes; };
+			static void				  __Get_simple_shapes(std::list<Potential_Shape*>* shapes, Node_factory* model) { *shapes = model->__Simple_shapes; };
+			virtual void			  __Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp);
+			static void				  __Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp, Node_factory* model) { model->__Get_exponential_shapes(learnable_exp, constant_exp); };
 			
 		//methods having an effect on mState
 
-			virtual void __Insert(Potential_Shape* pot) { this->___Insert(pot); };
-			virtual Potential_Exp_Shape* __Insert(Potential_Exp_Shape* pot, const bool& weight_tunability) { return this->___Insert(pot); }; //the potential exponential actually inserted is returned
+			virtual void __Insert(Potential_Shape* pot);
+			virtual Potential_Exp_Shape* __Insert(Potential_Exp_Shape* pot, const bool& weight_tunability); //the potential exponential actually inserted is returned
 			void Insert(const std::list<Potential_Exp_Shape*>& exponential_potentials, const std::list<bool>& tunability);
 			void Insert(const std::list<Potential_Shape*>&				    simple_potentials);
 
@@ -339,6 +352,10 @@ namespace Segugio {
 			std::list<Potential*>								Binary_potentials;
 
 			unsigned int												Iterations_4_belief_propagation;
+
+		//these list are used only for having a direct reference to the potentials in the model
+			std::list<Potential_Shape*>				    __Simple_shapes;
+			std::list<Potential_Exp_Shape*>			__Exponential_shapes;
 		};
 
 		Categoric_var*							Get_var() { return this->pVariable; };
