@@ -9,7 +9,7 @@ using namespace std;
 using namespace Segugio;
 
 //#define SHOW_PARSED_COMMAND
-#define JS_INTERFACE_PORT string("185")
+#define JS_INTERFACE_PORT string("8001")
 
 
 
@@ -275,14 +275,15 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 			if ((variables == NULL) || (dimensions == NULL)) return;
 			if (variables->size() != dimensions->size()) return;
 
-			if (this->Graph == NULL)
-				this->Graph = new Segugio::Graph();
+			if (this->Graph == NULL)  this->Graph = new Segugio::Graph();
 			this->Graph_has_changed = true;
 
 			Categoric_var* clone;
 			bool temp;
 			for (size_t c = 0; c < variables->size(); c++) {
-				clone = this->Graph->Find_Variable((*variables)[c]);
+				clone = NULL;
+				if(this->Graph != NULL)
+					clone = this->Graph->Find_Variable((*variables)[c]);
 				if (clone == NULL) {
 					temp = true;
 					for (auto it = this->Open_set.begin(); it != this->Open_set.end(); it++) {
@@ -386,9 +387,10 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 			// set observation set
 			if (this->Graph == NULL) return;
 
-			if (command->Get_values('v')->empty()) {
+			if (command->Get_values('v') == NULL) {
 				this->Graph->Set_Observation_Set_var({});
 				this->Graph->Set_Observation_Set_val({});
+				this->Graph_has_changed = true;
 			}
 			else {
 				auto variables = command->Get_values('v');
@@ -420,6 +422,7 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 				}
 				this->Graph->Set_Observation_Set_var(Observations);
 				this->Graph->Set_Observation_Set_val(Values);
+				this->Graph_has_changed = true;
 			}
 		}
 
@@ -516,6 +519,8 @@ void CRF_Shell::__get_graph_JSON(std::string* graph_JSON) {
 		list<Categoric_var*> hidden_set, observed_set;
 		this->Graph->Get_Actual_Hidden_Set(&hidden_set);
 		this->Graph->Get_Actual_Observation_Set(&observed_set);
+		if (hidden_set.empty() && observed_set.empty())
+			this->Graph->Get_All_variables_in_model(&hidden_set);
 
 		JSON_array nodes;
 		size_t k = 0;
@@ -533,7 +538,7 @@ void CRF_Shell::__get_graph_JSON(std::string* graph_JSON) {
 			JSON_tag temp;
 			temp.Add_field("label", (*it)->Get_name());
 			temp.Add_field("shape", "image");
-			temp.Add_field("image", "./image/Variable.svg");
+			temp.Add_field("image", "./image/Variable_Observed.svg");
 			temp.Add_field("color", "#000000");
 			temp.Add_field("id", to_string(k));
 			nodes.Append(temp);
