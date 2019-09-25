@@ -296,6 +296,7 @@ namespace Segugio {
 
 
 
+
 	bool Are_all_different(const list<Categoric_var*>& variables) {
 
 		if (variables.size())
@@ -650,6 +651,33 @@ namespace Segugio {
 		}
 
 		this->Involved_var = new_var;
+
+	}
+
+	void Potential_Shape::Copy_Distribution(std::list<std::list<size_t>>* combinations, std::list<float>* values) const {
+
+		combinations->clear();
+		values->clear();
+
+		if (!this->validity_flag) {
+#ifdef _DEBUG
+			system("ECHO asked for the copy of an invalid potential ");
+#endif // DEBUG
+			return;
+		}
+
+		auto Distr = &this->Distribution;
+		size_t N_vars = this->Get_involved_var_safe()->size(), k;
+		size_t* comb;
+		for (auto it = Distr->begin(); it != Distr->end(); it++) {
+			values->push_back(float());
+			(*it)->Get_val(&values->back());
+
+			combinations->push_back(list<size_t>());
+			comb = (*it)->Get_indeces();
+			for (k = 0; k < N_vars; k++)
+				combinations->back().push_back(comb[k]);
+		}
 
 	}
 

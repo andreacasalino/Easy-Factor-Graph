@@ -69,6 +69,7 @@ $(function() {
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
+<a href="#pro-static-methods">Static Protected Member Functions</a> &#124;
 <a href="class_segugio_1_1_node_1_1_node__factory-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Segugio::Node::Node_factory Class Reference</div>  </div>
@@ -94,10 +95,6 @@ Inheritance diagram for Segugio::Node::Node_factory:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___baseline__4___insertion.html">_Baseline_4_Insertion</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html">_SubGraph</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -106,9 +103,6 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a151ad19a61e17552a52e57017c43700f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a151ad19a61e17552a52e57017c43700f">Find_Variable</a> (const std::string &amp;var_name)</td></tr>
 <tr class="memdesc:a151ad19a61e17552a52e57017c43700f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer to the variable in this graph with that name.  <a href="#a151ad19a61e17552a52e57017c43700f">More...</a><br /></td></tr>
 <tr class="separator:a151ad19a61e17552a52e57017c43700f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a922cb7e2d988420ffb5ae83cfd0cedce"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a922cb7e2d988420ffb5ae83cfd0cedce">Find_Variable</a> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var_with_same_name)</td></tr>
-<tr class="memdesc:a922cb7e2d988420ffb5ae83cfd0cedce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer to the variable in this graph with the same name of the variable passed as input.  <a href="#a922cb7e2d988420ffb5ae83cfd0cedce">More...</a><br /></td></tr>
-<tr class="separator:a922cb7e2d988420ffb5ae83cfd0cedce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e83e2daa84c45c65ed687bf2115f1ff"><td class="memItemLeft" align="right" valign="top"><a id="a6e83e2daa84c45c65ed687bf2115f1ff"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6e83e2daa84c45c65ed687bf2115f1ff">Get_Actual_Hidden_Set</a> (std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; *result)</td></tr>
 <tr class="memdesc:a6e83e2daa84c45c65ed687bf2115f1ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the current set of hidden variables. <br /></td></tr>
@@ -165,10 +159,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a9e7728e7cc7c93e6e1df57f032fa9114">Get_Observation_Set_val</a> (std::list&lt; size_t &gt; *result)</td></tr>
 <tr class="memdesc:a9e7728e7cc7c93e6e1df57f032fa9114"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the attual values set observations. This function can be invokated after a call to void <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Set_Observation_Set_val(const std::list&lt;size_t&gt;&amp; new_observed_vals)</a> <br /></td></tr>
 <tr class="separator:a9e7728e7cc7c93e6e1df57f032fa9114"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad418a490e80336123ad5a9ba1eec8a5f"><td class="memItemLeft" align="right" valign="top"><a id="ad418a490e80336123ad5a9ba1eec8a5f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ad418a490e80336123ad5a9ba1eec8a5f">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential.html">Potential</a> * &gt; *structure)</td></tr>
-<tr class="memdesc:ad418a490e80336123ad5a9ba1eec8a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of potentials constituting the net. Usefull for structural learning. <br /></td></tr>
-<tr class="separator:ad418a490e80336123ad5a9ba1eec8a5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf61bb4635cf770f9c516bc127885896"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#adf61bb4635cf770f9c516bc127885896">Get_structure</a> (std::list&lt; const <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; *shapes, std::list&lt; std::list&lt; const <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt;&gt; *learnable_exp, std::list&lt; const <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; *constant_exp)</td></tr>
+<tr class="memdesc:adf61bb4635cf770f9c516bc127885896"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the list of potentials constituting the net.  <a href="#adf61bb4635cf770f9c516bc127885896">More...</a><br /></td></tr>
+<tr class="separator:adf61bb4635cf770f9c516bc127885896"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed2b33889f2f08b92e9d254bf163e013"><td class="memItemLeft" align="right" valign="top"><a id="aed2b33889f2f08b92e9d254bf163e013"></a>
 size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#aed2b33889f2f08b92e9d254bf163e013">Get_structure_size</a> ()</td></tr>
 <tr class="memdesc:aed2b33889f2f08b92e9d254bf163e013"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the number of potentials constituting the graph, no matter of their type (simple shape, exponential shape fixed or exponential shape tunable) <br /></td></tr>
@@ -179,27 +172,36 @@ Protected Member Functions</h2></td></tr>
 <tr class="memitem:a55358d87f14ac34d4fea9bdeda354c7c"><td class="memItemLeft" align="right" valign="top"><a id="a55358d87f14ac34d4fea9bdeda354c7c"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Node_factory</b> (const bool &amp;use_cloning_Insert)</td></tr>
 <tr class="separator:a55358d87f14ac34d4fea9bdeda354c7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa09d9f2a35e4f19893c9905c764ea498"><td class="memItemLeft" align="right" valign="top"><a id="aa09d9f2a35e4f19893c9905c764ea498"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>__Absorb</b> (<a class="el" href="class_segugio_1_1_node_1_1_node__factory.html">Node_factory</a> *to_absorb)</td></tr>
+<tr class="separator:aa09d9f2a35e4f19893c9905c764ea498"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36ecc4d80f811938103b06a2cecd5a06"><td class="memItemLeft" align="right" valign="top"><a id="a36ecc4d80f811938103b06a2cecd5a06"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>Import_from_XML</b> (XML_reader *xml_data, const std::string &amp;prefix_config_xml_file)</td></tr>
 <tr class="separator:a36ecc4d80f811938103b06a2cecd5a06"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26033552a4c147d8521b0db4813eab4f"><td class="memItemLeft" align="right" valign="top"><a id="a26033552a4c147d8521b0db4813eab4f"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a> *element_to_add)</td></tr>
-<tr class="separator:a26033552a4c147d8521b0db4813eab4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1df66f8c23d261c264da86bcac17bac7"><td class="memItemLeft" align="right" valign="top"><a id="a1df66f8c23d261c264da86bcac17bac7"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (std::list&lt; <a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a> * &gt; &amp;elements_to_add)</td></tr>
-<tr class="separator:a1df66f8c23d261c264da86bcac17bac7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a520b9ea85b4f161c6f3528ecf041c2fc"><td class="memItemLeft" align="right" valign="top"><a id="a520b9ea85b4f161c6f3528ecf041c2fc"></a>
-virtual <a class="el" href="struct_segugio_1_1_node_1_1_node__factory_1_1___pot__wrapper__4___insertion.html">_Pot_wrapper_4_Insertion</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_Inserter</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;weight_tunability)</td></tr>
-<tr class="separator:a520b9ea85b4f161c6f3528ecf041c2fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9605425bdaa46549135b5c57ddaf2fce"><td class="memItemLeft" align="right" valign="top"><a id="a9605425bdaa46549135b5c57ddaf2fce"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *pot)</td></tr>
-<tr class="separator:a9605425bdaa46549135b5c57ddaf2fce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af74f011c600495f6967ed2782c630573"><td class="memItemLeft" align="right" valign="top"><a id="af74f011c600495f6967ed2782c630573"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;weight_tunability)</td></tr>
-<tr class="separator:af74f011c600495f6967ed2782c630573"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0bb31d8d32df501115cc67db0f1db176"><td class="memItemLeft" align="right" valign="top"><a id="a0bb31d8d32df501115cc67db0f1db176"></a>
-<a class="el" href="class_segugio_1_1_node.html">Node</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Node</b> (const std::string &amp;var_name)</td></tr>
-<tr class="separator:a0bb31d8d32df501115cc67db0f1db176"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4369eca1f2e35b774c2f9fadb3c8324e"><td class="memItemLeft" align="right" valign="top"><a id="a4369eca1f2e35b774c2f9fadb3c8324e"></a>
+<a class="el" href="class_segugio_1_1_node.html">Node</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>__Find_Node</b> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var)</td></tr>
+<tr class="separator:a4369eca1f2e35b774c2f9fadb3c8324e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f1a645b2f12c696e860670b97271e1e"><td class="memItemLeft" align="right" valign="top"><a id="a2f1a645b2f12c696e860670b97271e1e"></a>
+size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>__Get_observed_val</b> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var)</td></tr>
+<tr class="separator:a2f1a645b2f12c696e860670b97271e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdbb3c0f8ca1df78a5607663000f0a21"><td class="memItemLeft" align="right" valign="top"><a id="afdbb3c0f8ca1df78a5607663000f0a21"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>__Get_simple_shapes</b> (std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; *shapes)</td></tr>
+<tr class="separator:afdbb3c0f8ca1df78a5607663000f0a21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa09529ceae40e48d0542333e0380a790"><td class="memItemLeft" align="right" valign="top"><a id="aa09529ceae40e48d0542333e0380a790"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>__Get_exponential_shapes</b> (std::list&lt; std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt;&gt; *learnable_exp, std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; *constant_exp)</td></tr>
+<tr class="separator:aa09529ceae40e48d0542333e0380a790"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1a4ca132650ac1185efd04569fb6acf"><td class="memItemLeft" align="right" valign="top"><a id="ac1a4ca132650ac1185efd04569fb6acf"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>__Insert</b> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *pot)</td></tr>
+<tr class="separator:ac1a4ca132650ac1185efd04569fb6acf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c9ca56521afcff486be3be4fd7e386a"><td class="memItemLeft" align="right" valign="top"><a id="a1c9ca56521afcff486be3be4fd7e386a"></a>
+virtual <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *&#160;</td><td class="memItemRight" valign="bottom"><b>__Insert</b> (<a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> *pot, const bool &amp;weight_tunability)</td></tr>
+<tr class="separator:a1c9ca56521afcff486be3be4fd7e386a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acac459ea9bc10d625159b49317acc5cd"><td class="memItemLeft" align="right" valign="top"><a id="acac459ea9bc10d625159b49317acc5cd"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; &amp;exponential_potentials, const std::list&lt; bool &gt; &amp;tunability)</td></tr>
+<tr class="separator:acac459ea9bc10d625159b49317acc5cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb49e05bb67cd3f6fe80199661803c5d"><td class="memItemLeft" align="right" valign="top"><a id="aeb49e05bb67cd3f6fe80199661803c5d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Insert</b> (const std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; &amp;simple_potentials)</td></tr>
+<tr class="separator:aeb49e05bb67cd3f6fe80199661803c5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac371170a8fbb8d8605736f24943d4d37"><td class="memItemLeft" align="right" valign="top"><a id="ac371170a8fbb8d8605736f24943d4d37"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37">Set_Observation_Set_var</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;new_observed_vars)</td></tr>
 <tr class="memdesc:ac371170a8fbb8d8605736f24943d4d37"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the values for the observations. Must call after calling <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974" title="Set the observation set: which variables are treated like evidence when performing belief propagation...">Node_factory::Set_Observation_Set_val</a>. <br /></td></tr>
@@ -208,12 +210,18 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#a6c514470f0400fe3aa31492a340f6974">Set_Observation_Set_val</a> (const std::list&lt; size_t &gt; &amp;new_observed_vals)</td></tr>
 <tr class="memdesc:a6c514470f0400fe3aa31492a340f6974"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the observation set: which variables are treated like evidence when performing belief propagation. <br /></td></tr>
 <tr class="separator:a6c514470f0400fe3aa31492a340f6974"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acba7f7a968efbfc8ac98542e01b713dc"><td class="memItemLeft" align="right" valign="top"><a id="acba7f7a968efbfc8ac98542e01b713dc"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Belief_Propagation</b> (const bool &amp;sum_or_MAP)</td></tr>
-<tr class="separator:acba7f7a968efbfc8ac98542e01b713dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad12022d0ebfaa8b51df40dd4f70f221a"><td class="memItemLeft" align="right" valign="top"><a id="ad12022d0ebfaa8b51df40dd4f70f221a"></a>
-size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_in_case_is_in_observed_set</b> (<a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *var)</td></tr>
-<tr class="separator:ad12022d0ebfaa8b51df40dd4f70f221a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1bb0dc1a8b30f4d442377c18a79a97a3"><td class="memItemLeft" align="right" valign="top"><a id="a1bb0dc1a8b30f4d442377c18a79a97a3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>Belief_Propagation</b> (const bool &amp;sum_or_MAP, bool *is_propagation_possible)</td></tr>
+<tr class="separator:a1bb0dc1a8b30f4d442377c18a79a97a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-static-methods"></a>
+Static Protected Member Functions</h2></td></tr>
+<tr class="memitem:aca2412c85119940e27e4a76b8dee7c87"><td class="memItemLeft" align="right" valign="top"><a id="aca2412c85119940e27e4a76b8dee7c87"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>__Get_simple_shapes</b> (std::list&lt; <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; *shapes, <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html">Node_factory</a> *model)</td></tr>
+<tr class="separator:aca2412c85119940e27e4a76b8dee7c87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8609839eab9d8541caf4f697c48edf89"><td class="memItemLeft" align="right" valign="top"><a id="a8609839eab9d8541caf4f697c48edf89"></a>
+static void&#160;</td><td class="memItemRight" valign="bottom"><b>__Get_exponential_shapes</b> (std::list&lt; std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt;&gt; *learnable_exp, std::list&lt; <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; *constant_exp, <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html">Node_factory</a> *model)</td></tr>
+<tr class="separator:a8609839eab9d8541caf4f697c48edf89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Interface for describing a net: set of nodes representing random variables. </p>
@@ -263,7 +271,7 @@ size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_
 </div>
 </div>
 <a id="a151ad19a61e17552a52e57017c43700f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a151ad19a61e17552a52e57017c43700f">&#9670;&nbsp;</a></span>Find_Variable() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a151ad19a61e17552a52e57017c43700f">&#9670;&nbsp;</a></span>Find_Variable()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -282,40 +290,6 @@ size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_
 <p>Returns NULL when the variable is not present in the graph. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">var_name</td><td>name to search </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a922cb7e2d988420ffb5ae83cfd0cedce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a922cb7e2d988420ffb5ae83cfd0cedce">&#9670;&nbsp;</a></span>Find_Variable() <span class="overload">[2/2]</span></h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a>* Segugio::Node::Node_factory::Find_Variable </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *&#160;</td>
-          <td class="paramname"><em>var_with_same_name</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Returns a pointer to the variable in this graph with the same name of the variable passed as input. </p>
-<p>Returns NULL when the variable is not present in the graph </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">var_with_same_name</td><td>variable having the same of name of the variable to search </td></tr>
   </table>
   </dd>
 </dl>
@@ -350,6 +324,51 @@ size_t *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_observed_val_
 
 <p>Returns the marginal probabilty of the variable passed P(var|model, observations),. </p>
 <p>on the basis of the last observations set (see <a class="el" href="class_segugio_1_1_node_1_1_node__factory.html#ac371170a8fbb8d8605736f24943d4d37" title="Set the values for the observations. Must call after calling Node_factory::Set_Observation_Set_val.">Node_factory::Set_Observation_Set_var</a>) </p>
+
+</div>
+</div>
+<a id="adf61bb4635cf770f9c516bc127885896"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf61bb4635cf770f9c516bc127885896">&#9670;&nbsp;</a></span>Get_structure()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Node::Node_factory::Get_structure </td>
+          <td>(</td>
+          <td class="paramtype">std::list&lt; const <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> * &gt; *&#160;</td>
+          <td class="paramname"><em>shapes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::list&lt; std::list&lt; const <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt;&gt; *&#160;</td>
+          <td class="paramname"><em>learnable_exp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::list&lt; const <a class="el" href="class_segugio_1_1_potential___exp___shape.html">Potential_Exp_Shape</a> * &gt; *&#160;</td>
+          <td class="paramname"><em>constant_exp</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns the list of potentials constituting the net. </p>
+<p>The potentials returned cannot be used for initializing a model. For performing such a task you can build an empty model and then use Absorb.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">shapes</td><td>list of Simple shapes contained in the model </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">learnable_exp</td><td>list of Exponential tunable potentials contained in the model: every sub group share the same weight </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">constant_exp</td><td>list of Exponential constant potentials contained in the model </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

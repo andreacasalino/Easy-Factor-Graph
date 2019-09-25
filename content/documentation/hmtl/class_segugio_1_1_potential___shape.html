@@ -84,7 +84,8 @@ Inheritance diagram for Segugio::Potential_Shape:</div>
  <div class="center">
   <img src="class_segugio_1_1_potential___shape.png" usemap="#Segugio::Potential_5FShape_map" alt=""/>
   <map id="Segugio::Potential_5FShape_map" name="Segugio::Potential_5FShape_map">
-<area href="class_segugio_1_1_i___potential.html" title="Abstract interface for potentials handled by graphs." alt="Segugio::I_Potential" shape="rect" coords="0,0,155,24"/>
+<area href="class_segugio_1_1_i___potential.html" title="Abstract interface for potentials handled by graphs." alt="Segugio::I_Potential" shape="rect" coords="0,56,155,80"/>
+<area href="class_segugio_1_1_object___validity.html" alt="Segugio::Object_Validity" shape="rect" coords="0,0,155,24"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -100,12 +101,6 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aca4e44bf29b49896fb2c1433173e1f90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0cc6505506a5b36d7c23ee791e26e9a0"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#a0cc6505506a5b36d7c23ee791e26e9a0">Potential_Shape</a> (const <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *to_copy, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_involved)</td></tr>
 <tr class="separator:a0cc6505506a5b36d7c23ee791e26e9a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb38a9459d31eaf120b2eff64fe2cb2a"><td class="memItemLeft" align="right" valign="top"><a id="aeb38a9459d31eaf120b2eff64fe2cb2a"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Potential_Shape</b> (const <a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> &amp;to_copy)</td></tr>
-<tr class="separator:aeb38a9459d31eaf120b2eff64fe2cb2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae242c5185944684d87d010e7aa35e6ba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#ae242c5185944684d87d010e7aa35e6ba">Import</a> (const std::string &amp;file_to_read)</td></tr>
-<tr class="memdesc:ae242c5185944684d87d010e7aa35e6ba"><td class="mdescLeft">&#160;</td><td class="mdescRight">For populating the image of the domain with the values reported in the textual file.  <a href="#ae242c5185944684d87d010e7aa35e6ba">More...</a><br /></td></tr>
-<tr class="separator:ae242c5185944684d87d010e7aa35e6ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31732858f0c9f377809d5ceca03db1b0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#a31732858f0c9f377809d5ceca03db1b0">Add_value</a> (const std::list&lt; size_t &gt; &amp;new_indeces, const float &amp;new_val)</td></tr>
 <tr class="memdesc:a31732858f0c9f377809d5ceca03db1b0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new value in the image set.  <a href="#a31732858f0c9f377809d5ceca03db1b0">More...</a><br /></td></tr>
 <tr class="separator:a31732858f0c9f377809d5ceca03db1b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -124,6 +119,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="memitem:a2987bb181c040f6e093c93ce418da3d6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#a2987bb181c040f6e093c93ce418da3d6">Substitute_variables</a> (const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;new_var)</td></tr>
 <tr class="memdesc:a2987bb181c040f6e093c93ce418da3d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Use this method for replacing the set of variables this potential must refer. Variables in new_var must be equal in number to the original set of variables and must have the same sizes.  <a href="#a2987bb181c040f6e093c93ce418da3d6">More...</a><br /></td></tr>
 <tr class="separator:a2987bb181c040f6e093c93ce418da3d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95c9869b32194e68510f6d395e5cd7e8"><td class="memItemLeft" align="right" valign="top"><a id="a95c9869b32194e68510f6d395e5cd7e8"></a>
+virtual size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential___shape.html#a95c9869b32194e68510f6d395e5cd7e8">Get_potential_type</a> () const</td></tr>
+<tr class="memdesc:a95c9869b32194e68510f6d395e5cd7e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">see <a class="el" href="class_segugio_1_1_i___potential.html#a71dce1040310c88ca734ac2a5fe0cd4b" title="Returns the potential type of this potential:">I_Potential::Get_potential_type</a> <br /></td></tr>
+<tr class="separator:a95c9869b32194e68510f6d395e5cd7e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_segugio_1_1_i___potential"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_i___potential')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_i___potential.html">Segugio::I_Potential</a></td></tr>
 <tr class="memitem:acedcad33b5046bcb681fec38c18f4155 inherit pub_methods_class_segugio_1_1_i___potential"><td class="memItemLeft" align="right" valign="top"><a id="acedcad33b5046bcb681fec38c18f4155"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>I_Potential</b> (const <a class="el" href="class_segugio_1_1_i___potential.html">I_Potential</a> &amp;to_copy)</td></tr>
@@ -141,12 +140,16 @@ const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">C
 float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential.html#ac307399e87fb26694421af0c5b647e7d">max_in_distribution</a> ()</td></tr>
 <tr class="memdesc:ac307399e87fb26694421af0c5b647e7d inherit pub_methods_class_segugio_1_1_i___potential"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum value in the distribution describing this potential. <br /></td></tr>
 <tr class="separator:ac307399e87fb26694421af0c5b647e7d inherit pub_methods_class_segugio_1_1_i___potential"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_segugio_1_1_object___validity"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_object___validity')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_object___validity.html">Segugio::Object_Validity</a></td></tr>
+<tr class="memitem:aea8879c5b6150f6aeacca686455fe181 inherit pub_methods_class_segugio_1_1_object___validity"><td class="memItemLeft" align="right" valign="top"><a id="aea8879c5b6150f6aeacca686455fe181"></a>
+const bool &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_validity</b> ()</td></tr>
+<tr class="separator:aea8879c5b6150f6aeacca686455fe181 inherit pub_methods_class_segugio_1_1_object___validity"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
-<tr class="memitem:ab103bb4247383358e7c372a39af2cd57"><td class="memItemLeft" align="right" valign="top"><a id="ab103bb4247383358e7c372a39af2cd57"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>Check_add_value</b> (const std::list&lt; size_t &gt; &amp;indices)</td></tr>
-<tr class="separator:ab103bb4247383358e7c372a39af2cd57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c8e6eacb722c1a514d3b78ec051bf57"><td class="memItemLeft" align="right" valign="top"><a id="a2c8e6eacb722c1a514d3b78ec051bf57"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>__Check_add_value</b> (const std::list&lt; size_t &gt; &amp;indices)</td></tr>
+<tr class="separator:a2c8e6eacb722c1a514d3b78ec051bf57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65c4ed0066e878ad99b658646247fbba"><td class="memItemLeft" align="right" valign="top"><a id="a65c4ed0066e878ad99b658646247fbba"></a>
 virtual const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; *&#160;</td><td class="memItemRight" valign="bottom"><b>Get_involved_var</b> () const</td></tr>
 <tr class="separator:a65c4ed0066e878ad99b658646247fbba"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -170,6 +173,10 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_d
 <tr class="memitem:a52d8d8985bb652e555f076e015fc333c inherit pro_static_methods_class_segugio_1_1_i___potential"><td class="memItemLeft" align="right" valign="top"><a id="a52d8d8985bb652e555f076e015fc333c"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_distribution</b> (std::list&lt; <a class="el" href="struct_segugio_1_1_i___potential_1_1_i___distribution__value.html">I_Distribution_value</a> * &gt; *result, size_t *partial_comb_to_search, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;partial_comb_to_search_var_order, <a class="el" href="class_segugio_1_1_i___potential.html">I_Potential</a> *pot)</td></tr>
 <tr class="separator:a52d8d8985bb652e555f076e015fc333c inherit pro_static_methods_class_segugio_1_1_i___potential"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_class_segugio_1_1_object___validity"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_segugio_1_1_object___validity')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_segugio_1_1_object___validity.html">Segugio::Object_Validity</a></td></tr>
+<tr class="memitem:ac7c19853833dde47d4b43d91edd3d547 inherit pro_attribs_class_segugio_1_1_object___validity"><td class="memItemLeft" align="right" valign="top"><a id="ac7c19853833dde47d4b43d91edd3d547"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>validity_flag</b></td></tr>
+<tr class="separator:ac7c19853833dde47d4b43d91edd3d547 inherit pro_attribs_class_segugio_1_1_object___validity"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>It's the only possible concrete potential. It contains the domain and the image of the potential. </p>
@@ -341,32 +348,6 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_d
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">new_indices</td><td>combination related to the new value to add for the image </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">new_val</td><td>new val to insert </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ae242c5185944684d87d010e7aa35e6ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae242c5185944684d87d010e7aa35e6ba">&#9670;&nbsp;</a></span>Import()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Segugio::Potential_Shape::Import </td>
-          <td>(</td>
-          <td class="paramtype">const std::string &amp;&#160;</td>
-          <td class="paramname"><em>file_to_read</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>For populating the image of the domain with the values reported in the textual file. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">file_to_read</td><td>textual file to read containing the values for the image </td></tr>
   </table>
   </dd>
 </dl>

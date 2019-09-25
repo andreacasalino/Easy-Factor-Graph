@@ -78,6 +78,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a09746315d740efbd81bead9cdf3efdb5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a09746315d740efbd81bead9cdf3efdb5">_SubGraph</a> (<a class="el" href="class_segugio_1_1_node_1_1_node__factory.html">Node_factory</a> *Original_graph, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;sub_set_to_consider)</td></tr>
 <tr class="memdesc:a09746315d740efbd81bead9cdf3efdb5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Builds a reduction of the actual net, considering the actual observation values.  <a href="#a09746315d740efbd81bead9cdf3efdb5">More...</a><br /></td></tr>
 <tr class="separator:a09746315d740efbd81bead9cdf3efdb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a031391100441d7869d67610850a2b773"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a031391100441d7869d67610850a2b773">Find_Variable</a> (const std::string &amp;var_name)</td></tr>
+<tr class="memdesc:a031391100441d7869d67610850a2b773"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns a pointer to the variable in this graph with that name.  <a href="#a031391100441d7869d67610850a2b773">More...</a><br /></td></tr>
+<tr class="separator:a031391100441d7869d67610850a2b773"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59b3f691e32cfc8b4b708c9dcbfa95f8"><td class="memItemLeft" align="right" valign="top"><a id="a59b3f691e32cfc8b4b708c9dcbfa95f8"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#a59b3f691e32cfc8b4b708c9dcbfa95f8">Get_All_variables_in_model</a> (std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; *result)</td></tr>
+<tr class="memdesc:a59b3f691e32cfc8b4b708c9dcbfa95f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the set of all variable contained in the net. <br /></td></tr>
+<tr class="separator:a59b3f691e32cfc8b4b708c9dcbfa95f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad00a71ca024be91c571ec568fb794dd6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_node_1_1_node__factory_1_1___sub_graph.html#ad00a71ca024be91c571ec568fb794dd6">Get_marginal_prob_combinations</a> (std::list&lt; float &gt; *result, const std::list&lt; std::list&lt; size_t &gt;&gt; &amp;combinations, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;var_order_in_combination)</td></tr>
 <tr class="memdesc:ad00a71ca024be91c571ec568fb794dd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the marginal probabilty of a some particular combinations of values assumed by the variables in this subgraph.  <a href="#ad00a71ca024be91c571ec568fb794dd6">More...</a><br /></td></tr>
 <tr class="separator:ad00a71ca024be91c571ec568fb794dd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -129,6 +136,32 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a031391100441d7869d67610850a2b773"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a031391100441d7869d67610850a2b773">&#9670;&nbsp;</a></span>Find_Variable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * Segugio::Node::Node_factory::_SubGraph::Find_Variable </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>var_name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Returns a pointer to the variable in this graph with that name. </p>
+<p>Returns NULL when the variable is not present in the graph. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">var_name</td><td>name to search </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ad00a71ca024be91c571ec568fb794dd6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad00a71ca024be91c571ec568fb794dd6">&#9670;&nbsp;</a></span>Get_marginal_prob_combinations()</h2>
 
@@ -178,9 +211,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void Segugio::Node::Node_factory::_SubGraph::Gibbs_Sampling </td>
@@ -206,11 +236,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Returns a set of samples for the variables involved in this subgraph.. </p>
@@ -230,9 +255,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
           <td class="memname">void Segugio::Node::Node_factory::_SubGraph::MAP </td>
@@ -242,11 +264,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 <p>Returns the Maximum a Posteriori estimation of the hidden set in the sugraph.. </p>

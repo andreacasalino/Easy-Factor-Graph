@@ -111,12 +111,6 @@ namespace Segugio {
 		/** \brief Returns the maximum value in the distribution describing this potential
 		*/
 		float max_in_distribution();
-
-		/** \brief Returns the potential type of this potential: 
-		* \details  0-> Simple shape
-		* \details  1-> Exponential shape
-		*/
-		virtual size_t	Get_potential_type() const = 0;
 	protected:
 		I_Potential() {};
 
@@ -149,8 +143,6 @@ namespace Segugio {
 	class I_Potential_Decorator : public I_Potential, public I_Potential::Getter_4_Decorator {
 	public:
 		~I_Potential_Decorator() { if (Destroy_wrapped) delete this->pwrapped; };
-
-		virtual size_t	Get_potential_type() const { return this->pwrapped->Get_potential_type(); };
 	protected:
 		I_Potential_Decorator(Wrapped_Type* to_wrap) :pwrapped(to_wrap), Destroy_wrapped(true) { if (to_wrap != NULL) this->validity_flag = to_wrap->get_validity(); };
 
@@ -228,8 +220,13 @@ namespace Segugio {
 		*/
 		void Substitute_variables(const std::list<Categoric_var*>& new_var);
 
-		/** \brief see  I_Potential::Get_potential_type*/
-		virtual size_t	Get_potential_type() const { return 0; };
+		/** \brief Returns the distribution describing this potential (i.e. the value assumed for every possible combination
+		* of the involved variables). If the potential is not valid, nothing is returned
+		*
+		* @param[out] combinations combinations in the domain of this potential
+		* @param[out] values the values assumed in the above combinations by the distribution
+		*/
+		void Copy_Distribution(std::list<std::list<size_t>>* combinations, std::list<float>* values) const;
 	protected:
 		bool __Check_add_value(const std::list<size_t>& indices); //check the specified combination is not already present in the distribution
 
@@ -292,8 +289,8 @@ namespace Segugio {
 		*/
 		void Substitute_variables(const std::list<Categoric_var*>& new_var) { this->pwrapped->Substitute_variables(new_var); };
 
-		/** \brief see  I_Potential::Get_potential_type*/
-		virtual size_t	Get_potential_type() const { return 1; };
+		/** \brief returns the wrapped Potential_Shape*/
+		const Potential_Shape* Get_wrapped_Shape() const { return this->pwrapped; };
 	protected:
 		virtual std::list<I_Distribution_value*>*	Get_distr() { return &this->Distribution; };
 		void										Wrap(Potential_Shape* shape);

@@ -17,6 +17,9 @@
     <ClCompile Include="__Source\Stream_Socket.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="__Source\Command.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header">
@@ -40,6 +43,9 @@
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="__Header\Stream_Socket.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="__Header\Command.h">
       <Filter>Header</Filter>
     </ClInclude>
   </ItemGroup>

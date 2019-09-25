@@ -83,10 +83,11 @@ Inheritance diagram for Segugio::Potential:</div>
  <div class="center">
   <img src="class_segugio_1_1_potential.png" usemap="#Segugio::Potential_map" alt=""/>
   <map id="Segugio::Potential_map" name="Segugio::Potential_map">
-<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; I_Potential &gt;" shape="rect" coords="139,56,407,80"/>
-<area href="class_segugio_1_1_i___potential.html" title="Abstract interface for potentials handled by graphs." alt="Segugio::I_Potential" shape="rect" coords="0,0,268,24"/>
-<area href="struct_segugio_1_1_i___potential_1_1_getter__4___decorator.html" alt="Segugio::I_Potential::Getter_4_Decorator" shape="rect" coords="278,0,546,24"/>
-<area href="class_segugio_1_1_message___unary.html" title="This class is adopted by belief propagation algorithms. It is the message incoming to a node of the g..." alt="Segugio::Message_Unary" shape="rect" coords="139,168,407,192"/>
+<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; I_Potential &gt;" shape="rect" coords="139,112,407,136"/>
+<area href="class_segugio_1_1_i___potential.html" title="Abstract interface for potentials handled by graphs." alt="Segugio::I_Potential" shape="rect" coords="0,56,268,80"/>
+<area href="struct_segugio_1_1_i___potential_1_1_getter__4___decorator.html" alt="Segugio::I_Potential::Getter_4_Decorator" shape="rect" coords="278,56,546,80"/>
+<area href="class_segugio_1_1_object___validity.html" alt="Segugio::Object_Validity" shape="rect" coords="0,0,268,24"/>
+<area href="class_segugio_1_1_message___unary.html" alt="Segugio::Message_Unary" shape="rect" coords="139,224,407,248"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -105,6 +106,13 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:aab35ccb0f9ac2a53dfaf1d1cae858d56"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential.html#aab35ccb0f9ac2a53dfaf1d1cae858d56">Get_marginals</a> (std::list&lt; float &gt; *prob_distr)</td></tr>
 <tr class="memdesc:aab35ccb0f9ac2a53dfaf1d1cae858d56"><td class="mdescLeft">&#160;</td><td class="mdescRight">Obtain the marginal probabilities of the variables in the domain of this potential, when considering this potential only.  <a href="#aab35ccb0f9ac2a53dfaf1d1cae858d56">More...</a><br /></td></tr>
 <tr class="separator:aab35ccb0f9ac2a53dfaf1d1cae858d56"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a05cad56181835a895bb2ee50f1368306"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_potential.html#a05cad56181835a895bb2ee50f1368306">clone_distribution</a> (<a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *shape)</td></tr>
+<tr class="memdesc:a05cad56181835a895bb2ee50f1368306"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transfer the values in the distirbution of a potential into a simple shape.  <a href="#a05cad56181835a895bb2ee50f1368306">More...</a><br /></td></tr>
+<tr class="separator:a05cad56181835a895bb2ee50f1368306"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_segugio_1_1_i___potential___decorator"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_i___potential___decorator')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_i___potential___decorator.html">Segugio::I_Potential_Decorator&lt; I_Potential &gt;</a></td></tr>
+<tr class="memitem:a59cb5f3907ae92a0db2d398fd168d6e2 inherit pub_methods_class_segugio_1_1_i___potential___decorator"><td class="memItemLeft" align="right" valign="top">virtual size_t&#160;</td><td class="memItemRight" valign="bottom"><b>Get_potential_type</b> () const</td></tr>
+<tr class="memdesc:a59cb5f3907ae92a0db2d398fd168d6e2 inherit pub_methods_class_segugio_1_1_i___potential___decorator"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the potential type of this potential:  <a href="class_segugio_1_1_i___potential___decorator.html#a59cb5f3907ae92a0db2d398fd168d6e2">More...</a><br /></td></tr>
+<tr class="separator:a59cb5f3907ae92a0db2d398fd168d6e2 inherit pub_methods_class_segugio_1_1_i___potential___decorator"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_class_segugio_1_1_i___potential"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_i___potential')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_i___potential.html">Segugio::I_Potential</a></td></tr>
 <tr class="memitem:acedcad33b5046bcb681fec38c18f4155 inherit pub_methods_class_segugio_1_1_i___potential"><td class="memItemLeft" align="right" valign="top"><a id="acedcad33b5046bcb681fec38c18f4155"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>I_Potential</b> (const <a class="el" href="class_segugio_1_1_i___potential.html">I_Potential</a> &amp;to_copy)</td></tr>
@@ -122,6 +130,10 @@ const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">C
 float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential.html#ac307399e87fb26694421af0c5b647e7d">max_in_distribution</a> ()</td></tr>
 <tr class="memdesc:ac307399e87fb26694421af0c5b647e7d inherit pub_methods_class_segugio_1_1_i___potential"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum value in the distribution describing this potential. <br /></td></tr>
 <tr class="separator:ac307399e87fb26694421af0c5b647e7d inherit pub_methods_class_segugio_1_1_i___potential"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_segugio_1_1_object___validity"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_object___validity')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_object___validity.html">Segugio::Object_Validity</a></td></tr>
+<tr class="memitem:aea8879c5b6150f6aeacca686455fe181 inherit pub_methods_class_segugio_1_1_object___validity"><td class="memItemLeft" align="right" valign="top"><a id="aea8879c5b6150f6aeacca686455fe181"></a>
+const bool &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_validity</b> ()</td></tr>
+<tr class="separator:aea8879c5b6150f6aeacca686455fe181 inherit pub_methods_class_segugio_1_1_object___validity"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -162,6 +174,10 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Destroy_wrapped</b></
 <tr class="separator:aaecd019a6cb9b5d3521b9a56a6639663 inherit pro_attribs_class_segugio_1_1_i___potential___decorator"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad0da30e792eba1e36392441abc394ec inherit pro_attribs_class_segugio_1_1_i___potential___decorator"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_segugio_1_1_i___potential.html">I_Potential</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential___decorator.html#aad0da30e792eba1e36392441abc394ec">pwrapped</a></td></tr>
 <tr class="separator:aad0da30e792eba1e36392441abc394ec inherit pro_attribs_class_segugio_1_1_i___potential___decorator"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_attribs_class_segugio_1_1_object___validity"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_segugio_1_1_object___validity')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_segugio_1_1_object___validity.html">Segugio::Object_Validity</a></td></tr>
+<tr class="memitem:ac7c19853833dde47d4b43d91edd3d547 inherit pro_attribs_class_segugio_1_1_object___validity"><td class="memItemLeft" align="right" valign="top"><a id="ac7c19853833dde47d4b43d91edd3d547"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>validity_flag</b></td></tr>
+<tr class="separator:ac7c19853833dde47d4b43d91edd3d547 inherit pro_attribs_class_segugio_1_1_object___validity"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>This class is mainly adopted for computing operations on potentials. </p>
@@ -312,6 +328,33 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>Destroy_wrapped</b></
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a05cad56181835a895bb2ee50f1368306"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a05cad56181835a895bb2ee50f1368306">&#9670;&nbsp;</a></span>clone_distribution()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Segugio::Potential::clone_distribution </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_segugio_1_1_potential___shape.html">Potential_Shape</a> *&#160;</td>
+          <td class="paramname"><em>shape</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Transfer the values in the distirbution of a potential into a simple shape. </p>
+<p>The variables involved in the shape passed must be the same of this potential when considering this potential only</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">shape</td><td>the potential shape that will received the cloned values </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="aab35ccb0f9ac2a53dfaf1d1cae858d56"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aab35ccb0f9ac2a53dfaf1d1cae858d56">&#9670;&nbsp;</a></span>Get_marginals()</h2>
 

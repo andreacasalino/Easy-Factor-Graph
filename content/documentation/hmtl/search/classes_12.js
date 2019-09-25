@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['weights_5fmanager',['Weights_Manager',['../struct_segugio_1_1_graph___learnable_1_1_weights___manager.html',1,'Segugio::Graph_Learnable']]]
+  ['unary_5fhandler',['Unary_handler',['../class_segugio_1_1_unary__handler.html',1,'Segugio']]]
 ];

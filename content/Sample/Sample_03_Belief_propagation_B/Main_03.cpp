@@ -22,7 +22,6 @@ void process_graph_4(const string& prefix);
 int main() {
 	string prefix = compute_prefix() + "Sample_03_Belief_propagation_B" + "/";
 
-
 	///////////////////////////////////////////
 	//            part 01 graph_1            //
 	///////////////////////////////////////////

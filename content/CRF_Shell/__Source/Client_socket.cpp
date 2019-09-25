@@ -14,12 +14,9 @@ void Client_Socket::__get_next_command(std::string* command) {
 
 }
 
-void Client_Socket::__process_response() {
+void Client_Socket::__send_response(const std::string& response) {
 
-	cout << *this->__get_Response() << endl;
-
-	auto resp = this->__get_Response();
-	this->Connection.Send((int)resp->size());
-	this->Connection.Send(resp->c_str(), (int)resp->size());
+	this->Connection.Send((int)response.size());
+	this->Connection.Send(response.c_str(), (int)response.size());
 
 }

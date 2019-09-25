@@ -12,123 +12,6 @@ using namespace Segugio;
 #define JS_INTERFACE_PORT string("8001")
 
 
-
-
-
-
-Command::Command(const std::string& raw) : Name('-') {
-
-	list<size_t> positions;
-	this->__find_separators(&positions, raw);
-	if (positions.empty()) {
-		if (raw.size() == 1)
-			this->Name = raw[0];
-	}
-	else {
-		if (positions.size() % 2 != 0)
-			return;
-		if (positions.front() != 1)
-			return;
-
-		this->Name = raw[0];
-
-		size_t p1, p2, p3, k;
-		auto it_opt = this->Options.begin();
-		__option* existing_opt = NULL;
-		string value;
-		while (!positions.empty()) {
-			p1 = positions.front(); positions.pop_front();
-			p2 = positions.front(); positions.pop_front();
-			if ((p2 - p1) == 2) {
-				existing_opt = NULL;
-				for (it_opt = this->Options.begin(); it_opt != this->Options.end(); it_opt++) {
-					if (it_opt->name == raw[p1 + 1]) {
-						existing_opt = &(*it_opt);
-						break;
-					}
-				}
-
-				if (existing_opt == NULL) {
-					this->Options.push_back(__option());
-					this->Options.back().name = raw[p1 + 1];
-					existing_opt = &this->Options.back();
-				}
-
-				if (positions.empty()) p3 = raw.size();
-				else p3 = positions.front();
-
-				value.clear();
-				k = p2;
-				k++;
-				for (k; k < p3; k++) {
-					if ((raw[k] != '\n') && (raw[k] != ' '))
-						value.push_back(raw[k]);
-				}
-				existing_opt->values.push_back(value);
-			}
-		}
-	}
-
-}
-
-const std::vector<std::string>* Command::Get_values(const char& option_name) const {
-
-	for (auto it = this->Options.begin(); it != this->Options.end(); it++) {
-		if (it->name == option_name)
-			return &it->values;
-	}
-	return NULL;
-
-}
-
-const std::string*	 Command::Get_value(const char& option_name) const {
-
-	auto vals = this->Get_values(option_name);
-	if (vals == NULL) return NULL;
-	return &vals->front();
-
-}
-
-void Command::__find_separators(std::list<std::size_t>* positions, const std::string& word) {
-
-	positions->clear();
-	for (size_t k = 0; k < word.size(); k++) {
-		if (word[k] == '$')
-			positions->push_back(k);
-	}
-
-}
-
-void Command::Print() const {
-
-	string to_print;
-
-	to_print = "Name:" ;
-	to_print += " ";
-	to_print.back() = this->Name;
-	system(string("ECHO " + to_print).c_str());
-
-	for (auto it = this->Options.begin(); it != this->Options.end(); it++) {
-		to_print.clear();
-		to_print = "Option:";
-		to_print += " ";
-		to_print.back() = it->name;
-		to_print +=  ",[";
-		if (!it->values.empty()) {
-			auto itt = it->values.begin();
-			to_print += *itt;
-			itt++;
-			for (itt; itt != it->values.end(); itt++)
-				to_print += "," + *itt;
-		}
-		to_print += "]";
-		system(string("ECHO " + to_print).c_str());
-	}
-
-}
-
-
-
 CRF_Shell::Client::Client(CRF_Shell* shell_to_link) {
 
 	this->Data.Mutex = new mutex();
@@ -168,6 +51,7 @@ void	CRF_Shell::Client::__loop() {
 	while (true) {
 		this->__get_next_command(&next_comm);
 		this->Data.Request = new Command(next_comm);
+
 		if (this->Data.Request->Get_name() == 'B') {
 			string file(*this->Data.Request->Get_value('f'));
 			delete this->Data.Request;
@@ -179,6 +63,7 @@ void	CRF_Shell::Client::__loop() {
 					this->Data.Request = new Command(next_comm);
 					this->__write_command_and_wait_response();
 					this->__send_response(this->Data.Response);
+					if (this->Data.Response.compare("eos") == 0) return;
 				}
 			}
 			else { 
@@ -189,7 +74,9 @@ void	CRF_Shell::Client::__loop() {
 		else {
 			this->__write_command_and_wait_response();
 			this->__send_response(this->Data.Response);
+			if (this->Data.Response.compare("eos") == 0) return;
 		}
+
 	}
 
 }
@@ -233,7 +120,8 @@ void CRF_Shell::Activate_loop() {
 
 	auto it_req = this->Requests.begin();
 	Command* comm_to_process;
-	while (true) {
+	bool keep_respond = true;
+	while (keep_respond) {
 		for (it_req = this->Requests.begin(); it_req != this->Requests.end(); it_req++) {
 			comm_to_process = NULL;
 			(*it_req)->Mutex->lock();
@@ -243,14 +131,46 @@ void CRF_Shell::Activate_loop() {
 
 			if (comm_to_process != NULL) {
 				this->__get_response(comm_to_process, &(*it_req)->Response);
+				if ((*it_req)->Response.compare("eos") == 0) keep_respond = false;
+
 				(*it_req)->Mutex->lock();
 				(*it_req)->bResponse = true;
 				(*it_req)->bRequest = false;
 				(*it_req)->Mutex->unlock();
+
+				if (!keep_respond) {
+					this->Requests.erase(it_req);
+					break;
+				}
 			}
 		}
 	}
 
+	while (!this->Requests.empty()) {
+		it_req = this->Requests.begin();
+		while (it_req!=this->Requests.end()) {
+			comm_to_process = NULL;
+			(*it_req)->Mutex->lock();
+			if ((*it_req)->bRequest)
+				comm_to_process = (*it_req)->Request;
+			(*it_req)->Mutex->unlock();
+
+			if (comm_to_process != NULL) {
+				(*it_req)->Response = "eos";
+				(*it_req)->Mutex->lock();
+				(*it_req)->bResponse = true;
+				(*it_req)->bRequest = false;
+				(*it_req)->Mutex->unlock();
+				this->Requests.erase(it_req);
+			}
+			else it_req++;
+		}
+	}
+
+	if (this->JS_Interface != NULL) {
+		delete this->JS_Interface;
+		this->JS_Interface = NULL;
+	}
 }
 
 Graph*		Import_from_config_file(const Command* command) {
@@ -277,8 +197,8 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 	if (symbol != '-') {
 
 		if(symbol == 'T') {
-			// terminate
-			abort(); //TODO
+			*JSON_result = "eos";
+			return;
 		}
 
 		else if (symbol == 'U') {
@@ -491,6 +411,18 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 		}
 
 		else if (symbol == 'J') {
+			auto k_option = command->Get_value('c');
+			if (k_option != NULL) {
+				if (k_option->compare("cls") == 0) {
+					//close the interface
+					/*if (this->JS_Interface != NULL) {
+						delete this->JS_Interface;
+						this->JS_Interface = NULL;
+					}*/
+					system("pause");
+				}
+			}
+
 			// launch GUI
 			if (this->JS_Interface == NULL) {
 				this->JS_Interface = new JS_Client(this);
@@ -509,6 +441,15 @@ void CRF_Shell::__get_response(const Command* command, std::string* JSON_result)
 			this->Graph->Absorb(to_absorb);
 			delete to_absorb;
 			this->Graph_has_changed = true;
+		}
+
+		else if (symbol == 'R') {
+			// save into config file
+			if (this->Graph == NULL) return;
+			auto f_option = command->Get_value('f');
+			if (f_option == NULL) return;
+
+			this->Graph->Reprint(*f_option);
 		}
 
 	}

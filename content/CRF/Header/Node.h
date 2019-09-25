@@ -132,6 +132,12 @@ namespace Segugio {
 			 */
 			size_t					 Get_structure_size();
 
+			/*!
+			 * \brief Print an xml file describing the actual structure of the net.
+			 *
+			 * @param[in] target_file the name of the file were to print the net
+			 */
+			void					Reprint(const std::string& target_file);
 
 			class _SubGraph {
 			public:
@@ -257,6 +263,13 @@ namespace Segugio {
 					else  node->Permanent_Unary.push_back(this->Get_for_insertion(pot, &inserted, { node->Get_var() } ));
 				}
 				else if (var_involved->size() == 2) {
+					if (pot->Get_involved_var_safe()->front()->Get_name().compare(pot->Get_involved_var_safe()->back()->Get_name()) == 0) {
+#ifdef _DEBUG
+						system("ECHO you tried to insert binary referring to the same varaible");
+#endif // DEBUG
+						return NULL;
+					}
+
 //binary potential insertion
 					Node* peer_A = this->__Find_Node(pot->Get_involved_var_safe()->front());
 					Node* peer_B = this->__Find_Node(pot->Get_involved_var_safe()->back());

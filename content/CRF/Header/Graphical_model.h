@@ -68,7 +68,7 @@ namespace Segugio {
 
 		/** \brief Absorbs all the variables and the potentials contained in the model passed as input
 		* \details Consistency checks are performed: it is possible that some inconsistent components in the model passed
-		* will be not absorbed. All the potentials and variables are cloned and inserted into this model.
+		* will be not absorbed. 
 		*/
 		void			  Absorb(Node_factory* to_absorb) { this->__Absorb(to_absorb); };
 	};
@@ -266,7 +266,7 @@ namespace Segugio {
 	
 		/** \brief Absorbs all the variables and the potentials contained in the model passed as input
 		* \details Consistency checks are performed: it is possible that some inconsistent components in the model passed
-		* will be not absorbed. All the potentials and variables are cloned and inserted into this model.
+		* will be not absorbed. 
 		*/
 		void			  Absorb(Node_factory* to_absorb) { this->__Absorb(to_absorb); };
 	private:

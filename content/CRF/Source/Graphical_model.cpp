@@ -647,7 +647,7 @@ namespace Segugio {
 
 	void Graph_Learnable::__Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp) {
 
-		this->__Get_exponential_shapes(learnable_exp, constant_exp);
+		this->Node_factory::__Get_exponential_shapes(learnable_exp, constant_exp);
 		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
 			constant_exp->remove(it->Ref_to_learner->Get_wrapped());
 			learnable_exp->push_back({ it->Ref_to_learner->Get_wrapped() });

@@ -87,18 +87,19 @@ Inheritance diagram for Segugio::I_Potential:</div>
  <div class="center">
   <img src="class_segugio_1_1_i___potential.png" usemap="#Segugio::I_5FPotential_map" alt=""/>
   <map id="Segugio::I_5FPotential_map" name="Segugio::I_5FPotential_map">
-<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; I_Potential &gt;" shape="rect" coords="0,56,329,80"/>
-<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; Potential_Exp_Shape &gt;" shape="rect" coords="678,56,1007,80"/>
-<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; Potential_Shape &gt;" shape="rect" coords="1017,56,1346,80"/>
-<area href="class_segugio_1_1_i___potential___decorator.html" title="Abstract decorator of a Potential, wrapping an Abstract potential." alt="Segugio::I_Potential_Decorator&lt; Wrapped_Type &gt;" shape="rect" coords="1356,56,1685,80"/>
-<area href="class_segugio_1_1_potential___shape.html" title="It&#39;s the only possible concrete potential. It contains the domain and the image of the potential." alt="Segugio::Potential_Shape" shape="rect" coords="1695,56,2024,80"/>
-<area href="class_segugio_1_1_potential.html" title="This class is mainly adopted for computing operations on potentials." alt="Segugio::Potential" shape="rect" coords="0,112,329,136"/>
-<area href="class_segugio_1_1atomic___learning__handler.html" alt="Segugio::atomic_Learning_handler" shape="rect" coords="678,112,1007,136"/>
-<area href="class_segugio_1_1_potential___exp___shape.html" title="Represents an exponential potential, wrapping a normal shape one: every value of the domain are assum..." alt="Segugio::Potential_Exp_Shape" shape="rect" coords="1017,112,1346,136"/>
-<area href="class_segugio_1_1_message___unary.html" title="This class is adopted by belief propagation algorithms. It is the message incoming to a node of the g..." alt="Segugio::Message_Unary" shape="rect" coords="0,168,329,192"/>
-<area href="class_segugio_1_1_binary__handler.html" alt="Segugio::Binary_handler" shape="rect" coords="339,168,668,192"/>
-<area href="class_segugio_1_1_binary__handler__with___observation.html" alt="Segugio::Binary_handler_with_Observation" shape="rect" coords="678,168,1007,192"/>
-<area href="class_segugio_1_1_unary__handler.html" alt="Segugio::Unary_handler" shape="rect" coords="1017,168,1346,192"/>
+<area href="class_segugio_1_1_object___validity.html" alt="Segugio::Object_Validity" shape="rect" coords="1017,0,1346,24"/>
+<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; I_Potential &gt;" shape="rect" coords="0,112,329,136"/>
+<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; Potential_Exp_Shape &gt;" shape="rect" coords="678,112,1007,136"/>
+<area href="class_segugio_1_1_i___potential___decorator.html" alt="Segugio::I_Potential_Decorator&lt; Potential_Shape &gt;" shape="rect" coords="1017,112,1346,136"/>
+<area href="class_segugio_1_1_i___potential___decorator.html" title="Abstract decorator of a Potential, wrapping an Abstract potential." alt="Segugio::I_Potential_Decorator&lt; Wrapped_Type &gt;" shape="rect" coords="1356,112,1685,136"/>
+<area href="class_segugio_1_1_potential___shape.html" title="It&#39;s the only possible concrete potential. It contains the domain and the image of the potential." alt="Segugio::Potential_Shape" shape="rect" coords="1695,112,2024,136"/>
+<area href="class_segugio_1_1_potential.html" title="This class is mainly adopted for computing operations on potentials." alt="Segugio::Potential" shape="rect" coords="0,168,329,192"/>
+<area href="class_segugio_1_1atomic___learning__handler.html" alt="Segugio::atomic_Learning_handler" shape="rect" coords="678,168,1007,192"/>
+<area href="class_segugio_1_1_potential___exp___shape.html" title="Represents an exponential potential, wrapping a normal shape one: every value of the domain are assum..." alt="Segugio::Potential_Exp_Shape" shape="rect" coords="1017,168,1346,192"/>
+<area href="class_segugio_1_1_message___unary.html" alt="Segugio::Message_Unary" shape="rect" coords="0,224,329,248"/>
+<area href="class_segugio_1_1_binary__handler.html" alt="Segugio::Binary_handler" shape="rect" coords="339,224,668,248"/>
+<area href="class_segugio_1_1_binary__handler__with___observation.html" alt="Segugio::Binary_handler_with_Observation" shape="rect" coords="678,224,1007,248"/>
+<area href="class_segugio_1_1_unary__handler.html" alt="Segugio::Unary_handler" shape="rect" coords="1017,224,1346,248"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -128,6 +129,13 @@ const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">C
 float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential.html#ac307399e87fb26694421af0c5b647e7d">max_in_distribution</a> ()</td></tr>
 <tr class="memdesc:ac307399e87fb26694421af0c5b647e7d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the maximum value in the distribution describing this potential. <br /></td></tr>
 <tr class="separator:ac307399e87fb26694421af0c5b647e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71dce1040310c88ca734ac2a5fe0cd4b"><td class="memItemLeft" align="right" valign="top">virtual size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_segugio_1_1_i___potential.html#a71dce1040310c88ca734ac2a5fe0cd4b">Get_potential_type</a> () const =0</td></tr>
+<tr class="memdesc:a71dce1040310c88ca734ac2a5fe0cd4b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the potential type of this potential:  <a href="#a71dce1040310c88ca734ac2a5fe0cd4b">More...</a><br /></td></tr>
+<tr class="separator:a71dce1040310c88ca734ac2a5fe0cd4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_class_segugio_1_1_object___validity"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_class_segugio_1_1_object___validity')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="class_segugio_1_1_object___validity.html">Segugio::Object_Validity</a></td></tr>
+<tr class="memitem:aea8879c5b6150f6aeacca686455fe181 inherit pub_methods_class_segugio_1_1_object___validity"><td class="memItemLeft" align="right" valign="top"><a id="aea8879c5b6150f6aeacca686455fe181"></a>
+const bool &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>get_validity</b> ()</td></tr>
+<tr class="separator:aea8879c5b6150f6aeacca686455fe181 inherit pub_methods_class_segugio_1_1_object___validity"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -155,6 +163,13 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_d
 <tr class="memitem:a52d8d8985bb652e555f076e015fc333c"><td class="memItemLeft" align="right" valign="top"><a id="a52d8d8985bb652e555f076e015fc333c"></a>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_distribution</b> (std::list&lt; <a class="el" href="struct_segugio_1_1_i___potential_1_1_i___distribution__value.html">I_Distribution_value</a> * &gt; *result, size_t *partial_comb_to_search, const std::list&lt; <a class="el" href="class_segugio_1_1_categoric__var.html">Categoric_var</a> * &gt; &amp;partial_comb_to_search_var_order, <a class="el" href="class_segugio_1_1_i___potential.html">I_Potential</a> *pot)</td></tr>
 <tr class="separator:a52d8d8985bb652e555f076e015fc333c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pro_attribs_class_segugio_1_1_object___validity"><td colspan="2" onclick="javascript:toggleInherit('pro_attribs_class_segugio_1_1_object___validity')"><img src="closed.png" alt="-"/>&#160;Protected Attributes inherited from <a class="el" href="class_segugio_1_1_object___validity.html">Segugio::Object_Validity</a></td></tr>
+<tr class="memitem:ac7c19853833dde47d4b43d91edd3d547 inherit pro_attribs_class_segugio_1_1_object___validity"><td class="memItemLeft" align="right" valign="top"><a id="ac7c19853833dde47d4b43d91edd3d547"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>validity_flag</b></td></tr>
+<tr class="separator:ac7c19853833dde47d4b43d91edd3d547 inherit pro_attribs_class_segugio_1_1_object___validity"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Abstract interface for potentials handled by graphs. </p>
@@ -288,6 +303,37 @@ static void&#160;</td><td class="memItemRight" valign="bottom"><b>Find_Comb_in_d
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a71dce1040310c88ca734ac2a5fe0cd4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a71dce1040310c88ca734ac2a5fe0cd4b">&#9670;&nbsp;</a></span>Get_potential_type()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual size_t Segugio::I_Potential::Get_potential_type </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">pure virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Returns the potential type of this potential: </p>
+<p>0-&gt; Simple shape</p>
+<p>1-&gt; Exponential shape </p>
+
+<p>Implemented in <a class="el" href="class_segugio_1_1_potential___exp___shape.html#a97b3f26b02e282c57c34cf172c45daed">Segugio::Potential_Exp_Shape</a>, <a class="el" href="class_segugio_1_1_potential___shape.html#a95c9869b32194e68510f6d395e5cd7e8">Segugio::Potential_Shape</a>, <a class="el" href="class_segugio_1_1_i___potential___decorator.html#a59cb5f3907ae92a0db2d398fd168d6e2">Segugio::I_Potential_Decorator&lt; Wrapped_Type &gt;</a>, <a class="el" href="class_segugio_1_1_i___potential___decorator.html#a59cb5f3907ae92a0db2d398fd168d6e2">Segugio::I_Potential_Decorator&lt; I_Potential &gt;</a>, <a class="el" href="class_segugio_1_1_i___potential___decorator.html#a59cb5f3907ae92a0db2d398fd168d6e2">Segugio::I_Potential_Decorator&lt; Potential_Shape &gt;</a>, and <a class="el" href="class_segugio_1_1_i___potential___decorator.html#a59cb5f3907ae92a0db2d398fd168d6e2">Segugio::I_Potential_Decorator&lt; Potential_Exp_Shape &gt;</a>.</p>
 
 </div>
 </div>

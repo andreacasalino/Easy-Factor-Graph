@@ -1262,4 +1262,115 @@ namespace Segugio {
 
 	}
 
+	void Print_distribution(XML_reader::Tag_readable& pot_tag, const Potential_Shape* pot) {
+		
+		list<list<size_t>> combinations;
+		list<float> vals;
+		pot->Copy_Distribution(&combinations, &vals);
+		auto it2 = vals.begin();
+		list<size_t>::iterator it_comb;
+		for (auto it = combinations.begin(); it != combinations.end(); it++) {
+			auto temp = pot_tag.Add_Nested_and_return_created("Distr_val");
+			for (it_comb = it->begin(); it_comb != it->end(); it_comb++) {
+				temp.Add_field("v", to_string(*it_comb));
+			}
+			temp.Add_field("D", to_string(*it2));
+			it2++;
+		}
+
+	}
+	void Node::Node_factory::Reprint(const std::string& target_file) {
+
+		if (this->Nodes.empty()) {
+#ifdef _DEBUG
+			system("ECHO asked to print an empty model");
+#endif 
+			return;
+		}
+
+		ofstream f(target_file);
+		if (!f.is_open()) {
+#ifdef _DEBUG
+			system("ECHO unable to write on the specified file");
+#endif // DEBUG
+			return;
+		}
+
+		XML_reader exporter;
+		auto exp_root = exporter.Get_root();
+	
+		list<Categoric_var*> hidden_set;
+		list<Categoric_var*> observed_set;
+		if (this->mState == 0) {
+			for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++)
+				hidden_set.push_back((*it)->pVariable);
+		}
+		else {
+			this->Get_Actual_Hidden_Set(&hidden_set);
+			this->Get_Actual_Observation_Set(&observed_set);
+		}
+		for (auto it = hidden_set.begin(); it != hidden_set.end(); it++) {
+			auto temp = exp_root.Add_Nested_and_return_created("Variable");
+			temp.Add_field("name", (*it)->Get_name());
+			temp.Add_field("Size", to_string((*it)->size()));
+		}
+		for (auto it = observed_set.begin(); it != observed_set.end(); it++) {
+			auto temp = exp_root.Add_Nested_and_return_created("Variable");
+			temp.Add_field("name", (*it)->Get_name());
+			temp.Add_field("Size", to_string((*it)->size()));
+			temp.Add_field("flag", "O");
+		}
+
+		const list<Categoric_var*>* involved_vars = NULL;
+		list<Categoric_var*>::const_iterator it_involved_vars;
+
+		list<Potential_Shape*> shp;
+		this->__Get_simple_shapes(&shp);
+		for (auto it = shp.begin(); it != shp.end(); it++) {
+			auto temp = exp_root.Add_Nested_and_return_created("Potential");
+			involved_vars = (*it)->Get_involved_var_safe();
+			for (it_involved_vars = involved_vars->begin(); it_involved_vars != involved_vars->end(); it_involved_vars++) {
+				temp.Add_field("var", (*it_involved_vars)->Get_name());
+			}
+			Print_distribution(temp, *it);
+		}
+
+		list<list<Potential_Exp_Shape*>> clusters;
+		list<Potential_Exp_Shape*> exp_const;
+		this->__Get_exponential_shapes(&clusters, &exp_const);
+		for (auto it = exp_const.begin(); it != exp_const.end(); it++) {
+			auto temp = exp_root.Add_Nested_and_return_created("Potential");
+			involved_vars = (*it)->Get_involved_var_safe();
+			for (it_involved_vars = involved_vars->begin(); it_involved_vars != involved_vars->end(); it_involved_vars++) {
+				temp.Add_field("var", (*it_involved_vars)->Get_name());
+			}
+			temp.Add_field("weight", to_string((*it)->get_weight()));
+			temp.Add_field("tunability", "N");
+			Print_distribution(temp, (*it)->Get_wrapped_Shape());
+		}
+
+		for (auto it_cl = clusters.begin(); it_cl != clusters.end(); it_cl++) {
+			for (auto it = it_cl->begin(); it != it_cl->end(); it++) {
+				auto temp = exp_root.Add_Nested_and_return_created("Potential");
+				involved_vars = (*it)->Get_involved_var_safe();
+				for (it_involved_vars = involved_vars->begin(); it_involved_vars != involved_vars->end(); it_involved_vars++) {
+					temp.Add_field("var", (*it_involved_vars)->Get_name());
+				}
+				temp.Add_field("weight", to_string((*it)->get_weight()));
+				Print_distribution(temp, (*it)->Get_wrapped_Shape());
+
+				if (it!=it_cl->begin()) {
+					 auto temp2 = temp.Add_Nested_and_return_created("Share");
+					 for (auto itV = it_cl->front()->Get_involved_var_safe()->begin();
+						 itV != it_cl->front()->Get_involved_var_safe()->end(); itV++) {
+						 temp2.Add_field("var", (*itV)->Get_name());
+					 }
+				}
+			}
+		}
+
+		exporter.Reprint(target_file);
+
+	}
+
 }

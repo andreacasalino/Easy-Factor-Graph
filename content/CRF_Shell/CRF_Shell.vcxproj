@@ -118,6 +118,7 @@
     <ClCompile Include="Main_Shell.cpp" />
     <ClCompile Include="__Source\Client_socket.cpp" />
     <ClCompile Include="__Source\Client_terminal.cpp" />
+    <ClCompile Include="__Source\Command.cpp" />
     <ClCompile Include="__Source\Http_Server.cpp" />
     <ClCompile Include="__Source\Shell_Clients.cpp" />
     <ClCompile Include="__Source\Stream_Socket.cpp" />
@@ -125,6 +126,7 @@
   <ItemGroup>
     <ClInclude Include="__Header\Client_socket.h" />
     <ClInclude Include="__Header\Client_terminal.h" />
+    <ClInclude Include="__Header\Command.h" />
     <ClInclude Include="__Header\Http_Server.h" />
     <ClInclude Include="__Header\Shell_Clients.h" />
     <ClInclude Include="__Header\Stream_Socket.h" />

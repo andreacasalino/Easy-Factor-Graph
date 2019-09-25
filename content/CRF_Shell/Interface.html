@@ -29,14 +29,34 @@
 	var server_port='8001';
 
 	var server_key='-';
-	window.onload = function winopen(){ 
-		let handshake_req = new XMLHttpRequest();
-		handshake_req.open('GET', 'http://localhost:'+server_port, false);
-		handshake_req.setRequestHeader('Accept', server_key + '_hello');
-		handshake_req.send();
-		server_key = handshake_req.response;
-		console.log(server_key);
+	window.onload = function(){
+		try{
+			let handshake_req = new XMLHttpRequest();
+			
+			handshake_req.open('GET', 'http://localhost:'+server_port, false);
+			handshake_req.setRequestHeader('Accept', server_key + '_hello');
+			handshake_req.send();
+			
+			server_key = handshake_req.response;
+			console.log(server_key);
+		}	
+		catch(e){
+			window.close();
+		}
 	}; 
+	
+	
+	window.onclose = function(){
+		try{
+			let close_req = new XMLHttpRequest();
+			close_req.open('GET', 'http://localhost:'+server_port, false);
+			close_req.setRequestHeader('Accept', server_key + '_J$c$cls');
+			close_req.send();
+		}	
+		catch(e){
+			console.log('goodbye');
+		}
+	}
 
 	var network = null;
 	function Refresh_network(new_net){
