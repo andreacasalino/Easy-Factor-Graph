@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Root>
+  <Potential var="B" var="C">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="D" var="E">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="A" var="B" weight="0.400000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="B" var="E" weight="0.300000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="A" var="C" weight="3.000000">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="B" var="D" weight="3.500000">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+</Root>

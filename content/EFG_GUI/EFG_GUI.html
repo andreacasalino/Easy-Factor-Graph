@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <style>
+            body{
+                margin: 0px;
+                padding: 0px;
+                height: 100%;
+                width: 100%;
+            }
+            div{
+                margin: 0px;
+                padding: 0px;
+                height: 100%;
+                width: 100%;
+            }
+            .borded{
+                border-style: solid;
+                border-color: #81a600;
+                border-width: 1.5px;
+            }
+            .panel{
+                background-color: black;
+            }
+        </style>
+    </head>
+
+    <body>
+        <script src="./src/JS/vis-4.21.0/dist/vis.js"></script>
+        <script src="./src/JS/divisions.js"></script>
+        <script src="./src/JS/panel.js"></script>
+        <script src="./src/JS/popup_menu.js"></script>
+        <script src="./src/JS/Interface.js"></script>
+        <script src="./src/JS/file_browsering.js"></script>
+        <script src="./src/JS/chart.js"></script>
+
+        <script>
+            var columns = 6;
+
+            //header panel
+            let panel_top = get_panel(["./img_GUI/Modify.svg", "./img_GUI/Export.svg","./img_GUI/Script.svg", "./img_GUI/Inspector.svg"], 
+                                  ["Modify the structure", "Save the structure", "Use script file", "Perform a query"]);
+            document.body.appendChild(panel_top);
+            panel_top.setAttribute("class" , "panel");
+
+            //popup panel
+            let popup = document.createElement("div");
+            document.body.appendChild(popup);
+
+            //modify panel
+            let panel_modify = get_panel(["./img_GUI/Modify/X.svg", "./img_GUI/Modify/A.svg","./img_GUI/Modify/V.svg"], 
+                                  ["Import from xml", "Append from xml ", "Add new variable"]);
+            panel_modify.setAttribute("class" , "panel");
+            
+            //query panel
+            let panel_query = get_panel(["./img_GUI/empty.svg", "./img_GUI/Query/O_delete.svg"], 
+                                  ["Compute MAP", "Reset all observations "]);
+            panel_query.setAttribute("class" , "panel");
+            
+
+            let Intrfc = new Interface();
+
+            let popup_hndlr = new popup_menu(popup, H_panel);
+            popup_hndlr.add_driver(panel_top.childNodes[0] , panel_modify);
+            popup_hndlr.add_driver(panel_top.childNodes[3] , panel_query);
+
+            panel_top.childNodes[1].addEventListener("click", function(){ 
+                let target_file = cin("Enter file name", "file.txt");
+                if(target_file == null) return;
+                Intrfc.send_command("R",["f"],[target_file]); 
+            });
+            panel_top.childNodes[2].addEventListener("click", function(){ Intrfc.send_download("B", ["f"], ["%download"]); });
+            
+            panel_modify.childNodes[0].addEventListener("click", function(){  Intrfc.send_download("X", ["f"], ["%download"]); });
+            panel_modify.childNodes[1].addEventListener("click", function(){  Intrfc.send_download("A", ["f"], ["%download"]); });
+            panel_modify.childNodes[2].addEventListener("click", function(){ 
+                let name = cin("Enter var name", "var_A");
+                if(name == null) return;
+                let size = cin("Enter var size", "2");
+                if(size == null) return;
+                Intrfc.send_command("V", ["v", "s"], [name, size]); 
+            });
+
+            panel_query.childNodes[0].addEventListener("click", function(){ Intrfc.send_command("M"); });
+            panel_query.childNodes[1].addEventListener("click", function(){ Intrfc.send_command("O"); });
+
+
+            window.addEventListener("beforeunload", function(e) { 
+                Intrfc.send_command("T"); 
+
+                function wait(ms){
+                    let start = new Date().getTime();
+                    let end = start;
+                    while(end < start + ms) {
+                        end = new Date().getTime();
+                    }
+                }
+                wait(1300);
+
+            }, false);
+
+        </script>
+    </body>
+</html>
