@@ -15,11 +15,6 @@ using namespace std;
 #include "../../EFG/Header/Trainer.h"
 #include "../Utilities.h"
 using namespace EFG;
-#ifdef _DEBUG
-#pragma comment (lib, "../../x64/Debug/EFG.lib")
-#else
-#pragma comment (lib, "../../x64/Release/EFG.lib")
-#endif // DEBUG
 
 template<class T>
 void Append_list(list<T>* result, const list<T>& to_append) {
@@ -32,7 +27,7 @@ void Append_list(list<T>* result, const list<T>& to_append) {
 int main() {
 
 //build the conditional random field reported in Sample 06
-	Conditional_Random_Field cond_graph(string("cond_graph.xml"));
+	Conditional_Random_Field cond_graph(string("./Sample_07_graphs/cond_graph.xml"));
 
 // get the variables in the hidden and observed sets
 	list<Categoric_var*> hidden_set;
@@ -61,7 +56,7 @@ int main() {
 
 
 // build a similar structure with all 1 as weights and then learn them using the previous training set
-	Conditional_Random_Field cond_graph_to_learn(string("cond_graph_to_learn.xml")); //in this model all weights are initially equal to 1
+	Conditional_Random_Field cond_graph_to_learn(string("./Sample_07_graphs/cond_graph_to_learn.xml")); //in this model all weights are initially equal to 1
 	Training_set Set( "Train_set.txt");
 	auto Learner = I_Trainer::Get_fixed_step(1.f, 0.3f);
 	list<float> likelihood_story;

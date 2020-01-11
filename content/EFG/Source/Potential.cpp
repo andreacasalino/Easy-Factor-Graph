@@ -9,6 +9,8 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include <float.h>
+#include <cmath>
 #include <iostream>
 using namespace std;
 

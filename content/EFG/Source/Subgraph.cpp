@@ -6,6 +6,7 @@
  **/
 
 #include "../Header/Node.h"
+#include <cmath>
 using namespace std;
 
 namespace EFG {

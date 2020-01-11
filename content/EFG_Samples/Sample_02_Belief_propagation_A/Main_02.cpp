@@ -14,11 +14,6 @@ using namespace std;
 #include "../../EFG/Header/Graphical_model.h"
 #include "../Utilities.h"
 using namespace EFG;
-#ifdef _DEBUG
-#pragma comment (lib, "../../x64/Debug/EFG.lib")
-#else
-#pragma comment (lib, "../../x64/Release/EFG.lib")
-#endif // DEBUG
 
 
 void part_01();

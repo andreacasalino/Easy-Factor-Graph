@@ -170,7 +170,7 @@ void part_02() {
 	graph_2.Insert(new Potential_Shape({ &D,&E }, true));
 
 	//export into an xml the built graph (just to show the syntax that would have been required to defined the same stucture into an xml)
-	graph_2.Reprint("graph_2_printed.xml");
+	graph_2.Reprint("./Sample_06_graphs/graph_2_printed.xml");
 
 	//extract some samples from the graph with a Gibbs sampling method, for building a train set
 	list<list<size_t>> samples;
@@ -224,7 +224,7 @@ void part_02() {
 void part_03() {
 
 	//build the structure explained in 'Sample 06: Learning, part A / part 03'
-	Random_Field graph_3(string("graph_3.xml"));
+	Random_Field graph_3(string("./Sample_06_graphs/graph_3.xml"));
 
 	//extract some samples from the graph with a Gibbs sampling method, for building a train set
 	list<list<size_t>> samples;
@@ -235,7 +235,7 @@ void part_03() {
 	Print_set_as_training_set("Train_set.txt", vars, samples);
 
 
-	Random_Field graph_to_learn(string("graph_3_to_learn.xml")); //in this model all weights are initially equal to 1
+	Random_Field graph_to_learn(string("./Sample_06_graphs/graph_3_to_learn.xml")); //in this model all weights are initially equal to 1
 	//tune the weights according to the sampled train set
 	Training_set Set("Train_set.txt");
 	auto Learner = I_Trainer::Get_fixed_step(1.f); // Random_Field::I_Training::Get_BFGS();  //

@@ -14,11 +14,6 @@ using namespace std;
 #include "../../EFG/Header/Graphical_model.h"
 #include "../Utilities.h"
 using namespace EFG;
-#ifdef _DEBUG
-#pragma comment (lib, "../../x64/Debug/EFG.lib")
-#else
-#pragma comment (lib, "../../x64/Release/EFG.lib")
-#endif // DEBUG
 
 
 
@@ -68,7 +63,7 @@ int main() {
 void part_01() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 01' from an existing xml file
-	Graph graph_1("graph_1.xml", "./graphs/"); 
+	Graph graph_1("graph_1.xml", "./Sample_03_graphs/"); 
 
 	list<float> marginals;
 
@@ -199,7 +194,7 @@ void part_01() {
 void part_02() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 02' from an existing xml file
-	Graph politree("graph_2.xml", "./graphs/");
+	Graph politree("graph_2.xml", "./Sample_03_graphs/");
 
 	// get references to the variables that will be treated as evidences
 	list<Categoric_var*> vars;
@@ -263,7 +258,7 @@ void part_03() {
 
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 03' from an existing xml file
-	Graph loop("graph_3.xml", "./graphs/");
+	Graph loop("graph_3.xml", "./Sample_03_graphs/");
 
 	//get references to the variables in the model
 	Categoric_var* Vars[5];
@@ -331,7 +326,7 @@ void part_03() {
 void part_04() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 04' from an existing xml file
-	Graph loop("graph_4.xml", "./graphs/");
+	Graph loop("graph_4.xml", "./Sample_03_graphs/");
 
 	Categoric_var* v1 = loop.Find_Variable("v1");
 	Categoric_var* v8 = loop.Find_Variable("v8");

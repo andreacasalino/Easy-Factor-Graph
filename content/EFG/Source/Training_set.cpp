@@ -10,6 +10,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <cmath>
 using namespace std;
 
 namespace EFG {

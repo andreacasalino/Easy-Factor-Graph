@@ -10,5 +10,7 @@ CONTENTS:
 					It explains also how to use the EFG_GUI.
 
 INSTALLATION:
-Windows: Use the Visual Studio solution ./content/EFG.sln to compile EFG (a .lib file will be produced) as well as all the examples
-UNIX: Use ./content/Makefile to compile EFG (a .a file will be produced) as well as all the examples 
+
+->Windows: Use the Visual Studio solution ./content/EFG.sln to compile EFG as well as all the examples. A folder, at .\x64\Debug or .\x64\Release will be created with all the binaries.
+
+->UNIX: Use ./content/Makefile to compile EFG as well as all the examples.   A folder, at .\bin or .\bin will be created with all the binaries.

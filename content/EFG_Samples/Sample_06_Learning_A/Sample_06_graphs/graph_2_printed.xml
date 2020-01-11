@@ -1,5 +1,10 @@
 <?xml version="1.0"?>
 <Root>
+  <Variable name="A" Size="2"></Variable>
+  <Variable name="B" Size="2"></Variable>
+  <Variable name="C" Size="2"></Variable>
+  <Variable name="E" Size="2"></Variable>
+  <Variable name="D" Size="2"></Variable>
   <Potential var="B" var="C">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>

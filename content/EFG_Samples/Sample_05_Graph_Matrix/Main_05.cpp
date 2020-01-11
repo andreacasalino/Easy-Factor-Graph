@@ -14,11 +14,6 @@ using namespace std;
 #include "../../EFG/Header/Graphical_model.h"
 #include "../Utilities.h"
 using namespace EFG;
-#ifdef _DEBUG
-#pragma comment (lib, "../../x64/Debug/EFG.lib")
-#else
-#pragma comment (lib, "../../x64/Release/EFG.lib")
-#endif // DEBUG
 
 Graph* create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot);
 
@@ -32,7 +27,7 @@ int main() {
 
 	auto Matrix = create_Matrix(Size, var_dom_size, weight_potential);
 	//save the file into an xml (just as an example)
-	Matrix->Reprint("Matrix");
+	Matrix->Reprint("./Sample_05_graphs/Matrix");
 
 	//set V0_0 = 0 as an edivence and compute marginals of the variables along the diagonal of the matrix
 	Categoric_var* V0 = Matrix->Find_Variable("V0_0");

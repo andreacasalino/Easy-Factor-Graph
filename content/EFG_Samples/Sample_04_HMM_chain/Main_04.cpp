@@ -14,11 +14,6 @@ using namespace std;
 #include "../../EFG/Header/Graphical_model.h"
 #include "../Utilities.h"
 using namespace EFG;
-#ifdef _DEBUG
-#pragma comment (lib, "../../x64/Debug/EFG.lib")
-#else
-#pragma comment (lib, "../../x64/Release/EFG.lib")
-#endif // DEBUG
 
 Graph* create_Chain(const size_t& Chain_size, const size_t& var_size, const float& w_XY, const float& w_YY);
 
@@ -44,8 +39,8 @@ int main() {
 	print_distribution(Y_MAP);
 
 	//export chains into an xml (just as example)
-	G_XY->Reprint("Graph_XY");
-	G_YY->Reprint("Graph_YY");
+	G_XY->Reprint("./Sample_04_graphs/Graph_XY");
+	G_YY->Reprint("./Sample_04_graphs/Graph_YY");
 
 	delete G_XY;
 	delete G_YY;

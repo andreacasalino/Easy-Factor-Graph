@@ -7,6 +7,7 @@
 
 #include "../Header/Node.h"
 #include <time.h>
+#include <cmath>
 #include <iostream> 
 using namespace std;
 

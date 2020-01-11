@@ -5,6 +5,7 @@
 #include <string>
 #include <list>
 #include "../EFG/Header/Potential.h"
+#include <cmath>
 using namespace std;
 
 //print a list of elements

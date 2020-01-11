@@ -16,17 +16,12 @@ using namespace std;
 #include "../../EFG/Header/Trainer.h"
 #include "../Utilities.h"
 using namespace EFG;
-#ifdef _DEBUG
-#pragma comment (lib, "../../x64/Debug/EFG.lib")
-#else
-#pragma comment (lib, "../../x64/Release/EFG.lib")
-#endif // DEBUG
 
 
 int main() {
 
 //build the graph described in 'Sample 08: Sub-graphing'
-	Random_Field graph(string("graph.xml"));
+	Random_Field graph(string("./Sample_08_graphs/graph.xml"));
 	list<Categoric_var*> Ob_var = { graph.Find_Variable("X1"),graph.Find_Variable("X2") };
 	list<float> marginal_probs;
 
