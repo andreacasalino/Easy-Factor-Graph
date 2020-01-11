@@ -13,6 +13,7 @@
 #include <list>
 #include <string>
 #include <fstream>
+#define __USE_THROW
 
 /** \brief when you create a define named __USE_THROW, errors are raised when inconsistent actions are taken, 
 as for example pass an inexistent file to the constrcutor of the reader. Otherwise, instructions are simply ignored.
