@@ -41,24 +41,33 @@ Training_set.o:
 	g++ -c ./EFG/Source/Training_set.cpp -O3
 	mv Training_set.o ./bin/Training_set.o
 	
-build_samples: build_lib
+build_samples: Sample_01 Sample_02 Sample_03 Sample_04 Sample_05 Sample_06 Sample_07 Sample_08
+
+Sample_01:
 	g++ -o ./bin/Sample_01 ./EFG_Samples/Sample_01_Potential_handling/Main_01.cpp ./bin/EFG.a -O3
+Sample_02:
 	g++ -o ./bin/Sample_02 ./EFG_Samples/Sample_02_Belief_propagation_A/Main_02.cpp ./bin/EFG.a -O3
+Sample_03:
 	g++ -o ./bin/Sample_03 ./EFG_Samples/Sample_03_Belief_propagation_B/Main_03.cpp ./bin/EFG.a -O3
 	rm ./bin/Sample_03_graphs -rf
 	cp ./EFG_Samples/Sample_03_Belief_propagation_B/Sample_03_graphs ./bin/Sample_03_graphs -r
+Sample_04:
 	g++ -o ./bin/Sample_04 ./EFG_Samples/Sample_04_HMM_chain/Main_04.cpp ./bin/EFG.a -O3
 	rm ./bin/Sample_04_graphs -rf
 	cp ./EFG_Samples/Sample_04_HMM_chain/Sample_04_graphs ./bin/Sample_04_graphs -r
+Sample_05:
 	g++ -o ./bin/Sample_05 ./EFG_Samples/Sample_05_Graph_Matrix/Main_05.cpp ./bin/EFG.a -O3
 	rm ./bin/Sample_05_graphs -rf
 	cp ./EFG_Samples/Sample_05_Graph_Matrix/Sample_05_graphs ./bin/Sample_05_graphs -r
+Sample_06:
 	g++ -o ./bin/Sample_06 ./EFG_Samples/Sample_06_Learning_A/Main_06.cpp ./bin/EFG.a -O3
 	rm ./bin/Sample_06_graphs -rf
 	cp ./EFG_Samples/Sample_06_Learning_A/Sample_06_graphs ./bin/Sample_06_graphs -r
+Sample_07:
 	g++ -o ./bin/Sample_07 ./EFG_Samples/Sample_07_Learning_B/Main_07.cpp ./bin/EFG.a -O3
 	rm ./bin/Sample_07_graphs -rf
 	cp ./EFG_Samples/Sample_07_Learning_B/Sample_07_graphs ./bin/Sample_07_graphs -r
+Sample_08:
 	g++ -o ./bin/Sample_08 ./EFG_Samples/Sample_08_subgraph_operation/Main_08.cpp ./bin/EFG.a -O3
 	rm ./bin/Sample_08_graphs -rf
 	cp ./EFG_Samples/Sample_08_subgraph_operation/Sample_08_graphs ./bin/Sample_08_graphs -r
