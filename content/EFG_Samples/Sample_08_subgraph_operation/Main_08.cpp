@@ -88,6 +88,5 @@ int main() {
 	delete sub_B_123;
 	delete sub_A_1234;
 
-	system("pause");
 	return 0;
 }

@@ -11,6 +11,7 @@
 
 #include "Potential.h"
 #include "../XML_Manager/XML_Manager.h"
+#define __USE_THROW
 
 namespace EFG {
 

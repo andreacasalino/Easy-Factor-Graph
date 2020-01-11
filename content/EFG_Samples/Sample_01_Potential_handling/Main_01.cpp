@@ -80,8 +80,12 @@ void part_01() {
 	}
 	f.close();
 	Potential_Shape Phi_AB_bis({ &A, &B }, string("__temp_file"));
-	//delete that file (works on Windows, change the syntax for different OS)
+	//delete that file 
+ #ifdef __unix__ 
+	system("rm __temp_file");
+ #elif defined(_WIN32) || defined(WIN32)
 	system("DEL __temp_file");
+ #endif
 	//print the distribution
 	cout << "\n\nPhi_AB_bis\n";
 	Phi_AB_bis.Print_distribution(cout);

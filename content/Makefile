@@ -1,8 +1,7 @@
 all: build_lib build_samples
 clean: clean_lib clean_samples
 
-build_lib: XML_Manager.o Belief_propagation.o Graphical_model.o Node.o Potential.o Subgraph.o Trainer.o Training_set.o
-	mkdir -p bin \
+build_lib: mk_bin XML_Manager.o Belief_propagation.o Graphical_model.o Node.o Potential.o Subgraph.o Trainer.o Training_set.o
 	ar rvs ./bin/EFG.a \
 	./bin/XML_Manager.o \
 	./bin/Belief_propagation.o \
@@ -13,6 +12,9 @@ build_lib: XML_Manager.o Belief_propagation.o Graphical_model.o Node.o Potential
 	./bin/Trainer.o \
 	./bin/Training_set.o
 	rm ./bin/*.o
+	
+mk_bin:
+	mkdir -p bin
 	
 XML_Manager.o:
 	g++ -c ./EFG/XML_Manager/XML_Manager.cpp -O3
