@@ -266,8 +266,8 @@ public:
 	* /*/
 	void		 Reprint(std::ostream& stream_to_use);
 
-private:
 	static void splitta_riga(std::string& riga, std::list<std::string>* slices);
+private:
 // data
 	__Tag* Tree_content;	//only the root is allocated
 };
