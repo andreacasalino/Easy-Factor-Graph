@@ -8,14 +8,14 @@
 	<Variable name="v6" Size="2"></Variable>
 	<Variable name="v7" Size="2"></Variable>
 	<Variable name="v8" Size="2"></Variable>
-	<Potential var="v1" var="v2" weight="2" Correlation="T"></Potential>
-	<Potential var="v2" var="v4" weight="1" Correlation="T"></Potential>
-	<Potential var="v2" var="v3" weight="0.2" Correlation="T"></Potential>
-	<Potential var="v3" var="v4" weight="2" Correlation="T"></Potential>
-	<Potential var="v4" var="v5" weight="1" Correlation="T"></Potential>
-	<Potential var="v3" var="v5" weight="0.2" Correlation="T"></Potential>
-	<Potential var="v4" var="v6" weight="2" Correlation="T"></Potential>
-	<Potential var="v5" var="v7" weight="1" Correlation="T"></Potential>
-	<Potential var="v6" var="v7" weight="0.2" Correlation="T"></Potential>
-	<Potential var="v7" var="v8" weight="2" Correlation="T"></Potential>
+	<Potential var="v1" var="v2" weight="2" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v2" var="v4" weight="1" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v2" var="v3" weight="0.2" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v3" var="v4" weight="2" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v4" var="v5" weight="1" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v3" var="v5" weight="0.2" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v4" var="v6" weight="2" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v5" var="v7" weight="1" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v6" var="v7" weight="0.2" Correlation="T" tunability="Y"></Potential>
+	<Potential var="v7" var="v8" weight="2" Correlation="T" tunability="Y"></Potential>
 </Politree>

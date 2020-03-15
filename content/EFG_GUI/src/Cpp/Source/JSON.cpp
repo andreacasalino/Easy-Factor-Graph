@@ -133,3 +133,11 @@ void JSON_numerical_array::__stringify(std::string* result) {
 	result->push_back(']');
 
 }
+
+JSON_numerical_array::JSON_numerical_array(const std::vector<float>& vals) {
+
+	size_t K = vals.size();
+	for (size_t k = 0; k < K; k++)
+		this->Values.push_back(vals[k]);
+
+}

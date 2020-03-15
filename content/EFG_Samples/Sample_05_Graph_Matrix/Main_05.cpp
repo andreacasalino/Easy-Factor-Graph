@@ -9,17 +9,18 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 using namespace std;
 
 #include "../../EFG/Header/Graphical_model.h"
 #include "../Utilities.h"
 using namespace EFG;
 
-Graph* create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot);
+unique_ptr<Graph> create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot);
 
 int main() {
 
-	list <float> marginals;
+	vector<float> marginals;
 
 	size_t Size = 10; // A matrix of Size x Size variables will be created (see 'Sample 05: Matricial structure' of the documentation), you can change this value
 	size_t var_dom_size = 3; //you can change it
@@ -39,12 +40,10 @@ int main() {
 		print_distribution(marginals);
 	}
 
-	delete Matrix;
-
 	return 0;
 }
 
-Graph* create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot) {
+unique_ptr<Graph> create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot) {
 
 	if (Size < 2) abort();
 	if (var_size < 2) abort();
@@ -53,7 +52,7 @@ Graph* create_Matrix(const size_t& Size, const size_t& var_size, const float& w_
 
 	//Create a correlating potential to replicate
 	Categoric_var Va(var_size, "Va"), Vb(var_size, "Vb");
-	Potential_Exp_Shape P_ab(new Potential_Shape({ &Va, &Vb }, true), w_pot);
+	Potential_Exp_Shape P_ab(*(new Potential_Shape({ &Va, &Vb }, true)), w_pot);
 	size_t c;
 	for (size_t r = 0; r < Size; r++) {
 		//create a new row of variables
@@ -61,12 +60,12 @@ Graph* create_Matrix(const size_t& Size, const size_t& var_size, const float& w_
 			Categoric_var Y_att(var_size, "V" + to_string(r) + "_" + to_string(c));
 			if (c == 1) {
 				Categoric_var Y_prev(var_size, "V" + to_string(r) + "_0");
-				Potential_Exp_Shape P_temp(&P_ab, { &Y_prev , &Y_att });
-				Mat->Insert(&P_temp);
+				Potential_Exp_Shape P_temp(P_ab, { &Y_prev , &Y_att });
+				Mat->Insert(P_temp);
 			}
 			else {
-				Potential_Exp_Shape P_temp(&P_ab, { Mat->Find_Variable("V" + to_string(r) + "_" + to_string(c - 1)) , &Y_att });
-				Mat->Insert(&P_temp);
+				Potential_Exp_Shape P_temp(P_ab, { Mat->Find_Variable("V" + to_string(r) + "_" + to_string(c - 1)) , &Y_att });
+				Mat->Insert(P_temp);
 			}
 		}
 
@@ -75,12 +74,12 @@ Graph* create_Matrix(const size_t& Size, const size_t& var_size, const float& w_
 			for (c = 0; c < Size; c++) {
 				Categoric_var* Va = Mat->Find_Variable("V" + to_string(r) + "_" + to_string(c));
 				Categoric_var* Vb = Mat->Find_Variable("V" + to_string(r - 1) + "_" + to_string(c));
-				Potential_Exp_Shape P_temp(&P_ab, { Va , Vb });
-				Mat->Insert(&P_temp);
+				Potential_Exp_Shape P_temp(P_ab, { Va , Vb });
+				Mat->Insert(P_temp);
 			}
 		}
 	}
 
-	return Mat;
+	return unique_ptr<Graph>(Mat);
 
 }

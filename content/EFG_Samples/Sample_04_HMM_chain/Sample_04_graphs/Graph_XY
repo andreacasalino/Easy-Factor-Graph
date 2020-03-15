@@ -20,14 +20,14 @@
   <Variable name="X_7" Size="2" flag="O"></Variable>
   <Variable name="X_8" Size="2" flag="O"></Variable>
   <Variable name="X_9" Size="2" flag="O"></Variable>
-  <Potential var="X_0" var="Y_0" weight="5.000000" tunability="N">
+  <Potential var="X_0" var="Y_0" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
   <Potential var="Y_0" weight="0.500000" tunability="N">
     <Distr_val v="0" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_1" var="Y_1" weight="5.000000" tunability="N">
+  <Potential var="X_1" var="Y_1" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -35,7 +35,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_2" var="Y_2" weight="5.000000" tunability="N">
+  <Potential var="X_2" var="Y_2" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -43,7 +43,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_3" var="Y_3" weight="5.000000" tunability="N">
+  <Potential var="X_3" var="Y_3" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -51,7 +51,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_4" var="Y_4" weight="5.000000" tunability="N">
+  <Potential var="X_4" var="Y_4" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -59,7 +59,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_5" var="Y_5" weight="5.000000" tunability="N">
+  <Potential var="X_5" var="Y_5" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -67,7 +67,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_6" var="Y_6" weight="5.000000" tunability="N">
+  <Potential var="X_6" var="Y_6" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -75,7 +75,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_7" var="Y_7" weight="5.000000" tunability="N">
+  <Potential var="X_7" var="Y_7" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -83,7 +83,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_8" var="Y_8" weight="5.000000" tunability="N">
+  <Potential var="X_8" var="Y_8" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
@@ -91,7 +91,7 @@
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>
-  <Potential var="X_9" var="Y_9" weight="5.000000" tunability="N">
+  <Potential var="X_9" var="Y_9" weight="2.000000" tunability="N">
     <Distr_val v="0" v="0" D="1.000000"></Distr_val>
     <Distr_val v="1" v="1" D="1.000000"></Distr_val>
   </Potential>

@@ -18,7 +18,8 @@ namespace EFG {
 	void exist_in_list(bool* result, const list<T>& L, const T& candidate) {
 
 		*result = false;
-		for (auto it = L.begin(); it != L.end(); it++) {
+		auto it_end = L.end();
+		for (auto it = L.begin(); it != it_end; it++) {
 			if (*it == candidate) {
 				*result = true;
 				return;
@@ -27,6 +28,16 @@ namespace EFG {
 
 	};
 
+	template<typename T>
+	void list_2_vector(vector<T>* V, const list<T>& L) {
+
+		V->clear();
+		V->reserve(L.size());
+		auto it_end = L.end();
+		for (auto it = L.begin(); it != it_end; it++)
+			V->push_back(*it);
+
+	}
 
 
 
@@ -35,12 +46,13 @@ namespace EFG {
 	void Node::Neighbour_connection::Recompute_Neighboorhoods(list<Neighbour_connection*>& connections) {
 
 		auto it = connections.begin();
+		auto it_end = connections.end();
 		for (it; it != connections.end(); it++)
 			(*it)->Neighbourhood.clear();
 
 		list<Neighbour_connection*> processed;
 		list<Neighbour_connection*>::iterator it2;
-		for (it = connections.begin(); it != connections.end(); it++) {
+		for (it = connections.begin(); it != it_end; it++) {
 			(*it)->Neighbourhood = processed;
 
 			for (it2 = processed.begin(); it2 != processed.end(); it2++)
@@ -54,6 +66,15 @@ namespace EFG {
 
 
 
+
+	Node::Node(Categoric_var* var, const bool& dont_clone_var) {
+
+		if (dont_clone_var)
+			this->pVariable = var;
+		else
+			this->pVariable = new Categoric_var(var->size(), var->Get_name());
+
+	}
 
 	Node::~Node() {
 
@@ -79,7 +100,8 @@ namespace EFG {
 
 		this->Append_temporary_permanent_Unaries(result);
 
-		for (auto it = this->Active_connections.begin(); it != this->Active_connections.end(); it++) {
+		auto it_end = this->Active_connections.end();
+		for (auto it = this->Active_connections.begin(); it != it_end; it++) {
 #ifdef _DEBUG
 			if ((*it)->Message_to_this_node == NULL) abort();  //Found NULL incoming messages not computed, report this bug to andrecasa91@gmail.com
 #endif // _DEBUG
@@ -95,10 +117,12 @@ namespace EFG {
 	void Node::Append_temporary_permanent_Unaries(list<Potential*>* result) {
 
 		auto it = this->Permanent_Unary.begin();
-		for (it; it != this->Permanent_Unary.end(); it++)
+		auto it_end = this->Permanent_Unary.end();
+		for (it; it != it_end; it++)
 			result->push_back(*it);
 
-		for (it = this->Temporary_Unary.begin(); it != this->Temporary_Unary.end(); it++)
+		it_end = this->Temporary_Unary.end();
+		for (it = this->Temporary_Unary.begin(); it != it_end; it++)
 			result->push_back(*it);
 
 	}
@@ -106,7 +130,8 @@ namespace EFG {
 	void Node::Append_permanent_Unaries(std::list<Potential*>* result) {
 
 		auto it = this->Permanent_Unary.begin();
-		for (it; it != this->Permanent_Unary.end(); it++)
+		auto it_end = this->Permanent_Unary.end();
+		for (it; it != it_end; it++)
 			result->push_back(*it);
 
 	}
@@ -114,7 +139,8 @@ namespace EFG {
 	void Node::Compute_neighbour_set(std::list<Node*>* Neigh_set) {
 
 		Neigh_set->clear();
-		for (auto itn = this->Active_connections.begin(); itn != this->Active_connections.end(); itn++)
+		auto itn_end = this->Active_connections.end();
+		for (auto itn = this->Active_connections.begin(); itn != itn_end; itn++)
 			Neigh_set->push_back((*itn)->Neighbour);
 
 	}
@@ -123,7 +149,8 @@ namespace EFG {
 
 		Neigh_set->clear();
 		binary_in_Neigh_set->clear();
-		for (auto itn = this->Active_connections.begin(); itn != this->Active_connections.end(); itn++) {
+		auto it_end = this->Active_connections.end();
+		for (auto itn = this->Active_connections.begin(); itn != it_end; itn++) {
 			Neigh_set->push_back((*itn)->Neighbour);
 			binary_in_Neigh_set->push_back((*itn)->Shared_potential);
 		}
@@ -136,9 +163,12 @@ namespace EFG {
 
 		this->Append_temporary_permanent_Unaries(messages);
 
-		for (auto it = this->Active_connections.begin(); it != this->Active_connections.end(); it++) {
+		auto it_end = this->Active_connections.end();
+		list<Node::Neighbour_connection*>::iterator it_N, it_N_end;
+		for (auto it = this->Active_connections.begin(); it != it_end; it++) {
 			if ((*it)->Neighbour == node_involved_in_connection) {
-				for (auto it_N = (*it)->Neighbourhood.begin(); it_N != (*it)->Neighbourhood.end(); it_N++) {
+				it_N_end= (*it)->Neighbourhood.end();
+				for (it_N = (*it)->Neighbourhood.begin(); it_N != it_N_end; it_N++) {
 #ifdef _DEBUG
 					if ((*it_N)->Message_to_this_node == NULL) abort(); // Found NULL incoming messages not computed, report this bug to andrecasa91@gmail.com
 #endif // _DEBUG
@@ -158,23 +188,53 @@ namespace EFG {
 
 	Node::Node_factory::~Node_factory() {
 
+		auto ito_end = this->Potential_observers.end();
+		for (auto ito = this->Potential_observers.begin(); ito != ito_end; ito++)
+			ito->detach();
+
 		auto itN = this->Nodes.begin();
+		list<Categoric_var*> var_to_delete;
 		if (this->bDestroy_Potentials_and_Variables) {
+			for (auto itP = this->Binary_potentials.begin(); itP != this->Binary_potentials.end(); itP++)
+				delete* itP;
+
 			for (itN; itN != this->Nodes.end(); itN++) {
 				for (auto itU = (*itN)->Permanent_Unary.begin(); itU != (*itN)->Permanent_Unary.end(); itU++)
 					delete *itU;
 
-				delete (*itN)->pVariable;
+				var_to_delete.push_back((*itN)->pVariable);
 			}
-
-			for (auto itP = this->Binary_potentials.begin(); itP != this->Binary_potentials.end(); itP++)
-				delete *itP;
 		}
 
 		for (itN = this->Nodes.begin(); itN != this->Nodes.end(); itN++)
 			delete *itN;
+		for (auto itV = var_to_delete.begin(); itV != var_to_delete.end(); itV++)
+			delete* itV;
 
 		if (this->Last_propag_info != NULL) delete this->Last_propag_info;
+
+	}
+
+	Node::Node_factory::Node_factory(const Node_factory& o) :
+		Last_propag_info(NULL), Iterations_4_belief_propagation(o.Iterations_4_belief_propagation), bDestroy_Potentials_and_Variables(true) {};
+
+	void Node::Node_factory::__copy(const Node_factory& o) {
+
+		vector<Potential_Shape*> shapes;
+		vector<std::list<Potential_Exp_Shape*>> learn_clst;
+		vector<Potential_Exp_Shape*> const_exp;
+		o.__Get_structure(&shapes, &learn_clst, &const_exp);
+		this->__Insert(shapes, learn_clst, const_exp);
+
+		list<size_t> vals;
+		o.Get_Actual_Observation_Set_Val(&vals);
+		list<Categoric_var*> o_vars;
+		o.Get_Actual_Observation_Set_Var(&o_vars);
+		list<Categoric_var*> vars;
+		auto it_end = o_vars.end();
+		for (auto it = o_vars.begin(); it != it_end; it++)
+			vars.push_back(this->Find_Variable((*it)->Get_name()));
+		this->Set_Evidences(vars, vals);
 
 	}
 
@@ -188,50 +248,43 @@ namespace EFG {
 
 	}
 
-	Categoric_var* Find_by_name(list<Categoric_var*>& vars, const string& name) {
+	Categoric_var* Find_by_name(list<Categoric_var>& vars, const string& name) {
 
-		for (auto it = vars.begin(); it != vars.end(); it++) {
-			if ((*it)->Get_name().compare(name) == 0)
-				return *it;
+		auto it_end = vars.end();
+		for (auto it = vars.begin(); it != it_end; it++) {
+			if (it->Get_name().compare(name) == 0)
+				return &(*it);
 		}
 		return NULL;
 
 	};
-	void parse_Variable(list<Categoric_var*>* variables, XML_reader::Tag_readable& tag) {
+	void parse_Variable(list<Categoric_var>* variables, XML_reader::Tag_readable& tag) {
 
-		const string* val;
-		try { val = tag.Get_Attribute_first_found("Size"); }
-		catch (int) { throw 0; } //  found unsized variable 
-		
-		size_t Size = (size_t)atoi(val->c_str());
-		if (Size == 0)  throw 1; // found zero dimension variable
-
-		try { val = tag.Get_Attribute_first_found("name"); }
-		catch (int) { throw 2; } //  found unamed variable 		
-		if (Find_by_name(*variables, *val) != NULL)  throw 3; //  found multiple variables with the same name
-		
-		variables->push_back(new Categoric_var(Size, *val));
+		const string* Size = tag.Get_Attribute_first_found("Size");
+		const string* Name = tag.Get_Attribute_first_found("name");
+		if (Find_by_name(*variables, *Name) != NULL)  throw 0; //  found multiple variables with the same name		
+		variables->emplace_back((size_t)atoi(Size->c_str()), *Name);
 
 	}
-	Potential_Shape* Import_shape(const string& prefix, XML_reader::Tag_readable& tag,  list<Categoric_var*>& vars) {
+	Potential_Shape* Import_shape(const string& prefix, XML_reader::Tag_readable& tag,  list<Categoric_var>& vars) {
 
 		list<Categoric_var*> var_involved;
 		list<string> names;
 		tag.Get_Attributes("var", &names);
-		if (names.empty()) throw 0; //found potential with invalid var set
-		else if (names.size() == 1) {
+		if (names.size() == 1) {
 			var_involved.push_back(Find_by_name(vars, names.front()));
-			if (var_involved.front() == NULL) throw 1; // found potential with invalid var set
+			if (var_involved.front() == NULL) throw 0; // found potential with invalid var set
 		}
 		else if (names.size() == 2) {
 			var_involved.push_back(Find_by_name(vars, names.front()));
-			if (var_involved.back() == NULL) throw 2; // found potential with invalid var set
-			
-			var_involved.push_back(Find_by_name(vars, names.back()));
-			if (var_involved.back() == NULL) throw 3; // found potential with invalid var set
-		}
+			if (var_involved.back() == NULL) throw 0; // found potential with invalid var set
 
-		const string* val;
+			var_involved.push_back(Find_by_name(vars, names.back()));
+			if (var_involved.back() == NULL) throw 0; // found potential with invalid var set
+		}
+		else throw 0; //found potential with invalid var set
+
+		const string* val = NULL;
 		try { val = tag.Get_Attribute_first_found("Source"); }
 		catch (int) { val = NULL; }
 		if (val != NULL)  return new Potential_Shape(var_involved, prefix + *val);
@@ -243,7 +296,7 @@ namespace EFG {
 				return new Potential_Shape(var_involved, true);
 			else if (val->compare("F") == 0)
 				return new Potential_Shape(var_involved, false);
-			else throw 4; //found potential with invalid options
+			else throw 1; //found potential with invalid options
 		}
 
 		auto shape = new Potential_Shape(var_involved);
@@ -253,97 +306,194 @@ namespace EFG {
 		list<size_t> indices;
 		const string* temp_D;
 		while (!distr_vals.empty()) {
-			indices.clear();
 			distr_vals.front().Get_Attributes("v", &indices_raw);
-
-			try { temp_D = distr_vals.front().Get_Attribute_first_found("D"); }
-			catch (int) { temp_D = NULL; }
-			if (temp_D != NULL) {
-				while (!indices_raw.empty()) {
-					indices.push_back((size_t)atoi(indices_raw.front().c_str()));
-					indices_raw.pop_front();
-				}
-
-				try { shape->Add_value(indices, (float)atof(temp_D->c_str())); }
-				catch (int) { throw 5;  } //inconsistent distribution value
-				distr_vals.pop_front();
+			temp_D = distr_vals.front().Get_Attribute_first_found("D");
+			indices.clear();
+			while (!indices_raw.empty()) {
+				indices.push_back((size_t)atoi(indices_raw.front().c_str()));
+				indices_raw.pop_front();
 			}
+			shape->Add_value(indices, (float)atof(temp_D->c_str()));
+			distr_vals.pop_front();
 		}
 		return shape;
 
 	};
+	struct tunab_info {
+		Potential_Exp_Shape* tunab_exp;
+		list<Categoric_var*> vars_to_share;
+		size_t				 cluster_id;
+	};
+	bool operator==(const tunab_info& lhs, const tunab_info& rhs)
+	{
+
+		size_t S = lhs.vars_to_share.size();
+		if (S != rhs.vars_to_share.size()) return false;
+
+		if (S == 1) return (lhs.vars_to_share.front() == rhs.vars_to_share.front());
+		else {
+			if ((rhs.vars_to_share.front() == lhs.vars_to_share.front())
+				&& (rhs.vars_to_share.back() == lhs.vars_to_share.back())) return true;
+			if ((rhs.vars_to_share.front() == lhs.vars_to_share.back())
+				&& (rhs.vars_to_share.back() == lhs.vars_to_share.front())) return true;
+			return false;
+		}
+
+	}
+	void compute_tunab_clusters(vector<list<Potential_Exp_Shape*>>* cluster, list<tunab_info> pots) {
+
+		if (pots.empty()) return;
+
+		list<tunab_info> processed;
+		size_t C = 0;
+		list<tunab_info>::iterator it, it_end;
+		bool found;
+		while (!pots.empty()) {
+			if (pots.front().vars_to_share.empty()) {
+				pots.front().cluster_id = C;
+				C++;
+			}
+			else {
+			// find twin in processed
+				found = false;
+				it_end = processed.end();
+				for (it = processed.begin(); it != it_end; it++) {
+					if (*it == pots.front()) {
+						pots.front().cluster_id = it->cluster_id;
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					found = false;
+					it_end = pots.end();
+					it = pots.begin();
+					it++;
+					for (it; it != it_end; it++) {
+						if (*it == pots.front()) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) throw 0; //found inexistent potential whose weight is to share
+					pots.front().cluster_id = C;
+					C++;
+				}
+			}
+			processed.push_back(pots.front());
+			pots.pop_front();
+		}
+
+		cluster->reserve(C);
+		for (size_t k = 0; k < C; k++)
+			cluster->push_back(list<Potential_Exp_Shape*>());
+		it = processed.begin();
+		it_end = processed.end();
+		for (it; it != it_end; it++) 
+			(*cluster)[it->cluster_id].push_back(it->tunab_exp);
+
+	}
 	void Node::Node_factory::Import_from_XML(XML_reader* reader, const std::string& prefix_config_xml_file) {
 
 		this->bDestroy_Potentials_and_Variables = true;
 
 	//import variables
-		list<Categoric_var*>	variables;
+		list<Categoric_var>	variables;
 		list<XML_reader::Tag_readable> Nested;
+		list<string> hidden_var_names;
+		list<size_t> hidden_vals;
 		reader->Get_root().Get_Nested("Variable", &Nested);
+		const string* var_flag = NULL;
 		for (auto it = Nested.begin(); it != Nested.end(); it++) {
-			try { parse_Variable(&variables, *it); }
-			catch (int) { throw 0;  } //invalid variable found
+			parse_Variable(&variables, *it);
+			try { var_flag = it->Get_Attribute_first_found("flag"); }
+			catch (int) { var_flag = NULL; }
+			if (var_flag != NULL) {
+				if (var_flag->compare("O") == 0) {
+					hidden_var_names.push_back(variables.back().Get_name());
+					hidden_vals.push_back(0);
+				}
+				else if (var_flag->compare("H") != 0) throw 0; //unrecognized flag value for var tag
+			}
 		}
 
 	//import potentials
-		list<Potential_Shape*>			shp_list;
-		list<Potential_Exp_Shape*> exp_list;
-		list<bool>									tunability;
+		vector<Potential_Shape*>						shapes;
+		vector<Potential_Exp_Shape*>					const_exp;
+		list<tunab_info>						    tunab_exp;
+
 		Potential_Shape* temp_shape;
 		reader->Get_root().Get_Nested("Potential", &Nested);
 		const string* w_temp;
 		float w_val_temp;
 		const string* tun_temp;
+		bool is_const;
+		list<string> names_to_share;
 		for (auto it = Nested.begin(); it != Nested.end(); it++) {
-			try { temp_shape = Import_shape(prefix_config_xml_file, *it, variables); }
-			catch (int) { temp_shape = NULL; }
-			
-			if (temp_shape == NULL)  throw 0; // found invalid potential
-			else if (!temp_shape->get_validity()) throw 1; //found invalid potential
+			temp_shape = Import_shape(prefix_config_xml_file, *it, variables);
+			try { w_temp = it->Get_Attribute_first_found("weight"); }
+			catch (int) { w_temp = NULL; }
+
+			if (w_temp == NULL)
+				shapes.push_back(temp_shape);
 			else {
-				try { w_temp = it->Get_Attribute_first_found("weight"); }
-				catch (int) { w_temp = NULL; }
-				if (w_temp ==NULL) 
-					shp_list.push_back(temp_shape);
+				w_val_temp = (float)atof(w_temp->c_str());
+				auto temp_exp_shape = new Potential_Exp_Shape(*temp_shape, w_val_temp);
+				try { tun_temp = it->Get_Attribute_first_found("tunability"); }
+				catch (int) { tun_temp = NULL; }
+				is_const = false;
+				if (tun_temp != NULL) {
+					if (tun_temp->compare("Y") == 0) is_const = false;
+					else if (tun_temp->compare("N") == 0) is_const = true;
+					else throw 0; //not recognized parameter
+				}
+
+				if(is_const)
+					const_exp.push_back(temp_exp_shape);
 				else {
-					w_val_temp = (float)atof(w_temp->c_str());
-					auto temp_exp_shape = new Potential_Exp_Shape(temp_shape, w_val_temp);
-					if (!temp_exp_shape->get_validity()) throw 2; // found invalid potential
-					else {
-						exp_list.push_back(temp_exp_shape);
-						tunability.push_back(true);
-						try { tun_temp = it->Get_Attribute_first_found("tunability"); }
-						catch (int) { tun_temp = NULL; }
-						if (tun_temp != NULL) {
-							if (tun_temp->compare("N") == 0)
-								tunability.back() = false;
+					tunab_exp.push_back(tunab_info());
+					tunab_exp.back().tunab_exp = temp_exp_shape;
+					if (it->Exist_Nested_tag("Share")) {
+						it->Get_Nested_first_found("Share").Get_Attributes("var", &names_to_share);
+						for (auto itn = names_to_share.begin(); itn != names_to_share.end(); itn++) {
+							tunab_exp.back().vars_to_share.push_back(Find_by_name(variables, *itn));
+							if (tunab_exp.back().vars_to_share.back() == NULL) throw 1;
 						}
+						if (temp_exp_shape->Get_involved_var()->size() != tunab_exp.back().vars_to_share.size()) throw 1;
 					}
 				}
 			}
 		}
 
-		this->Insert(shp_list);
-		this->Insert(exp_list, tunability);
+	// create clusters of tunable potentials
+		vector<list<Potential_Exp_Shape*>> tunab_clusters;
+		compute_tunab_clusters(&tunab_clusters , tunab_exp);
+		this->__Insert(shapes, tunab_clusters, const_exp);
 
-		for (auto it = shp_list.begin(); it != shp_list.end(); it++)
-			delete *it;
-		for (auto it = exp_list.begin(); it != exp_list.end(); it++)
-			delete *it;
-		for (auto it = variables.begin(); it != variables.end(); it++)
-			delete *it;
+		for (auto it = shapes.begin(); it != shapes.end(); it++) delete* it;
+		for (auto it = const_exp.begin(); it != const_exp.end(); it++) delete* it;
+		for (auto it = tunab_exp.begin(); it != tunab_exp.end(); it++) delete it->tunab_exp;
+
+	// set hidden set
+		if (!hidden_var_names.empty()) {
+			list<Categoric_var*> hidden_vars;
+			for (auto it = hidden_var_names.begin(); it != hidden_var_names.end(); it++)
+				hidden_vars.push_back(this->Find_Variable(*it));
+			this->Set_Evidences(hidden_vars, hidden_vals);
+		}
 
 	}
 
-	Node* Node::Node_factory::__Find_Node(Categoric_var* var) {
+	Node* Node::Node_factory::__Find_Node(Categoric_var* var) const {
 
-		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+		auto it_end = this->Nodes.end();
+		for (auto it = this->Nodes.begin(); it != it_end; it++) {
 			if ((*it)->Get_var() == var)
 				return *it;
 		}
 
 		if (this->bDestroy_Potentials_and_Variables) {
-			for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
+			for (auto it = this->Nodes.begin(); it != it_end; it++) {
 				if ((*it)->Get_var()->Get_name().compare(var->Get_name()) == 0) {
 					if ((*it)->Get_var()->size() == var->size()) return *it;
 				}
@@ -358,12 +508,10 @@ namespace EFG {
 
 		if (new_observed_vars.size() != new_observed_vals.size())  throw 0; //Inconsistent number of observations
 
-		if (this->Last_propag_info != NULL) delete this->Last_propag_info;
-		this->Last_propag_info = NULL;
-
 		auto itN = this->Nodes.begin();
 		list<Neighbour_connection*>::iterator it_neigh;
-		for (itN; itN != this->Nodes.end(); itN++) {
+		auto itN_end = this->Nodes.end();
+		for (itN; itN != itN_end; itN++) {
 			for (it_neigh = (*itN)->Disabled_connections.begin(); it_neigh != (*itN)->Disabled_connections.end(); it_neigh++)
 				(*itN)->Active_connections.push_back(*it_neigh);
 			(*itN)->Disabled_connections.clear();
@@ -375,7 +523,7 @@ namespace EFG {
 		this->Last_observation_set.clear();
 		for (auto it_var = new_observed_vars.begin(); it_var != new_observed_vars.end(); it_var++) {
 			not_managed = true;
-			for (itN = this->Nodes.begin(); itN != this->Nodes.end(); itN++) {
+			for (itN = this->Nodes.begin(); itN != itN_end; itN++) {
 				if ((*itN)->pVariable == *it_var) {
 					for (it_neigh = (*itN)->Active_connections.begin(); it_neigh != (*itN)->Active_connections.end(); it_neigh++) {
 						(*itN)->Disabled_connections.push_back(*it_neigh);
@@ -404,7 +552,7 @@ namespace EFG {
 		}
 
 		//recompute all neighbourhood
-		for (itN = this->Nodes.begin(); itN != this->Nodes.end(); itN++)
+		for (itN = this->Nodes.begin(); itN != itN_end; itN++)
 			Neighbour_connection::Recompute_Neighboorhoods((*itN)->Active_connections);
 
 		this->Recompute_clusters();
@@ -419,6 +567,19 @@ namespace EFG {
 
 		if (new_observed_vals.size() != this->Last_observation_set.size())  throw 0; //Inconsistent number of observations
 
+		auto it_val = new_observed_vals.begin();
+		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++) {
+			if (*it_val >= it->Involved_node->pVariable->size()) throw 1;//found at least one inconsistent evidence, i.e. with a value greater then the variable size (0 was assumed)
+			it_val++;
+		}
+		it_val = new_observed_vals.begin();
+		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++) {
+			it->Value = *it_val;
+			it_val++;
+		}
+		if (this->Last_propag_info != NULL) delete this->Last_propag_info;
+		this->Last_propag_info = NULL;
+
 		//delete all previous temporary messages
 		list<Potential*>::iterator it_temporary;
 		for (auto itN = this->Nodes.begin(); itN != this->Nodes.end(); itN++) {
@@ -429,27 +590,19 @@ namespace EFG {
 			(*itN)->Temporary_Unary.clear();
 		}
 
-		auto it_val = new_observed_vals.begin();
 		Potential* message_reduced;
 		list<Neighbour_connection*>::iterator it_conn;
-		bool found_inconsistent_evidence = false;
 		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++) {
-			if (*it_val < it->Involved_node->pVariable->size()) it->Value = *it_val;
-
 			//compute the temporary messages produced by this observation
 			for (it_conn = it->Involved_node->Disabled_connections.begin(); it_conn != it->Involved_node->Disabled_connections.end(); it_conn++) {
-				message_reduced = new Potential({ it->Value }, { it->Involved_node->pVariable }, (*it_conn)->Shared_potential);
+				message_reduced = new Potential({ it->Value }, { it->Involved_node->pVariable }, *(*it_conn)->Shared_potential);
 				(*it_conn)->Neighbour->Temporary_Unary.push_back(message_reduced);
 			}
-
-			it_val++;
 		}
-
-		if (found_inconsistent_evidence) throw 1; //found at least one inconsistent evidence, i.e. with a value greater then the variable size (0 was assumed)
 
 	}
 
-	void Node::Node_factory::Get_Actual_Hidden_Set(std::list<Categoric_var*>* result) {
+	void Node::Node_factory::Get_Actual_Hidden_Set(std::list<Categoric_var*>* result) const {
 
 		result->clear();
 
@@ -457,7 +610,7 @@ namespace EFG {
 			for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) result->push_back((*it)->pVariable);
 		}
 		else {
-			list<Node*>::iterator itN;
+			list<Node*>::const_iterator itN;
 			for (auto itC = this->Last_hidden_clusters.begin(); itC != this->Last_hidden_clusters.end(); itC++) {
 				for (itN = itC->begin(); itN != itC->end(); itN++)
 					result->push_back((*itN)->pVariable);
@@ -466,7 +619,7 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::Get_Actual_Observation_Set_Var(std::list<Categoric_var*>* result) {
+	void Node::Node_factory::Get_Actual_Observation_Set_Var(std::list<Categoric_var*>* result) const {
 
 		result->clear();
 		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++) 
@@ -474,7 +627,7 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::Get_Actual_Observation_Set_Val(std::list<size_t>* result) {
+	void Node::Node_factory::Get_Actual_Observation_Set_Val(std::list<size_t>* result) const {
 
 		result->clear();
 		for (auto it = this->Last_observation_set.begin(); it != this->Last_observation_set.end(); it++)
@@ -482,7 +635,7 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::Get_All_variables_in_model(std::list<Categoric_var*>* result) {
+	void Node::Node_factory::Get_All_variables_in_model(std::list<Categoric_var*>* result) const {
 
 		result->clear();
 		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
@@ -595,7 +748,7 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::Get_marginal_distribution(std::list<float>* result, Categoric_var* var) {
+	void Node::Node_factory::Get_marginal_distribution(std::vector<float>* result, Categoric_var* var) {
 
 		result->clear();
 		this->Belief_Propagation(true);
@@ -621,8 +774,8 @@ namespace EFG {
 		result->clear();
 		this->Belief_Propagation(false);
 		
-		list<float> marginals;
-		list<float>::iterator it_m;
+		vector<float> marginals;
+		vector<float>::iterator it_m;
 		float max;
 		size_t k;
 
@@ -652,7 +805,7 @@ namespace EFG {
 
 	}
 
-	void sample_from_discrete(size_t* result, const list<float>& distr) {
+	void sample_from_discrete(size_t* result, const vector<float>& distr) {
 
 		float r = (float)rand() / (float)RAND_MAX;
 
@@ -694,7 +847,7 @@ namespace EFG {
 		list<Potential*> temp;
 		list<Potential*>::iterator it_temp;
 		list<info_neighbourhood::info_neigh>::iterator it_info;
-		list<float> marginal;
+		vector<float> marginal;
 		size_t original_pot;
 		auto it = Infoes.begin();
 
@@ -704,7 +857,7 @@ namespace EFG {
 				original_pot = temp.size();
 
 				for (it_info = it->Info.begin(); it_info != it->Info.end(); it_info++)
-					temp.push_back(new  Potential({ X[it_info->Var_pos] }, { it_info->Var }, it_info->shared_potential));
+					temp.push_back(new  Potential({ X[it_info->Var_pos] }, { it_info->Var }, *it_info->shared_potential));
 
 				Potential temp_pot(temp, false);
 				temp_pot.Get_marginals(&marginal);
@@ -820,10 +973,10 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::Create_new_node(Categoric_var* var) {
+	void Node::Node_factory::__Create_new_node(Categoric_var* var) {
 
 		if (this->bDestroy_Potentials_and_Variables)
-			this->Nodes.push_back(new Node(var));
+			this->Nodes.push_back(new Node(var, false));
 		else {
 			for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
 				if ((*it)->pVariable->Get_name().compare(var->Get_name()) == 0) throw 0;
@@ -833,206 +986,94 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::Insert(const std::list<Potential_Exp_Shape*>& exponential_potentials, const std::list<bool>& tunability) {
+	void Node::Node_factory::__Insert(Potential_Shape* shape) {
 
-		if (exponential_potentials.size() != tunability.size()) throw 0; //tunability flags mismatch with number of potentials
-
-		auto it_tun = tunability.begin();
-		for (auto it = exponential_potentials.begin(); it != exponential_potentials.end(); it++) {
-			this->__Insert(*it, *it_tun);
-			it_tun++;
+		Potential_Shape* temp = NULL;
+		try { temp = this->___Insert(shape); }
+		catch (int) {
+			temp = NULL;
+			cout << "warning: invalid potential to insert detected\n";
+		}
+		if (temp != NULL) {
+			this->__Simple_shapes.push_back(temp);
 		}
 
 	}
 
-	void Node::Node_factory::Insert(const std::list<Potential_Shape*>& simple_potentials) {
+	Potential_Exp_Shape* Node::Node_factory::__Insert(Potential_Exp_Shape* exp_shape) {
 
-		for (auto it = simple_potentials.begin(); it != simple_potentials.end(); it++) 
-			this->__Insert(*it);
+		Potential_Exp_Shape* temp = NULL;
+		try { temp = this->___Insert(exp_shape); }
+		catch (int) {
+			temp = NULL;
+			cout << "warning: invalid potential to insert detected\n";
+		}
+		if (temp != NULL) {
+			this->__Exponential_shapes.push_back(temp);
+		}
+		return temp;
 
 	}
 
-	void Node::Node_factory::Eval_Log_Energy_function(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination) {
+	void Node::Node_factory::__Insert(const std::vector< Potential_Shape*>& shapes, const std::vector<std::list< Potential_Exp_Shape*>>& learnable_exp, const std::vector< Potential_Exp_Shape*>& constant_exp) {
 
-		*result = 0.f;
-		list<float> matching;
+		size_t k, K = shapes.size();
+		for (k = 0; k < K; k++)
+			this->__Insert(shapes[k]);
 
-		//binary potentials
-		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
-			(*it)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+		K = constant_exp.size();
+		for (k = 0; k < K; k++)
+			this->__Insert(constant_exp[k]);
 
-			if (matching.size() != 1) throw 0; //combination not found
-	
-			if (matching.front() != 0.f) *result += logf(matching.front());
-		}
-
-		//permanent unary potentials
-		list<Potential*>::iterator it_U;
-		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
-			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
-				(*it_U)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
-
-				if (matching.size() != 1) throw 1; //combination not found
-				
-				if (matching.front() != 0.f) *result += logf(matching.front());
-			}
-		}
-
-	}
-
-	void Node::Node_factory::Eval_Log_Energy_function(float* result, const list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination) {
-
-		size_t* temp = (size_t*)malloc(combination.size() * sizeof(size_t));
-		size_t k = 0;
-		for (auto it = combination.begin(); it != combination.end(); it++) {
-			temp[k] = *it;
-			k++;
-		}
-
-		this->Eval_Log_Energy_function(result, temp, var_order_in_combination);
-
-		free(temp);
-
-	}
-
-	void Node::Node_factory::Eval_Log_Energy_function(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
-
-		list<list<float>> distr_vals;
-		//binary potentials
-		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
-			distr_vals.push_back(list<float>());
-			(*it)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
-		}
-		//permanent unary potentials
-		list<Potential*>::iterator it_U;
-		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
-			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
-				distr_vals.push_back(list<float>());
-				(*it_U)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
-			}
-		}
-
-		result->clear();
-		auto it_val = distr_vals.begin();
-		float temp;
-		while (!distr_vals.front().empty()) {
-			temp = 0.f;
-			for (it_val = distr_vals.begin(); it_val != distr_vals.end(); it_val++) {
-				temp += logf(it_val->front());
-				it_val->pop_front();
-			}
-			result->push_back(temp);
-		}
-
-	};
-
-	void Node::Node_factory::Eval_Log_Energy_function_normalized(std::list<float>* result, const std::list<size_t*>& combinations, const std::list<Categoric_var*>& var_order_in_combination) {
-
-		list<list<float>> distr_vals;
-		list<float> max_vals;
-		//binary potentials
-		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
-			distr_vals.push_back(list<float>());
-			(*it)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
-			max_vals.push_back((*it)->max_in_distribution());
-		}
-		//permanent unary potentials
-		list<Potential*>::iterator it_U;
-		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
-			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
-				distr_vals.push_back(list<float>());
-				(*it_U)->Find_Comb_in_distribution(&distr_vals.back(), combinations, var_order_in_combination);
-				max_vals.push_back((*it_U)->max_in_distribution());
-			}
-		}
-
-		result->clear();
-		auto it_val = distr_vals.begin();
-		auto it_val_max = max_vals.begin();
-		float temp;
-		while (!distr_vals.front().empty()) {
-			temp = 0.f;
-			it_val_max = max_vals.begin();
-			for (it_val = distr_vals.begin(); it_val != distr_vals.end(); it_val++) {
-				temp += logf(it_val->front()) - logf(*it_val_max);
-				it_val->pop_front();
-				it_val_max++;
-			}
-			result->push_back(temp);
+		K = learnable_exp.size();
+		list<Potential_Exp_Shape*>::const_iterator it, it_end;
+		for (k = 0; k < K; k++) {
+			it_end = learnable_exp[k].end();
+			for (it = learnable_exp[k].begin(); it != it_end; it++)
+				this->__Insert(*it);
 		}
 
 	}
 
-	void Node::Node_factory::Eval_Log_Energy_function_normalized(float* result, size_t* combination, const std::list<Categoric_var*>& var_order_in_combination) {
+	void Node::Node_factory::__Absorb(const Node_factory& o) {
 
-		*result = 0.f;
-		list<float> matching;
+		if (&o == this) return;
 
-		//binary potentials
-		for (auto it = this->Binary_potentials.begin(); it != this->Binary_potentials.end(); it++) {
-			(*it)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
+		if (!this->bDestroy_Potentials_and_Variables) throw 0;
 
-			if (matching.size() != 1) throw 0; // combination not found
-
-			if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it)->max_in_distribution());
-		}
-
-		//permanent unary potentials
-		list<Potential*>::iterator it_U;
-		for (auto it = this->Nodes.begin(); it != this->Nodes.end(); it++) {
-			for (it_U = (*it)->Permanent_Unary.begin(); it_U != (*it)->Permanent_Unary.end(); it_U++) {
-				(*it_U)->Find_Comb_in_distribution(&matching, { combination }, var_order_in_combination);
-
-				if (matching.size() != 1) throw 1; // combination not found
-
-				if (matching.front() != 0.f) *result += logf(matching.front()) - logf((*it_U)->max_in_distribution());
-			}
-		}
-
+		vector<Potential_Shape*> shapes;
+		vector<list<Potential_Exp_Shape*>> learn_exp;
+		vector<Potential_Exp_Shape*> const_exp;
+		o.__Get_structure(&shapes, &learn_exp, &const_exp);
+		this->__Insert(shapes, learn_exp, const_exp);
+		
 	}
 
-	void Node::Node_factory::Eval_Log_Energy_function_normalized(float* result, const std::list<size_t>& combination, const std::list<Categoric_var*>& var_order_in_combination) {
+	void Node::Node_factory::__Get_structure(std::vector<Potential_Shape*>* shapes, std::vector<std::list<Potential_Exp_Shape*>>* learnable_exp, std::vector<Potential_Exp_Shape*>* constant_exp) const {
 
-		size_t* temp = (size_t*)malloc(combination.size() * sizeof(size_t));
-		size_t k = 0;
-		for (auto it = combination.begin(); it != combination.end(); it++) {
-			temp[k] = *it;
-			k++;
-		}
-
-		this->Eval_Log_Energy_function_normalized(result, temp, var_order_in_combination);
-
-		free(temp);
-
-	}
-
-	void Node::Node_factory::Get_structure(std::list<const Potential_Shape*>* shapes, std::list<std::list<const Potential_Exp_Shape*>>* learnable_exp, std::list<const Potential_Exp_Shape*>* constant_exp) {
-
-		shapes->clear();
-		list<Potential_Shape*> temp_shp;
-		this->__Get_simple_shapes(&temp_shp);
-		for (auto it = temp_shp.begin(); it != temp_shp.end(); it++)
-			shapes->push_back(*it);
-
+		list_2_vector(shapes, this->__Simple_shapes);
 		learnable_exp->clear();
-		constant_exp->clear();
-		list<list<Potential_Exp_Shape*>> temp_clusters;
-		list<Potential_Exp_Shape*>				temp_exp;
-		this->__Get_exponential_shapes(&temp_clusters, &temp_exp);
-		if (!temp_clusters.empty()) {
-			auto it2 = temp_clusters.front().begin();
-			for (auto it = temp_clusters.begin(); it != temp_clusters.end(); it++) {
-				learnable_exp->push_back(list<const Potential_Exp_Shape*>());
-				for (it2 = it->begin(); it2 != it->end(); it2++)
-					learnable_exp->back().push_back(*it2);
-			}
-		}
-		for (auto it = temp_exp.begin(); it != temp_exp.end(); it++)
-			constant_exp->push_back(*it);
+		list_2_vector(constant_exp, this->__Exponential_shapes);
 
 	}
 
-	size_t	Node::Node_factory::Get_structure_size() {
+	void Node::Node_factory::__Get_factors_4_energy_eval(std::list<I_Potential*>* pots) const {
+
+		pots->clear();
+		auto itB_end = this->Binary_potentials.end();
+		for (auto itB = this->Binary_potentials.begin(); itB != itB_end; itB++)
+			pots->push_back(*itB);
+		list<Potential*>::iterator itP, itP_end;
+		auto itN_end = this->Nodes.end();
+		for (auto itN = this->Nodes.begin(); itN != itN_end; itN++) {
+			itP_end = (*itN)->Permanent_Unary.end();
+			for (itP = (*itN)->Permanent_Unary.begin(); itP != itP_end; itP++)
+				pots->push_back(*itP);
+		}
+
+	}
+
+	size_t	Node::Node_factory::Get_structure_size() const {
 
 		return this->__Exponential_shapes.size() + this->__Simple_shapes.size();
 
@@ -1050,74 +1091,63 @@ namespace EFG {
 
 	}
 
-	void Node::Node_factory::__Absorb(Node_factory* to_absorb) {
+	void Node::Node_factory::Eval_Energy_function(std::vector<float>* E_result, const I_Potential::combinations& comb_to_eval) const {
 
-		if (to_absorb == this)
-			return;
+		std::list<I_Potential*> pots;
+		this->__Get_factors_4_energy_eval(&pots);
 
-		for (auto it = to_absorb->__Simple_shapes.begin(); it != to_absorb->__Simple_shapes.end(); it++)
-			this->__Insert(*it);
-
-		list<list<Potential_Exp_Shape*>> tunable_clusters;
-		list<Potential_Exp_Shape*>			constant_exp;
-		to_absorb->__Get_exponential_shapes(&tunable_clusters, &constant_exp);
-
-		if (!tunable_clusters.empty()) {
-			auto it2 = tunable_clusters.front().begin();
-			for (auto it = tunable_clusters.begin(); it != tunable_clusters.end(); it++) {
-				for (it2 = it->begin(); it2 != it->end(); it2++) {
-					this->__Insert(*it2, true);
-				}
-			}
-		}
-
-		for (auto it = constant_exp.begin(); it != constant_exp.end(); it++)
-			this->__Insert(*it, false);
+		__Eval_energy(E_result, comb_to_eval, pots, false);
 
 	}
 
-	void Node::Node_factory::__Insert(Potential_Shape* pot) {
+	void Node::Node_factory::Eval_Energy_function_normalized(std::vector<float>* E_result, const I_Potential::combinations& comb_to_eval) const {
 
-		Potential_Shape* temp = NULL;
-		try { temp = this->___Insert(pot); }
-		catch (int) { 
-			temp = NULL; 
-			cout << "warning: invalid potential to insert detected\n";
+		std::list<I_Potential*> pots;
+		this->__Get_factors_4_energy_eval(&pots);
+
+		__Eval_energy(E_result, comb_to_eval, pots, true);
+
+	}
+
+	void Node::Node_factory::__Eval_energy(std::vector<float>* E_result, const I_Potential::combinations& comb_to_eval, const list<I_Potential*>& factors, const bool& normalized) {
+
+		E_result->clear();
+		size_t k, K = comb_to_eval.get_number_of_combinations();
+		E_result->reserve(K);
+		for (k = 0; k < K; k++) E_result->push_back(1.f);
+		vector<const I_Potential::I_Distribution_value*> match;
+		list<I_Potential*>::const_iterator it,  it_end = factors.end();
+		if (normalized) {
+			float E_max;
+			for (it = factors.begin(); it != it_end; it++) {
+				E_max = (*it)->max_in_distribution();
+				comb_to_eval.Find_images_single_matches(&match, **it);
+				for (k = 0; k < K; k++) {
+					if (match[k] == NULL) (*E_result)[k] = 0.f;
+					else (*E_result)[k] *= match[k]->Get_val() / E_max;
+				}
+			}
 		}
-		if (temp != NULL)
-			this->__Simple_shapes.push_back(temp);
-
-	};
-
-	Potential_Exp_Shape* Node::Node_factory::__Insert(Potential_Exp_Shape* pot, const bool& weight_tunability) {
-
-		Potential_Exp_Shape* temp = NULL;
-		try { temp = this->___Insert(pot); }
-		catch (int) {
-			temp = NULL;
-			cout << "warning: invalid potential to insert detected\n";
+		else {
+			for (it = factors.begin(); it != it_end; it++) {
+				comb_to_eval.Find_images_single_matches(&match, **it);
+				for (k = 0; k < K; k++) {
+					if (match[k] == NULL) (*E_result)[k] = 0.f;
+					else (*E_result)[k] *= match[k]->Get_val();
+				}
+			}
 		}
-		if (temp != NULL)
-			this->__Exponential_shapes.push_back(temp);
-		return temp;
-
-	};
-
-	void Node::Node_factory::__Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp) {
-
-		learnable_exp->clear();
-		*constant_exp = this->__Exponential_shapes;
 
 	}
 
 	void Print_distribution(XML_reader::Tag_readable& pot_tag, const Potential_Shape* pot) {
 		
-		list<list<size_t>> combinations;
-		list<float> vals;
-		try { pot->Copy_Distribution(&combinations, &vals); }
-		catch (int) { throw 0; }
+		vector<vector<size_t>> combinations;
+		vector<float> vals;
+		pot->Get_domain(&combinations);
+		pot->Get_images(&vals);
 		auto it2 = vals.begin();
-		list<size_t>::iterator it_comb;
+		vector<size_t>::iterator it_comb;
 		for (auto it = combinations.begin(); it != combinations.end(); it++) {
 			auto temp = pot_tag.Add_Nested_and_return_created("Distr_val");
 			for (it_comb = it->begin(); it_comb != it->end(); it_comb++) {
@@ -1128,12 +1158,16 @@ namespace EFG {
 		}
 
 	}
-	void Node::Node_factory::Reprint(const std::string& target_file) {
+	void Node::Node_factory::Reprint(const std::string& target_file) const {
 
 		if (this->Nodes.empty())  throw 0; // asked to print an empty model
 		
 		ofstream f(target_file);
-		if (!f.is_open()) throw 1; // unable to write on the specified file
+		if (!f.is_open()) {
+			f.close();
+			throw 1; // unable to write on the specified file
+		}
+		f.close();
 		
 		XML_reader exporter;
 		auto exp_root = exporter.Get_root();
@@ -1157,23 +1191,23 @@ namespace EFG {
 		const list<Categoric_var*>* involved_vars = NULL;
 		list<Categoric_var*>::const_iterator it_involved_vars;
 
-		list<Potential_Shape*> shp;
-		this->__Get_simple_shapes(&shp);
+		vector<Potential_Shape*> shp;
+		vector<list<Potential_Exp_Shape*>> clusters;
+		vector<Potential_Exp_Shape*> exp_const;
+		this->__Get_structure(&shp, &clusters, &exp_const);
+
 		for (auto it = shp.begin(); it != shp.end(); it++) {
 			auto temp = exp_root.Add_Nested_and_return_created("Potential");
-			involved_vars = (*it)->Get_involved_var_safe();
+			involved_vars = (*it)->Get_involved_var();
 			for (it_involved_vars = involved_vars->begin(); it_involved_vars != involved_vars->end(); it_involved_vars++) {
 				temp.Add_Attribute("var", (*it_involved_vars)->Get_name());
 			}
 			Print_distribution(temp, *it);
 		}
 
-		list<list<Potential_Exp_Shape*>> clusters;
-		list<Potential_Exp_Shape*> exp_const;
-		this->__Get_exponential_shapes(&clusters, &exp_const);
 		for (auto it = exp_const.begin(); it != exp_const.end(); it++) {
 			auto temp = exp_root.Add_Nested_and_return_created("Potential");
-			involved_vars = (*it)->Get_involved_var_safe();
+			involved_vars = (*it)->Get_involved_var();
 			for (it_involved_vars = involved_vars->begin(); it_involved_vars != involved_vars->end(); it_involved_vars++) {
 				temp.Add_Attribute("var", (*it_involved_vars)->Get_name());
 			}
@@ -1185,7 +1219,7 @@ namespace EFG {
 		for (auto it_cl = clusters.begin(); it_cl != clusters.end(); it_cl++) {
 			for (auto it = it_cl->begin(); it != it_cl->end(); it++) {
 				auto temp = exp_root.Add_Nested_and_return_created("Potential");
-				involved_vars = (*it)->Get_involved_var_safe();
+				involved_vars = (*it)->Get_involved_var();
 				for (it_involved_vars = involved_vars->begin(); it_involved_vars != involved_vars->end(); it_involved_vars++) {
 					temp.Add_Attribute("var", (*it_involved_vars)->Get_name());
 				}
@@ -1194,8 +1228,8 @@ namespace EFG {
 
 				if (it!=it_cl->begin()) {
 					 auto temp2 = temp.Add_Nested_and_return_created("Share");
-					 for (auto itV = it_cl->front()->Get_involved_var_safe()->begin();
-						 itV != it_cl->front()->Get_involved_var_safe()->end(); itV++) {
+					 for (auto itV = it_cl->front()->Get_involved_var()->begin();
+						 itV != it_cl->front()->Get_involved_var()->end(); itV++) {
 						 temp2.Add_Attribute("var", (*itV)->Get_name());
 					 }
 				}

@@ -12,249 +12,48 @@
 #include <float.h>
 #include <cmath>
 #include <iostream>
+#include <fstream>
 using namespace std;
 
 namespace EFG {
 
 	Categoric_var::Categoric_var(const size_t& size, const std::string& name) :Size(size), Name(name) {
 
-		this->validity_flag = false;
-
 		if (name.compare("") == 0)  throw 0; //empty name for Categoric variable is not valid
 
 		if (size == 0) throw 1; //null size of categorical variable is not allowed
-		
-		this->validity_flag = true;
 
 	}
 
-	Categoric_var::Categoric_var(const Categoric_var& to_copy) {
+	void check_all_vars_are_different(const list<Categoric_var*>& variables) {
 
-		this->Size = 0;
-		this->validity_flag = false;
-		throw 0; //Categoric variable cannot be copied
+		if (variables.empty()) throw 1;
 
-	}
-
-
-
-
-	struct Distribution_value : public I_Potential::I_Distribution_value {
-		friend struct Distribution_exp_value;
-
-		Distribution_value(size_t* ind, const float& v = 0.f) : val(v) { this->indices = ind; };
-		~Distribution_value();
-
-		void	Set_val(const float& v) { this->val = v; };
-		void	Get_val(float* result) { *result = val; };
-		size_t* Get_indeces() { return this->indices; };
-	protected:
-		// data
-		size_t* indices; //this distribution value refers to the combination of indeces expressed by this variable
-		float   val;
-	};
-
-	Distribution_value::~Distribution_value() {
-		free(indices);
-	};
-
-	struct Distribution_exp_value : public I_Potential::I_Distribution_value {
-		Distribution_exp_value(Distribution_value* to_wrap, float* weight) :wrapped(to_wrap), w(weight) {};
-		~Distribution_exp_value();
-
-		void	Set_val(const float& v) { this->wrapped->val = v; };
-		void	Get_val(float* result) { *result = expf(this->wrapped->val * *this->w); };
-		size_t* Get_indeces() { return this->wrapped->indices; };
-	protected:
-		// data
-		float*   w;
-		Distribution_value* wrapped;
-	};
-
-	Distribution_exp_value::~Distribution_exp_value() {
-		delete wrapped;
-	};
-
-	void I_Potential::Get_entire_domain(list<size_t*>* domain, const list<Categoric_var*>& Vars_in_domain) {
-
-		domain->clear();
-
-		size_t var_num = Vars_in_domain.size(), kV = 1, k;
-		auto itV = Vars_in_domain.begin();
-		size_t* new_val;
-		for (k = 0; k < (*itV)->size(); k++) {
-			new_val = (size_t*)malloc(sizeof(size_t)*var_num);
-			new_val[0] = k;
-			domain->push_back(new_val);
-		}
-		itV++;
-
-		size_t k2, k3, Domain_size;
-		list<size_t*>::iterator it_domain;
-		for (itV; itV != Vars_in_domain.end(); itV++) {
-			it_domain = domain->begin();
-			Domain_size = domain->size();
-			for (k2 = 0; k2 < Domain_size; k2++) {
-
-				for (k = 1; k < (*itV)->size(); k++) {
-					new_val = (size_t*)malloc(sizeof(size_t)*var_num);
-					for (k3 = 0; k3 < kV; k3++)
-						new_val[k3] = (*it_domain)[k3];
-					new_val[kV] = k;
-					domain->push_back(new_val);
-				}
-				(*it_domain)[kV] = 0;
-
-				it_domain++;
-			}
-			kV++;
-		}
-
-	}
-
-	void I_Potential::Get_entire_domain(std::list<std::list<size_t>>* domain, const std::list<Categoric_var*>& Vars_in_domain) {
-
-		list<size_t*> domain_malloc;
-		I_Potential::Get_entire_domain(&domain_malloc, Vars_in_domain);
-
-		domain->clear();
-		auto it = domain_malloc.begin();
-		size_t k, K = Vars_in_domain.size();
-		for (it; it != domain_malloc.end(); it++) {
-			domain->push_back(list<size_t>());
-			for (k = 0; k < K; k++)
-				domain->back().push_back((*it)[k]);
-		}
-
-		for (it = domain_malloc.begin(); it != domain_malloc.end(); it++)
-			free(*it);
-
-	}
-
-	void __find_Comb_in_distribution(list<I_Potential::I_Distribution_value*>* result, const list<size_t*>& comb, const list<size_t>& comb_pos,
-		const list<I_Potential::I_Distribution_value*>* distr, const list<size_t>& distr_pos, const bool& arrest_at_first_found) {
-
-		result->clear();
-
-		list<size_t>::const_iterator it_comb_pos, it_distr_pos;
-		list<I_Potential::I_Distribution_value*>::const_iterator it_distr;
-		bool match;
-		bool found;
-		for (auto it_comb = comb.begin(); it_comb != comb.end(); it_comb++) {
-			found = false;
-			for (it_distr = distr->begin(); it_distr != distr->end(); it_distr++) {
-				match = true;
-				it_comb_pos = comb_pos.begin();
-				for (it_distr_pos = distr_pos.begin(); it_distr_pos != distr_pos.end(); it_distr_pos++) {
-					if ((*it_distr)->Get_indeces()[*it_distr_pos] != (*it_comb)[*it_comb_pos]) {
-						match = false;
-						break;
-					}
-					it_comb_pos++;
-				}
-
-				if (match) {
-					result->push_back(*it_distr);
-					found = true;
-					if (arrest_at_first_found) break;
-				}
-			}
-
-			if (!found) {
-				result->push_back(NULL);
+		auto itv = variables.begin();
+		auto itv_end = variables.end();
+		itv++;
+		list<Categoric_var*>::const_iterator it_cursor;
+		for (itv; itv != itv_end; itv++) {
+			for (it_cursor = variables.begin(); it_cursor != itv; it_cursor++) {
+				if (*it_cursor == *itv) throw 0;
 			}
 		}
 
 	}
 
-	void I_Potential::Find_Comb_in_distribution(list<I_Distribution_value*>* result, const list<size_t*>& comb_to_search,
-		const list<Categoric_var*>& comb_to_search_var_order, I_Potential* pot) {
 
-		list<size_t> comb_pos, distr_pos;
 
-		list<Categoric_var*>::const_iterator it_comb_to_search_var_order;
-		auto vars = pot->Get_involved_var();
-		size_t k = 0, k2;
-		for (auto it_var = vars->begin(); it_var != vars->end(); it_var++) {
-			distr_pos.push_back(k);
-			k2 = 0;
-			for (it_comb_to_search_var_order = comb_to_search_var_order.begin();
-				it_comb_to_search_var_order != comb_to_search_var_order.end(); it_comb_to_search_var_order++) {
-				if (*it_comb_to_search_var_order == *it_var) {
-					comb_pos.push_back(k2);
-					break;
-				}
-				k2++;
-			}
-			k++;
-		}
 
-		if (comb_pos.size() != distr_pos.size()) {
-			result->clear();
-			throw 0; // some variables were not found when searching for matchings
-		}
+	float I_Potential::max_in_distribution() const {
 
-		__find_Comb_in_distribution(result, comb_to_search, comb_pos, pot->Get_distr(), distr_pos, true);
-
-	}
-
-	void I_Potential::Find_Comb_in_distribution(std::list<I_Distribution_value*>* result, size_t* partial_comb_to_search,
-		const std::list<Categoric_var*>& partial_comb_to_search_var_order, I_Potential* pot) {
-
-		list<size_t> comb_pos, distr_pos;
-		size_t k = 0, k2;
-		auto vars = pot->Get_involved_var();
-		list<Categoric_var*>::const_iterator it_vars;
-		for (auto it_comb = partial_comb_to_search_var_order.begin();
-			it_comb != partial_comb_to_search_var_order.end(); it_comb++) {
-			comb_pos.push_back(k);
-			k2 = 0;
-			for (it_vars = vars->begin(); it_vars != vars->end(); it_vars++) {
-				if (*it_vars == *it_comb) {
-					distr_pos.push_back(k2);
-					break;
-				}
-				k2++;
-			}
-
-			k++;
-		}
-
-		if (comb_pos.size() != distr_pos.size()) {
-			result->clear();
-			throw 0; //some variables were not found when searching for matchings
-		}
-
-		__find_Comb_in_distribution(result, { partial_comb_to_search }, comb_pos, pot->Get_distr(), distr_pos, false);
-
-	}
-
-	void I_Potential::Find_Comb_in_distribution(std::list<float>* result,
-		const std::list<size_t*>& comb_to_search, const std::list<Categoric_var*>& comb_to_search_var_order) {
-
-		list<I_Distribution_value*> temp;
-		this->Find_Comb_in_distribution(&temp, comb_to_search, comb_to_search_var_order, this);
-		result->clear();
-		float temp_fl;
-		for (auto it = temp.begin(); it != temp.end(); it++) {
-			if (*it == NULL) result->push_back(0.f);
-			else {
-				(*it)->Get_val(&temp_fl);
-				result->push_back(temp_fl);
-			}
-		}
-
-	}
-
-	float I_Potential::max_in_distribution() {
-
-		float temp, max_val;
 		auto Distr = this->Get_distr();
 		auto it = Distr->begin();
-		(*it)->Get_val(&max_val);
+		float max_val = (*it)->Get_val();
+		float temp;
 		it++;
-		for (it; it != Distr->end(); it++) {
-			(*it)->Get_val(&temp);
+		auto it_end = Distr->end();
+		for (it; it != it_end; it++) {
+			temp = (*it)->Get_val();
 			if (temp > max_val) {
 				max_val = temp;
 			}
@@ -263,62 +62,400 @@ namespace EFG {
 
 	}
 
-	I_Potential::I_Potential(const I_Potential& to_copy) {
-
-		this->validity_flag = false;
+	I_Potential::I_Potential(const I_Potential& to_copy) { 
+		
 		throw 0; //Potential of any kind cannot be copied like this
 
 	}
 
+	void print_distribution(std::ostream& f, const list<float>& to_print_val, const list<const size_t*>& to_print_comb, const size_t& comb_size) {
 
-
-
-
-
-	bool Are_all_different(const list<Categoric_var*>& variables) {
-
-		if (variables.size())
-			return true;
-
-		auto it = variables.begin();
-		it++;
-		auto it2 = it;
-		for (it; it != variables.end(); it++) {
-			for (it2 = variables.begin(); it2 != it; it++) {
-				if ((*it2 == *it) || ((*it2)->Get_name().compare((*it)->Get_name()) == 0))
-					return false;
-			}
-			if ((*it2 == *it) || ((*it2)->Get_name().compare((*it)->Get_name()) == 0))
-				return false;
+		auto it_c = to_print_comb.begin();
+		auto it_v = to_print_val.begin();
+		size_t k, K = to_print_val.size();
+		size_t c;
+		for (k = 1; k < K; k++) {
+			for (c = 0; c < comb_size; c++)
+				f << (*it_c)[c] << " ";
+			f << *it_v << endl; 
+			it_c++;
+			it_v++;
 		}
-		return true;
+		for (c = 0; c < comb_size; c++)
+			f << (*it_c)[c] << " ";
+		f << *it_v;
+
+	}
+	void I_Potential::Print_distribution(std::ostream& f, const bool& print_entire_domain) const {
+
+		list<float>			    to_print_val;
+		list<const size_t*>		to_print_comb;
+
+		if (print_entire_domain) {
+			combinations comb(*this->Get_involved_var());
+			vector<const I_Distribution_value*> v_temp;
+			comb.Find_images_single_matches(&v_temp, *this);
+			combinations::iterator it(comb);
+			auto it_temp = v_temp.begin();
+			while (it.is_not_at_end()) {
+				if (*it_temp == NULL) to_print_val.push_back(0.f);
+				else to_print_val.push_back((*it_temp)->Get_val());
+				to_print_comb.push_back(*it);
+				++it;
+				it_temp++;
+			}
+		}
+		else {
+			auto distr = this->Get_distr();
+			auto it = distr->begin();
+			auto it_end = distr->end();
+			for (it; it != it_end; it++) {
+				to_print_val.push_back((*it)->Get_val());
+				to_print_comb.push_back((*it)->Get_indeces());
+			}
+		}
+		print_distribution(f,  to_print_val, to_print_comb, this->Get_involved_var()->size());
 
 	}
 
-	bool Is_consistent_substitution(const list<Categoric_var*>& original, const list<Categoric_var*>& novel) {
+	void I_Potential::Get_domain(std::vector<std::vector<size_t>>* domain) const {
 
-		if (original.size() != novel.size())
-			return false;
+		domain->clear();
+		auto Dist = this->Get_distr();
+		size_t k, K = this->Get_involved_var()->size();
+		if (Dist->empty()) {
+			domain->push_back(vector<size_t>());
+			domain->back().reserve(K);
+			for (k = 0; k < K; k++) domain->back().push_back(0);
+		}
+		else {
+			domain->reserve(Dist->size());
+			auto it = Dist->begin();
+			auto it_end = Dist->end();
+			const size_t* comb = NULL;
+			for (it; it != it_end; it++) {
+				comb = (*it)->Get_indeces();
+				domain->push_back(vector<size_t>());
+				domain->back().reserve(K);
+				for (k = 0; k < K; k++) domain->back().push_back(comb[k]);
+			}
+		}
+
+	}
+
+	void I_Potential::Get_images(std::vector<float>* images) const {
+
+		images->clear();
+		auto Dist = this->Get_distr();
+		if (Dist->empty()) images->push_back(0.f);
+		else {
+			images->reserve(Dist->size());
+			auto it = Dist->begin();
+			auto it_end = Dist->end();
+			for (it; it != it_end; it++)
+				images->push_back((*it)->Get_val());
+		}
+
+	}
+
+	size_t I_Potential::combinations::Get_joint_domain_size(const list<Categoric_var*>& vars) {
+
+		size_t S = 1;
+		auto it_end = vars.end();
+		for (auto it = vars.begin(); it != it_end; it++)
+			S *= (*it)->size();
+		return S;
+
+	}
+
+	I_Potential::combinations::combinations(combinations&& o) {
+
+		this->Entire_domain_was_allocated = o.Entire_domain_was_allocated;
+		this->Variables = o.Variables;
+		this->Size = o.Size;
+		this->Combinations = o.Combinations;
+		o.Combinations = NULL;
+		this->free_Combinations = o.free_Combinations;
+
+	}
+
+	I_Potential::combinations::combinations(const std::list<Categoric_var*>& variables) {
+
+		if (variables.empty()) throw 0;
+		check_all_vars_are_different(variables);
+		this->Variables = variables;
+
+		this->Size = Get_joint_domain_size(variables);
+		this->Combinations = (size_t*)malloc(this->Size  * this->Variables.size() * sizeof(size_t));
+
+		size_t k, K = variables.size();
+		auto it_var = variables.begin();
+		size_t Cycle_duration = 1, c, p, P = K * this->Size;
+		size_t s, S;
+		for (k = 0; k < K; k++) {
+			p = k;
+			S = (*it_var)->size();
+			while (p < P) {
+				for (s = 0; s < S; s++) {
+					for (c = 0; c < Cycle_duration; c++) {
+						this->Combinations[p] = s;
+						p += K;
+					}
+				}
+			}
+			Cycle_duration *= (*it_var)->size();
+			it_var++;
+		}
+		this->Entire_domain_was_allocated = true;
+		this->free_Combinations = true;
+
+	}
+
+	I_Potential::combinations::combinations(const I_Potential& pot) {
+
+		this->Variables = *pot.Get_involved_var();
+
+		auto Distr = pot.Get_distr();
+		size_t k, K = this->Variables.size();
+		if (Distr->empty()) {
+			//add only the combination <0,0,0,0, ... , 0>
+			this->Size = 1;
+			this->Combinations = (size_t*)malloc(K * sizeof(size_t));
+			for (k = 0; k < K; k++)
+				this->Combinations[k] = 0;
+		}
+		else {
+			auto it = Distr->begin();
+			auto it_end = Distr->end();
+			size_t p = 0;
+			this->Size = Distr->size();
+			this->Combinations = (size_t*)malloc(K * this->Size * sizeof(size_t));
+			const size_t* c = NULL;
+			for (it; it != it_end; it++) {
+				c = (*it)->Get_indeces();
+				for (k = 0; k < K; k++)
+					this->Combinations[p + k] = c[k];
+				p += K;
+			}
+		}
+		if(Distr->size() == Get_joint_domain_size(this->Variables))
+			this->Entire_domain_was_allocated = true;
+		this->free_Combinations = true;
+
+	}
+
+	I_Potential::combinations::combinations(const std::list<std::list<size_t>>& Combinations, const std::list<Categoric_var*>& variables) {
+
+		if (Combinations.empty()) throw 0;
+		if (variables.empty()) throw 1;
+		check_all_vars_are_different(variables);
+		this->Variables = variables;
+
+		this->Size = Combinations.size();
+		size_t k, K = this->Variables.size();
+		this->Combinations = (size_t*)malloc(K * this->Size * sizeof(size_t));
+		std::list<size_t>::const_iterator it_C;
+		auto it_end = Combinations.end();
+		size_t p = 0;
+		for (auto it = Combinations.begin(); it != it_end; it++) {
+			if (it->size() != K) {
+				free(this->Combinations);
+				throw 2;
+			}
+			it_C = it->begin();
+			for (k = 0; k < K; k++) {
+				this->Combinations[p] = *it_C;
+				p++;
+				it_C++;
+			}
+		}
+		this->Entire_domain_was_allocated = false;
+		this->free_Combinations = true;
+
+	}
+
+	I_Potential::combinations::iterator::iterator(const combinations& to_iterate) {
+
+		this->Source = &to_iterate;
+		this->Source_cursor = 0;
+		this->Source_pos = 0;
+
+	}
+
+	const size_t* I_Potential::combinations::iterator::operator*() const {
+
+		return &this->Source->Combinations[this->Source_cursor];
+
+	}
+
+	I_Potential::combinations::iterator& I_Potential::combinations::iterator::operator++() {
+
+		this->Source_pos++;
+		if (this->Source_pos > this->Source->Size) throw 0;
+
+		this->Source_cursor += this->Source->Variables.size();
+		return *this;
+
+	}
+
+	bool I_Potential::combinations::iterator::is_not_at_end() const {
+
+		return (this->Source_pos < this->Source->Size);
+
+	}
+
+	void	Find_image_value(std::list<const I_Potential::I_Distribution_value*>* match_found, const std::list<I_Potential::I_Distribution_value*>* distr, 
+		const vector<size_t>& pos_in_distr, const size_t* comb, const vector<size_t>& pos_in_comb ,const bool& arrest_at_first_found) {
+
+		match_found->clear();
+		auto it_end = distr->end();
+		bool found;
+		size_t k, K = pos_in_distr.size();
+		const size_t* p1 = &pos_in_distr[0], * p2 = &pos_in_comb[0];
+		const size_t* distr_comb;
+		for (auto it = distr->begin(); it != it_end; it++) {
+			found = true;
+			distr_comb = (*it)->Get_indeces();
+			for (k = 0; k < K; k++) {
+				if (distr_comb[p1[k]] != comb[p2[k]]){
+					found = false;
+					break;
+				}
+			}
+			if (found) {
+				match_found->push_back(*it);
+				if (arrest_at_first_found) return;
+			}
+		}
+
+	};
+
+	void   get_positions(vector<size_t>* pos_short, vector<size_t>* pos_long, const list<Categoric_var*>& vars_short, const list<Categoric_var*>& vars_long) {
+
+		pos_short->reserve(vars_short.size());
+		pos_long->reserve(vars_short.size());
+		auto it_end = vars_short.end();
+		size_t k,k2=0;
+		list<Categoric_var*>::const_iterator it_long, it_long_end = vars_long.end();
+		for (auto it = vars_short.begin(); it != it_end; it++) {
+			pos_short->push_back(k2);
+			it_long = vars_long.begin();
+			k = 0;
+			for (it_long; it_long != it_long_end; it_long++) {
+				if (*it_long == *it) {
+					pos_long->push_back(k);
+					break;
+				}
+				k++;
+			}
+			k2++;
+		}
+		if (pos_short->size() != pos_long->size()) throw 0; //some variables were not found
+
+	}
+
+	void I_Potential::combinations::Find_images_single_matches(std::vector<const I_Distribution_value*>* result, const I_Potential& pot) const {
+
+		auto pot_vars = pot.Get_involved_var();
+		if (this->Variables.size() < pot_vars->size()) throw 0;
+		result->clear();
+		result->reserve(this->Size);
+		const std::list<I_Potential::I_Distribution_value*>* Distr = pot.Get_distr();
+
+		vector<size_t> pos_this, pos_pot;
+		get_positions(&pos_pot , &pos_this , *pot_vars, this->Variables);
+
+		//check for doing lazy research
+		size_t k, P = this->Variables.size();
+		if ((pot_vars->size() == this->Variables.size()) && this->Entire_domain_was_allocated) {
+			size_t S = Get_joint_domain_size(this->Variables);
+
+			if ((S == this->Size) && (S == Distr->size())) {
+				bool proceed = true;
+				for (k = 0; k < P; k++) {
+					if (pos_this[k] != k) {
+						proceed = false;
+						break;
+					}
+				}
+				if (proceed) {
+					auto itd_end = Distr->end();
+					for (auto itd = Distr->begin(); itd != itd_end; itd++)
+						result->push_back(*itd);
+					return;
+				}
+			}
+		}
+
+		size_t p = 0;
+		std::list<const I_Potential::I_Distribution_value*> match;
+		for (k = 0; k < this->Size; k++) {
+			Find_image_value(&match, Distr, pos_pot, &this->Combinations[p], pos_this, true);
+			if (match.empty()) result->push_back(NULL);
+			else result->push_back(match.front());
+			p += P;
+		}
+
+	}
+
+	void I_Potential::combinations::Find_images_multiple_matches(std::vector<std::list<const I_Distribution_value*>>* result, const I_Potential& pot) const {
+
+		auto pot_vars = pot.Get_involved_var();
+		if (this->Variables.size() >= pot.Get_involved_var()->size()) throw 0;
+		result->clear();
+		result->reserve(this->Size);
+		const std::list<I_Potential::I_Distribution_value*>* Distr = pot.Get_distr();
+
+		vector<size_t> pos_this, pos_pot;
+		get_positions(&pos_this, &pos_pot, this->Variables, *pot_vars);
+
+		size_t p = 0, P = this->Variables.size(), k;
+		for (k = 0; k < this->Size; k++) {
+			result->push_back(list<const I_Distribution_value*>());
+			Find_image_value(&result->back(), Distr, pos_pot, &this->Combinations[p], pos_this, false);
+			p += P;
+		}
+
+	}
+
+	size_t* alloc_combination(const size_t* to_clone, const size_t& Size) {
+
+		size_t* temp = (size_t*)malloc(Size * sizeof(size_t));
+		for (size_t k = 0; k < Size; k++)
+			temp[k] = to_clone[k];
+		return temp;
+
+	}
+
+
+
+
+	void Potential_Shape::__Register_to_observers() {
+
+		for (auto it = this->Involved_var.begin(); it != this->Involved_var.end(); it++)
+			this->var_observers.emplace_back((Subject*)(*it), (void*)this);
+
+	}
+
+	void check_substitution_consistency(const list<Categoric_var*>& original, const list<Categoric_var*>& novel) {
+
+		if (original.size() != novel.size()) throw 0;
 
 		auto it = original.begin();
 		list<Categoric_var*> inserted;
 		for (auto it2 = novel.begin(); it2 != novel.end(); it2++) {
 			if ((*it)->size() != (*it2)->size())
-				return false;
+				throw 1;
 			it++;
 		}
-		return true;
 
 	}
 
 	Potential_Shape::Potential_Shape(const list<Categoric_var*>& var_involved) {
 
-		if (Are_all_different(var_involved))
-			this->Involved_var = var_involved;
-		else {
-			this->validity_flag = false;
-			throw 0; //Inconsistent set of variables
-		}
+		check_all_vars_are_different(var_involved);
+		this->Involved_var = var_involved;
+		this->__Register_to_observers();
 
 	}
 
@@ -343,91 +480,67 @@ namespace EFG {
 	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read) :
 		Potential_Shape(var_involved) {
 
-		if (this->validity_flag) {
-			ifstream f(file_to_read);
-			if (!f.is_open()) {
-				f.close();
-				throw 0; //invalid file for importing shape
-			}
-
-			string line;
-			list<size_t> slices;
-			float temp_val;
-			size_t var_numb_expected = this->Involved_var.size();
-			bool insert;
-			while (!f.eof()) {
-				getline(f, line);
-
-				if (line.compare("") != 0) {
-					Import_line(line, &slices, &temp_val);
-					insert = true;
-					if (var_numb_expected != slices.size())  {
-#ifdef _DEBUG
-						cout << "found invalid lines when importing shape : number of values mismatch";
-#endif // DEBUG
-						insert = false;
-					}
-
-					if (temp_val < 0.f) {
-#ifdef _DEBUG
-						cout << "found invalid lines when importing shape : negative balue";
-#endif // DEBUG
-						insert = false;
-					}
-
-					if (insert) {
-						try { this->Add_value(slices, temp_val); }
-						catch (int) { throw 1; }
-					}
-				}
-			}
-
+		ifstream f(file_to_read);
+		if (!f.is_open()) {
 			f.close();
+			throw 0; //invalid file for importing shape
 		}
+
+		string line;
+		list<size_t> slices;
+		float temp_val;
+		size_t var_numb_expected = this->Involved_var.size();
+		bool insert;
+		while (!f.eof()) {
+			getline(f, line);
+
+			if (line.compare("") != 0) {
+				Import_line(line, &slices, &temp_val);
+				insert = true;
+				if (var_numb_expected != slices.size()) {
+#ifdef _DEBUG
+					cout << "found invalid lines when importing shape : number of values mismatch";
+#endif // DEBUG
+					insert = false;
+				}
+
+				if (temp_val < 0.f) {
+#ifdef _DEBUG
+					cout << "found invalid lines when importing shape : negative balue";
+#endif // DEBUG
+					insert = false;
+				}
+
+				if (insert) this->Add_value(slices, temp_val);
+			}
+		}
+
+		f.close();
 
 	}
 
-	Potential_Shape::Potential_Shape(const Potential_Shape* to_copy, const std::list<Categoric_var*>& var_involved) {
+	Potential_Shape::Potential_Shape(const Potential_Shape& to_copy, const std::list<Categoric_var*>& var_involved) {
 
-		this->validity_flag = false;
-
-		if (!Are_all_different(var_involved)) throw 0;  //Inconsistent set of variables
-		
-		if (!Is_consistent_substitution(to_copy->Involved_var, var_involved)) throw 1; //Inconsistent set of variables
-		
+		check_all_vars_are_different(var_involved);
+		check_substitution_consistency(to_copy.Involved_var , var_involved);		
 		this->Involved_var = var_involved;
 
-		if (!this->Distribution.empty()) {
-			for (auto it_d = this->Distribution.begin(); it_d != this->Distribution.end(); it_d++)
-				delete *it_d;
-			this->Distribution.clear();
+		if (!to_copy.Distribution.empty()) {
+			size_t* temp;
+			size_t L = this->Involved_var.size();
+			auto itD_end = to_copy.Distribution.end();
+			for (auto itD = to_copy.Distribution.begin(); itD != itD_end; itD++) {
+				temp = alloc_combination((*itD)->Get_indeces(), L);
+				this->Distribution.push_back(new Distribution_value_concrete(temp, (*itD)->Get_val()));
+			}
 		}
 
-		size_t* temp, *temp2;
-		int k_temp;
-		size_t L = this->Involved_var.size();
-		float v_temp;
-		auto Distr = &to_copy->Distribution;
-		for (auto itD = Distr->begin(); itD != Distr->end(); itD++) {
-			temp = (size_t*)malloc(sizeof(size_t)*L);
-			temp2 = (*itD)->Get_indeces();
-			for (k_temp = 0; k_temp < L; k_temp++)
-				temp[k_temp] = temp2[k_temp];
-			(*itD)->Get_val(&v_temp);
-			this->Distribution.push_back(new Distribution_value(temp, v_temp));
-		}
-
-		this->validity_flag = true;
+		this->__Register_to_observers();
 
 	}
 
 	Potential_Shape::Potential_Shape(const std::list<Categoric_var*>& var_involved, const bool& correlated_or_not) :
 		Potential_Shape(var_involved) {
-
-		if (!this->validity_flag)
-			return;
-
-		this->validity_flag = false;
 
 		if (var_involved.size() <= 1) throw 0; //simple correlation shapes must involve at least two variables
 		
@@ -460,12 +573,25 @@ namespace EFG {
 					}
 				}
 
-				if (are_same)
-					(*it)->Set_val(0.f);
+				if (are_same) {
+					auto temp = new Distribution_value_concrete(alloc_combination((*it)->Get_indeces() , L) , 0.f);
+					delete* it;
+					*it = temp;
+				}
 			}
 		}
 
-		this->validity_flag = true;
+	}
+
+	Potential_Shape::Potential_Shape(const I_Potential& to_copy) :
+		Potential_Shape(*to_copy.Get_involved_var()) {
+
+		auto Dist = Get_distr_static(&to_copy);
+		auto it_end = Dist->end();
+		size_t S = this->Involved_var.size();
+		for (auto it = Dist->begin(); it != it_end; it++) {
+			this->Distribution.push_back(new Distribution_value_concrete(alloc_combination((*it)->Get_indeces(), S), (*it)->Get_val()));
+		}
 
 	}
 
@@ -476,11 +602,16 @@ namespace EFG {
 
 	}
 
-	bool Potential_Shape::__Check_add_value(const std::list<size_t>& indices) {
+	void Potential_Shape::__Set_Distribution_val(I_Distribution_value* to_set, const float& new_val) {
+
+		static_cast<Distribution_value_concrete*>(to_set)->Set_val(new_val);
+
+	}
+
+	void Potential_Shape::__Check_add_value(const std::list<size_t>& indices) {
 
 		size_t var_numb = this->Involved_var.size();
-		if (indices.size() != var_numb)
-			return false;
+		if (indices.size() != var_numb) throw 0;
 
 		bool match;
 		size_t k;
@@ -496,631 +627,346 @@ namespace EFG {
 				it_ind++;
 			}
 
-			if (match)
-				return false;
+			if (match) throw 1;
 		}
 
 		auto itV = this->Involved_var.begin();
 		for (it_ind = indices.begin(); it_ind != indices.end(); it_ind++) {
-			if (*it_ind >= (*itV)->size()) {
-				return false;
-			}
-
+			if (*it_ind >= (*itV)->size()) throw 2;
 			itV++;
 		}
-
-		return true;
 
 	}
 
 	void Potential_Shape::Add_value(const std::list<size_t>& new_indeces, const float& new_val) {
 
+		if (this->subject.Get_observers_number() != 0) throw 1;
 		if (new_val < 0.f) throw 0; //negative value not admitted for potential
+		this->__Check_add_value(new_indeces);
 		
-		if (!this->__Check_add_value(new_indeces))
-			return;
-
-		size_t* temp = (size_t*)malloc(sizeof(size_t)*this->Involved_var.size());
+		size_t K = this->Involved_var.size();
+		size_t* temp = (size_t*)malloc(sizeof(size_t)*K);
 		auto it_ind = new_indeces.begin();
-		for (size_t k = 0; k < this->Involved_var.size(); k++) {
+		for (size_t k = 0; k < K; k++) {
 			temp[k] = *it_ind;
 			it_ind++;
 		}
 
-		this->Distribution.push_back(new Distribution_value(temp));
-		this->Distribution.back()->Set_val(new_val);
+		this->Distribution.push_back(new Distribution_value_concrete(temp, new_val));
+
+	}
+
+	void Potential_Shape::__Alloc_entire_domain(const float& val_to_use_4_entire_domain) {
+
+		size_t S = 1;
+		for (auto it = this->Involved_var.begin(); it != this->Involved_var.end(); it++)
+			S *= (*it)->size();
+		if (S == this->Distribution.size()) return;
+
+		for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++)
+			delete* it;
+		this->Distribution.clear();
+
+		combinations temp(this->Involved_var);
+		size_t* c_temp = NULL;
+		size_t K = this->Involved_var.size();
+		combinations::iterator it_temp(temp);
+		while (it_temp.is_not_at_end()) {
+			c_temp = alloc_combination(*it_temp, K);
+			this->Distribution.push_back(new Distribution_value_concrete(c_temp, val_to_use_4_entire_domain));
+			++it_temp;
+		}
 
 	}
 
 	void Potential_Shape::Set_ones() {
 
-		for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++)
-			delete *it;
-		this->Distribution.clear();
+		if (this->subject.Get_observers_number() != 0) throw 1;
 
-		list<size_t*> domain;
-		Get_entire_domain(&domain, this->Involved_var);
-		for (auto itD = domain.begin(); itD != domain.end(); itD++) {
-			this->Distribution.push_back(new Distribution_value(*itD));
-			this->Distribution.back()->Set_val(1.f);
-		}
+		this->__Alloc_entire_domain(1.f);
 
 	}
 
-	void Potential_Shape::Set_random(const float zeroing_threashold) {
+#define RAND_MAX_FLOAT float(RAND_MAX)
+	void Potential_Shape::Set_random() {
 
+		if (this->subject.Get_observers_number() != 0) throw 1;
 		//srand((unsigned int)time(NULL));
 
-		for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++)
-			delete *it;
-		this->Distribution.clear();
-
-		list<size_t*> domain;
-		Get_entire_domain(&domain, this->Involved_var);
-		for (auto itD = domain.begin(); itD != domain.end(); itD++) {
-			if ((float)rand() / (float)RAND_MAX < zeroing_threashold) {
-				this->Distribution.push_back(new Distribution_value(*itD));
-				this->Distribution.back()->Set_val((float)rand() / (float)RAND_MAX);
-			}
-			else  free(*itD);
-		}
+		this->__Alloc_entire_domain(0.f);
+		auto itD_end = this->Distribution.end();
+		size_t L = this->Involved_var.size();
+		for (auto itD = this->Distribution.begin(); itD != itD_end; itD++)
+			this->__Set_Distribution_val(*itD, (float)rand() / RAND_MAX_FLOAT);
 
 	}
 
 	void Potential_Shape::Normalize_distribution() {
 
+		if (this->subject.Get_observers_number() != 0) throw 1;
 		if (!this->Distribution.empty()) {
-			float Rescale = 0.f, temp;
+			float Rescale = 0.f, temp = 0.f;
 			auto it = this->Distribution.begin();
-			for (it; it != this->Distribution.end(); it++) {
-				(*it)->Get_val(&temp);
+			auto it_end = this->Distribution.end();
+			for (it; it != it_end; it++) {
+				temp = (*it)->Get_val();
 				if (temp > Rescale) Rescale = temp;
 			}
 			if (Rescale == 0.f) return;
 			Rescale = 1.f / Rescale;
 
+			size_t L = this->Involved_var.size();
 			for (it = this->Distribution.begin();
-				it != this->Distribution.end(); it++) {
-				(*it)->Get_val(&temp);
-				(*it)->Set_val(Rescale * temp);
-			}
+				it != it_end; it++)
+				this->__Set_Distribution_val(*it , Rescale * (*it)->Get_val());
 		}
 
 	}
 
 	void Potential_Shape::Substitute_variables(const std::list<Categoric_var*>& new_var) {
 
-		this->validity_flag = false;
-		if (!Are_all_different(new_var)) throw 0; // Inconsistent set of variables
-		
-		if (!Is_consistent_substitution(this->Involved_var, new_var))   throw 1; // Inconsistent set of variables
-		
+		if (this->subject.Get_observers_number() != 0) throw 1;
+		check_all_vars_are_different(new_var);
+		check_substitution_consistency(this->Involved_var, new_var);
 		this->Involved_var = new_var;
-		this->validity_flag = true;
 
-	}
-
-	void Potential_Shape::Copy_Distribution(std::list<std::list<size_t>>* combinations, std::list<float>* values) const {
-
-		combinations->clear();
-		values->clear();
-
-		if (!this->validity_flag) throw 0; // asked for the copy of an invalid potential 
-
-		auto Distr = &this->Distribution;
-		size_t N_vars = this->Get_involved_var_safe()->size(), k;
-		size_t* comb;
-		for (auto it = Distr->begin(); it != Distr->end(); it++) {
-			values->push_back(float());
-			(*it)->Get_val(&values->back());
-
-			combinations->push_back(list<size_t>());
-			comb = (*it)->Get_indeces();
-			for (k = 0; k < N_vars; k++)
-				combinations->back().push_back(comb[k]);
+		auto it_end = this->Involved_var.end();
+		auto it_ob = this->var_observers.begin();
+		for (auto it = this->Involved_var.begin(); it != it_end; it++) {
+			it_ob->change_observed(*it);
+			it_ob++;
 		}
 
 	}
 
 
+ 
 
+	class Potential_Exp_Shape::Distribution_exp_value : public I_Potential::I_Distribution_value {
+	public:
+		Distribution_exp_value(Distribution_value_concrete* to_wrap, float* weight) :wrapped(to_wrap), w(weight) {};
+		~Distribution_exp_value() { delete this->wrapped; };
 
-
+		virtual float		  Get_val() const { return expf(*w * this->wrapped->Get_val()); };
+		virtual const size_t* Get_indeces() const { return this->wrapped->Get_indeces(); };
+	protected:
+	// data
+		float*						 w;
+		Distribution_value_concrete* wrapped;
+	};
 
 	Potential_Exp_Shape::~Potential_Exp_Shape() {
 
+		this->shape_observer->detach();
 		for (auto it = this->Distribution.begin(); it != this->Distribution.end(); it++)
 			delete *it;
+		delete this->shape_observer;
 
 	}
 
 	void Potential_Exp_Shape::Wrap(Potential_Shape* shape) {
 
+		Subject* shape_sub = shape->Cast_to_Subject();
+		if (shape_sub->Get_observers_number() != 0) throw 0;
+		this->shape_observer = new Subject::Observer(shape_sub, this);
 		this->pwrapped = shape;
-		this->validity_flag = this->pwrapped->get_validity();
-		if (!this->validity_flag)
-			return;
-
-		list<size_t*> entire_domain;
-		Get_entire_domain(&entire_domain, *this->I_Potential::Getter_4_Decorator::Get_involved_var(shape));
-
-		list<I_Distribution_value*> _distribution;
-		shape->Find_Comb_in_distribution(&_distribution, entire_domain, *this->I_Potential::Getter_4_Decorator::Get_involved_var(shape), shape);
-		auto it_domain = entire_domain.begin();
-		float temp;
-		Distribution_value* temp_pt;
-		for (auto it = _distribution.begin(); it != _distribution.end(); it++) {
-			temp_pt = new Distribution_value(*it_domain);
-			if (*it == NULL) temp_pt->Set_val(0.f);
-			else {
-				(*it)->Get_val(&temp);
-				temp_pt->Set_val(temp);
-			}
-			this->Distribution.push_back(new Distribution_exp_value(temp_pt, &this->mWeight));
-			it_domain++;
+		
+		combinations comb(*shape->Get_involved_var());
+		vector<const I_Distribution_value*> vals;
+		comb.Find_images_single_matches(&vals, *shape);
+		auto it = vals.begin();
+		size_t S = this->Get_involved_var()->size();
+		combinations::iterator it_comb(comb);
+		Distribution_value_concrete* val = NULL;
+		while (it_comb.is_not_at_end()) {
+			if(*it == NULL)
+				val = new Distribution_value_concrete(alloc_combination(*it_comb, S), 0.f);
+			else
+				val = new Distribution_value_concrete(alloc_combination(*it_comb, S), (*it)->Get_val());
+			this->Distribution.push_back(new Distribution_exp_value(val , &this->mWeight));
+			it++;
+			++it_comb;
 		}
 
 	}
 
-	Potential_Exp_Shape::Potential_Exp_Shape(Potential_Shape* shape, const float& w) :
-		I_Potential_Decorator(NULL), mWeight(w) {
+	Potential_Exp_Shape::Potential_Exp_Shape(Potential_Shape& shape, const float& w) :
+		I_Potential_Decorator(NULL), mWeight(w), shape_observer(NULL) {
 
-		this->Wrap(shape);
+		this->Wrap(&shape);
 
 	};
 
 	Potential_Exp_Shape::Potential_Exp_Shape(const std::list<Categoric_var*>& var_involved, const std::string& file_to_read, const float& w) :
-		I_Potential_Decorator(NULL), mWeight(w) {
+		I_Potential_Decorator(NULL), mWeight(w), shape_observer(NULL) {
 
 		Potential_Shape* temp = new Potential_Shape(var_involved, file_to_read);
 		this->Wrap(temp);
 
 	}
 
-	Potential_Exp_Shape::Potential_Exp_Shape(const Potential_Exp_Shape* to_copy, const std::list<Categoric_var*>& var_involved) :
-		I_Potential_Decorator(NULL), mWeight(to_copy->mWeight) {
+	Potential_Exp_Shape::Potential_Exp_Shape(const Potential_Exp_Shape& to_copy, const std::list<Categoric_var*>& var_involved) :
+		I_Potential_Decorator(NULL), mWeight(to_copy.mWeight), shape_observer(NULL) {
 
-		auto new_shape = new Potential_Shape(to_copy->pwrapped, var_involved);
+		auto new_shape = new Potential_Shape(*to_copy.pwrapped, var_involved);
 		this->Wrap(new_shape);
 
 	};
 
+	Potential_Exp_Shape::weigth_modifier::weigth_modifier(Potential_Exp_Shape& involved_pot) :
+		Observer(&involved_pot.subject_w_hndlr, (void*)(&involved_pot)) {
 
-
-
-
-	Potential::Potential(const std::list<Potential*>& potential_to_merge, const bool& use_sparse_format) : I_Potential_Decorator(NULL) {
-
-		this->validity_flag = false;
-		if (potential_to_merge.empty())  throw 0; //empty set to merge
-		
-		const list<Categoric_var*>* front_vars = this->I_Potential::Getter_4_Decorator::Get_involved_var(potential_to_merge.front());
-		list<list<I_Distribution_value*>> Distributions_to_merge;
-		list<size_t*> val_to_search;
-		if (use_sparse_format) {
-			size_t* temp_malloc;
-			//copy all the values in front distribution
-			size_t k, N_var = front_vars->size();
-			auto Distribution_front = this->I_Potential::Getter_4_Decorator::Get_distr(potential_to_merge.front());
-			for (auto itD = Distribution_front->begin(); itD != Distribution_front->end(); itD++) {
-				temp_malloc = (size_t*)malloc(sizeof(size_t)*N_var);
-				for (k = 0; k < N_var; k++)
-					temp_malloc[k] = (*itD)->Get_indeces()[k];
-				val_to_search.push_back(temp_malloc);
-			}
-		}
-		else {
-			Get_entire_domain(&val_to_search, *front_vars);
-		}
-
-		for (auto itP = potential_to_merge.begin(); itP != potential_to_merge.end(); itP++) {
-			Distributions_to_merge.push_back(list<I_Distribution_value*>());
-			Find_Comb_in_distribution(&Distributions_to_merge.back(), val_to_search, *front_vars, *itP);
-		}
-
-
-
-		//build the merged distribution
-
-		Potential_Shape* shape_to_create = new Potential_Shape(*front_vars);
-		auto shape_Distr = this->I_Potential::Getter_4_Decorator::Get_distr(shape_to_create);
-
-		bool match_in_all;
-		float product, temp;
-		auto it_Distributions = Distributions_to_merge.begin();
-		while (!Distributions_to_merge.front().empty()) {
-			match_in_all = true;
-
-			product = 1.f;
-			for (it_Distributions = Distributions_to_merge.begin(); it_Distributions != Distributions_to_merge.end(); it_Distributions++) {
-				if (it_Distributions->front() == NULL) {
-					match_in_all = false;
-					break;
-				}
-
-				it_Distributions->front()->Get_val(&temp);
-				product *= temp;
-			}
-
-			if (match_in_all) {
-				shape_Distr->push_back(new Distribution_value(val_to_search.front()));
-				shape_Distr->back()->Set_val(product);
-			}
-			else {
-				if (use_sparse_format) free(val_to_search.front());
-				else {
-					shape_Distr->push_back(new Distribution_value(val_to_search.front()));
-					shape_Distr->back()->Set_val(0.f);
-				}
-			}
-
-
-			val_to_search.pop_front();
-			for (it_Distributions = Distributions_to_merge.begin(); it_Distributions != Distributions_to_merge.end(); it_Distributions++)
-				it_Distributions->pop_front();
-		}
-
-		this->pwrapped = shape_to_create;
-		this->validity_flag = true;
+		this->pWeight = &involved_pot.mWeight;
 
 	};
 
-	Potential::Potential(const std::list<size_t>& val_observed, const std::list<Categoric_var*>& var_observed, Potential* pot_to_reduce) : I_Potential_Decorator(NULL) {
 
-		this->validity_flag = false;
+
+
+
+	void get_all_equals(vector<float>* vals, const size_t& Size) {
+
+		vals->reserve(Size);
+		for (size_t k = 0; k < Size; k++)
+			vals->push_back(1.f);
+
+	};
+	Potential::Potential(const std::list<Potential*>& potential_to_merge, const bool& use_sparse_format) : I_Potential_Decorator(NULL) {
+
+		if (potential_to_merge.empty())  throw 0; //empty set to merge
+		
+		combinations* comb = NULL;
+		if (use_sparse_format)
+			comb = new combinations(*potential_to_merge.front());
+		else
+			comb = new combinations(*potential_to_merge.front()->Get_involved_var());
+
+		vector<float> v_cumulated;
+		vector<const I_Distribution_value*> v_temp;
+		get_all_equals(&v_cumulated, comb->get_number_of_combinations());
+		vector<const I_Distribution_value*>::iterator itc;
+		vector<float>::iterator itv, itv_end = v_cumulated.end();
+		auto it_end = potential_to_merge.end();
+		for (auto it = potential_to_merge.begin(); it != it_end; it++) {
+			comb->Find_images_single_matches(&v_temp , **it);
+			itc = v_temp.begin();
+			for (itv = v_cumulated.begin(); itv != itv_end; itv++) {
+				if (*itc == NULL) *itv *= 0.f;
+				else *itv *= (*itc)->Get_val();
+				itc++;
+			}
+		}
+
+		this->pwrapped = new Potential_Shape(*potential_to_merge.front()->Get_involved_var());
+		auto Dist = Get_distr_static(this->pwrapped);
+		combinations::iterator it_comb(*comb);
+		size_t S = potential_to_merge.front()->Get_involved_var()->size();
+		for (itv = v_cumulated.begin(); itv != itv_end; itv++) {
+			if (*itv != 0.f) 
+				Dist->push_back(new Distribution_value_concrete(alloc_combination(*it_comb, S), *itv));
+			++it_comb;
+		}
+		delete comb;
+
+	};
+
+	Potential::Potential(const std::list<size_t>& val_observed, const std::list<Categoric_var*>& var_observed, Potential& pot_to_reduce) : I_Potential_Decorator(NULL) {
 
 		if (val_observed.size() != var_observed.size()) throw 0;// val observed mismatch with var observed
 		
-		if (val_observed.size() >= this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_reduce)->size()) throw 1; // at least one non observed variable must exist
+		if (val_observed.size() >= pot_to_reduce.Get_involved_var()->size() ) throw 1; // at least one non observed variable must exist
 		
-		size_t* index_to_find = (size_t*)malloc(sizeof(size_t)*var_observed.size());
-		auto val_ob = val_observed.begin();
-		for (size_t k = 0; k < var_observed.size(); k++) {
-			index_to_find[k] = *val_ob;
-			val_ob++;
-		}
-
-		list<size_t>			 pos_to_remain;
-		list<Categoric_var*>	 var_to_remain;
-		auto it_obs = var_observed.begin();
-		bool is_obs;
+		combinations comb( val_observed , var_observed);
+		std::vector<std::list<const I_Distribution_value*>> matching;
+		comb.Find_images_multiple_matches(&matching, pot_to_reduce);
+		list<size_t> pos_remaining;
+		list<Categoric_var*> var_remaining;
+		bool is_not_observed;
+		auto vars = pot_to_reduce.Get_involved_var();
 		size_t k = 0;
-		auto pot_to_reduce_vars = this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_reduce);
-		for (auto itV = pot_to_reduce_vars->begin(); itV != pot_to_reduce_vars->end(); itV++) {
-			is_obs = false;
-			for (it_obs = var_observed.begin(); it_obs != var_observed.end(); it_obs++) {
-				if (*it_obs == *itV) {
-					is_obs = true;
+		list<Categoric_var*>::const_iterator ito, ito_end = var_observed.end();
+		for (auto it = vars->begin(); it != vars->end(); it++) {
+			is_not_observed = true;
+			for (ito = var_observed.begin(); ito != ito_end; ito++) {
+				if (*ito == *it) {
+					is_not_observed = false;
 					break;
 				}
 			}
-
-			if (!is_obs) {
-				pos_to_remain.push_back(k);
-				var_to_remain.push_back(*itV);
+			if (is_not_observed) {
+				var_remaining.push_back(*it);
+				pos_remaining.push_back(k);
 			}
 			k++;
 		}
 
-		list<I_Distribution_value*> vals;
-		Find_Comb_in_distribution(&vals, index_to_find, var_observed, pot_to_reduce);
-		free(index_to_find);
-
-		Potential_Shape* shape_to_create = new Potential_Shape(var_to_remain);
-		auto distr_to_create = this->I_Potential::Getter_4_Decorator::Get_distr(shape_to_create);
-
-		if (vals.front() != NULL) {
-			size_t Remain_size = var_to_remain.size();
-			auto it_remain = pos_to_remain.begin();
-			float temp;
-			size_t* temp_malloc;
-			for (auto itD = vals.begin(); itD != vals.end(); itD++) {
-				temp_malloc = (size_t*)malloc(sizeof(size_t) * Remain_size);
-				k = 0;
-				for (it_remain = pos_to_remain.begin(); it_remain != pos_to_remain.end(); it_remain++) {
-					temp_malloc[k] = (*itD)->Get_indeces()[*it_remain];
-					k++;
-				}
-
-				distr_to_create->push_back(new Distribution_value(temp_malloc));
-				(*itD)->Get_val(&temp);
-				distr_to_create->back()->Set_val(temp);
+		this->pwrapped = new Potential_Shape(var_remaining);
+		auto Dist = Get_distr_static(this->pwrapped);
+		size_t* comb_remaining = NULL;
+		auto itM = matching.front().begin();
+		auto itM_end = matching.front().end();
+		size_t r, R = pos_remaining.size();
+		list<size_t>::iterator it_r;
+		const size_t* comb_original = NULL;
+		for (itM; itM != itM_end; itM++) {
+			comb_remaining = (size_t*)malloc(R * sizeof(size_t));
+			comb_original = (*itM)->Get_indeces();
+			it_r = pos_remaining.begin();
+			for (r = 0; r < R; r++) {
+				comb_remaining[r] = comb_original[*it_r];
+				it_r++;
 			}
+			Dist->push_back(new Distribution_value_concrete(comb_remaining, (*itM)->Get_val()));
 		}
-
-		this->pwrapped = shape_to_create;
-		this->validity_flag = true;
 
 	}
 
-	void Potential::Get_marginals(std::list<float>* prob_distr) {
+	void Potential::Get_marginals(std::vector<float>* prob_distr) const {
 
 		prob_distr->clear();
-
-		auto distr = this->Get_distr();
-		if (distr->empty()) throw 0; //found empty distribution when evaluating marginals
-		
+		auto vars = this->Get_involved_var();
+		combinations comb(*vars);
+		prob_distr->reserve(comb.get_number_of_combinations());
+		vector<const I_Distribution_value*> match;
+		comb.Find_images_single_matches(&match, *this->pwrapped);
+		size_t K = match.size();
 		float Z = 0.f;
-		for (auto itD = distr->begin(); itD != distr->end(); itD++) {
-			prob_distr->push_back(float());
-			(*itD)->Get_val(&prob_distr->back());
-			Z += prob_distr->back();
+		for (size_t k = 0; k < K; k++) {
+			if (match[k] == NULL) prob_distr->push_back(0.f);
+			else {
+				prob_distr->push_back(match[k]->Get_val());
+				Z += prob_distr->back();
+			}
 		}
 
-
+		vector<float>::iterator itP, itP_end = prob_distr->end();
 		if (Z < 1e-8) {
-			float temp = 1.f / (float)distr->size();
-			for (auto itP = prob_distr->begin(); itP != prob_distr->end(); itP++)
+			float temp = 1.f / (float)prob_distr->size();
+			for (itP = prob_distr->begin(); itP != itP_end; itP++)
 				*itP = temp;
 		}
 		else {
 			Z = 1.f / Z;
-			for (auto itP = prob_distr->begin(); itP != prob_distr->end(); itP++)
+			for (itP = prob_distr->begin(); itP != itP_end; itP++)
 				*itP *= Z;
 		}
 
 	}
 
-	void Potential::clone_distribution(Potential_Shape* shape) {
-
-		if (!this->validity_flag) throw 0; // impossible to clone the values of an non valid potential
-		
-		auto var_in_shape = shape->Get_involved_var_safe();
-		auto var_in_this = this->Get_involved_var();
-		auto it = var_in_this->begin();
-		size_t k;
-		list<size_t> pos_in_this;
-		for (auto it2 = var_in_shape->begin(); it2 != var_in_shape->end(); it2++) {
-			k = 0;
-			for (it = var_in_this->begin(); it != var_in_this->end(); it++) {
-				if (*it == *it2) {
-					pos_in_this.push_back(k);
-					break;
-				}
-				k++;
-			}
-		}
-		if (pos_in_this.size() != var_in_shape->size())  throw 1; // the variables involved in the shape passed are not the same of the potentials to clone
-		
-		auto distr_this = this->Get_distr();
-		list<size_t> val_temp;
-		float vall_temp;
-		list<size_t>::iterator it_pos;
-		size_t* comb_temp;
-		for (auto it_d = distr_this->begin(); it_d != distr_this->end(); it_d++) {
-			val_temp.clear();
-			comb_temp = (*it_d)->Get_indeces();
-			for (it_pos = pos_in_this.begin(); it_pos != pos_in_this.end(); it_pos++) {
-				val_temp.push_back(comb_temp[*it_pos]);
-			}
-			(*it_d)->Get_val(&vall_temp);
-
-			shape->Add_value(val_temp, vall_temp);
-		}
-
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-	Message_Unary::Message_Unary(Categoric_var* var_involved) {
-
-		Potential_Shape* ones = new Potential_Shape({ var_involved });
-		ones->Set_ones();
-		this->pwrapped = ones;
-
-	}
-
-	void eval_diff(float* diff, list<I_Potential::I_Distribution_value*>* F1, list<I_Potential::I_Distribution_value*>* F2) {
-
-		if (F1->size() != F2->size()) {
-			*diff = FLT_MAX;
-			return;
-		}
-
-		*diff = 0.f;
-		float v1, v2;
-		auto it2 = F2->begin();
-		for (auto it1 = F1->begin(); it1 != F1->end(); it1++) {
-			(*it1)->Get_val(&v1);
-			(*it2)->Get_val(&v2);
-			*diff += abs(v1 - v2);
-			it2++;
-		}
-
-	}
-
-	Message_Unary::Message_Unary(Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP) {
-
-		float fake_diff;
-		this->Update(&fake_diff, binary_to_merge, potential_to_merge, Sum_or_MAP);
-
-	}
-
-	void Message_Unary::Update(float* diff_to_previous, Potential* binary_to_merge, const std::list<Potential*>& potential_to_merge, const bool& Sum_or_MAP) {
-
-		if (potential_to_merge.empty())  throw 0; //  Message::Update: wrong method for managing an empty set of unary to merge
-		
-		Potential* unary_union = NULL;
-		if (potential_to_merge.size() == 1)  unary_union = potential_to_merge.front();
-		else unary_union = new Potential(potential_to_merge);
-
-		auto merged_pot = this->merge_binary_and_unary(binary_to_merge, unary_union, Sum_or_MAP);
-		merged_pot->Normalize_distribution();
-
-		if (potential_to_merge.size() != 1) delete unary_union;
-
-		if (pwrapped == NULL)
-			*diff_to_previous = FLT_MAX;
-		else {
-			eval_diff(diff_to_previous, this->I_Potential::Getter_4_Decorator::Get_distr(this->pwrapped), this->I_Potential::Getter_4_Decorator::Get_distr(merged_pot));
-			delete this->pwrapped;
-		}
-		this->pwrapped = merged_pot;
-
-	}
-
-	Message_Unary::Message_Unary(Potential* binary_to_merge, Categoric_var* var_to_marginalize, const bool& Sum_or_MAP) {
-
-		float fake_diff;
-		this->Update(&fake_diff, binary_to_merge, var_to_marginalize, Sum_or_MAP);
-
-	}
-
-	void Message_Unary::Update(float* diff_to_previous, Potential* binary_to_merge, Categoric_var* var_to_marginalize, const bool& Sum_or_MAP) {
-
-		Message_Unary unary_temp(var_to_marginalize);
-
-		auto merged_pot = this->merge_binary_and_unary(binary_to_merge, &unary_temp, Sum_or_MAP);
-		merged_pot->Normalize_distribution();
-
-		if (pwrapped == NULL)
-			*diff_to_previous = FLT_MAX;
-		else {
-			eval_diff(diff_to_previous, this->I_Potential::Getter_4_Decorator::Get_distr(this->pwrapped), this->I_Potential::Getter_4_Decorator::Get_distr(merged_pot));
-			delete this->pwrapped;
-		}
-		this->pwrapped = merged_pot;
-
-	}
-
-	Potential_Shape* Message_Unary::merge_binary_and_unary(Potential* binary_to_merge, Potential* unary, const bool& Sum_or_MAP) {
-
-		Categoric_var* var_to_marginalize = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->front(),
-			*var_to_remain = this->I_Potential::Getter_4_Decorator::Get_involved_var(binary_to_merge)->back();
-		size_t         pos_to_marginalize = 0, pos_to_remain = 1;
-		if (var_to_remain == this->I_Potential::Getter_4_Decorator::Get_involved_var(unary)->front()) {
-			Categoric_var* C = var_to_remain;
-			var_to_remain = var_to_marginalize;
-			var_to_marginalize = C;
-
-			size_t C2 = pos_to_remain;
-			pos_to_remain = pos_to_marginalize;
-			pos_to_marginalize = C2;
-		}
-
-		Potential_Shape* shape_temp = new Potential_Shape({ var_to_remain });
-		auto shape_D = this->I_Potential::Getter_4_Decorator::Get_distr(shape_temp);
-
-		size_t k, K;
-
-		list<I_Distribution_value*> unary_order;
-		list<size_t*> val_to_search_temp;
-		K = var_to_marginalize->size();
-		for (k = 0; k < K; k++) {
-			val_to_search_temp.push_back((size_t*)malloc(sizeof(size_t)));
-			val_to_search_temp.back()[0] = k;
-		}
-		Find_Comb_in_distribution(&unary_order, val_to_search_temp, { var_to_marginalize }, unary);
-		for (auto it = val_to_search_temp.begin(); it != val_to_search_temp.end(); it++)
-			free(*it);
-
-		list<I_Distribution_value*>::iterator it_unary_order;
-		list<I_Distribution_value*> distr_temp;
-		list<I_Distribution_value*>::iterator it_distr_temp;
-		K = var_to_remain->size();
-		size_t* comb;
-		float result, temp1, temp2;
-		for (k = 0; k < K; k++) {
-			Find_Comb_in_distribution(&distr_temp, &k, { var_to_remain }, binary_to_merge);
-
-			result = 0.f;
-			for (it_distr_temp = distr_temp.begin(); it_distr_temp != distr_temp.end(); it_distr_temp++) {
-				if (*it_distr_temp != NULL) {
-					it_unary_order = unary_order.begin();
-					advance(it_unary_order, (*it_distr_temp)->Get_indeces()[pos_to_marginalize]);
-
-					if (*it_unary_order != NULL) {
-						(*it_distr_temp)->Get_val(&temp1);
-						(*it_unary_order)->Get_val(&temp2);
-
-						temp1 *= temp2;
-						if (Sum_or_MAP) result += temp1;
-						else {
-							if (temp1 > result) result = temp1;
-						}
-					}
-				}
-			}
-
-			comb = (size_t*)malloc(sizeof(size_t));
-			comb[0] = k;
-			shape_D->push_back(new Distribution_value(comb));
-			shape_D->back()->Set_val(result);
-		}
-
-		return shape_temp;
-
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-	void I_Potential::Print_distribution(std::ostream& f, const bool& print_entire_domain) {
-
-		list<I_Distribution_value*>* distribution_to_print;
-		if (print_entire_domain) {
-			list<size_t*> temp;
-			Get_entire_domain(&temp, *this->Get_involved_var());
-			list<I_Distribution_value*> ttemp;
-			Find_Comb_in_distribution(&ttemp, temp, *this->Get_involved_var(), this);
-
-			distribution_to_print = new list<I_Distribution_value*>();
-			auto it_ttemp = ttemp.begin();
-			float temp_val;
-			for (auto it = temp.begin(); it != temp.end(); it++) {
-				distribution_to_print->push_back(new Distribution_value(*it));
-
-				if (*it_ttemp == NULL) distribution_to_print->back()->Set_val(0.f);
-				else {
-					distribution_to_print->back()->Get_val(&temp_val);
-					distribution_to_print->back()->Set_val(temp_val);
-				}
-
-				it_ttemp++;
-			}
-		}
-		else {
-			distribution_to_print = this->Get_distr();
-		}
-
-
-		size_t var_num = this->Get_involved_var()->size(), k;
-		float temp;
-		auto itD_back = distribution_to_print->end();
-		itD_back--;
-		for (auto itD = distribution_to_print->begin(); itD != distribution_to_print->end(); itD++) {
-			for (k = 0; k < var_num; k++)
-				f << " " << (*itD)->Get_indeces()[k];
-			(*itD)->Get_val(&temp);
-			f << " " << temp;
-
-			if (itD != itD_back)
-				f << endl;
-		}
-
-		if (print_entire_domain) {
-			for (auto it = distribution_to_print->begin(); it != distribution_to_print->end(); it++)
-				delete *it;
-			delete distribution_to_print;
-		}
+	void Potential::clone_distribution(Potential_Shape& shape) const {
+
+		shape.Substitute_variables(*this->Get_involved_var()); //inside this method is checked that the shape is not observed by anyone
+		auto Dist = Get_distr_static(&shape);
+		for (auto it = Dist->begin(); it != Dist->end(); it++)
+			delete* it;
+		Dist->clear();
+
+		const std::list<I_Distribution_value*>* Dist_this = Get_distr_static(this);
+		size_t K = this->Get_involved_var()->size();
+		auto it = Dist_this->begin();
+		auto it_end = Dist_this->end();
+		for (it; it != it_end; it++)
+			Dist->push_back(new Distribution_value_concrete(alloc_combination((*it)->Get_indeces(), K), (*it)->Get_val()));
 
 	}
 

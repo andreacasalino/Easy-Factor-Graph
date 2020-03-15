@@ -6,6 +6,7 @@
  **/
 
 #include "../Header/Trainer.h"
+#include <cmath>
 using namespace std;
 
 #ifdef COMPILE_BFGS
@@ -15,37 +16,25 @@ using namespace Eigen;
 
 namespace EFG {
 
-	class Advancer_Concrete : public I_Trainer {
-	public:
-		virtual ~Advancer_Concrete() {};
-		virtual void Reset() {};
-
-		void Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) { abort(); };
-		virtual float _advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) = 0; //return L_infinity norm of weigth variation
-	};
-
-
-
-
-
-	class Fixed_step : public Advancer_Concrete {
+	class I_Trainer::Fixed_step : public I_Trainer::I_Advancer_Strategy {
 	public:
 		Fixed_step(const float& step) : Step_to_advance(step) {};
 	private:
-		float _advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
+		virtual void Reset() {};
+		float advance(Graph_Learnable* model_to_advance, const I_Potential::combinations& train_set, const bool& force_alfa_rec);
 	// data
 		float Step_to_advance;
 	};
 
 #ifdef COMPILE_BFGS
-	class BFGS : public Advancer_Concrete {
+	class I_Trainer::BFGS : public Advancer_Concrete {
 	public:
 		BFGS() : pData(NULL) {};
 		~BFGS() { this->Reset(); };
 
 		void Reset();
 	private:
-		float _advance(Graph_Learnable* model_to_advance,const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
+		float advance(Graph_Learnable* model_to_advance,const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 		void __line_search(Graph_Learnable* model_to_advance, VectorXf& S, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var);
 
 		struct Cache {
@@ -59,40 +48,17 @@ namespace EFG {
 
 
 
-	class Trainer_Decorator : public I_Trainer, public Training_set::subset::Handler {
-	public:
-		Trainer_Decorator(Advancer_Concrete* to_wrap) : Wrapped(to_wrap) {};
-		~Trainer_Decorator() { this->I_Trainer::Clean_Up(Wrapped); delete this->Wrapped; };
 
-		void Clean_Up() { this->I_Trainer::Clean_Up(Wrapped); };
-	protected:
-		void __check_training_possible(Graph_Learnable* model_to_train, Training_set* Train_set);
-	// data
-		Advancer_Concrete*		  Wrapped;
+	class I_Trainer::Entire_Set : public I_Trainer {
+	public:
+		Entire_Set(I_Trainer::I_Advancer_Strategy* to_wrap) : I_Trainer(to_wrap) {};
+		void Train(Graph_Learnable& model_to_train, Training_set& training_set, const unsigned int& Max_Iterations, std::list<float>* descend_story);
 	};
 
-
-
-	void Trainer_Decorator::__check_training_possible(Graph_Learnable* model_to_train, Training_set* Train_set) {
-
-		list<float> w;
-		Graph_Learnable::Weights_Manager::Get_tunable_w(&w, model_to_train);
-		if (w.empty()) throw 0; //asked tor training on a model without tunable parameters: command was ignored
-		
-		if (!Train_set->Get_validity())  throw 1; //asked tor training on an invalid set: commad was ignored
-		
-	}
-
-	class Entire_Set : public Trainer_Decorator {
+	class I_Trainer::Stoch_Set : public I_Trainer {
 	public:
-		Entire_Set(Advancer_Concrete* to_wrap) : Trainer_Decorator(to_wrap) {};
-		void Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story);
-	};
-
-	class Stoch_Set_variation : public Trainer_Decorator {
-	public:
-		Stoch_Set_variation(Advancer_Concrete* to_wrap, const float& percentage_to_use) : Trainer_Decorator(to_wrap), Percentage(percentage_to_use) {};
-		void Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story);
+		Stoch_Set(I_Trainer::I_Advancer_Strategy* to_wrap, const float& percentage_to_use) : I_Trainer(to_wrap), Percentage(percentage_to_use) {};
+		void Train(Graph_Learnable& model_to_train, Training_set& training_set, const unsigned int& Max_Iterations , std::list<float>* descend_story);
 	private:
 		float Percentage;
 	};
@@ -100,82 +66,69 @@ namespace EFG {
 
 
 
-	void compute_order_of_variable_in_train_set(list<Categoric_var*>* result, Graph_Learnable* model, list<string>* var_names_from_training_set) {
+	void I_Trainer::Entire_Set::Train(Graph_Learnable& model_to_train, Training_set& training_set, const unsigned int& Max_Iterations , std::list<float>* descend_story) {
 
-		result->clear();
-		for (auto it = var_names_from_training_set->begin(); it != var_names_from_training_set->end(); it++)
-			result->push_back(model->Find_Variable(*it));
+		if (model_to_train.Get_model_size() == 0) throw 0;
+		if (descend_story != NULL) descend_story->clear();
+
+		this->adv_strtgy->Reset();
+		float variation, temp;
+		list<Categoric_var*> vars;
+		model_to_train.Get_All_variables_in_model(&vars);
+		auto Set = training_set.Get_as_combinations_list(vars);
+		for (unsigned int k = 0; k < Max_Iterations; k++) {
+			variation = this->adv_strtgy->advance(&model_to_train, Set, false);
+			if (descend_story != NULL) {
+				model_to_train.Get_TrainingSet_Likelihood(&temp , Set);
+				descend_story->push_back(temp);
+			}
+			if (variation <= 1e-3) break;
+		}
 
 	}
 
-	void Entire_Set::Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) {
+	void I_Trainer::Stoch_Set::Train(Graph_Learnable& model_to_train, Training_set& training_set, const unsigned int& Max_Iterations , std::list<float>* descend_story) {
 
-		this->__check_training_possible(model_to_train, Train_set);
+		if (model_to_train.Get_model_size() == 0) throw 0;
+		if (descend_story != NULL) descend_story->clear();
 
-		this->Wrapped->Reset();
-		Training_set::subset Set(Train_set);
-		list<Categoric_var*>	  order_of_variable_in_train_set;
-		compute_order_of_variable_in_train_set(&order_of_variable_in_train_set, model_to_train, this->Get_names(&Set));
+		this->adv_strtgy->Reset();
 		float variation;
+		list<Categoric_var*> vars;
+		model_to_train.Get_All_variables_in_model(&vars);
+		Training_set::subset sub_set( training_set , this->Percentage );
 		for (unsigned int k = 0; k < Max_Iterations; k++) {
-			variation = this->Wrapped->_advance(model_to_train, *this->Get_list(&Set), order_of_variable_in_train_set);
+			sub_set.Resample();
+			I_Potential::combinations Set = sub_set.Get_as_combinations_list(vars);
+			variation = this->adv_strtgy->advance(&model_to_train, Set, true);
 			if (descend_story != NULL) {
 				float temp;
-				model_to_train->Get_Likelihood_estimation(&temp, *this->Get_list(&Set), order_of_variable_in_train_set);
+				model_to_train.Get_TrainingSet_Likelihood(&temp, Set);
 				descend_story->push_back(temp);
 			}
 
 			if (variation <= 1e-3) break;
 		}
 
-		this->Clean_Up();
-
 	}
 
-	void Stoch_Set_variation::Train(Graph_Learnable* model_to_train, Training_set* Train_set, const unsigned int& Max_Iterations, std::list<float>* descend_story) {
+	float I_Trainer::Fixed_step::advance(Graph_Learnable* model_to_advance, const I_Potential::combinations& train_set, const bool& force_alfa_rec) {
 
-		this->__check_training_possible(model_to_train, Train_set);
+		vector<float> grad_att;
+		model_to_advance->Get_tunable_grad(&grad_att, train_set, force_alfa_rec);
 
-		this->Wrapped->Reset();
-		list<Categoric_var*>	  order_of_variable_in_train_set;
-		compute_order_of_variable_in_train_set(&order_of_variable_in_train_set, model_to_train, this->Get_names(Train_set));
-		float variation;
-		for (unsigned int k = 0; k < Max_Iterations; k++) {
-			Training_set::subset Set(Train_set, this->Percentage);
-			variation = this->Wrapped->_advance(model_to_train, *this->Get_list(&Set), order_of_variable_in_train_set);
-			if (descend_story != NULL) {
-				float temp;
-				model_to_train->Get_Likelihood_estimation(&temp, *this->Get_list(&Set), order_of_variable_in_train_set);
-				descend_story->push_back(temp);
-			}
+		vector<float> w_att;
+		model_to_advance->Get_tunable(&w_att);
 
-			if (variation <= 1e-3) break;
-		}
-
-		this->Clean_Up();
-
-	}
-
-	float Fixed_step::_advance(Graph_Learnable* model_to_advance, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
-
-		list<float> grad_att;
-		this->Get_w_grad(model_to_advance, &grad_att, comb_in_train_set, comb_var);
-
-		list<float> w_att;
-		Graph_Learnable::Weights_Manager::Get_tunable_w(&w_att, model_to_advance);
-
-		auto it_w_grad = grad_att.begin();
 		float delta_w = 0.f, temp;
-		for (auto it_w = w_att.begin(); it_w != w_att.end(); it_w++) {
-			temp = this->Step_to_advance * *it_w_grad;
-			*it_w += temp;
-			it_w_grad++;
-
+		size_t k, K = grad_att.size();
+		for (k = 0; k < K; k++) {
+			temp = this->Step_to_advance * grad_att[k];
+			w_att[k] += temp;
 			temp = abs(temp);
 			if (temp > delta_w) delta_w = temp;
 		}
-
-		this->Set_w(w_att, model_to_advance);
+		model_to_advance->Set_tunable(w_att);
 
 		return delta_w;
 
@@ -312,11 +265,11 @@ namespace EFG {
 
 
 
-	I_Trainer* I_Trainer::Get_fixed_step(const float& step_size, const float& stoch_grad_percentage) {
+	std::unique_ptr<I_Trainer> I_Trainer::Get_fixed_step(const float& step_size, const float& stoch_grad_percentage) {
 
-		Advancer_Concrete* created = new Fixed_step(step_size);
-		if (stoch_grad_percentage == 1.f) return new Entire_Set(created);
-		else							  return new Stoch_Set_variation(created, stoch_grad_percentage);
+		I_Advancer_Strategy* created = new Fixed_step(step_size);
+		if (stoch_grad_percentage == 1.f) return unique_ptr<I_Trainer>(new Entire_Set(created));
+		else							  return unique_ptr<I_Trainer>(new Stoch_Set(created, stoch_grad_percentage));
 
 	}
 

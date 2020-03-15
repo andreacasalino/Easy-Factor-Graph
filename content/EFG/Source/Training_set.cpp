@@ -15,25 +15,23 @@ using namespace std;
 
 namespace EFG {
 
-	std::list<std::string> extract_names(const std::list<Categoric_var*>& variable_in_the_net) {
+	template<typename T>
+	void check_variables(const list<T>& vars) {
 
-		list<string> names;
-		for (auto it = variable_in_the_net.begin(); it != variable_in_the_net.end(); it++)
-			names.push_back((*it)->Get_name());
-		return names;
+		if (vars.empty()) throw 0;
+
+		//check all variables are different
+		auto it_end = vars.end();
+		auto it2 = vars.begin();
+		for (auto it = vars.begin(); it != it_end; it++) {
+			for (it2 = vars.begin(); it2 != it; it2++) {
+				if (*it2 == *it) throw 1;
+			}
+		}
 
 	}
 
-	Training_set::~Training_set() {
-
-		for (auto it = this->Set.begin(); it != this->Set.end(); it++)
-			free(*it);
-
-	}
-
-	Training_set::Training_set(const std::string& file_to_import) {
-
-		this->Is_training_set_valid = false;
+	I_Potential::combinations::_Training_set_t::_Training_set_t(const std::string& file_to_import) {
 
 		ifstream f_set(file_to_import);
 		if (!f_set.is_open()) {
@@ -51,48 +49,134 @@ namespace EFG {
 
 		getline(f_set, line);
 		XML_reader::splitta_riga(line, &this->Variable_names);
-		size_t N_vars = this->Variable_names.size();
 
 		if (f_set.eof()) {
 			f_set.close();
 			throw 1; //found empty training set
 		}
 
-		size_t line_cont = 2, k;
+		list<list<size_t>> vals;
 		while (!f_set.eof()) {
 			getline(f_set, line);
 			slices.clear();
 			XML_reader::splitta_riga(line, &slices);
 
-			if (slices.size() != N_vars) {
-				f_set.close();
-				cout << " inconsistent data when reading training set at line " + to_string(line_cont);
-				throw 2; 
-			}
-
-			this->Set.push_back(NULL);
-			this->Set.back() = (size_t*)malloc(sizeof(size_t)*N_vars);
-			k = 0;
+			vals.push_back(list<size_t>());
 			while (!slices.empty()) {
-				this->Set.back()[k] = (size_t)atoi(slices.front().c_str());
+				vals.back().push_back((size_t)atoi(slices.front().c_str()));
 				slices.pop_front();
-				k++;
 			}
-			line_cont++;
 		}
 
 		f_set.close();
 
-		if (this->Set.empty()) {
-			f_set.close();
-			throw 1; //found empty training set
-		}
-
-		this->Is_training_set_valid = true;
+		this->__Import(vals);
 
 	}
 
-	void Training_set::Print(const std::string& file_name) {
+	I_Potential::combinations::_Training_set_t::_Training_set_t(const std::list<std::list<size_t>>& samples, const std::list<std::string>& var_names) {
+
+		this->Variable_names = var_names;
+		this->__Import(samples);
+
+	}
+
+	void I_Potential::combinations::_Training_set_t::__Import(const std::list<std::list<size_t>>& vals) {
+
+		check_variables(this->Variable_names);
+
+		if (vals.empty()) {
+			throw 1; //found empty training set
+		}
+
+		this->Comb_allocated_size = vals.size();
+		this->Comb_allocated = (size_t*)malloc(vals.front().size() * this->Comb_allocated_size * sizeof(size_t));
+		size_t p = 0;
+		size_t N_var = this->Variable_names.size();
+		size_t k = 0;
+		auto it_end = vals.end();
+		list<size_t>::const_iterator it2, it2_end;
+		for (auto it = vals.begin(); it != it_end; it++) {
+			if (it->size() != N_var) {
+				cout << "sample at pos " << k << " has inconsistent number of values" << endl;
+				throw 0;
+			}
+			it2_end = it->end();
+			for (it2 = it->begin(); it2 != it2_end; it2++) {
+				this->Comb_allocated[p] = (*it2);
+				p++;
+			}
+			k++;
+		}
+
+	}
+
+	I_Potential::combinations::_Training_set_t::_Training_set_t(const std::list<_Training_set_t*>& to_merge) {
+
+		if (to_merge.empty()) throw 0;
+
+		size_t V = to_merge.front()->Variable_names.size(); 
+		auto it = to_merge.begin();
+		for (it; it != to_merge.end(); it++) {
+			if ((*it)->Variable_names.size() != V) throw 1;
+		}
+
+		//check all training sets refer to the same set of variables
+		struct _info {
+			list<size_t>		pos;
+			_Training_set_t*		source;
+		};
+		list<_info> info;
+		it = to_merge.begin();
+		info.push_back(_info());
+		info.back().source = *it;
+		for (size_t k = 0; k < (*it)->Variable_names.size(); k++)
+			info.back().pos.push_back(k);
+		it++;
+		for (it; it != to_merge.end(); it++) {
+			info.push_back(_info());
+			info.back().source = *it;
+			size_t p;
+			for (auto itv = (*it)->Variable_names.begin(); itv != (*it)->Variable_names.end(); itv++) {
+				p = 0;
+				for (auto itv2 = to_merge.front()->Variable_names.begin(); itv2 != to_merge.front()->Variable_names.end(); itv2++) {
+					if (*itv2 == *itv) {
+						info.back().pos.push_back(p);
+						break;
+					}
+					p++;
+				}
+			}
+
+			if (info.back().pos.size() != V) throw 2; //at least one variable in the set was not found
+		}
+
+		this->Variable_names = to_merge.front()->Variable_names;
+		this->Comb_allocated_size = 0;
+		for (auto it = to_merge.begin(); it != to_merge.end(); it++)
+			this->Comb_allocated_size += (*it)->Comb_allocated_size;
+		this->Comb_allocated = (size_t*)malloc(this->Comb_allocated_size * sizeof(size_t));
+
+		list<size_t>::iterator p, p_end;
+		size_t c_tot = 0, c;
+		size_t C;
+		while (!info.empty()) {
+			c = 0;
+			p_end = info.front().pos.end();
+			C = info.front().source->Comb_allocated_size;
+			for (size_t k = 0; k < C; k++) {
+				for (p = info.front().pos.begin(); p != p_end; p++) {
+					this->Comb_allocated[c_tot] = info.front().source->Comb_allocated[c + *p];
+					c_tot++;
+				}
+				c += V;
+			}
+			info.pop_front();
+		}
+
+	}
+
+	void I_Potential::combinations::_Training_set_t::Print(const std::string& file_name) const {
 
 		ofstream f(file_name);
 		if (!f.is_open()) {
@@ -108,50 +192,95 @@ namespace EFG {
 		for (itn; itn != this->Variable_names.end(); itn++)
 			f << " " << *itn;
 		f << endl;
-		auto it_end = this->Set.end(); 
-		it_end--;
-		for (auto it = this->Set.begin(); it != this->Set.end(); it++) {
-			f << (*it)[0];
-			for (k = 1; k < N_vars; k++)
-				f << " " << (*it)[k];
 
-			if(it != it_end)
-				f << endl;
+		size_t p = 0, v;
+		for (k = 0; k < this->Comb_allocated_size; k++) {
+			f << this->Comb_allocated[p];
+			for (v = 0; v < N_vars; v++) {
+				f << " " << this->Comb_allocated[p];
+				p++;
+			}
 		}
 
 		f.close();
 
 	}
 
-	Training_set::subset::subset(Training_set* set, const float& size_percentage):
-		pVariable_names(&set->Variable_names), Is_sub_set_valid(set->Is_training_set_valid) {
+	I_Potential::combinations I_Potential::combinations::_Training_set_t::Get_as_combinations_list(const std::list<Categoric_var*>& variables_to_assume) const{
 
-		if (!this->Is_sub_set_valid) throw 0; //asked to create a sub set from an invalid training set
+		combinations to_return;
+		this->__Init_comb(to_return, variables_to_assume, this->Comb_allocated_size, this->Comb_allocated);
+		return move(to_return);
 
-		float percentage_to_use = size_percentage;
-		if (size_percentage < 0.f) {
-			percentage_to_use = 0.0001f;
+	}
+
+	I_Potential::combinations::_Training_set_t::subset::subset(_Training_set_t& set, const float& Sample_percentage):
+	 Subject::Observer(&set.subset_subject, this) {
+
+		this->pSource = &set;
+		float perc = Sample_percentage;
+		if (perc < 0.f) perc = 0.f;
+		if (perc > 1.f) perc = 1.f;
+
+		this->sampled_Comb_allocated_size = (size_t)floorf((float)this->pSource->Comb_allocated_size * perc);
+		if (this->sampled_Comb_allocated_size == 0) this->sampled_Comb_allocated_size = 1;
+		this->sampled_Comb_allocated = (size_t*)malloc(this->pSource->Variable_names.size() * this->sampled_Comb_allocated_size * sizeof(size_t));
+
+		this->Resample();
+
+	}
+
+	void I_Potential::combinations::_Training_set_t::subset::Resample() {
+
+		size_t s, S = this->pSource->Variable_names.size(), p;
+		for (size_t k = 0; k < this->sampled_Comb_allocated_size; k++) {
+			p = rand() % this->pSource->Comb_allocated_size;
+			for (s = 0; s < S; s++) 
+				this->sampled_Comb_allocated[k * S + s] = this->pSource->Comb_allocated[p * S + s];
 		}
-		if (size_percentage > 1.f) {
-			percentage_to_use = 1.f;
-		}
 
-		if (percentage_to_use == 1.f)
-			Sub_Set = set->Set;
-		else {
-			size_t subset_size = (size_t)floor(set->Set.size() * percentage_to_use);
-			if (subset_size == 0) subset_size = 1;
+	}
 
-			auto open_set = set->Set;
-			size_t pos;
-			list<size_t*>::iterator it_set;
-			for (size_t k = 0; k < subset_size; k++) {
-				pos = (size_t)(rand() % (int)open_set.size());
-				it_set = open_set.begin();
-				advance(it_set, pos);
-				this->Sub_Set.push_back(*it_set);
-				open_set.erase(it_set);
+	I_Potential::combinations I_Potential::combinations::_Training_set_t::subset::Get_as_combinations_list(const std::list<Categoric_var*>& variables_to_assume) const {
+
+		combinations to_return;
+		this->pSource->__Init_comb(to_return, variables_to_assume, this->sampled_Comb_allocated_size, this->sampled_Comb_allocated);
+		return move(to_return);
+
+	}
+
+	void I_Potential::combinations::_Training_set_t::__Init_comb(combinations& combs, const list<Categoric_var*>& vars, const size_t& size, size_t* pcomb) const{
+
+		check_variables(vars);
+		if (vars.size() != this->Variable_names.size()) throw 0;
+		//check the variable names match the ones owned by this object
+		list<Categoric_var*> order_to_assume;
+		this->__get_order(&order_to_assume , vars);
+
+		combs.Entire_domain_was_allocated = false;
+		combs.Variables = order_to_assume;
+		combs.Size = size;
+		combs.Combinations = pcomb;
+		combs.free_Combinations = false;
+
+	}
+
+	void I_Potential::combinations::_Training_set_t::__get_order(std::list<Categoric_var*>* result, const std::list<Categoric_var*>& vars) const {
+
+		result->clear();
+		Categoric_var* temp = NULL;
+		auto itn_end = this->Variable_names.end();
+		list<Categoric_var*>::const_iterator it, it_end = vars.end();
+		for (auto itn = this->Variable_names.begin(); itn != itn_end; itn++) {
+			temp = NULL;
+			for (it = vars.begin(); it != it_end; it++) {
+				if ((*it)->Get_name().compare(*itn) == 0) {
+					temp = *it;
+					break;
+				}
 			}
+			if (temp == NULL) throw 0; //at least one name was not found
+			result->push_back(temp);
 		}
 
 	}

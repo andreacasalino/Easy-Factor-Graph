@@ -12,5 +12,6 @@ CONTENTS:
 INSTALLATION:
 
 ->Windows: Use the Visual Studio solution ./content/EFG.sln to compile EFG as well as all the examples. A folder, at .\x64\Debug or .\x64\Release will be created with all the binaries.
+		   Alternatively you can build the library and all the examples using g++, by launching gpp_make.bat
 
 ->UNIX: Use ./content/Makefile to compile EFG as well as all the examples.   A folder, at .\bin or .\bin will be created with all the binaries.

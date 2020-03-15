@@ -9,17 +9,7 @@
 #include <iostream>
 using namespace std;
 
-//#define ADD_REGULARIZATION
-
 namespace EFG {
-
-	template<typename T>
-	void clean_collection(list<T*>& coll) {
-
-		for (auto it = coll.begin(); it != coll.end(); it++)
-			delete *it;
-
-	}
 
 	Graph::Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file) :
 		Node_factory(true) {
@@ -35,284 +25,12 @@ namespace EFG {
 
 	};
 
-	Graph::Graph(const std::list<Potential_Shape*>& potentials, const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
+	Graph::Graph(const std::vector<Potential_Shape*>& potentials, const std::vector<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert) :
 		Node_factory(use_cloning_Insert) {
 
-		this->Node_factory::Insert(potentials);
-		list<bool> tunability;
-		for (auto it = potentials_exp.begin(); it != potentials_exp.end(); it++)
-			tunability.push_back(true);
-		this->Node_factory::Insert(potentials_exp, tunability);
+		this->__Insert(potentials, {}, potentials_exp);
 
 	}
-
-
-
-
-
-
-
-
-	atomic_Learning_handler::atomic_Learning_handler(Potential_Exp_Shape* pot_to_handle) : I_Potential_Decorator(pot_to_handle) {
-
-		this->Destroy_wrapped = false; //this exponential shape will be wrapped also by a Potential to be stored in the graphical model
-		this->pWeight = this->Potential_Exp_Shape::Getter_weight_and_shape::Get_weight(pot_to_handle);
-
-		list<size_t*> val_to_search;
-		Get_entire_domain(&val_to_search, *this->I_Potential::Getter_4_Decorator::Get_involved_var(pot_to_handle));
-		Find_Comb_in_distribution(&this->Extended_shape_domain, val_to_search, *this->Get_involved_var(), this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
-		for (auto it = val_to_search.begin(); it != val_to_search.end(); it++)
-			free(*it);
-
-	}
-
-	void atomic_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
-
-		list<I_Distribution_value*> val_in_train_set;
-		Find_Comb_in_distribution(&val_in_train_set, comb_in_train_set, comb_var, this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
-
-		*alfa = 0.f;
-		float temp;
-		for (auto it_val = val_in_train_set.begin(); it_val != val_in_train_set.end(); it_val++) {
-			if (*it_val != NULL) {
-				(*it_val)->Get_val(&temp);
-				*alfa += temp;
-			}
-		}
-		*alfa *= 1.f / (float)comb_in_train_set.size();
-
-	}
-
-	bool atomic_Learning_handler::is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
-
-		if (vars_of_pot_whose_weight_is_to_share.size() == 1) {
-			if (vars_of_pot_whose_weight_is_to_share.front() == this->Get_involved_var_safe()->front())
-				return true;
-			else
-				return false;
-		}
-		else {
-			auto vars = this->Get_involved_var_safe();
-
-			if ((vars_of_pot_whose_weight_is_to_share.front() == vars->front()) && (vars_of_pot_whose_weight_is_to_share.back() == vars->back()))
-				return true;
-
-			if ((vars_of_pot_whose_weight_is_to_share.front() == vars->back()) && (vars_of_pot_whose_weight_is_to_share.back() == vars->front()))
-				return true;
-
-			return false;
-
-		}
-		return false;
-
-	}
-
-
-
-
-
-	composite_Learning_handler::~composite_Learning_handler() {
-
-		for (auto it = this->Components.begin(); it != this->Components.end(); it++)
-			delete *it;
-
-	}
-
-	composite_Learning_handler::composite_Learning_handler(atomic_Learning_handler* initial_A, atomic_Learning_handler* initial_B) {
-
-		this->Components.push_back(initial_A);
-		this->Append(initial_B);
-
-	}
-
-	void composite_Learning_handler::Set_weight(const float& w_new) {
-
-		for (auto it = this->Components.begin(); it != this->Components.end(); it++)
-			(*it)->Set_weight(w_new);
-
-	}
-
-	void composite_Learning_handler::Get_grad_alfa_part(float* alfa, const std::list<size_t*>& comb_in_train_set, const std::list<Categoric_var*>& comb_var) {
-
-		*alfa = 0.f;
-		float temp;
-		for (auto it = this->Components.begin(); it != this->Components.end(); it++) {
-			(*it)->Get_grad_alfa_part(&temp, comb_in_train_set, comb_var);
-			*alfa += temp;
-		}
-
-	}
-
-	void composite_Learning_handler::Get_grad_beta_part(float* beta) {
-
-		*beta = 0.f;
-		float temp;
-		for (auto it = this->Components.begin(); it != this->Components.end(); it++) {
-			(*it)->Get_grad_beta_part(&temp);
-			*beta += temp;
-		}
-
-	}
-
-	bool composite_Learning_handler::is_here_Pot_to_share(const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
-
-		for (auto it = this->Components.begin(); it != this->Components.end(); it++) {
-			if ((*it)->is_here_Pot_to_share(vars_of_pot_whose_weight_is_to_share))
-				return true;
-		}
-		return false;
-
-	}
-
-	void composite_Learning_handler::Append(atomic_Learning_handler* to_add) {
-
-		this->Components.push_back(to_add); 
-		float temp;
-		this->Components.front()->Get_weight(&temp);
-		to_add->Set_weight(temp); 
-
-	};
-
-
-
-
-
-
-	void Dot_with_Prob(float* result, const list<float>& marginal_prob, const list<I_Potential::I_Distribution_value*>& shape) {
-
-		*result = 0.f;
-		float temp;
-		auto itP = marginal_prob.begin();
-		for (auto itD = shape.begin(); itD != shape.end(); itD++) {
-			if (*itD != NULL) {
-				(*itD)->Get_val(&temp);
-				*result += temp * *itP;
-			}
-
-			itP++;
-		}
-
-	};
-
-
-	class Unary_handler : public atomic_Learning_handler {
-	public:
-		Unary_handler(Node* N, Potential_Exp_Shape* pot_to_handle) : atomic_Learning_handler(pot_to_handle), pNode(N) {};
-	private:
-		void    Get_grad_beta_part(float* beta);
-	// data
-		Node*				pNode;
-	};
-
-	void Unary_handler::Get_grad_beta_part(float* beta) {
-
-		list<float> marginals;
-		list<Potential*> message_union;
-		this->pNode->Gather_all_Unaries(&message_union);
-		Potential UP(message_union);
-		UP.Get_marginals(&marginals);
-
-		Dot_with_Prob(beta , marginals, this->Extended_shape_domain);
-
-	}
-
-
-
-	class Binary_handler : public atomic_Learning_handler {
-	public:
-		Binary_handler(Node* N1, Node* N2, Potential_Exp_Shape* pot_to_handle);
-		~Binary_handler() { delete this->Binary_for_group_marginal_computation; };
-	private:
-		void    Get_grad_beta_part(float* beta);
-	// data
-		Node*				pNode1;
-		Node*				pNode2;
-	// cache
-		Potential*						Binary_for_group_marginal_computation;
-	};
-
-	Binary_handler::Binary_handler(Node* N1, Node* N2, Potential_Exp_Shape* pot_to_handle) : atomic_Learning_handler(pot_to_handle), pNode1(N1), pNode2(N2) {
-
-		if (N1->Get_var() != pot_to_handle->Get_involved_var_safe()->front()) {
-			Node* C = N2;
-			N2 = N1;
-			N1 = C;
-		}
-
-		auto temp = new Potential_Shape(*this->Get_involved_var());
-		temp->Set_ones();
-		this->Binary_for_group_marginal_computation = new Potential(temp);
-
-	};
-
-	void Binary_handler::Get_grad_beta_part(float* beta) {
-
-		list<Potential*> union_temp;
-
-		struct info_val {
-			Potential*					 Mex_tot;
-			list<I_Distribution_value*>  ordered_distr;
-			size_t						 var_involved;
-		};
-		list<info_val> Messages_from_Net;
-
-		list<info_val> infoes;
-		this->pNode1->Compute_neighbourhood_messages(&union_temp, this->pNode2);
-		if (!union_temp.empty()) {
-			Messages_from_Net.push_back(info_val());
-			Messages_from_Net.back().Mex_tot = new Potential(union_temp);
-			Messages_from_Net.back().var_involved = 0;
-			list<size_t*> dom_temp;
-			Get_entire_domain(&dom_temp, { this->Binary_for_group_marginal_computation->Get_involved_var_safe()->front() });
-			Find_Comb_in_distribution(&Messages_from_Net.back().ordered_distr, dom_temp, 
-				{ this->Binary_for_group_marginal_computation->Get_involved_var_safe()->front() }, Messages_from_Net.back().Mex_tot);
-			for (auto it = dom_temp.begin(); it != dom_temp.end(); it++)
-				free(*it);
-		}
-		this->pNode2->Compute_neighbourhood_messages(&union_temp, this->pNode1);
-		if (!union_temp.empty()) {
-			Messages_from_Net.push_back(info_val());
-			Messages_from_Net.back().Mex_tot = new Potential(union_temp);
-			Messages_from_Net.back().var_involved = 1;
-			list<size_t*> dom_temp;
-			Get_entire_domain(&dom_temp, { this->Binary_for_group_marginal_computation->Get_involved_var_safe()->back() });
-			Find_Comb_in_distribution(&Messages_from_Net.back().ordered_distr, dom_temp,
-				{ this->Binary_for_group_marginal_computation->Get_involved_var_safe()->back() }, Messages_from_Net.back().Mex_tot);
-			for (auto it = dom_temp.begin(); it != dom_temp.end(); it++)
-				free(*it);
-		}
-
-		auto pBin_Distr = this->Get_distr();
-		float temp, result;
-		list<I_Distribution_value*>::iterator it_pos;
-		list<info_val>::iterator it_info;
-		auto itD2 = this->I_Potential::Getter_4_Decorator::Get_distr(this->Binary_for_group_marginal_computation)->begin();
-		for (auto itD = pBin_Distr->begin(); itD != pBin_Distr->end(); itD++) {
-			(*itD)->Get_val(&result);
-
-			for (it_info = infoes.begin(); it_info != infoes.end(); it_info++) {
-				it_pos = it_info->ordered_distr.begin();
-				advance(it_pos, (*itD)->Get_indeces()[it_info->var_involved]);
-
-				(*it_pos)->Get_val(&temp);
-				result *= temp;
-			}
-
-			(*itD2)->Set_val(result);
-			itD2++;
-		}
-
-		list<float> Marginals;
-		this->Binary_for_group_marginal_computation->Get_marginals(&Marginals);
-
-		Dot_with_Prob(beta, Marginals, this->Extended_shape_domain);
-
-		for (it_info = infoes.begin(); it_info != infoes.end(); it_info++)
-			delete it_info->Mex_tot;
-
-	}
-
-
 
 
 
@@ -321,22 +39,20 @@ namespace EFG {
 
 		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++)
 			delete *it;
-		if (this->pLast_train_set != NULL)
-			delete this->pLast_train_set;
 
 	}
 
 	Potential_Exp_Shape* Graph_Learnable::__Insert(Potential_Exp_Shape* pot, const bool& weight_tunability) {
 
-		auto pot_inserted = this->Node_factory::__Insert(pot, weight_tunability);
+		auto pot_inserted = this->Node_factory::__Insert(pot);
 		if (pot_inserted == NULL) return NULL;
 
 		if (weight_tunability) {
-			auto vars = pot_inserted->Get_involved_var_safe();
+			auto vars = pot_inserted->Get_involved_var();
 
 			if (vars->size() == 1) {
 				//new unary
-				auto new_atomic = new Unary_handler(this->__Find_Node(vars->front()), pot_inserted);
+				auto new_atomic = new Unary_handler(this, pot_inserted);
 				this->Atomic_Learner.push_back(Graph_Learnable::Learner_info<atomic_Learning_handler>());
 				this->Atomic_Learner.back().pos_in_Model_handlers = this->Model_handlers.size();
 				this->Atomic_Learner.back().Ref_to_learner = new_atomic;
@@ -347,7 +63,7 @@ namespace EFG {
 				Node* N1 = this->__Find_Node(vars->front());
 				Node* N2 = this->__Find_Node(vars->back());
 
-				auto new_atomic = new Binary_handler(N1, N2, pot_inserted);
+				auto new_atomic = new Binary_handler(this, pot_inserted);
 				this->Atomic_Learner.push_back(Graph_Learnable::Learner_info<atomic_Learning_handler>());
 				this->Atomic_Learner.back().pos_in_Model_handlers = this->Model_handlers.size();
 				this->Atomic_Learner.back().Ref_to_learner = new_atomic;
@@ -362,7 +78,8 @@ namespace EFG {
 
 		auto it_to_share = this->Atomic_Learner.begin();
 		bool found = false;
-		for (it_to_share; it_to_share != this->Atomic_Learner.end(); it_to_share++) {
+		auto it_to_share_end = this->Atomic_Learner.end();
+		for (it_to_share; it_to_share != it_to_share_end; it_to_share++) {
 			if (it_to_share->Ref_to_learner == pot_involved) {
 				found = true;
 				break;
@@ -374,7 +91,7 @@ namespace EFG {
 		size_t info = 0; //0 -> not found, 1 -> found in atomic, 2 -> found in composite
 		auto info_it_atomic = this->Atomic_Learner.begin();
 		auto info_it_composite = this->Composite_Learner.begin();
-		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
+		for (auto it = this->Atomic_Learner.begin(); it != it_to_share_end; it++) {
 			if (it->Ref_to_learner->is_here_Pot_to_share(vars_of_pot_whose_weight_is_to_share)) {
 				info = 1;
 				info_it_atomic = it;
@@ -382,7 +99,8 @@ namespace EFG {
 			}
 		}
 		if (info == 0) {
-			for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+			auto it_end = this->Composite_Learner.end();
+			for (auto it = this->Composite_Learner.begin(); it != it_end; it++) {
 				if (it->Ref_to_learner->is_here_Pot_to_share(vars_of_pot_whose_weight_is_to_share)) {
 					info = 2;
 					info_it_composite = it;
@@ -415,115 +133,85 @@ namespace EFG {
 
 	}
 
-	Graph_Learnable::Graph_Learnable(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask,
-		const std::list<Potential_Shape*>& shapes) : Graph_Learnable(use_cloning_Insert) {
+	Graph_Learnable::Graph_Learnable(const std::vector<Potential_Shape*>& shapes, const std::vector<std::list<Potential_Exp_Shape*>>& learnable_exp, const std::vector<Potential_Exp_Shape*>& constant_exp, const bool& use_cloning_Insert)
+		: Graph_Learnable(use_cloning_Insert) {
 
-		this->Insert(shapes);
-		try { this->Insert(potentials_exp, tunable_mask); }
-		catch (int) { throw 0; }
+		this->__Insert(shapes, learnable_exp, constant_exp);
 
 	}
 
-	void Graph_Learnable::Weights_Manager::Get_tunable_w(std::list<float>* w, Graph_Learnable* model) {
+	void Graph_Learnable::Get_tunable(std::vector<float>* w) const {
 
 		w->clear();
-		for (auto it = model->Model_handlers.begin(); it != model->Model_handlers.end(); it++) {
-			w->push_back(float());
-			(*it)->Get_weight(&w->back());
-		}
+		w->reserve(this->Model_handlers.size());
+		auto it_end = this->Model_handlers.end();
+		for (auto it = this->Model_handlers.begin(); it != it_end; it++)
+			w->push_back((*it)->Get_weight());
 
 	}
 
-	void Graph_Learnable::Weights_Manager::Get_tunable_w_grad(std::list<float>* grad_w, Graph_Learnable* model, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
+	void Graph_Learnable::Get_tunable_grad(std::vector<float>* w_grad, const I_Potential::combinations& training_set, const bool& force_alpha_recomputation) {
 
-		grad_w->clear();
-		model->Graph_Learnable::Get_w_grad(grad_w, comb_train_set, comb_var_order); //here tha alfa part is appended
-		model->Get_w_grad(grad_w, comb_train_set, comb_var_order); //here the beta part is added
-
-#ifdef ADD_REGULARIZATION
-		//add regularization term
-		float temp;
-		auto it_grad = grad_w->begin();
-		for (auto it = model->Model_handlers.begin(); it != model->Model_handlers.end(); it++) {
-			(*it)->Get_weight(&temp);
-			*it_grad -= 2.f * temp;
-			it_grad++;
-		}
-#endif
-
-	}
-
-	void Graph_Learnable::Weights_Manager::Set_tunable_w(const std::list<float>& w, Graph_Learnable* model) {
-
-		auto itw = w.begin();
-		for (auto it = model->Model_handlers.begin(); it != model->Model_handlers.end(); it++) {
-			(*it)->Set_weight(*itw);
-			itw++;
-		}
-
-	}
-
-	void Graph_Learnable::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
-
-		bool recompute_alpha = false;
-
-		if (this->pLast_train_set == NULL) {
-			recompute_alpha = true;
-			this->pLast_train_set = new proxy_gradient_info(comb_train_set);
-		}
+		bool recompute_alfa = false;
+		if (force_alpha_recomputation) recompute_alfa = true;
 		else {
-			if (this->pLast_train_set->Last_set != comb_train_set) {
-				recompute_alpha = true;
-				delete this->pLast_train_set;
-				this->pLast_train_set = new proxy_gradient_info(comb_train_set);
+			if (this->Last_training_set_used != &training_set) recompute_alfa = true;
+		}
+		this->Last_training_set_used = &training_set; 
+
+		w_grad->clear();
+		w_grad->reserve(this->Model_handlers.size());
+
+		std::list<I_Learning_handler*>::iterator it, it_end = this->Model_handlers.end();
+		if (recompute_alfa) {
+			for (it = this->Model_handlers.begin(); it != it_end; it++) 
+				(*it)->Recompute_grad_alfa_part(*this->Last_training_set_used);
+		}
+		for (it = this->Model_handlers.begin(); it != it_end; it++)	w_grad->push_back((*it)->Get_grad_alfa_part());
+		vector<float> beta_part;
+		this->__Get_beta_part(&beta_part, training_set);
+		size_t k, K = w_grad->size();
+		for (k = 0; k < K; k++)
+			(*w_grad)[k] -= beta_part[k];
+
+		if (this->Use_regularization) {
+			k = 0;
+			for (it = this->Model_handlers.begin(); it != it_end; it++) {
+				(*w_grad)[k] -= 2.f * (*it)->Get_weight();
+				k++;
 			}
 		}
-
-		if (recompute_alpha) {
-			//recompute alfa part
-			this->Alfa_part_gradient.clear();
-
-			for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++) {
-				this->Alfa_part_gradient.push_back(float());
-				(*it)->Get_grad_alfa_part(&this->Alfa_part_gradient.back(), comb_train_set, comb_var_order);
-			}
-		}
-
-		for (auto it = this->Alfa_part_gradient.begin(); it != this->Alfa_part_gradient.end(); it++)
-			grad_w->push_back(*it);
 
 	}
 
-	void Graph_Learnable::Get_Likelihood_estimation(float* result, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
+	void Graph_Learnable::Set_tunable(const std::vector<float>& w_vector) {
 
-		list<float> temp;
-		this->Eval_Log_Energy_function_normalized(&temp, comb_train_set, comb_var_order);
+		if (this->Model_handlers.size() != w_vector.size()) throw 0;
+		size_t k = 0;
+		auto it_end = this->Model_handlers.end();
+		for (auto it = this->Model_handlers.begin(); it != it_end; it++) {
+			(*it)->Set_weight(w_vector[k]);
+			k++;
+		}
+
+	}
+
+	void Graph_Learnable::Get_TrainingSet_Likelihood(float* result, const I_Potential::combinations& training_set) const {
+
+		vector<float> L;
+		this->Eval_Energy_function_normalized(&L, training_set);
 		*result = 0.f;
-		for (auto it = temp.begin(); it != temp.end(); it++)
-			*result += *it;
-		*result = *result / (float)comb_train_set.max_size();
+		float coeff = 1.f / (float)training_set.get_number_of_combinations();
+		auto it_end = L.end();
+		for (auto it = L.begin(); it != it_end; it++)
+			*result += coeff * *it;
 
 	};
 
-	void Graph_Learnable::Get_complete_atomic_handler_list(std::list<atomic_Learning_handler**>* atomic_list) {
-
-		atomic_list->clear();
-		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++)
-			atomic_list->push_back(&it->Ref_to_learner);
-
-		list<atomic_Learning_handler*>* temp;
-		list<atomic_Learning_handler*>::iterator it_temp;
-		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
-			temp = it->Ref_to_learner->Get_Components();
-			for (it_temp = temp->begin(); it_temp != temp->end(); it_temp++)
-				atomic_list->push_back(&(*it_temp));
-		}
-
-	}
-
 	void Graph_Learnable::Remove(atomic_Learning_handler* to_remove) {
 
-		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
+		auto it_end = this->Atomic_Learner.end();
+		for (auto it = this->Atomic_Learner.begin(); it != it_end; it++) {
 			if (to_remove == it->Ref_to_learner) {
 				delete it->Ref_to_learner;
 				auto it_M = this->Model_handlers.begin();
@@ -536,7 +224,8 @@ namespace EFG {
 
 		list<atomic_Learning_handler*>* temp;
 		list<atomic_Learning_handler*>::iterator it_temp;
-		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+		auto it_end2 = this->Composite_Learner.end();
+		for (auto it = this->Composite_Learner.begin(); it != it_end2; it++) {
 			temp = it->Ref_to_learner->Get_Components();
 			for (it_temp = temp->begin(); it_temp != temp->end(); it_temp++) {
 				if (to_remove == *it_temp) {
@@ -557,130 +246,86 @@ namespace EFG {
 
 	}
 
-	void Graph_Learnable::Import_XML_sharing_weight_info(XML_reader& reader) {
-		
-		list<XML_reader::Tag_readable> potentials;
-		auto root = reader.Get_root();
-		root.Get_Nested("Potential", &potentials);
+	void Graph_Learnable::__Get_structure(std::vector<Potential_Shape*>* shapes, std::vector<std::list<Potential_Exp_Shape*>>* learnable_exp, std::vector<Potential_Exp_Shape*>* constant_exp) const {
 
-		list<string> vars_this;
-		list<Categoric_var*> Vars_this;
-		list<string> vars_sharing;
-		list<Categoric_var*> Vars_sharing;
-		list<string>::iterator it2;
-		I_Learning_handler* hndl;
-		auto it_atomic = this->Atomic_Learner.begin();
-		for (auto it = potentials.begin(); it != potentials.end(); it++) {
-			if (it->Exist_Field("w")) {
-				if (it->Exist_Nested_tag("Share")) {
-					it->Get_Attributes("var", &vars_this);
-					it->Get_Nested_first_found("Share").Get_Attributes("var", &vars_sharing);
-
-					hndl = NULL;
-					if (vars_this.size() == vars_sharing.size()) {
-						Vars_this.clear();
-						for (it2 = vars_this.begin(); it2 != vars_this.end(); it2++)
-							Vars_this.push_back(this->Find_Variable(*it2));
-						Vars_sharing.clear();
-						for (it2 = vars_sharing.begin(); it2 != vars_sharing.end(); it2++)
-							Vars_sharing.push_back(this->Find_Variable(*it2));
-
-						for (it_atomic = this->Atomic_Learner.begin(); it_atomic != this->Atomic_Learner.end(); it_atomic++) {
-							if (it_atomic->Ref_to_learner->is_here_Pot_to_share(Vars_this)) {
-								hndl = it_atomic->Ref_to_learner;
-								break;
-							}
-						}
-
-						if (hndl == NULL)
-							throw 0; //Import_XML_sharing_weight_info inconsistency detected
-						else
-							this->Share_weight(hndl, Vars_sharing);
-					}
-					else throw 1; //Import_XML_sharing_weight_info inconsistency detected
-				}
-			}
+		this->Node_factory::__Get_structure(shapes, learnable_exp, constant_exp);
+		list<Potential_Exp_Shape*> to_remove;
+		learnable_exp->reserve(this->Atomic_Learner.size() + this->Composite_Learner.size());
+		auto itA_end = this->Atomic_Learner.end();
+		for (auto itA = this->Atomic_Learner.begin(); itA != itA_end; itA++) {
+			learnable_exp->push_back({ itA->Ref_to_learner->Get_wrapped() });
+			to_remove.push_back(itA->Ref_to_learner->Get_wrapped());
 		}
-
-	}
-
-	void Graph_Learnable::__Absorb(Node_factory* to_absorb) {
-
-		if (to_absorb == this)
-			return;
-
-		list<Potential_Shape*> shp;
-		Node_factory::__Get_simple_shapes(&shp, to_absorb);
-		for (auto it = shp.begin(); it != shp.end(); it++)
-			this->Node_factory::__Insert(*it);
-
-		list<list<Potential_Exp_Shape*>> clusters;
-		list<Potential_Exp_Shape*> constant;
-		Node_factory::__Get_exponential_shapes(&clusters, &constant);
-
-		if (!clusters.empty()) {
-			auto it2 = clusters.front().begin();
-			for (auto it = clusters.begin(); it != clusters.end(); it++) {
-				if (it->size() == 1)
-					this->Node_factory::__Insert(it->front(), true);
-				else {
-					//it's a cluster
-					Potential_Exp_Shape* first_inserted_with_sucess = NULL;
-					it2 = it->begin();
-					for (it2; it2 != it->end(); it++) {
-						first_inserted_with_sucess = this->Graph_Learnable::__Insert(*it2, true);
-						if (first_inserted_with_sucess != NULL)
-							break;
-					}
-
-					if (first_inserted_with_sucess != NULL) {
-						for (it2; it2 != it->end(); it++) {
-							if (this->Graph_Learnable::__Insert(*it2, true) != NULL)
-								this->Share_weight(this->Model_handlers.back(), *first_inserted_with_sucess->Get_involved_var_safe());
-						}
-					}
-				}
-			}
-		}
-
-		for (auto it = constant.begin(); it != constant.end(); it++)
-			this->Graph_Learnable::__Insert(*it, false);
-
-	}
-
-	void Graph_Learnable::__Get_exponential_shapes(std::list<std::list<Potential_Exp_Shape*>>* learnable_exp, std::list<Potential_Exp_Shape*>* constant_exp) {
-
-		this->Node_factory::__Get_exponential_shapes(learnable_exp, constant_exp);
-		for (auto it = this->Atomic_Learner.begin(); it != this->Atomic_Learner.end(); it++) {
-			constant_exp->remove(it->Ref_to_learner->Get_wrapped());
-			learnable_exp->push_back({ it->Ref_to_learner->Get_wrapped() });
-		}
-
-		for (auto it = this->Composite_Learner.begin(); it != this->Composite_Learner.end(); it++) {
+		list<atomic_Learning_handler*>::iterator it, it_end;
+		auto itC_end = this->Composite_Learner.end();
+		for (auto itC = this->Composite_Learner.begin(); itC != itC_end; itC++) {
+			it_end = itC->Ref_to_learner->Get_Components()->end(); 
 			learnable_exp->push_back(list<Potential_Exp_Shape*>());
-			auto components = it->Ref_to_learner->Get_Components();
-			for (auto it2 = components->begin(); it2 != components->end(); it2++) {
-				constant_exp->remove((*it2)->Get_wrapped());
-				learnable_exp->back().push_back((*it2)->Get_wrapped());
+			for (it = itC->Ref_to_learner->Get_Components()->begin(); it != it_end; it++) {
+				learnable_exp->back().push_back((*it)->Get_wrapped());
+				to_remove.push_back((*it)->Get_wrapped());
 			}
+		}
+
+		vector<Potential_Exp_Shape*>::iterator itP, itP_end;
+		auto r_end = to_remove.end();
+		for (auto r = to_remove.begin(); r != r_end; r++) {
+			itP_end = constant_exp->end();
+			for (itP = constant_exp->begin(); itP != itP_end; itP++) {
+				if (*itP == *r) {
+					constant_exp->erase(itP);
+					break;
+				}
+			}
+		}
+
+	}
+
+	void Graph_Learnable::__Insert(const std::vector<Potential_Shape*>& shapes, const std::vector<std::list<Potential_Exp_Shape*>>& learnable_exp, const std::vector<Potential_Exp_Shape*>& constant_exp) {
+
+		size_t k, K = shapes.size();
+		for (k = 0; k < K; k++)
+			this->Node_factory::__Insert(shapes[k]);
+
+		K = constant_exp.size();
+		for (k = 0; k < K; k++)
+			this->__Insert(constant_exp[k], false);
+
+		K = learnable_exp.size();
+		list<Potential_Exp_Shape*>::const_iterator it, it_end;
+		Potential_Exp_Shape* first_inserted = NULL;
+		const list<Categoric_var*>* vars_to_share;
+		for (k = 0; k < K; k++) {
+			it_end = learnable_exp[k].end();
+			it = learnable_exp[k].begin();
+			first_inserted = this->__Insert(*it, true);
+			vars_to_share = first_inserted->Get_involved_var();
+			it++;
+			for (it; it != it_end; it++) {
+				this->__Insert(*it, true);
+				this->Share_weight(this->Model_handlers.back(), *vars_to_share);
+			}
+		}
+
+	}
+
+	void Graph_Learnable::__Get_Atomic_Learner_complete_list(std::list<atomic_Learning_handler**>* atomic_list) {
+
+		atomic_list->clear();
+		auto itA_end = this->Atomic_Learner.end();
+		for (auto it = this->Atomic_Learner.begin(); it != itA_end; it++)
+			atomic_list->push_back(&it->Ref_to_learner);
+		auto itC_end = this->Composite_Learner.end();
+		for (auto it = this->Composite_Learner.begin(); it != itC_end; it++) {
+			auto wrapped = it->Ref_to_learner->Get_Components();
+			for (auto it2 = wrapped->begin(); it2 != wrapped->end(); it2++)
+				atomic_list->push_back(&(*it2));
 		}
 
 	}
 
 
 
-
-	size_t* list_2_malloc(const list<size_t>& l) {
-
-		size_t* res = (size_t*)malloc(l.size() * sizeof(size_t));
-		size_t k = 0;
-		for (auto it = l.begin(); it != l.end(); it++) {
-			res[k] = *it;
-			k++;
-		}
-		return res;
-
-	};
 
 	Random_Field::Random_Field(const std::string& config_xml_file, const std::string& prefix_config_xml_file) : Graph_Learnable(true) {
 
@@ -691,86 +336,32 @@ namespace EFG {
 			try { this->Import_from_XML(reader, prefix_config_xml_file); }
 			catch (int) { throw 1; }
 		}
-		if (reader != NULL) {
-			try { this->Import_XML_sharing_weight_info(*reader); }
-			catch (int) { throw 2; }
-		}
 		if (reader != NULL) delete reader;
 
 	};
 
-	Random_Field::Random_Field(const std::list<Potential_Exp_Shape*>& potentials_exp, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask,
-		const std::list<Potential_Shape*>& shapes) :
-		Graph_Learnable(potentials_exp, use_cloning_Insert, tunable_mask, shapes) { };
+	Random_Field::Random_Field(const std::vector<Potential_Shape*>& shapes, const std::vector<std::list<Potential_Exp_Shape*>>& learnable_exp, const std::vector<Potential_Exp_Shape*>& constant_exp, const bool& use_cloning_Insert) :
+		Graph_Learnable(shapes, learnable_exp, constant_exp, use_cloning_Insert) { };
 
-	void Random_Field::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
+	void Random_Field::__Get_beta_part(std::vector<float>* betas, const I_Potential::combinations& training_set) {
 
 		this->Set_Evidences({}, {});
 		this->Belief_Propagation(true);
 
-		float temp;
-		auto it_grad = grad_w->begin();
-		for (auto it = this->Model_handlers.begin(); it != this->Model_handlers.end(); it++) {
-			(*it)->Get_grad_beta_part(&temp);
-			*it_grad -= temp;
-			it_grad++;
-		}
+		betas->clear();
+		betas->reserve(this->Model_handlers.size());
+		auto it_end = this->Model_handlers.end();
+		for (auto it = this->Model_handlers.begin(); it != it_end; it++)
+			betas->push_back((*it)->Get_grad_beta_part());
 
 	}
 
-	void Random_Field::Insert(Potential_Exp_Shape* pot, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
+	void Random_Field::Insert(Potential_Exp_Shape& pot, const std::list<Categoric_var*>& vars_of_pot_whose_weight_is_to_share) {
 
-		if (this->Graph_Learnable::__Insert(pot, true) != NULL) 
+		if (this->Graph_Learnable::__Insert(&pot, true) != NULL) 
 			this->Share_weight(this->Model_handlers.back(), vars_of_pot_whose_weight_is_to_share);
 
 	};
-
-
-
-
-
-	class Binary_handler_with_Observation : public atomic_Learning_handler {
-	public:
-		Binary_handler_with_Observation(Node* Hidden_var, size_t* observed_val, atomic_Learning_handler** handle_to_substitute) :
-			atomic_Learning_handler(*handle_to_substitute), pNode_hidden(Hidden_var), ref_to_val_observed(observed_val) { };
-	private:
-
-		void    Get_grad_beta_part(float* beta);
-	// data
-		Node*				pNode_hidden;
-		size_t*				ref_to_val_observed;
-	};
-
-	void Binary_handler_with_Observation::Get_grad_beta_part(float* beta) {
-
-		list<float> marginals;
-		list<Potential*> message_union;
-		this->pNode_hidden->Gather_all_Unaries(&message_union);
-		Potential UP(message_union);
-		UP.Get_marginals(&marginals);
-
-		size_t pos_hidden = 0, pos_obsv = 1;
-		if (this->Get_involved_var()->back() == this->pNode_hidden->Get_var()) {
-			pos_hidden = 1;
-			pos_obsv = 0;
-		}
-
-		list<size_t*> comb_to_search;
-		for (size_t k = 0; k < this->pNode_hidden->Get_var()->size(); k++) {
-			comb_to_search.push_back((size_t*)malloc(sizeof(size_t) * 2));
-			comb_to_search.back()[pos_hidden] = k;
-			comb_to_search.back()[pos_obsv] = *this->ref_to_val_observed;
-		}
-		list<I_Distribution_value*> distr_conditioned_to_obsv;
-		Find_Comb_in_distribution(&distr_conditioned_to_obsv, comb_to_search, *this->Get_involved_var(), this->Potential_Exp_Shape::Getter_weight_and_shape::Get_shape(this->pwrapped));
-
-		Dot_with_Prob(beta, marginals, distr_conditioned_to_obsv);
-
-		for (auto it = comb_to_search.begin(); it != comb_to_search.end(); it++)
-			free(*it);
-
-	}
-
 
 
 
@@ -784,67 +375,64 @@ namespace EFG {
 			try { this->Import_from_XML(reader, prefix_config_xml_file); }
 			catch (int) { throw 1; }
 		}
-		if (reader != NULL) {
-			try { this->Import_XML_sharing_weight_info(*reader); }
-			catch (int) { throw 2; }
-		}
-
-		//read the observed set
-		list<Categoric_var*> observed_vars;
-		XML_reader::Tag_readable root = reader->Get_root();
-		list<XML_reader::Tag_readable> vars;
-		root.Get_Nested("Variable", &vars);
-		const string* flag;
-		for (auto it = vars.begin(); it != vars.end(); it++) {
-			try { flag = it->Get_Attribute_first_found("flag"); }
-			catch (int) { flag = NULL; }
-			if (flag != NULL) {
-				if (flag->compare("O") == 0)
-					observed_vars.push_back(this->Find_Variable(*it->Get_Attribute_first_found("name")));
-			}
-		}
-
-		if (observed_vars.empty())  throw 3; //empty observed set for Conditional random field is not possible
-		list<size_t> fake_ob; 
-		for (size_t k = 0; k < observed_vars.size(); k++) fake_ob.push_back(0);
-		this->Node_factory::Set_Evidences(observed_vars, fake_ob);
+		if (reader != NULL) delete reader;
 
 		this->__remove_redudant();
 
-		if (reader != NULL) delete reader;
+		this->vars_order_training_set = NULL;
+		this->pos_observations_in_training_set = NULL;
 
 	};
 
-	Conditional_Random_Field::Conditional_Random_Field(const std::list<Potential_Exp_Shape*>& potentials, const std::list<Categoric_var*>& observed_var, const bool& use_cloning_Insert, const std::list<bool>& tunable_mask, 
-		const std::list<Potential_Shape*>& shapes) :
-		Graph_Learnable(potentials, use_cloning_Insert, tunable_mask, shapes) { 
+	Conditional_Random_Field::Conditional_Random_Field(const std::vector<Potential_Shape*>& shapes, const std::vector<std::list<Potential_Exp_Shape*>>& learnable_exp, const std::vector<Potential_Exp_Shape*>& constant_exp, const std::list<string>& observed_var, const bool& use_cloning_Insert) :
+		Graph_Learnable(shapes, learnable_exp, constant_exp, use_cloning_Insert) {
 
-		list<Categoric_var*> observed_vars;
-		for (auto it = observed_var.begin(); it != observed_var.end(); it++)
-			observed_vars.push_back(this->Find_Variable((*it)->Get_name()));
-
-		if (observed_vars.empty()) throw 0; // empty observed set for Conditional random field is not possible
-		list<size_t> fake_ob;
-		for (size_t k = 0; k < observed_vars.size(); k++) fake_ob.push_back(0);
-		this->Node_factory::Set_Evidences(observed_vars, fake_ob);
+		list<Categoric_var*> hidden_vars;
+		list<size_t>		 hidden_vals;
+		auto it_end = observed_var.end();
+		for (auto it = observed_var.begin(); it != it_end; it++) {
+			hidden_vars.push_back(this->Find_Variable(*it));
+			hidden_vals.push_back(0);
+		}
+		this->Node_factory::Set_Evidences(hidden_vars, hidden_vals);
 
 		this->__remove_redudant();
 
+		this->vars_order_training_set = NULL;
+		this->pos_observations_in_training_set = NULL;
+
 	}
+
+	Conditional_Random_Field::Conditional_Random_Field(const Conditional_Random_Field& o) : Graph_Learnable(o) {
+
+		this->__copy(o);
+
+		this->__remove_redudant();
+
+		this->vars_order_training_set = NULL;
+		this->pos_observations_in_training_set = NULL;
+
+	};
 
 	void Conditional_Random_Field::__remove_redudant() {
 
+		list<Categoric_var*> hidden_set;
+		this->Get_Actual_Hidden_Set(&hidden_set);
+		if (hidden_set.empty()) throw 0;
+
 		list<atomic_Learning_handler**> atomic_list;
-		this->Get_complete_atomic_handler_list(&atomic_list);
+		this->__Get_Atomic_Learner_complete_list(&atomic_list);
 
 		list<size_t*> temp;
 		size_t* temp_new = NULL;
 		list<Categoric_var*>::const_iterator it_temp;
 		auto it_hnd = atomic_list.begin();
 		auto it_hnd2 = this->Model_handlers.begin();
-		for (it_hnd; it_hnd != atomic_list.end(); it_hnd++) {
+		auto it_hnd_end = atomic_list.end();
+		auto it_Model_end = this->Model_handlers.end();
+		for (it_hnd; it_hnd != it_hnd_end; it_hnd++) {
 			temp.clear();
-			auto vars = (**it_hnd)->Get_involved_var_safe();
+			auto vars = (**it_hnd)->Get_involved_var();
 			for (it_temp = vars->begin(); it_temp != vars->end(); it_temp++)
 				temp.push_back(this->__Get_observed_val(*it_temp));
 
@@ -866,92 +454,78 @@ namespace EFG {
 #endif
 				}
 				else if (temp.front() != NULL) {
-					auto new_hnd = new Binary_handler_with_Observation(this->__Find_Node(vars->back()), temp.front(), *it_hnd);
-					for (it_hnd2 = this->Model_handlers.begin(); it_hnd2 != this->Model_handlers.end(); it_hnd2++) {
-						if (*it_hnd2 == **it_hnd) {
-							*it_hnd2 = new_hnd;
-							break;
-						}
+					for (it_hnd2 = this->Model_handlers.begin(); it_hnd2 != it_Model_end; it_hnd2++) {
+						if (*it_hnd2 == **it_hnd) break;
 					}
-					delete **it_hnd;
-					**it_hnd = new_hnd;
+					Binary_handler_with_Observation::Create(this->__Find_Node(vars->back()), temp.front(), *it_hnd);
+					*it_hnd2 = **it_hnd;
 				}
 				else if (temp.back() != NULL) {
-					auto new_hnd = new Binary_handler_with_Observation(this->__Find_Node(vars->front()), temp.back(), *it_hnd);
-					for (it_hnd2 = this->Model_handlers.begin(); it_hnd2 != this->Model_handlers.end(); it_hnd2++) {
-						if (*it_hnd2 == **it_hnd) {
-							*it_hnd2 = new_hnd;
-							break;
-						}
+					for (it_hnd2 = this->Model_handlers.begin(); it_hnd2 != it_Model_end; it_hnd2++) {
+						if (*it_hnd2 == **it_hnd) break;
 					}
-					delete **it_hnd;
-					**it_hnd = new_hnd;
+					Binary_handler_with_Observation::Create(this->__Find_Node(vars->front()), temp.back(), *it_hnd);
+					*it_hnd2 = **it_hnd;
 				}
 			}
 		}
 
 	}
 
-	void extract_observations(std::list<size_t>* result, size_t* entire_vec, const std::list<size_t>& var_pos) {
+	void Conditional_Random_Field::__Get_beta_part(std::vector<float>* betas, const I_Potential::combinations& training_set) {
 
-		result->clear();
-		for (auto it = var_pos.begin(); it != var_pos.end(); it++)
-			result->push_back(entire_vec[*it]);
+		betas->clear();
+		betas->reserve(this->Model_handlers.size());
+		size_t k, K = this->Model_handlers.size();
+		for (k = 0; k < K; k++) betas->push_back(0.f);
+		float coeff = 1.f / (float)training_set.get_number_of_combinations();
 
-	}
-	void find_observed_order(list<size_t>* result, const std::list<Categoric_var*>& order_in_model, const std::list<Categoric_var*>& order_in_train_set) {
-
-		result->clear();
-
-		list<Categoric_var*>::const_iterator it_in_train_set;
-		size_t k;
-		for (auto it = order_in_model.begin(); it != order_in_model.end(); it++) {
+		//recompute pos_observations if needed
+		if (&training_set.Get_variables() != this->vars_order_training_set) {
+			this->vars_order_training_set = &training_set.Get_variables();
+			list<Categoric_var*> obsv_set;
+			this->Get_Actual_Observation_Set_Var(&obsv_set);
+			
+			if (this->pos_observations_in_training_set == NULL) {
+				this->pos_observations_size = obsv_set.size();
+				this->pos_observations_in_training_set = (size_t*)malloc(this->pos_observations_size * sizeof(size_t));
+			}
+			list<Categoric_var*>::const_iterator it, it_end = this->vars_order_training_set->end();
+			list<Categoric_var*>::iterator ito_end = obsv_set.end();
 			k = 0;
-			for (it_in_train_set = order_in_train_set.begin(); it_in_train_set != order_in_train_set.end(); it_in_train_set++) {
-				if (*it_in_train_set == *it) {
-					result->push_back(k);
-					break;
+			size_t o;
+			for (auto ito = obsv_set.begin(); ito != ito_end; ito++) {
+				o = 0;
+				for (it = this->vars_order_training_set->begin(); it != it_end; it++) {
+					if (*it == *ito) {
+						this->pos_observations_in_training_set[k] = o;
+						break;
+					}
+					o++;
 				}
 				k++;
 			}
 		}
 
-	}
-	void Conditional_Random_Field::Get_w_grad(std::list<float>* grad_w, const std::list<size_t*>& comb_train_set, const std::list<Categoric_var*>& comb_var_order) {
+		list<size_t> observations;
+		I_Potential::combinations::iterator it_set(training_set);
+		list<I_Learning_handler*>::iterator it_h;
+		const size_t* cc = NULL;
+		while (it_set.is_not_at_end()) {
+			observations.clear();
+			cc = *it_set;
+			for (k = 0; k < this->pos_observations_size; k++)
+				observations.push_back(cc[this->pos_observations_in_training_set[k]]);
 
-		list<size_t> pos_of_observed_var;
-		list<Categoric_var*> observed_var_temp;
-		this->Get_Actual_Observation_Set_Var(&observed_var_temp);
-		find_observed_order(&pos_of_observed_var, observed_var_temp, comb_var_order);
+			this->Set_Evidences(observations);
+			this->Belief_Propagation(true);
 
-		float temp;
-		list<float> beta_total;
-		auto it = this->Model_handlers.begin();
-		for (it; it != this->Model_handlers.end(); it++)
-			beta_total.push_back(0.f);
-		list<size_t> obsv;
-
-		auto it_beta = beta_total.begin();
-		for (auto itL = comb_train_set.begin(); itL != comb_train_set.end(); itL++) {
-			extract_observations(&obsv, *itL, pos_of_observed_var);
-			this->Set_Evidences(obsv);
-			this->Belief_Propagation(true); //in this case the propagation is always possible
-
-			it = this->Model_handlers.begin();
-			for (it_beta = beta_total.begin(); it_beta != beta_total.end(); it_beta++) {
-				(*it)->Get_grad_beta_part(&temp);
-				*it_beta += temp;
-				it++;
+			it_h = this->Model_handlers.begin();
+			for (k = 0; k < K; k++) {
+				(*betas)[k] += coeff * (*it_h)->Get_grad_beta_part();
+				it_h++;
 			}
-		}
-
-		auto it_grad = grad_w->begin();
-		temp = 1.f / (float)comb_train_set.size();
-		for (it_beta = beta_total.begin(); it_beta != beta_total.end(); it_beta++) {
-			*it_beta *= temp;
-			*it_grad -= *it_beta;
-
-			it_grad++;
+			++it_set;
 		}
 
 	}

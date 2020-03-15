@@ -4,13 +4,14 @@
 
 #include <string>
 #include <list>
+#include <vector>
 #include "../EFG/Header/Potential.h"
 #include <cmath>
 using namespace std;
 
 //print a list of elements
-template<typename T>
-void print_distribution(const list<T>& distr) {
+template<typename Collection>
+void print_distribution(const Collection& distr) {
 
 	for (auto it = distr.begin(); it != distr.end(); it++) {
 		cout << " " << *it;
@@ -20,7 +21,7 @@ void print_distribution(const list<T>& distr) {
 }
 
 //normalize the values such that their sum is equal to 1
-void normalize(list<float>* to_normalize) {
+void normalize(vector<float>* to_normalize) {
 
 	float Z = 0.f;
 	auto it = to_normalize->begin();
@@ -35,7 +36,7 @@ void normalize(list<float>* to_normalize) {
 
 //compute the empirical frequencies of a variable (var_sampled), considering a list of realizations (sample) taken as samples from a joint probability distribution (the one involving vars_in_sample) 
 //the result is put into marginals
-void Get_empirical_frequencies(list<float>* marginals, const list<list<size_t>>& sample, EFG::Categoric_var* var_desired, const list<EFG::Categoric_var*>& vars_in_sample ) {
+void Get_empirical_frequencies(vector<float>* marginals, const list<list<size_t>>& sample, EFG::Categoric_var* var_desired, const list<EFG::Categoric_var*>& vars_in_sample ) {
 
 	marginals->clear();
 
@@ -55,6 +56,7 @@ void Get_empirical_frequencies(list<float>* marginals, const list<list<size_t>>&
 	size_t var_size = var_desired->size();
 	list<list<size_t>>::const_iterator it_sample;
 	list<size_t>::const_iterator it_temp;
+	marginals->reserve(var_size);
 	for (size_t k = 0; k < var_size; k++) {
 		temp = 0.f;
 

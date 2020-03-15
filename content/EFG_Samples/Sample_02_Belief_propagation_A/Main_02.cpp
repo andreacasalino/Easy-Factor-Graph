@@ -22,6 +22,7 @@ void part_03();
 
 int main() {
 
+
 	///////////////////////////////////////////
 	// part 01 graph with a single potential //	
 	///////////////////////////////////////////
@@ -62,11 +63,11 @@ void part_01() {
 	float teta = 2.f;
 	float Z = 1.f + expf(teta);
 
-	Potential_Exp_Shape Psi1(shape1, teta);
+	Potential_Exp_Shape Psi1(*shape1, teta);
 
 	Graph graph_1;
-	graph_1.Insert(&Psi1);
-	list<float> marginals;
+	graph_1.Insert(Psi1); //the potential passed as input will be internally copied, assuming the same set of variables, which are in turn copied assuming the same names and sizes
+	vector<float> marginals;
 
 	//make a new belief propagation setting B=0 as observation
 	graph_1.Set_Evidences({ graph_1.Find_Variable("B") }, { 0 });
@@ -104,16 +105,16 @@ void part_02() {
 	Potential_Shape* shape_BC = new Potential_Shape({ &B2, &C2 });
 	shape_BC->Add_value({ 0,0 }, 1.f);
 	shape_BC->Add_value({ 1,1 }, 1.f);
-	Potential_Exp_Shape Psi_BC(shape_BC, alfa);
+	Potential_Exp_Shape Psi_BC(*shape_BC, alfa);
 
 	Potential_Shape* shape_AB = new Potential_Shape({ &A2, &B2 });
 	shape_AB->Add_value({ 0,0 }, 1.f);
 	shape_AB->Add_value({ 1,1 }, 1.f);
-	Potential_Exp_Shape Psi_AB(shape_AB, beta);
+	Potential_Exp_Shape Psi_AB(*shape_AB, beta);
 
 	Graph graph_2;
-	graph_2.Insert(&Psi_AB);
-	graph_2.Insert(&Psi_BC);
+	graph_2.Insert(Psi_AB);
+	graph_2.Insert(Psi_BC);
 
 	//make a new belief propagation setting C2=1 as observation
 	graph_2.Set_Evidences({ graph_2.Find_Variable("C") }, { 1 });
@@ -122,7 +123,7 @@ void part_02() {
 
 	//compute the marginals of A,B and then compare results with the theoretial ones 
 	//(see also Sample 2/ part 2 of the documentation)
-	list<float> marginals;
+	vector<float> marginals;
 	graph_2.Get_marginal_distribution(&marginals, graph_2.Find_Variable("B"));
 	cout << "P(B|C=1)\n";
 	cout << "theoretical " << endl;
@@ -162,31 +163,26 @@ void process_chain(const size_t& chain_size, const size_t& var_size, const float
 	if (chain_size < 2) throw 0; //invalid chain size
 
 	//build the set of variables in the chain
-	list<Categoric_var*> Y;
+	vector<Categoric_var> Y;
+	Y.reserve(chain_size);
 	for (size_t k = 0; k < chain_size; k++)
-		Y.push_back(new Categoric_var(var_size, "Y_" + to_string(k)));
-	auto it1 = Y.begin();
-	auto it2 = it1; it2++;
+		Y.emplace_back(var_size, "Y_" + to_string(k));
 
 	Graph graph;
 
 	//build the correlating potentials and add it to the chain
-	while(it2 != Y.end()) {
-		Potential_Exp_Shape temp(new Potential_Shape({ *it1, *it2 }, true), w);
-		graph.Insert(&temp); //potentials are internally copied
-		it1++; it2++;
+	for (size_t k = 1; k < chain_size; k++) {
+		Potential_Exp_Shape pot_temp(*(new Potential_Shape({ &Y[k - 1], &Y[k] }, true)), w);
+		graph.Insert(pot_temp); //the potential is internally cloned, as well as the involved variables
 	}
 
 	//set Y_0 as an observations and compute the marginals of the last variable in the chain
-	graph.Set_Evidences({ graph.Find_Variable(Y.front()->Get_name()) }, {0});
-	list<float> prob;
-	graph.Get_marginal_distribution(&prob, graph.Find_Variable(Y.back()->Get_name()));
+	graph.Set_Evidences({ graph.Find_Variable(Y.front().Get_name()) }, {0}); //or equivalently graph.Set_Evidences({ &Y.front() }, {0}); since the potentials were not cloned
+	vector<float> prob;
+	graph.Get_marginal_distribution(&prob, graph.Find_Variable(Y.back().Get_name()));
 
 	print_distribution(prob);
 	cout << endl;
-
-	for (auto it = Y.begin(); it != Y.end(); it++)
-		delete *it;
 
 }
 void part_03() {

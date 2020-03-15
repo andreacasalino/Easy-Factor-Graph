@@ -31,8 +31,8 @@ private:
 	void __B_script(const Command& command, std::string* response);
 
 	struct Infer_result {
-		std::list<float>						   Marginals;
-		EFG::Categoric_var*     Var;
+		std::vector<float>				    Marginals;
+		EFG::Categoric_var*					Var;
 	};
 
 // data

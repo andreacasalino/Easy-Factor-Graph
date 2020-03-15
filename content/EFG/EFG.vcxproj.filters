@@ -12,16 +12,25 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Header\Potential.h">
-      <Filter>Header</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\Node.h">
-      <Filter>Header</Filter>
+    <ClInclude Include="XML_Manager\XML_Manager.h">
+      <Filter>XML_Manager</Filter>
     </ClInclude>
     <ClInclude Include="Header\Belief_propagation.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="Header\Graphical_model.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Node.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Observed_Subject.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Potential.h">
+      <Filter>Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\Subgraph.h">
       <Filter>Header</Filter>
     </ClInclude>
     <ClInclude Include="Header\Trainer.h">
@@ -30,16 +39,10 @@
     <ClInclude Include="Header\Training_set.h">
       <Filter>Header</Filter>
     </ClInclude>
-    <ClInclude Include="XML_Manager\XML_Manager.h">
-      <Filter>XML_Manager</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Potential.cpp">
-      <Filter>Source</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Node.cpp">
-      <Filter>Source</Filter>
+    <ClCompile Include="XML_Manager\XML_Manager.cpp">
+      <Filter>XML_Manager</Filter>
     </ClCompile>
     <ClCompile Include="Source\Belief_propagation.cpp">
       <Filter>Source</Filter>
@@ -47,17 +50,23 @@
     <ClCompile Include="Source\Graphical_model.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Trainer.cpp">
+    <ClCompile Include="Source\Learning_handler.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Training_set.cpp">
+    <ClCompile Include="Source\Node.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Potential.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\Subgraph.cpp">
       <Filter>Source</Filter>
     </ClCompile>
-    <ClCompile Include="XML_Manager\XML_Manager.cpp">
-      <Filter>XML_Manager</Filter>
+    <ClCompile Include="Source\Trainer.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Training_set.cpp">
+      <Filter>Source</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

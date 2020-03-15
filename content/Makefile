@@ -1,7 +1,7 @@
 all: build_lib build_samples
 clean: clean_lib clean_samples
 
-build_lib: mk_bin XML_Manager.o Belief_propagation.o Graphical_model.o Node.o Potential.o Subgraph.o Trainer.o Training_set.o
+build_lib: mk_bin XML_Manager.o Belief_propagation.o Graphical_model.o Node.o Potential.o Subgraph.o Trainer.o Training_set.o Learning_handler.o
 	ar rvs ./bin/EFG.a \
 	./bin/XML_Manager.o \
 	./bin/Belief_propagation.o \
@@ -10,7 +10,8 @@ build_lib: mk_bin XML_Manager.o Belief_propagation.o Graphical_model.o Node.o Po
 	./bin/Potential.o \
 	./bin/Subgraph.o \
 	./bin/Trainer.o \
-	./bin/Training_set.o
+	./bin/Training_set.o \
+	./bin/Learning_handler.o
 	rm ./bin/*.o
 	
 mk_bin:
@@ -40,6 +41,9 @@ Trainer.o:
 Training_set.o:
 	g++ -c ./EFG/Source/Training_set.cpp -O3
 	mv Training_set.o ./bin/Training_set.o
+Learning_handler.o:
+	g++ -c ./EFG/Source/Learning_handler.cpp -O3
+	mv Learning_handler.o ./bin/Learning_handler.o
 	
 build_samples: Sample_01 Sample_02 Sample_03 Sample_04 Sample_05 Sample_06 Sample_07 Sample_08
 

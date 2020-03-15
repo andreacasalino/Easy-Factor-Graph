@@ -3,6 +3,7 @@
 
 #include <string>
 #include <list>
+#include <vector>
 
 class I_JSON_composite {
 public:
@@ -56,6 +57,7 @@ class JSON_numerical_array : public I_JSON_composite {
 public:
 	JSON_numerical_array() {};
 	JSON_numerical_array(const std::list<float>& vals) { this->Values = vals; };
+	JSON_numerical_array(const std::vector<float>& vals);
 
 	void Append(const float& to_nest) { this->Values.push_back(to_nest); };
 private:

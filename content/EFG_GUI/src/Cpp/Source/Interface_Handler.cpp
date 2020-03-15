@@ -102,7 +102,7 @@ void Interface_GUI::__recompute_propagation_results() {
 		list<EFG::Categoric_var*> hidden_set;
 		this->Graph->Get_Actual_Hidden_Set(&hidden_set);
 		for (auto it = hidden_set.begin(); it != hidden_set.end(); it++) {
-			this->Marginals_computed.push_back(Infer_result());
+			this->Marginals_computed.emplace_back();
 			this->Marginals_computed.back().Var = *it;
 		}
 	}
@@ -192,7 +192,7 @@ void Interface_GUI::__A_absorb_Graph(const Command& command, std::string* respon
 
 	if (this->Graph == NULL)
 		this->Graph = new EFG::Graph();
-	this->Graph->Absorb(to_absorb);
+	this->Graph->Absorb(*to_absorb);
 	delete to_absorb;
 	this->__recompute_propagation_results();
 
@@ -224,7 +224,7 @@ void Interface_GUI::__P_create_Potential(const Command& command, std::string* re
 	if (Variables.empty()) return;
 	else if (Variables.size() > 2) return;
 
-	Potential_Shape* new_shape;
+	Potential_Shape* new_shape = NULL;
 	if ((command.Get_value('c') != NULL) && (Variables.size() > 1)) {
 		if (command.Get_value('c')->compare("T") == 0)
 			new_shape = new Potential_Shape(Variables, true);
@@ -236,7 +236,7 @@ void Interface_GUI::__P_create_Potential(const Command& command, std::string* re
 		string location(*command.Get_value('s'));
 		if (location.compare(this->DOWNLOAD_TEMP_FILE) == 0) {
 			Sleep(200);
-			new_shape = new Potential_Shape(Variables, this->DOWNLOAD_TEMP_FILE);
+			new_shape = new Potential_Shape(Variables, this->DOWNLOAD_TEMP_FILE); 
 			system(string("DEL \"" + this->DOWNLOAD_TEMP_FILE + "\"").c_str());
 		}
 		else new_shape = new Potential_Shape(Variables, *command.Get_value('s'));
@@ -247,12 +247,15 @@ void Interface_GUI::__P_create_Potential(const Command& command, std::string* re
 		this->Graph = new EFG::Graph();
 	}
 
-	if (command.Get_value('w') == NULL)
-		this->Graph->Insert(new_shape);
+	if (command.Get_value('w') == NULL) {
+		this->Graph->Insert(*new_shape);
+		delete new_shape;
+	}
 	else {
 		float w = (float)atof(command.Get_value('w')->c_str());
-		auto temp_pot = new Potential_Exp_Shape(new_shape, w);
-		this->Graph->Insert(temp_pot);
+		auto temp_pot = new Potential_Exp_Shape(*new_shape, w);
+		this->Graph->Insert(*temp_pot);
+		delete temp_pot;
 	}
 
 	for (auto it = to_remove_from_Open_set.begin(); it != to_remove_from_Open_set.end(); it++)
@@ -403,7 +406,7 @@ size_t Get_node_id(const std::list<Categoric_var*>& hidden_set, const std::list<
 
 }
 template<typename T>
-void add_potentials(JSON_array& edges, JSON_array& nodes, const list<const T*>& potentials, list<Categoric_var*>& hidden_set, list<Categoric_var*>& observed_set, size_t& k, const string& edge_image, const size_t& open_set_size) {
+void add_potentials(JSON_array& edges, JSON_array& nodes, const vector<T*>& potentials, list<Categoric_var*>& hidden_set, list<Categoric_var*>& observed_set, size_t& k, const string& edge_image, const size_t& open_set_size) {
 
 	for (auto it = potentials.begin(); it != potentials.end(); it++) {
 		JSON_tag temp;
@@ -416,12 +419,12 @@ void add_potentials(JSON_array& edges, JSON_array& nodes, const list<const T*>& 
 		nodes.Append(temp);
 
 		JSON_tag temp2;
-		temp2.Add_field("from", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var_safe()->front(), open_set_size)));
+		temp2.Add_field("from", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var()->front(), open_set_size)));
 		temp2.Add_field("to", to_string(k));
 		edges.Append(temp2);
-		if ((*it)->Get_involved_var_safe()->size() > 1) {
+		if ((*it)->Get_involved_var()->size() > 1) {
 			temp2.Add_field("from", to_string(k));
-			temp2.Add_field("to", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var_safe()->back(), open_set_size)));
+			temp2.Add_field("to", to_string(Get_node_id(hidden_set, observed_set, (*it)->Get_involved_var()->back(), open_set_size)));
 			edges.Append(temp2);
 		}
 
@@ -431,14 +434,19 @@ void add_potentials(JSON_array& edges, JSON_array& nodes, const list<const T*>& 
 }
 void Interface_GUI::__get_graph_JSON(std::string* graph_JSON) {
 
-	list<const Potential_Shape*> shapes;
-	list<list<const Potential_Exp_Shape*>> exp_tunable_clusters;
-	list<const Potential_Exp_Shape*> exp_constant;
+	vector<Potential_Shape*> shapes;
+	vector<list<Potential_Exp_Shape*>> exp_tunable_clusters;
+	vector<Potential_Exp_Shape*> exp_constant;
 	this->Graph->Get_structure(&shapes, &exp_tunable_clusters, &exp_constant);
-	list<const Potential_Exp_Shape*> exp_tunable;
+	vector<Potential_Exp_Shape*> exp_tunable;
 	if (!exp_tunable.empty()) {
+		auto it = exp_tunable_clusters.begin();
 		auto it2 = exp_tunable_clusters.begin()->begin();
-		for (auto it = exp_tunable_clusters.begin(); it != exp_tunable_clusters.end(); it++) {
+		size_t V = 0;
+		for (it = exp_tunable_clusters.begin(); it != exp_tunable_clusters.end(); it++)
+			V += it->size();
+		exp_tunable.reserve(V);
+		for (it = exp_tunable_clusters.begin(); it != exp_tunable_clusters.end(); it++) {
 			for (it2 = it->begin(); it2 != it->end(); it2++)
 				exp_tunable.push_back(*it2);
 		}

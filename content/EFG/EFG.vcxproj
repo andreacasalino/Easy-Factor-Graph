@@ -22,7 +22,9 @@
     <ClInclude Include="Header\Belief_propagation.h" />
     <ClInclude Include="Header\Graphical_model.h" />
     <ClInclude Include="Header\Node.h" />
+    <ClInclude Include="Header\Observed_Subject.h" />
     <ClInclude Include="Header\Potential.h" />
+    <ClInclude Include="Header\Subgraph.h" />
     <ClInclude Include="Header\Trainer.h" />
     <ClInclude Include="Header\Training_set.h" />
     <ClInclude Include="XML_Manager\XML_Manager.h" />
@@ -30,6 +32,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Belief_propagation.cpp" />
     <ClCompile Include="Source\Graphical_model.cpp" />
+    <ClCompile Include="Source\Learning_handler.cpp" />
     <ClCompile Include="Source\Node.cpp" />
     <ClCompile Include="Source\Potential.cpp" />
     <ClCompile Include="Source\Subgraph.cpp" />
@@ -41,32 +44,32 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{3FB81309-80A5-452C-A34A-694939BB7D94}</ProjectGuid>
     <RootNamespace>EFG</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>

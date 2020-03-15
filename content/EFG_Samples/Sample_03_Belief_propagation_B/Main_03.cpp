@@ -65,7 +65,7 @@ void part_01() {
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 01' from an existing xml file
 	Graph graph_1("graph_1.xml", "./Sample_03_graphs/"); 
 
-	list<float> marginals;
+	vector<float> marginals;
 
 	float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
 	float Z;
@@ -111,6 +111,7 @@ void part_01() {
 
 
 	// set E=0 as an evidence and recompute the marginals
+	//graph_1.Set_Evidences({ graph_1.Find_Variable("E") }, { 0 });
 	graph_1.Set_Evidences( { 0 });
 	cout << endl << endl;
 	cout << "E=0\n";
@@ -208,7 +209,7 @@ void part_02() {
 	list<Categoric_var*> hidden_set;
 
 
-	list<float> marginals;
+	vector<float> marginals;
 
 	// set v1,v2,v3 as observations and use a Gibbs sampler 
 	// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
@@ -253,8 +254,8 @@ void part_02() {
 
 void part_03() {
 
-	list<float> marginals;
-	list<float> marginals_theoretical;
+	vector<float> marginals;
+	vector<float> marginals_theoretical;
 
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 03' from an existing xml file
@@ -332,7 +333,7 @@ void part_04() {
 	Categoric_var* v8 = loop.Find_Variable("v8");
 
 
-	list<float> marginals;
+	vector<float> marginals;
 
 	// set v1=1 as an evidence and use a Gibbs sampler 
 	// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
