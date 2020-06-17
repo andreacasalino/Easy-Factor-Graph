@@ -223,7 +223,7 @@ void XML_reader::Reprint(const std::string& file_name) {
 
 	ofstream f(file_name);
 	if (!f.is_open()) {
-		system("echo reprinting file not found");
+		cout << " reprinting file not found\n";
 		f.close();
 		return;
 	}
@@ -437,7 +437,7 @@ void XML_reader::Tag_readable::Set_attribute_value(const std::string& field_name
 	}
 
 	if (val_to_change.size() != new_vals.size()) {
-		system("echo wrong number of values, ignored");
+		cout << " wrong number of values, ignored\n";
 		return;
 	}
 
@@ -506,7 +506,7 @@ void XML_reader::Tag_readable::Add_Nested(const std::string& tag_name) {
 void XML_reader::Tag_readable::Remove() {
 
 	if (this->encapsulated->father == NULL) {
-		system("echo You cannot remove the root, ignored");
+		cout << "You cannot remove the root, ignored\n";
 		return;
 	}
 

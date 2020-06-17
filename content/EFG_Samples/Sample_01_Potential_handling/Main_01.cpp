@@ -72,7 +72,7 @@ void part_01() {
 	Potential_Shape Phi_AB_bis({ &A, &B }, string("__temp_file"));
 	//delete that file 
  #ifdef __unix__ 
-	system("rm __temp_file");
+	if(system("rm __temp_file") == -1) cout << "error deleting __temp_file\n";
  #elif defined(_WIN32) || defined(WIN32)
 	system("DEL __temp_file");
  #endif
