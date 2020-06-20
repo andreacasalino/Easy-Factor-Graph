@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2046
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{91CF754D-C6F2-4065-BFF3-034CB1FD0725}"
 EndProject
@@ -22,8 +22,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample_07_Learning_B", "EFG_Samples\Sample_07_Learning_B\Sample_07_Learning_B.vcxproj", "{DF1435E7-EEBC-4B11-BE09-0703B9706E11}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sample_08_subgraph_operation", "EFG_Samples\Sample_08_subgraph_operation\Sample_08_subgraph_operation.vcxproj", "{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "EFG_GUI", "EFG_GUI\EFG_GUI.vcxproj", "{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -105,14 +103,6 @@ Global
 		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x64.Build.0 = Release|x64
 		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x86.ActiveCfg = Release|Win32
 		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670}.Release|x86.Build.0 = Release|Win32
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Debug|x64.ActiveCfg = Debug|x64
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Debug|x64.Build.0 = Debug|x64
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Debug|x86.ActiveCfg = Debug|Win32
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Debug|x86.Build.0 = Debug|Win32
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Release|x64.ActiveCfg = Release|x64
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Release|x64.Build.0 = Release|x64
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Release|x86.ActiveCfg = Release|Win32
-		{B700DAEB-B1B2-4FFB-A981-98D622E8FB5D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -128,7 +118,7 @@ Global
 		{E36D9CBB-D406-4C28-B17A-BC2FF50A9670} = {91CF754D-C6F2-4065-BFF3-034CB1FD0725}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {98A78535-37D4-41D7-88F8-993CF73D529A}
 		VisualSVNWorkingCopyRoot = .
+		SolutionGuid = {98A78535-37D4-41D7-88F8-993CF73D529A}
 	EndGlobalSection
 EndGlobal
