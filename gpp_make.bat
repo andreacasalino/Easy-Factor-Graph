@@ -23,7 +23,6 @@ ar rvs ./bin/EFG.lib ^
 	Subgraph.o
 	del *.o
 
-pause
 
 echo --------> build samples <----------
 	g++ -o ./bin/Sample_01 ./EFG_Samples/Sample_01_Potential_handling/Main_01.cpp ./bin/EFG.lib -O3
