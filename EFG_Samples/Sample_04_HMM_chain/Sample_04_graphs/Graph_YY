@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<Root>
+  <Variable name="Y_0" Size="2"></Variable>
+  <Variable name="Y_1" Size="2"></Variable>
+  <Variable name="Y_2" Size="2"></Variable>
+  <Variable name="Y_3" Size="2"></Variable>
+  <Variable name="Y_4" Size="2"></Variable>
+  <Variable name="Y_5" Size="2"></Variable>
+  <Variable name="Y_6" Size="2"></Variable>
+  <Variable name="Y_7" Size="2"></Variable>
+  <Variable name="Y_8" Size="2"></Variable>
+  <Variable name="Y_9" Size="2"></Variable>
+  <Variable name="X_0" Size="2" flag="O"></Variable>
+  <Variable name="X_1" Size="2" flag="O"></Variable>
+  <Variable name="X_2" Size="2" flag="O"></Variable>
+  <Variable name="X_3" Size="2" flag="O"></Variable>
+  <Variable name="X_4" Size="2" flag="O"></Variable>
+  <Variable name="X_5" Size="2" flag="O"></Variable>
+  <Variable name="X_6" Size="2" flag="O"></Variable>
+  <Variable name="X_7" Size="2" flag="O"></Variable>
+  <Variable name="X_8" Size="2" flag="O"></Variable>
+  <Variable name="X_9" Size="2" flag="O"></Variable>
+  <Potential var="X_0" var="Y_0" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_0" weight="2.000000" tunability="N">
+    <Distr_val v="0" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_1" var="Y_1" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_0" var="Y_1" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_2" var="Y_2" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_1" var="Y_2" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_3" var="Y_3" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_2" var="Y_3" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_4" var="Y_4" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_3" var="Y_4" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_5" var="Y_5" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_4" var="Y_5" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_6" var="Y_6" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_5" var="Y_6" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_7" var="Y_7" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_6" var="Y_7" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_8" var="Y_8" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_7" var="Y_8" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="X_9" var="Y_9" weight="0.500000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+  <Potential var="Y_8" var="Y_9" weight="2.000000" tunability="N">
+    <Distr_val v="0" v="0" D="1.000000"></Distr_val>
+    <Distr_val v="1" v="1" D="1.000000"></Distr_val>
+  </Potential>
+</Root>
