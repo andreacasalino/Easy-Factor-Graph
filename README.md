@@ -6,7 +6,7 @@ General purpose c++ library for handling undirected graphical models.
 
 <li> ./EFG: contains the sources of the library </li>
 <li> ./EFG_Samples: contains 8 classes of examples, showing how to use EFG  </li>
-<li> ./EFG_GUI: contains an interactive application for managing medium-size factor graphs through a responsive interface (for the moment only for Windows) </li>
+<li> ./EFG_GUI: contains an interactive application for managing medium-size factor graphs through a responsive interface (for the moment only for Windows). Some javascript scripts are included from the net, therefore a connection is required. </li>
 <li> ./doc/EFG.pdf: an extensive guide that contains details about the theoretical concepts EFG is based on as well the structure of the classes constituting EFG. It explains also how to use the EFG_GUI. </li>
 
 <h2> HOW TO COMPILE <h2>
