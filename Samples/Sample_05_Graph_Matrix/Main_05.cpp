@@ -12,11 +12,11 @@
 #include <memory>
 using namespace std;
 
-#include <Graphical_model.h>
+#include <model/Graph.h>
 #include "../Utilities.h"
 using namespace EFG;
 
-unique_ptr<Graph> create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot);
+unique_ptr<model::Graph> create_Matrix(const std::size_t& Size, const std::size_t& var_size, const float& w_pot);
 
 int main() {
 
@@ -31,11 +31,11 @@ int main() {
 	Matrix->Reprint(Get_prefix() + "Sample_05_graphs/Matrix");
 
 	//set V0_0 = 0 as an edivence and compute marginals of the variables along the diagonal of the matrix
-	Categoric_var* V0 = Matrix->Find_Variable("V0_0");
-	Matrix->Set_Evidences(vector<pair<string, size_t>>{{"V0_0" , 0}});
+	CategoricVariable* V0 = Matrix->FindVariable("V0_0");
+	Matrix->SetEvidences(vector<pair<string, size_t>>{{"V0_0" , 0}});
 
 	for (size_t k = 1; k < Size; k++) {
-		marginals = Matrix->Get_marginal_distribution("V" + to_string(k) + "_" + to_string(k));
+		marginals = Matrix->GetMarginalDistribution("V" + to_string(k) + "_" + to_string(k));
 		cout << "V" << k << "_" << k << "     ";
 		print_distribution(marginals);
 	}
@@ -43,28 +43,28 @@ int main() {
 	return 0;
 }
 
-unique_ptr<Graph> create_Matrix(const size_t& Size, const size_t& var_size, const float& w_pot) {
+unique_ptr<model::Graph> create_Matrix(const std::size_t& Size, const std::size_t& var_size, const float& w_pot) {
 
 	if (Size < 2) abort();
 	if (var_size < 2) abort();
 
-	Graph* Mat = new Graph();
+	unique_ptr<model::Graph> Mat = make_unique<model::Graph>();
 
 	//Create a correlating potential to replicate
-	Categoric_var Va(var_size, "Va"), Vb(var_size, "Vb");
-	Potential_Exp_Shape P_ab(Potential_Shape(vector<Categoric_var*>{ &Va, &Vb }, true), w_pot);
+	CategoricVariable Va(var_size, "Va"), Vb(var_size, "Vb");
+	pot::ExpFactor P_ab(pot::Factor(vector<CategoricVariable*>{ &Va, &Vb }, true), w_pot);
 	size_t c;
 	for (size_t r = 0; r < Size; r++) {
 		//create a new row of variables
 		for (c = 1; c < Size; c++) {
-			Categoric_var Y_att(var_size, "V" + to_string(r) + "_" + to_string(c));
+			CategoricVariable Y_att(var_size, "V" + to_string(r) + "_" + to_string(c));
 			if (c == 1) {
-				Categoric_var Y_prev(var_size, "V" + to_string(r) + "_0");
-				Potential_Exp_Shape P_temp(P_ab, { &Y_prev , &Y_att });
+				CategoricVariable Y_prev(var_size, "V" + to_string(r) + "_0");
+				pot::ExpFactor P_temp(P_ab, { &Y_prev , &Y_att });
 				Mat->Insert(P_temp);
 			}
 			else {
-				Potential_Exp_Shape P_temp(P_ab, { Mat->Find_Variable("V" + to_string(r) + "_" + to_string(c - 1)) , &Y_att });
+				pot::ExpFactor P_temp(P_ab, { Mat->FindVariable("V" + to_string(r) + "_" + to_string(c - 1)) , &Y_att });
 				Mat->Insert(P_temp);
 			}
 		}
@@ -72,14 +72,14 @@ unique_ptr<Graph> create_Matrix(const size_t& Size, const size_t& var_size, cons
 		if (r > 0) {
 			//connect the new row to the previous one
 			for (c = 0; c < Size; c++) {
-				Categoric_var* Va = Mat->Find_Variable("V" + to_string(r) + "_" + to_string(c));
-				Categoric_var* Vb = Mat->Find_Variable("V" + to_string(r - 1) + "_" + to_string(c));
-				Potential_Exp_Shape P_temp(P_ab, { Va , Vb });
+				CategoricVariable* Va = Mat->FindVariable("V" + to_string(r) + "_" + to_string(c));
+				CategoricVariable* Vb = Mat->FindVariable("V" + to_string(r - 1) + "_" + to_string(c));
+				pot::ExpFactor P_temp(P_ab, { Va , Vb });
 				Mat->Insert(P_temp);
 			}
 		}
 	}
 
-	return unique_ptr<Graph>(Mat);
+	return move(Mat);
 
 }

@@ -1,34 +1,31 @@
-#pragma once
 #ifndef   _UTILITIES___H_
 #define   _UTILITIES___H_
 
 #include <string>
 #include <list>
 #include <vector>
-#include <Potential.h>
+#include <distribution/Distribution.h>
 #include <cmath>
+#include <fstream>
 using namespace std;
 
 
 
-ostream& operator<<(ostream& s, const EFG::Discrete_Distribution& pot) {
+ostream& operator<<(ostream& s, const EFG::distr::DiscreteDistribution& pot) {
 
-	size_t K = pot.Get_Variables().size(), k;
+	size_t K = pot.GetVariables().size(), k;
 
-	auto it = pot.get_iter();
-
-	if (it.is_not_at_end()) {
-		s << "<" << pot.Get_Variables()[0]->Get_name();
-		for (k = 1; k < K; ++k) s << "," << pot.Get_Variables()[k]->Get_name();
+	auto it = pot.getIter();
+	if (it.isNotAtEnd()) {
+		s << "<" << pot.GetVariables()[0]->GetName();
+		for (k = 1; k < K; ++k) s << "," << pot.GetVariables()[k]->GetName();
 		s << ">\n";
-
-		while (it.is_not_at_end()) {
-			s << "<" << it->Get_indeces()[0];
-			for (k = 1; k < K; ++k) s << "," << it->Get_indeces()[k];
+		EFG::itr::forEach<EFG::distr::DiscreteDistribution::constIterator>(it, [&s, &k, &K](EFG::distr::DiscreteDistribution::constIterator& itt) {
+			s << "<" << itt->GetIndeces()[0];
+			for (k = 1; k < K; ++k) s << "," << itt->GetIndeces()[k];
 			s << "> -> ";
-			s << it->Get_val() << "\n";
-			++it;
-		}
+			s << itt->GetVal() << "\n";
+		});
 	}
 
 	return s;
@@ -62,7 +59,7 @@ void normalize(vector<float>* to_normalize) {
 
 //compute the empirical frequencies of a variable (var_sampled), considering a list of realizations (sample) taken as samples from a joint probability distribution (the one involving vars_in_sample) 
 //the result is put into marginals
-void Get_empirical_frequencies(vector<float>* marginals, const list<vector<size_t>>& sample, EFG::Categoric_var* var_desired, const vector<EFG::Categoric_var*>& vars_in_sample ) {
+void Get_empirical_frequencies(vector<float>* marginals, const list<vector<size_t>>& sample, EFG::CategoricVariable* var_desired, const vector<EFG::CategoricVariable*>& vars_in_sample ) {
 
 	if (sample.front().size() != vars_in_sample.size())
 		throw std::runtime_error("invalid inputs");
@@ -101,7 +98,7 @@ void Get_empirical_frequencies(vector<float>* marginals, const list<vector<size_
 }
 
 //similar to the above function, computing in single call the empirical distributions of all the variables in vars_to_search
-float Get_empirical_frequencies(const list<vector<size_t>>& sample, const vector<size_t>& combination_to_search, const vector<EFG::Categoric_var*>& vars_to_search, const vector<EFG::Categoric_var*>& vars_in_sample) {
+float Get_empirical_frequencies(const list<vector<size_t>>& sample, const vector<size_t>& combination_to_search, const vector<EFG::CategoricVariable*>& vars_to_search, const vector<EFG::CategoricVariable*>& vars_in_sample) {
 
 	if (sample.front().size() != vars_in_sample.size())
 		throw std::runtime_error("invalid inputs");
@@ -152,13 +149,13 @@ float Get_empirical_frequencies(const list<vector<size_t>>& sample, const vector
 
 //print into a file some samples taken from the joint probability distribution that involves vars.
 //Such a file can be then exploited for training a graphical model
-void Print_set_as_training_set(const string& file_name, const vector<EFG::Categoric_var*>& vars, const list<vector<size_t>>& samples) {
+void Print_set_as_training_set(const string& file_name, const vector<EFG::CategoricVariable*>& vars, const list<vector<size_t>>& samples) {
 
 	ofstream f(file_name);
 	if (!f.is_open()) throw std::runtime_error("invalid file for exporting samples");
 
 	for (auto it = vars.begin(); it != vars.end(); ++it)
-		f << " " << (*it)->Get_name();
+		f << " " << (*it)->GetName();
 	f << endl;
 
 	auto c = samples.front().begin();
@@ -175,6 +172,7 @@ void Print_set_as_training_set(const string& file_name, const vector<EFG::Catego
 };
 
 #ifdef _MSC_VER
+#define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #endif
 std::string Get_prefix() {
