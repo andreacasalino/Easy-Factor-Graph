@@ -11,7 +11,7 @@
 #include <string>
 using namespace std;
 
-#include <Graphical_model.h>
+#include <model/Graph.h>
 #include "../Utilities.h"
 using namespace EFG;
 
@@ -63,7 +63,7 @@ int main() {
 void part_01() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 01' from an existing xml file
-	Graph graph_1("graph_1.xml", Get_prefix() + "Sample_03_graphs/"); 
+	model::Graph graph_1("graph_1.xml", Get_prefix() + "Sample_03_graphs/"); 
 
 	vector<float> marginals;
 
@@ -71,13 +71,13 @@ void part_01() {
 	float Z;
 
 	// set E=1 as an evidence
-	graph_1.Set_Evidences(vector<pair<string, size_t>>{ {"E", 1} });
+	graph_1.SetEvidences(vector<pair<string, size_t>>{ {"E", 1} });
 	cout << endl << endl;
 	cout << "E=1\n";
 
 	// compute the marginals distributions of the other variables and compare it 
 	// with the theoretical results (see also 'Sample 03: Belief propagation, part B / part 01')
-	marginals = graph_1.Get_marginal_distribution("A");
+	marginals = graph_1.GetMarginalDistribution("A");
 	cout << "P(A|E)\n";
 	print_distribution(marginals);
 	Z = (1.f + a) * (1.f + g + e + e * g);
@@ -85,7 +85,7 @@ void part_01() {
 	print_distribution(list<float>({ (a*(g + e) + (1 + g * e)) / Z, ((g + e) + a * (1 + g * e)) / Z }));
 	cout << endl;
 
-	marginals =  graph_1.Get_marginal_distribution("B");
+	marginals =  graph_1.GetMarginalDistribution("B");
 	cout << "P(B|E)\n";
 	print_distribution(marginals);
 	Z = 1.f + e + g + e * g;
@@ -93,7 +93,7 @@ void part_01() {
 	print_distribution(list<float>({ (g + e) / Z,(1 + g * e) / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("C");
+	marginals = graph_1.GetMarginalDistribution("C");
 	cout << "P(C|E)\n";
 	print_distribution(marginals);
 	Z = (1.f + b) * (1.f + g + e + e * g);
@@ -101,7 +101,7 @@ void part_01() {
 	print_distribution(list<float>({ (b*(g + e) + (1 + g * e)) / Z, ((g + e) + b * (1 + g * e)) / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("D");
+	marginals = graph_1.GetMarginalDistribution("D");
 	cout << "P(D|E)\n";
 	print_distribution(marginals);
 	Z = 1.f + e;
@@ -111,13 +111,13 @@ void part_01() {
 
 
 	// set E=0 as an evidence and recompute the marginals
-	graph_1.Set_Evidences( vector<size_t>{ 0 });
+	graph_1.SetEvidences( vector<size_t>{ 0 });
 	cout << endl << endl;
 	cout << "E=0\n";
 
 
 
-	marginals = graph_1.Get_marginal_distribution("A");
+	marginals = graph_1.GetMarginalDistribution("A");
 	cout << "P(A|E)\n";
 	print_distribution(marginals);
 	Z = (1.f + a) * (1.f + g + e + e * g);
@@ -125,7 +125,7 @@ void part_01() {
 	print_distribution(list<float>({ ((g + e) + a * (1 + g * e)) / Z, (a*(g + e) + (1 + g * e)) / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("B");
+	marginals = graph_1.GetMarginalDistribution("B");
 	cout << "P(B|E)\n";
 	print_distribution(marginals);
 	Z = 1.f + e + g + e * g;
@@ -133,7 +133,7 @@ void part_01() {
 	print_distribution(list<float>({ (1 + g * e) / Z , (g + e) / Z }));
 	cout << endl;
 
-	marginals =  graph_1.Get_marginal_distribution("C");
+	marginals =  graph_1.GetMarginalDistribution("C");
 	cout << "P(C|E)\n";
 	print_distribution(marginals);
 	Z = (1.f + b) * (1.f + g + e + e * g);
@@ -141,7 +141,7 @@ void part_01() {
 	print_distribution(list<float>({ ((g + e) + b * (1 + g * e)) / Z , (b*(g + e) + (1 + g * e)) / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("D");
+	marginals = graph_1.GetMarginalDistribution("D");
 	cout << "P(D|E)\n";
 	print_distribution(marginals);
 	Z = 1.f + e;
@@ -152,12 +152,12 @@ void part_01() {
 
 
 	// set D=1 as an evidence and recompute the marginals of the hidden variables (including E)
-	graph_1.Set_Evidences(vector<pair<string, size_t>>{ {"D", 1} });
+	graph_1.SetEvidences(vector<pair<string, size_t>>{ {"D", 1} });
 	cout << endl << endl;
 	cout << "D=1\n";
 
 
-	marginals = graph_1.Get_marginal_distribution("A");
+	marginals = graph_1.GetMarginalDistribution("A");
 	cout << "P(A|D)\n";
 	print_distribution(marginals);
 	Z = 1.f + a + g + a * g;
@@ -165,7 +165,7 @@ void part_01() {
 	print_distribution(list<float>({ (a + g) / Z, (1.f + a * g) / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("B");
+	marginals = graph_1.GetMarginalDistribution("B");
 	cout << "P(B|D)\n";
 	print_distribution(marginals);
 	Z = 1.f + g;
@@ -173,7 +173,7 @@ void part_01() {
 	print_distribution(list<float>({ 1.f / Z, g / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("C");
+	marginals = graph_1.GetMarginalDistribution("C");
 	cout << "P(C|D)\n";
 	print_distribution(marginals);
 	Z = 1.f + b + g + b * g;
@@ -181,7 +181,7 @@ void part_01() {
 	print_distribution(list<float>({ (b + g) / Z, (1.f + b * g) / Z }));
 	cout << endl;
 
-	marginals = graph_1.Get_marginal_distribution("E");
+	marginals = graph_1.GetMarginalDistribution("E");
 	cout << "P(E|D)\n";
 	print_distribution(marginals);
 	Z = 1.f + e;
@@ -194,44 +194,44 @@ void part_01() {
 void part_02() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 02' from an existing xml file
-	Graph politree("graph_2.xml", Get_prefix() +  "Sample_03_graphs/");
+	model::Graph politree("graph_2.xml", Get_prefix() +  "Sample_03_graphs/");
 
 	vector<float> marginals;
 
 	// set v1,v2,v3 as observations and use a Gibbs sampler 
 	// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
-	politree.Set_Evidences(vector<pair<string, size_t>>{ {"v1",1}, { "v2",1 }, { "v3",1 }});
-	std::list<std::vector<size_t>> sample = politree.Gibbs_Sampling_on_Hidden_set(100, 200);
+	politree.SetEvidences(vector<pair<string, size_t>>{ {"v1",1}, { "v2",1 }, { "v3",1 }});
+	std::list<std::vector<size_t>> sample = politree.GibbsSamplingHiddenSet(100, 200);
 
-	vector<Categoric_var*> hidden_set = politree.Get_Actual_Hidden_Set();
+	vector<CategoricVariable*> hidden_set = politree.GetHiddenSet();
 
 	//compare the computed marginals with the ones coming from the samples obtained by the Gibbs sampler, for some hidden variables
 	cout << "P(v10 | Observations): \n";
-	Get_empirical_frequencies(&marginals, sample, politree.Find_Variable("v10"), hidden_set);
+	Get_empirical_frequencies(&marginals, sample, politree.FindVariable("v10"), hidden_set);
 	cout << "empirical ";
 	print_distribution(marginals);
 
-	marginals = politree.Get_marginal_distribution("v10");
+	marginals = politree.GetMarginalDistribution("v10");
 	cout << "          ";
 	print_distribution(marginals);
 	cout << endl;
 
 	cout << "P(v11 | Observations): \n";
-	Get_empirical_frequencies(&marginals, sample, politree.Find_Variable("v11"), hidden_set);
+	Get_empirical_frequencies(&marginals, sample, politree.FindVariable("v11"), hidden_set);
 	cout << "empirical ";
 	print_distribution(marginals);
 
-	marginals = politree.Get_marginal_distribution("v11");
+	marginals = politree.GetMarginalDistribution("v11");
 	cout << "          ";
 	print_distribution(marginals);
 	cout << endl;
 
 	cout << "P(v12 | Observations): \n";
-	Get_empirical_frequencies(&marginals, sample, politree.Find_Variable("v12"), hidden_set);
+	Get_empirical_frequencies(&marginals, sample, politree.FindVariable("v12"), hidden_set);
 	cout << "empirical ";
 	print_distribution(marginals);
 
-	marginals = politree.Get_marginal_distribution("v12");
+	marginals = politree.GetMarginalDistribution("v12");
 	cout << "          ";
 	print_distribution(marginals);
 	cout << endl;
@@ -244,10 +244,10 @@ void part_03() {
 	vector<float> marginals_theoretical;
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 03' from an existing xml file
-	Graph loop("graph_3.xml", Get_prefix() +  "Sample_03_graphs/");
+	model::Graph loop("graph_3.xml", Get_prefix() +  "Sample_03_graphs/");
 
 	// set the observation
-	loop.Set_Evidences(vector<pair<string, size_t>>{ {"E",1}});
+	loop.SetEvidences(vector<pair<string, size_t>>{ {"E",1}});
 	cout << endl << endl;
 	cout << "E=1\n";
 
@@ -263,7 +263,7 @@ void part_03() {
 	normalize(&marginals_theoretical);
 	cout << "theoretical\n";
 	print_distribution(marginals_theoretical);
-	marginals = loop.Get_marginal_distribution("D");
+	marginals = loop.GetMarginalDistribution("D");
 	print_distribution(marginals);
 	cout << endl << endl;
 
@@ -272,7 +272,7 @@ void part_03() {
 	normalize(&marginals_theoretical);
 	cout << "theoretical\n";
 	print_distribution(marginals_theoretical);
-	marginals = loop.Get_marginal_distribution("C");
+	marginals = loop.GetMarginalDistribution("C");
 	print_distribution(marginals);
 	cout << endl << endl;
 
@@ -281,7 +281,7 @@ void part_03() {
 	normalize(&marginals_theoretical);
 	cout << "theoretical\n";
 	print_distribution(marginals_theoretical);
-	marginals = loop.Get_marginal_distribution("B");
+	marginals = loop.GetMarginalDistribution("B");
 	print_distribution(marginals);
 	cout << endl << endl;
 
@@ -290,7 +290,7 @@ void part_03() {
 	normalize(&marginals_theoretical);
 	cout << "theoretical\n";
 	print_distribution(marginals_theoretical);
-	marginals = loop.Get_marginal_distribution("A");
+	marginals = loop.GetMarginalDistribution("A");
 	print_distribution(marginals);
 	cout << endl << endl;
 
@@ -299,28 +299,28 @@ void part_03() {
 void part_04() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 04' from an existing xml file
-	Graph loop("graph_4.xml", Get_prefix() +  "Sample_03_graphs/");
+	model::Graph loop("graph_4.xml", Get_prefix() +  "Sample_03_graphs/");
 
-	//Categoric_var* v1 = loop.Find_Variable("v1");
-	//Categoric_var* v8 = loop.Find_Variable("v8");
+	//CategoricVariable* v1 = loop.FindVariable("v1");
+	//CategoricVariable* v8 = loop.FindVariable("v8");
 
 	vector<float> marginals;
 
 	// set v1=1 as an evidence and use a Gibbs sampler 
 	// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
-	loop.Set_Evidences(vector<pair<string, size_t>>{ {"v1", 1} });
+	loop.SetEvidences(vector<pair<string, size_t>>{ {"v1", 1} });
 
-	list<vector<size_t>> sample = loop.Gibbs_Sampling_on_Hidden_set(200, 50);
+	list<vector<size_t>> sample = loop.GibbsSamplingHiddenSet(200, 50);
 
-	vector<Categoric_var*> hidden_set= loop.Get_Actual_Hidden_Set();
+	vector<CategoricVariable*> hidden_set= loop.GetHiddenSet();
 
 	//compare the computed marginals with the ones coming from the samples obtained by the Gibbs sampler
 	cout << "P(v8 | Observations): \n";
-	Get_empirical_frequencies(&marginals, sample, loop.Find_Variable("v8"), hidden_set);
+	Get_empirical_frequencies(&marginals, sample, loop.FindVariable("v8"), hidden_set);
 	cout << "empirical ";
 	print_distribution(marginals);
 
-	marginals = loop.Get_marginal_distribution("v8");
+	marginals = loop.GetMarginalDistribution("v8");
 	cout << "          ";
 	print_distribution(marginals);
 	cout << endl;

@@ -54,8 +54,8 @@ if(BUILD_04)
     )	
 	
 	add_custom_command(TARGET Sample04 PRE_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_04_HMM_chain/Sample_04_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_04_graphs
-    )
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Sample_04_graphs
+	)
 endif()
 
 option(BUILD_05 "Build Sample_05" ON)
@@ -70,9 +70,9 @@ if(BUILD_05)
 			EFG::Easy-Factor-Graph
     )	
 	
-	add_custom_command(TARGET Sample05 PRE_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_05_Graph_Matrix/Sample_05_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_05_graphs
-    )
+	add_custom_command(TARGET Sample04 PRE_BUILD
+		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Sample_05_graphs
+	)
 endif()
 
 option(BUILD_06 "Build Sample_06" ON)
