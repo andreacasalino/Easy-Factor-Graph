@@ -95,6 +95,13 @@ namespace EFG::pot {
 	protected:
 		IFactor(const std::vector<CategoricVariable*>& vars) : distribution(vars) {};
 
+		IFactor(IFactor&& o) : distribution(std::move(o.distribution)) {
+			if (o.subject.isObserved()) {
+				static_cast<distr::DiscreteDistribution&>(this->distribution) = std::move(static_cast<distr::DiscreteDistribution&>(o.distribution));
+				throw std::runtime_error("potential to move should be not observed by anyone at the time the move is invoked");
+			}
+		};
+
 		Distr								distribution;
 		sbj::MultiObservable				subject;
 	};

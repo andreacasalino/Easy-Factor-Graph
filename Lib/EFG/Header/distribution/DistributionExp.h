@@ -14,21 +14,17 @@
 namespace EFG::distr {
 
     class ExpDistribution : public DiscreteDistribution {
-
-        class ExpImageEvaluator : public DiscreteDistribution::ImageEvaluator {
-            inline float operator()(const float& rawVal) const override { return expf(this->weight * rawVal); };
-        public:
-            float weight;
-
-            ExpImageEvaluator(const float& w) : weight(w) {};
-        };
-
     public:
         ExpDistribution(const std::vector<CategoricVariable*>& vars, const float w = 1.f);
 
-        inline const float& getWeight() const { return static_cast<ExpImageEvaluator*>(this->evaluator.get())->weight; }
-        inline void         setWeight(const float& w) { static_cast<ExpImageEvaluator*>(this->evaluator.get())->weight = w; }
+        ExpDistribution(ExpDistribution&& o);
 
+        inline const float& getWeight() const { return this->weight; }
+        inline void         setWeight(const float& w) { this->weight = w; }
+    private:
+        inline float evalImage(const float& valRaw) const final { return std::expf(this->weight * valRaw); };
+
+        float weight;
     };
 
 }

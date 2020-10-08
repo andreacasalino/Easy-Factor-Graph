@@ -43,12 +43,12 @@ int main() {
 
 void print_marginals(node::Node::NodeFactory& source , const vector<string>& subgraph_vars, const vector<float>& empirical) {
 
-	auto joint_shape = source.GetJointMarginalDistribution(subgraph_vars);
+	pot::Factor joint_shape = source.GetJointMarginalDistribution(subgraph_vars);
 	size_t d, D = subgraph_vars.size();
 
 	cout << "theoretical    computed\n";
 	size_t k = 0;
-	distr::DiscreteDistribution::constIterator it = joint_shape->GetDistribution().getIter();
+	distr::DiscreteDistribution::constIterator it = joint_shape.GetDistribution().getIter();
 	itr::forEach<distr::DiscreteDistribution::constIterator>(it, [&empirical, &k, &d, &D](distr::DiscreteDistribution::constIterator& itt) {
 		cout << empirical[k] << "      " << itt->GetVal() << "  ->  <";
 		for (d = 0; d < D; ++d) cout << " " << itt->GetIndeces()[d];
@@ -67,9 +67,9 @@ void part_01() {
 	CategoricVariable A(2, "A"); CategoricVariable B(2, "B"); CategoricVariable C(2, "C"); CategoricVariable D(2, "D");
 	model::RandomField G;
 
-	G.Insert(*std::make_unique<pot::ExpFactor>(pot::Factor(vector<CategoricVariable*>{ &A, & B }, true), alfa).get());
-	G.Insert(*std::make_unique<pot::ExpFactor>(pot::Factor(vector<CategoricVariable*>{ &B, & C }, true), beta).get());
-	G.Insert(*std::make_unique<pot::ExpFactor>(pot::Factor(vector<CategoricVariable*>{ &C, & D }, true)).get());
+	G.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A, & B }, true), alfa));
+	G.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B, & C }, true), beta));
+	G.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &C, & D }, true)));
 	
 	vector<float> marginal_theoretical;
 
@@ -111,10 +111,10 @@ void part_02() {
 
 	{
 		// compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
-		auto Marginal_A_1234 = graph.GetJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
+		pot::Factor Marginal_A_1234 = graph.GetJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
 		vector<CategoricVariable*> Var_A1234 = { graph.FindVariable("A1"), graph.FindVariable("A2"), graph.FindVariable("A3"), graph.FindVariable("A4") };
 		list<vector<size_t>> comb_raw = { {0,0,0,0}, {1,1,0,0} };
-		distr::DiscreteDistribution::constFullMatchFinder finder(Marginal_A_1234->GetDistribution());
+		distr::DiscreteDistribution::constFullMatchFinder finder(Marginal_A_1234.GetDistribution());
 
 		cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=0,X2=0) empirical   ";
 		cout << Get_empirical_frequencies(sample, comb_raw.front(), Var_A1234, graph.GetHiddenSet());
@@ -127,10 +127,10 @@ void part_02() {
 
 	{
 		// compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
-		auto Marginal_B_123 = graph.GetJointMarginalDistribution({ "B1" , "B2" ,"B3" });
+		pot::Factor Marginal_B_123 = graph.GetJointMarginalDistribution({ "B1" , "B2" ,"B3" });
 		vector<CategoricVariable*> Var_B123 = { graph.FindVariable("B1"), graph.FindVariable("B2"), graph.FindVariable("B3") };
 		list<vector<size_t>> comb_raw = { {0,0,0}, {1,1,0} };
-		distr::DiscreteDistribution::constFullMatchFinder finder(Marginal_B_123->GetDistribution());
+		distr::DiscreteDistribution::constFullMatchFinder finder(Marginal_B_123.GetDistribution());
 
 		cout << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0) empirical   ";
 		cout << Get_empirical_frequencies(sample, comb_raw.front(), Var_B123, graph.GetHiddenSet());
@@ -148,10 +148,10 @@ void part_02() {
 
 	{
 		// compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
-		auto Marginal_A_1234 = graph.GetJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
+		pot::Factor Marginal_A_1234 = graph.GetJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
 		vector<CategoricVariable*> Var_A1234 = { graph.FindVariable("A1"), graph.FindVariable("A2"), graph.FindVariable("A3"), graph.FindVariable("A4") };
 		list<vector<size_t>> comb_raw = { {0,0,0,0}, {1,1,0,0} };
-		distr::DiscreteDistribution::constFullMatchFinder finder(Marginal_A_1234->GetDistribution());
+		distr::DiscreteDistribution::constFullMatchFinder finder(Marginal_A_1234.GetDistribution());
 
 		cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=1,X2=1) empirical   ";
 		cout << Get_empirical_frequencies(sample, comb_raw.front(), Var_A1234, graph.GetHiddenSet());

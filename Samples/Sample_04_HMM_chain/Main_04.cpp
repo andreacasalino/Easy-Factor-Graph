@@ -62,7 +62,7 @@ unique_ptr<model::Graph> create_Chain(const std::size_t& Chain_size, const std::
 	pot::ExpFactor P_XY(pot::Factor(vector<CategoricVariable*>{ &X_fake, &Y_fake }, true), w_XY);
 	pot::ExpFactor P_YY(pot::Factor(vector<CategoricVariable*>{ &Y2_fake, & Y_fake }, true), w_YY);
 
-	unique_ptr<model::Graph> G = make_unique<model::Graph>(); //all the potentials are interanlly cloned, see constructor definition
+	unique_ptr<model::Graph> G = make_unique<model::Graph>(); //all the potentials will be moved inside the graph
 
 	//build the chain and set the value of the evidences equal to:
 	//X_0 = 0, X_1=var_size-1, X_2= 0, X_3 = var_size-1, etc.. 
@@ -72,18 +72,14 @@ unique_ptr<model::Graph> create_Chain(const std::size_t& Chain_size, const std::
 	for (size_t k = 0; k < Chain_size; k++) {
 		CategoricVariable X_k(X_fake.size(), "X_" + to_string(k));
 		CategoricVariable Y_k(X_fake.size(), "Y_" + to_string(k));
-		pot::ExpFactor temp_XY(P_XY, { &X_k, &Y_k });
-		G->Insert(temp_XY);
+		G->InsertMove(pot::ExpFactor(P_XY, { &X_k, &Y_k }));  //the rvalue built is moved inside the graph
 		if (k == 0) {
 			pot::Factor p_Y(vector<CategoricVariable*>{ &Y_k });
 			p_Y.AddValue(vector<size_t>{0}, 1.f);
-			pot::ExpFactor P_Y(p_Y, w_YY);
-			G->Insert(P_Y);
+			G->InsertMove(pot::ExpFactor(p_Y, w_YY)); //the rvalue built is moved inside the graph
 		}
-		else {
-			pot::ExpFactor temp_YY(P_YY, { G->FindVariable("Y_" + to_string(k - 1)), &Y_k });
-			G->Insert(temp_YY);
-		}
+		else G->InsertMove(pot::ExpFactor(P_YY, { G->FindVariable("Y_" + to_string(k - 1)), &Y_k })); //the rvalue built is moved inside the graph
+
 		if (o == 0) o = 1;
 		else o = 0;
 		Evidences.emplace_back(make_pair("X_" + to_string(k), o));

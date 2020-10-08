@@ -20,6 +20,11 @@ namespace EFG::pot {
 	*/
 	class ExpFactor : public IFactor<distr::ExpDistribution> {
 	public:
+		ExpFactor(const ExpFactor&) = delete;
+
+		template<typename ... Args>
+		static ExpFactor makeFactor(Args ... args) { return std::move(ExpFactor(args...)); };
+
 		/** \brief When building a new exponential shape potential, all the values of the domain are computed
 		* according to the new shape passed as input
 		*
@@ -47,25 +52,33 @@ namespace EFG::pot {
 		*/
 		ExpFactor(const ExpFactor& to_copy, const std::vector<CategoricVariable*>& var_involved);
 
-		/** \brief This class allows to remotely change the value of a Potential_Exp_Shape weight.
-		\details You can derive an object from this one if you need. Anyway, you have to keep in mind
-		that only one instance of a weigth_modifier at a time can handle a weight of a Potential_Exp_Shape.
-		Moreover, tunable Potential_Exp_Shape passed to Random_Field or Conditional_Random_Field are automatically handled by some interal weigth_modifier
-		for allowing the training of the model: until such potentials are contained in that models no other weigth_modifier are
-		allowed to remotely handle their weights.
+		/** \brief This is an interface for any object that should be allowed to modify the weight of an ExpFactor
+		\details You have to keep in mind that only one WeightModifier instance at a time has the ownership of an ExpFactor and can modify the weight.
 		*/
-		class Modifier : public sbj::Subject::Observer {
-		public:
-			/** \brief The potential whose weight must be remotely handled must be passed
-			*/
-			Modifier(ExpFactor& involved_pot);
+		class WeightModifier : public sbj::Subject::Observer {
 		protected:
-			inline void			SetWeight(const float& w) { this->pot.distribution.setWeight(w); };
+			WeightModifier(ExpFactor& involved_pot);
+
+			inline void SetWeight(const float& w) { this->pot.distribution.setWeight(w); };
 		private:
 			ExpFactor& pot;
 		};
 
+		/** \brief Handler calling the move constructor to create a new ExpFactor.
+		\details The move construction is a dangerous operation leave without values the distribution of the passed object.
+		For this reason it's placed in this handler
+		*/
+		class Mover {
+		protected:
+			inline std::unique_ptr<ExpFactor> createMoving(ExpFactor&& o) {
+				if (o.distribution.size() == 0) throw std::runtime_error("cannot move an already moved ExpFactor");
+				return std::unique_ptr<ExpFactor>(new ExpFactor(std::move(o)));
+			};
+		};
+
 		inline const float& GetWeight() const { return this->distribution.getWeight(); };
+	protected:
+		ExpFactor(ExpFactor&& o) : IFactor<distr::ExpDistribution>(std::move(o)) {};
 	private:
 		sbj::SingleObservable					subjectWeightHndlr;
 	};

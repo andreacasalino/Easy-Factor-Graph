@@ -69,6 +69,7 @@ namespace EFG::itr {
         TypedIterator(const iter& c, const iter& end)
             : cursor(c)
             , cursor_end(end) {
+            this->isActive = cursor != cursor_end;
         };
 
         iter   cursor;

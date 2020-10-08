@@ -45,7 +45,7 @@ int main() {
 	cout << "part 03 \n\n\n";
 	cout << "-----------------------\n";
 	part_03();
-
+	
 	return 0;
 }
 
@@ -163,8 +163,7 @@ void process_chain(const std::size_t& chain_size, const std::size_t& var_size, c
 
 	//build the correlating potentials and add it to the chain
 	for (size_t k = 1; k < chain_size; k++) {
-		pot::ExpFactor pot_temp(pot::Factor(vector<CategoricVariable*>{ &Y[k - 1], &Y[k] }, true), w);
-		graph.Insert(pot_temp); //the potential is internally cloned, as well as the involved variables
+		graph.InsertMove(pot::ExpFactor::makeFactor(pot::Factor(vector<CategoricVariable*>{ &Y[k - 1], & Y[k] }, true), w)); //the rvalue built is moved inside the graph
 	}
 
 	//set Y_0 as an observations and compute the marginals of the last variable in the chain

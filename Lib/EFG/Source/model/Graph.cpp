@@ -17,7 +17,7 @@ namespace EFG::model {
 		}
 		if (reader != nullptr) {
 			XmlStructureImporter strct(*reader, prefix_config_xml_file);
-			this->_Insert(strct.GetStructure());
+			this->_Insert(strct.GetStructure(), true);
 			this->_SetEvidences(strct.GetObservations());
 		}
 		delete reader;

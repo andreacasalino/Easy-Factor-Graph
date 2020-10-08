@@ -37,6 +37,6 @@ namespace EFG::pot {
 		itr::forEach<distr::DiscreteDistribution::constIterator>(it, [this](distr::DiscreteDistribution::constIterator& itt) { this->distribution.add(itt->GetIndeces() , itt->GetValRaw()); });
 	};
 
-	ExpFactor::Modifier::Modifier(ExpFactor& involved_pot) : sbj::Subject::Observer(involved_pot.subjectWeightHndlr), pot(involved_pot) {};
+	ExpFactor::WeightModifier::WeightModifier(ExpFactor& involved_pot) : sbj::Subject::Observer(involved_pot.subjectWeightHndlr), pot(involved_pot) {};
 
 }

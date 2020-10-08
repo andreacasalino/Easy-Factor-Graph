@@ -28,8 +28,12 @@ namespace EFG::distr {
 
         void                    import(const std::string& file_to_read);
 
-        DiscreteDistribution(const std::vector<CategoricVariable*>& vars);
         ~DiscreteDistribution();
+
+        DiscreteDistribution(const std::vector<CategoricVariable*>& vars);
+
+        DiscreteDistribution(DiscreteDistribution&& o);
+        void operator=(DiscreteDistribution&& o);
 
         inline std::size_t size() const { return this->Map.size(); };
 
@@ -44,17 +48,14 @@ namespace EFG::distr {
         class  constIterator;       
         inline constIterator    getIter() const;
     protected:
-        class ImageEvaluator;
-        std::unique_ptr<ImageEvaluator> evaluator;
-
-        DiscreteDistribution(const std::vector<CategoricVariable*>& vars, std::unique_ptr<ImageEvaluator> evaluator);
+        inline virtual float evalImage(const float& valRaw) const { return valRaw; };
     private:
         class Ifinder;
         class IFullfinder;
         class IPartialfinder;
 
         struct Key{        
-            const std::size_t*                                               combination;
+            const std::size_t*                                          combination;
             const std::vector<size_t>*                                  var_order;
         };   
         
@@ -66,15 +67,8 @@ namespace EFG::distr {
 
         typedef std::map<Key, Value*, comparator> Distribution_map;
     // data
-        Distribution_map                Map;
-        sbj::MultiObservable            subj;
-    };
-
-
-
-    class DiscreteDistribution::ImageEvaluator {
-    public:
-        virtual float operator()(const float& rawVal) const = 0;
+        Distribution_map                  Map;
+        sbj::MultiObservable              subjFinders;
     };
 
 
@@ -84,7 +78,7 @@ namespace EFG::distr {
     public:
         ~Value();
 
-        inline float		  GetVal() const { return (*this->source->evaluator)(this->valRaw); };
+        inline float		  GetVal() const { return this->source->evalImage(this->valRaw); };
         inline const float&   GetValRaw() const { return this->valRaw; };
         inline const std::size_t*  GetIndeces() const { return this->combination; };
 
@@ -93,7 +87,7 @@ namespace EFG::distr {
         Value(DiscreteDistribution* distr, std::size_t* comb, const float& val) : source(distr), combination(comb), valRaw(val) {};
     // data
         const DiscreteDistribution*       source;
-        std::size_t*                           combination;
+        std::size_t*                      combination;
         float                             valRaw;
     };
 
@@ -142,7 +136,7 @@ namespace EFG::distr {
         const DiscreteDistribution*                   source;
         sbj::Subject::Observer                        sourceObsv;
     public:
-        Ifinder(const DiscreteDistribution& distr) : source(&distr), sourceObsv(distr.subj) {};
+        Ifinder(const DiscreteDistribution& distr) : source(&distr), sourceObsv(distr.subjFinders) {};
 
         Ifinder(const Ifinder& ) = delete;
         void operator=(const Ifinder& ) = delete;

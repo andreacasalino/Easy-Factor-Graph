@@ -9,6 +9,7 @@ namespace EFG::node {
 		~XmlStructureImporter() { this->Shapes.clear(); this->ExpShapes.clear(); this->Vars.clear(); };
 
 		inline const Structure& GetStructure() const { return this->ParsedStructure; };
+		inline Structure& GetStructure() { return this->ParsedStructure; };
 		inline const std::vector<std::pair<std::string, size_t>>& GetObservations() const { return this->Observations; };
 	private:
 		CategoricVariable*				__FindVar(const std::string& name);

@@ -27,7 +27,7 @@ int main() {
 	model::ConditionalRandomField cond_graph(Get_prefix() + "Sample_07_graphs/cond_graph.xml");
 
 // build a similar structure with all 1 as weights and then learn them using the previous training set
-	model::ConditionalRandomField cond_graph_to_learn((const node::Node::NodeFactory&)cond_graph);
+	model::ConditionalRandomField cond_graph_to_learn(static_cast<const node::Node::NodeFactory&>(cond_graph));
 	// set all tuanble weights equal to 1
 	cond_graph_to_learn.SetTunable(ones(cond_graph_to_learn.GetModelSize()));
 

@@ -15,14 +15,14 @@ namespace EFG::sbj {
 	public:
 		virtual ~Subject() { if (this->isObserved()) abort(); };
 
-		inline bool isObserved() { return this->impl->isObserved(); };
+		inline bool isObserved() const { return this->impl->isObserved(); };
 
 		class Observer;
 	protected:
 
 		class SubjectImpl {
 		public:
-			virtual bool isObserved() = 0;
+			virtual bool isObserved() const = 0;
 			virtual void addObserver(Subject::Observer* obsv) = 0;
 			virtual void remObserver(Subject::Observer* obsv) = 0;
 		};
@@ -54,7 +54,7 @@ namespace EFG::sbj {
 		public:
 			SingleObsvervbleImpl() : observer(nullptr) {};
 
-			inline bool isObserved() final { return (this->observer != nullptr); };
+			inline bool isObserved() const final { return (this->observer != nullptr); };
 			void addObserver(Observer* obsv) final { if (this->observer != nullptr) abort(); this->observer = obsv; };
 			void remObserver(Observer* obsv) final { this->observer = nullptr; };
 		private:
@@ -71,7 +71,7 @@ namespace EFG::sbj {
 	private:
 		class MultiObservablempl : public SubjectImpl {
 		public:
-			inline bool isObserved() final { return (!this->observers.empty()); };
+			inline bool isObserved() const final { return (!this->observers.empty()); };
 			void addObserver(Observer* obsv) final { this->observers.push_back(obsv); };
 			void remObserver(Observer* obsv) final { this->observers.remove(obsv); };
 		private:
