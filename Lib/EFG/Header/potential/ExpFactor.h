@@ -22,8 +22,16 @@ namespace EFG::pot {
 	public:
 		ExpFactor(const ExpFactor&) = delete;
 
+		/** \brief Similar to ExpFactor::ExpFactor(const Factor&, const float& ), with the difference that
+		* the Factor to use in internally created (and destroyed) using args
+		*
+		* @param[in] args inputs used to internally build a Factor
+		* @param[in] w weight of the exponential
+		*/
 		template<typename ... Args>
-		static ExpFactor makeFactor(Args ... args) { return std::move(ExpFactor(args...)); };
+		static ExpFactor makeFactor(const float& w, Args ... args) {
+			return std::move(ExpFactor(Factor(args...), w)); 
+		};
 
 		/** \brief When building a new exponential shape potential, all the values of the domain are computed
 		* according to the new shape passed as input

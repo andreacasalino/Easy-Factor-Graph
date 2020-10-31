@@ -59,8 +59,8 @@ unique_ptr<model::Graph> create_Chain(const std::size_t& Chain_size, const std::
 	CategoricVariable Y_fake(var_size, "Y_fake");
 	CategoricVariable Y2_fake(var_size, "Y_fake2");
 	//create the potentials to replicate in the chain
-	pot::ExpFactor P_XY(pot::Factor(vector<CategoricVariable*>{ &X_fake, &Y_fake }, true), w_XY);
-	pot::ExpFactor P_YY(pot::Factor(vector<CategoricVariable*>{ &Y2_fake, & Y_fake }, true), w_YY);
+	pot::ExpFactor P_XY = pot::ExpFactor::makeFactor(w_XY, vector<CategoricVariable*>{ &X_fake, &Y_fake }, true);
+	pot::ExpFactor P_YY = pot::ExpFactor::makeFactor(w_YY, vector<CategoricVariable*>{ &Y2_fake, & Y_fake }, true);
 
 	unique_ptr<model::Graph> G = make_unique<model::Graph>(); //all the potentials will be moved inside the graph
 

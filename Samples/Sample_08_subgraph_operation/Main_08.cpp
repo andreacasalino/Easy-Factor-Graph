@@ -67,9 +67,9 @@ void part_01() {
 	CategoricVariable A(2, "A"); CategoricVariable B(2, "B"); CategoricVariable C(2, "C"); CategoricVariable D(2, "D");
 	model::RandomField G;
 
-	G.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A, & B }, true), alfa));
-	G.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B, & C }, true), beta));
-	G.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &C, & D }, true)));
+	G.InsertMove(pot::ExpFactor::makeFactor(alfa, vector<CategoricVariable*>{ &A, & B }, true));
+	G.InsertMove(pot::ExpFactor::makeFactor(beta, vector<CategoricVariable*>{ &B, & C }, true));
+	G.InsertMove(pot::ExpFactor::makeFactor(1.f, vector<CategoricVariable*>{ &C, & D }, true));
 	
 	vector<float> marginal_theoretical;
 

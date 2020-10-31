@@ -82,9 +82,9 @@ void part_01() {
 	float alfa = 1.f, beta = 3.f, gamma = 0.1f;
 
 	model::RandomField graph_2; //the potentials will be moved
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A, & B }, true), alfa), false);
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A, & C }, true), beta));
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B, & C }, true), gamma));
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(alfa, vector<CategoricVariable*>{ &A, & B }, true), false);
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(beta, vector<CategoricVariable*>{ &A, & C }, true));
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(gamma, vector<CategoricVariable*>{ &B, & C }, true));
 
 	//extract some samples form the joint distributions of the variable in the graph, using a Gibbs sampling method
 	list<vector<size_t>> samples = graph_2.GibbsSamplingHiddenSet(500, 500);
@@ -153,11 +153,11 @@ void part_02() {
 
 	model::RandomField graph_2; //the potentials will be moved
 	//the unique_pointer are used in order to realize that the passed potentials are destroyed after the Inesertion ends 
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A,&B }, true), alfa), false); // the weight of this potential will be kept constant
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A,&C }, true), beta));
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(alfa, vector<CategoricVariable*>{ &A,&B }, true), false); // the weight of this potential will be kept constant
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(beta, vector<CategoricVariable*>{ &A, & C }, true));
 	graph_2.InsertMove(pot::Factor(vector<CategoricVariable*>{ &B,&C }, true));
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B,&E }, true), gamma), false); // the weight of this potential will be kept constant
-	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B,&D }, true), delta));
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(gamma, vector<CategoricVariable*>{ &B,&E }, true), false); // the weight of this potential will be kept constant
+	graph_2.InsertMove(pot::ExpFactor::makeFactor(delta, vector<CategoricVariable*>{ &B,&D }, true));
 	graph_2.InsertMove(pot::Factor(vector<CategoricVariable*>{ &D,&E }, true));
 
 	//export into an xml the built graph (just to show the syntax that would have been required to defined the same stucture into an xml)

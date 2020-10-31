@@ -100,9 +100,9 @@ void part_02() {
 
 	float alfa = 0.5f, beta = 1.f;
 
-	pot::ExpFactor Psi_BC(pot::Factor(vector<CategoricVariable*>{ &B, &C }, true), alfa);
+	pot::ExpFactor Psi_BC = pot::ExpFactor::makeFactor(alfa, vector<CategoricVariable*>{ &B, &C }, true);
 
-	pot::ExpFactor Psi_AB(pot::Factor(vector<CategoricVariable*>{ &A, &B }, true), beta);
+	pot::ExpFactor Psi_AB = pot::ExpFactor::makeFactor(beta, vector<CategoricVariable*>{ &A, &B }, true);
 
 	model::Graph graph_2;
 	graph_2.Insert(Psi_AB);
@@ -163,7 +163,7 @@ void process_chain(const std::size_t& chain_size, const std::size_t& var_size, c
 
 	//build the correlating potentials and add it to the chain
 	for (size_t k = 1; k < chain_size; k++) {
-		graph.InsertMove(pot::ExpFactor::makeFactor(pot::Factor(vector<CategoricVariable*>{ &Y[k - 1], & Y[k] }, true), w)); //the rvalue built is moved inside the graph
+		graph.InsertMove(pot::ExpFactor::makeFactor(w, vector<CategoricVariable*>{ &Y[k - 1], & Y[k] }, true)); //the rvalue built is moved inside the graph
 	}
 
 	//set Y_0 as an observations and compute the marginals of the last variable in the chain
