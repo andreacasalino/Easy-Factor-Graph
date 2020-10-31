@@ -122,7 +122,7 @@ namespace EFG::pot {
 		IPotentialDecorator() = default;
 
 		inline IPotential*	GetWrapped() { return this->wrapped.get(); };
-		inline void reset(IPotential* to_wrap = nullptr);
+		void reset(IPotential* to_wrap = nullptr);
 	private:
 		std::unique_ptr<sbj::Subject::Observer>	wrappedObsv;
 		std::unique_ptr<IPotential>			    wrapped;

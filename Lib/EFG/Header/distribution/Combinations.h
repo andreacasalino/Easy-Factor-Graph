@@ -35,12 +35,12 @@ namespace EFG::distr {
     template<typename Array>
     void  Combinations::add(const Array& comb) {
 
-        const std::vector<CategoricVariable>& vars = this->Get_Variables();
+        const std::vector<CategoricVariable*>& vars = this->GetVariables();
         std::size_t K = vars.size();
         std::size_t* clone = (size_t*)malloc(sizeof(size_t) * K);
         for (size_t k = 0; k < K; ++k) {
             clone[k] = comb[k];
-            if (clone[k] >= vars[k].size()) {
+            if (clone[k] >= vars[k]->size()) {
                 free(clone);
                 throw std::runtime_error("combination out of bounds");
             }

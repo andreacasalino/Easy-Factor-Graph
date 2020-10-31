@@ -1,5 +1,4 @@
 #include <distribution/DistributionExp.h>
-#include <math.h>
 
 namespace EFG::distr {
 

@@ -119,7 +119,7 @@ namespace EFG::model {
 	class GraphLearnable::AtomicHandler : public LearningHandler, public pot::IPotentialDecorator, public pot::ExpFactor::WeightModifier {
 	public:
 		inline const float&		GetWeight() override { return this->GetWrappedExp()->GetWeight(); };
-		inline void				SetWeight(const float& w_new) override { this->pot::ExpFactor::WeightModifier::SetWeight(w_new); };
+		inline void				SetWeight(const float& w_new) override { this->EFG::pot::ExpFactor::WeightModifier::SetWeight(w_new); };
 
 		void					RecomputeAlfaPart(const distr::Combinations& train_set) override;
 		const float&			GetAlfaPart() override { return this->alfaPart; };

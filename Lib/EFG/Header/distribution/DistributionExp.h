@@ -10,6 +10,7 @@
 #define __EFG_DISTRIBUTION_EXP_H__
 
 #include <distribution/Distribution.h>
+#include <cmath>
 
 namespace EFG::distr {
 
@@ -22,7 +23,7 @@ namespace EFG::distr {
         inline const float& getWeight() const { return this->weight; }
         inline void         setWeight(const float& w) { this->weight = w; }
     private:
-        inline float evalImage(const float& valRaw) const final { return std::expf(this->weight * valRaw); };
+        inline float evalImage(const float& valRaw) const final { return std::exp(this->weight * valRaw); };
 
         float weight;
     };

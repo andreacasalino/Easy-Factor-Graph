@@ -52,7 +52,7 @@ namespace EFG::node {
 			std::vector<float> vals;
 			vals.reserve(combinations.size());
 
-			list<distr::DiscreteDistribution::constFullMatchFinder>::const_iterator itF;
+			std::list<distr::DiscreteDistribution::constFullMatchFinder>::const_iterator itF;
 			size_t f;
 			std::vector<float> E_max;
 			E_max.reserve(this->Potentials.size());
