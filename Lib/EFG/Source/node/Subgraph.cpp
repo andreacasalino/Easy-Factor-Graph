@@ -7,7 +7,7 @@ using namespace std;
 
 namespace EFG::node {
 
-	std::unique_ptr<pot::Factor> Node::NodeFactory::GetJointMarginalDistribution(const std::vector<std::string>& subgroup) {
+	pot::Factor Node::NodeFactory::GetJointMarginalDistribution(const std::vector<std::string>& subgroup) {
 
 		set<Node*> Group;
 	
@@ -79,11 +79,11 @@ namespace EFG::node {
 		pot::Factor JointPunorderd(shapes2, false, true);
 		JointPunorderd.Normalize2();
 
-		pot::Factor* result = new pot::Factor(varG);
+		pot::Factor result(varG);
 		distr::DiscreteDistribution::constFullMatchFinder JointFinder(JointPunorderd.GetDistribution(), varG);
-		JointDomainIterator::forEach(varG, [result, &JointFinder](const vector<size_t>& comb) { result->AddValue(comb , JointFinder(comb)->GetVal()); });
+		JointDomainIterator::forEach(varG, [&result, &JointFinder](const vector<size_t>& comb) { result.AddValue(comb , JointFinder(comb)->GetVal()); });
 
-		return unique_ptr<pot::Factor>(result);
+		return std::move(result);
 
 	}
 

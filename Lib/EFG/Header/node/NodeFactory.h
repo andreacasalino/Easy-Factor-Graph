@@ -17,7 +17,7 @@
 
 namespace EFG::node {
 
-	class Node::NodeFactory {
+	class Node::NodeFactory : public EFG::pot::ExpFactor::Mover {
 	public:
 		NodeFactory(const NodeFactory&) = delete;
 		void operator=(const NodeFactory&) = delete;
@@ -55,7 +55,7 @@ namespace EFG::node {
 		* @param[out] learnable_exp list of Exponential tunable potentials contained in the model: every sub group share the same weight
 		* @param[out] constant_exp list of Exponential constant potentials contained in the model
 		*/
-		virtual const Structure GetStructure() const;
+		virtual Structure GetStructure() const;
 
 		/*!
 		* \brief Returns the number of potentials constituting the graph, no matter of their type (simple shape, exponential shape fixed or exponential shape tunable)
@@ -96,7 +96,7 @@ namespace EFG::node {
 
 		void							Reprint(const std::string& file_name) const;
 
-		std::unique_ptr<pot::Factor> 	GetJointMarginalDistribution(const std::vector<std::string>& subgroup); //the returned shape has the variable in the same order as the ones passed
+		pot::Factor 					GetJointMarginalDistribution(const std::vector<std::string>& subgroup); //the returned shape has the variable in the same order as the ones passed
 	protected:
 
 		NodeFactory(const bool& use_cloning_Insert, const bp::BeliefPropagator& propagator);
@@ -107,9 +107,13 @@ namespace EFG::node {
 
 		size_t*							_FindObservation(const std::string& var_name);
 
-		void		  					_Insert(pot::Factor* shape); //returns the potetial actually inserted in this graph.
-		pot::ExpFactor*					_Insert(pot::ExpFactor* exp_shape); //returns the potetial actually inserted in this graph.
-		virtual void 					_Insert(const Structure& strct);
+		void		  					_Insert(pot::Factor& shape);
+		void		  					_Insert(pot::Factor&& shape);
+
+		pot::ExpFactor*					_Insert(pot::ExpFactor& exp_shape); //returns the potential actually inserted in this graph.
+		pot::ExpFactor*					_Insert(pot::ExpFactor&& exp_shape); //returns the potential actually inserted in this graph. !!! the passed exp shape is emptied and should be not used anymore
+
+		virtual void 					_Insert(const Structure& strct, const bool& useMove); //when useMove passed as true, every element in strct is transferred into this graph using move, empty the original factors
 
 		/** \brief Set the evidences: identify the variables in the hidden set and the values assumed
 		\details When passing both input as empty list, all the evidences are deleted.
@@ -128,9 +132,11 @@ namespace EFG::node {
 
 		void					  		_BeliefPropagation(const bool& sum_or_MAP); //in the protected version, the propagation is forced to be always re-done
 	private:
+		inline std::unique_ptr<EFG::pot::Factor> createMoving(EFG::pot::Factor&& o) { return std::make_unique<EFG::pot::Factor>(std::move(o)); };
+		using Mover::createMoving;
 
 		template<typename P>
-		P*								__Insert(P* to_insert);
+		P*								__Insert(P* to_insert, const bool& use_move = false);
 
 		void					  		__RecomputeClusters();
 		void					  		__BeliefPropagation(const bool& sum_or_MAP);
@@ -177,7 +183,7 @@ namespace EFG::node {
 
 		std::list<sbj::Subject::Observer>												PotentialObservers;
 
-	//these list are used only for having a direct reference to the differet kind of potentials in the model
+	//these lists are used only for having a direct reference to the differet kind of potentials in the model
 		std::list<pot::Factor*>															__SimpleShapes;
 		std::list<pot::ExpFactor*>														__ExpShapes;
 	};

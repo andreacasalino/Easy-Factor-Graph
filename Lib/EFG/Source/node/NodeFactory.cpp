@@ -6,86 +6,6 @@ using namespace std;
 
 namespace EFG::node {
 
-	template<typename P>
-	P* Node::NodeFactory::__Insert(P* to_insert) {
-
-		class NodeHndl {
-			NodeFactory* Source;
-		public:
-			NodeHndl(NodeFactory* source) : Source(source) {};
-
-			Node* Find(CategoricVariable* var) {
-				auto node = this->Source->_FindNode(var->GetName());
-				if (node != nullptr) {
-					if ((!this->Source->bDestroyPotentials_and_Variables) && (node->GetVar() != var)) {
-						throw std::runtime_error("when using non cloning insertion, you must refer to exactly the same variables already in the model");
-					}
-				}
-				return node;
-			};
-			Node* Create(CategoricVariable* var) {
-				if (this->Source->bDestroyPotentials_and_Variables) this->Source->Nodes.emplace_with_builder(*this, var, false);
-				else 												this->Source->Nodes.emplace_with_builder(*this, var, true);
-				return this->Source->_FindNode(var->GetName());
-			};
-			Node* operator()(CategoricVariable* v, const bool& f) const { return new Node(v, f); };
-		};
-		NodeHndl Hndl(this);
-
-		P* inserted = nullptr;
-		const std::vector<CategoricVariable*>& var_involved = to_insert->GetDistribution().GetVariables();
-		if (var_involved.size() == 1) {
-			//unary potential insertion
-			Node* node = Hndl.Find(var_involved.front());
-			if (node == nullptr)  node = Hndl.Create(var_involved.front());
-
-			inserted = to_insert;
-			if (this->bDestroyPotentials_and_Variables) inserted = new P(*to_insert, std::vector<CategoricVariable*>{node->GetVar()});
-
-			node->PermanentUnary.push_back(inserted);
-		}
-
-		else if (var_involved.size() == 2) {
-
-			//binary potential insertion
-			Node* peer_A = Hndl.Find(var_involved.front());
-			Node* peer_B = Hndl.Find(var_involved.back());
-
-			if ((peer_A != nullptr) && (peer_B != nullptr)) {
-				// check whether this binary potential was already present
-				auto it_B = this->BinaryPotentials.get_map()->find(std::make_pair(&peer_A->GetVar()->GetName(), &peer_B->GetVar()->GetName()));
-				if (it_B != this->BinaryPotentials.get_map()->end()) throw std::runtime_error("found clone of an already inserted binary potential");
-			}
-			else {
-				if (peer_A == nullptr)  peer_A = Hndl.Create(var_involved.front());
-				if (peer_B == nullptr)  peer_B = Hndl.Create(var_involved.back());
-			}
-
-			inserted = to_insert;
-			if (this->bDestroyPotentials_and_Variables) inserted = new P(*to_insert, std::vector<CategoricVariable*>{peer_A->GetVar(), peer_B->GetVar()});
-			this->BinaryPotentials.emplace(inserted);
-
-			//create connection
-			Node::NeighbourConnection::initConnection(peer_A, peer_B, *inserted);
-		}
-
-		else throw std::runtime_error("Only binary or unary potential can be inserted");
-
-		this->PotentialObservers.emplace_back(*inserted->GetAsSubject());
-
-		//update active connections
-		{
-			const vector<Node*>& obs_order = this->Observations.getOrder();
-			std::vector<std::pair<std::string, size_t>> obs;
-			obs.reserve(obs_order.size());
-			std::for_each(obs_order.begin(), obs_order.end(), [this, &obs](Node* n) { obs.emplace_back(make_pair(n->GetVar()->GetName(), this->Observations.get_map()->find(n)->second->second)); });
-			this->_SetEvidences(obs);
-		}
-
-		return inserted;
-
-	};
-
 	Node::NodeFactory::~NodeFactory() {
 
 		this->PotentialObservers.clear();
@@ -237,7 +157,7 @@ namespace EFG::node {
 
 	}
 
-	const Node::NodeFactory::Structure Node::NodeFactory::GetStructure() const {
+	Node::NodeFactory::Structure Node::NodeFactory::GetStructure() const {
 
 		vector<pot::Factor*> S;
 		S.reserve(this->__SimpleShapes.size());
@@ -251,44 +171,174 @@ namespace EFG::node {
 
 	}
 
-	void Node::NodeFactory::_Insert(pot::Factor* shape) {
-
-		pot::Factor* temp = nullptr;
-		try { temp = this->__Insert(shape); }
-		catch (...) {
-			temp = nullptr;
-			cout << "warning: invalid potential to insert detected\n";
+	template<typename P>
+	P* Node::NodeFactory::__Insert(P* to_insert, const bool& use_move) {
+		if (use_move) {
+			if (!this->bDestroyPotentials_and_Variables) throw std::runtime_error("no need to move potential that would not be copied");
 		}
-		if (temp != nullptr) this->__SimpleShapes.push_back(temp);
 
+		class NodeHndl {
+			NodeFactory* Source;
+		public:
+			NodeHndl(NodeFactory* source) : Source(source) {};
+
+			Node* Find(CategoricVariable* var) {
+				auto node = this->Source->_FindNode(var->GetName());
+				if (node != nullptr) {
+					if ((!this->Source->bDestroyPotentials_and_Variables) && (node->GetVar() != var)) {
+						throw std::runtime_error("when using non cloning insertion, you must refer to exactly the same variables already in the model");
+					}
+				}
+				return node;
+			};
+			Node* Create(CategoricVariable* var) {
+				if (this->Source->bDestroyPotentials_and_Variables) this->Source->Nodes.emplace_with_builder(*this, var, false);
+				else 												this->Source->Nodes.emplace_with_builder(*this, var, true);
+				return this->Source->_FindNode(var->GetName());
+			};
+			Node* operator()(CategoricVariable* v, const bool& f) const { return new Node(v, f); };
+		};
+		NodeHndl Hndl(this);
+
+		P* inserted = nullptr;
+		const std::vector<CategoricVariable*>& var_involved = to_insert->GetDistribution().GetVariables();
+		if (var_involved.size() == 1) {
+			//unary potential insertion
+			Node* node = Hndl.Find(var_involved.front());
+			if (node == nullptr)  node = Hndl.Create(var_involved.front());
+
+			inserted = to_insert;
+			if (this->bDestroyPotentials_and_Variables) {
+				if (use_move) {
+					auto tempPtr = createMoving(std::move(*to_insert));
+					inserted = tempPtr.get();
+					tempPtr.release();
+					inserted->SubstituteVariables(std::vector<CategoricVariable*>{node->GetVar()});
+				}
+				else inserted = new P(*to_insert, std::vector<CategoricVariable*>{node->GetVar()});
+			}
+			node->PermanentUnary.push_back(inserted);
+		}
+
+		else if (var_involved.size() == 2) {
+
+			//binary potential insertion
+			Node* peer_A = Hndl.Find(var_involved.front());
+			Node* peer_B = Hndl.Find(var_involved.back());
+
+			if ((peer_A != nullptr) && (peer_B != nullptr)) {
+				// check whether this binary potential was already present
+				auto it_B = this->BinaryPotentials.get_map()->find(std::make_pair(&peer_A->GetVar()->GetName(), &peer_B->GetVar()->GetName()));
+				if (it_B != this->BinaryPotentials.get_map()->end()) throw std::runtime_error("found clone of an already inserted binary potential");
+			}
+			else {
+				if (peer_A == nullptr)  peer_A = Hndl.Create(var_involved.front());
+				if (peer_B == nullptr)  peer_B = Hndl.Create(var_involved.back());
+			}
+
+			inserted = to_insert;
+			if (this->bDestroyPotentials_and_Variables) {
+				if (use_move) {
+					auto tempPtr = createMoving(std::move(*to_insert));
+					inserted = tempPtr.get();
+					tempPtr.release();
+					inserted->SubstituteVariables(std::vector<CategoricVariable*>{peer_A->GetVar(), peer_B->GetVar()});
+				}
+				else inserted = new P(*to_insert, std::vector<CategoricVariable*>{peer_A->GetVar(), peer_B->GetVar()});
+			}
+			this->BinaryPotentials.emplace(inserted);
+
+			//create connection
+			Node::NeighbourConnection::initConnection(peer_A, peer_B, *inserted);
+		}
+
+		else throw std::runtime_error("Only binary or unary potential can be inserted");
+
+		this->PotentialObservers.emplace_back(*inserted->GetAsSubject());
+
+		//update active connections
+		{
+			const vector<Node*>& obs_order = this->Observations.getOrder();
+			std::vector<std::pair<std::string, size_t>> obs;
+			obs.reserve(obs_order.size());
+			std::for_each(obs_order.begin(), obs_order.end(), [this, &obs](Node* n) { obs.emplace_back(make_pair(n->GetVar()->GetName(), this->Observations.get_map()->find(n)->second->second)); });
+			this->_SetEvidences(obs);
+		}
+
+		return inserted;
+
+	};
+
+#define INSERT_WITH_CHECK(POT_T, INSERT_FUNCTION, POT_NAME , POT_GROUP) \
+	POT_T* temp = nullptr; \
+	try { temp = INSERT_FUNCTION(POT_NAME); } \
+	catch (...) { \
+		temp = nullptr; \
+		cout << "warning: invalid potential to insert detected\n"; \
+	} \
+	if (temp != nullptr) this->POT_GROUP.push_back(temp); 
+
+#define INSERT_NORMAL(POT_NAME) this->__Insert(&POT_NAME)
+
+#define INSERT_MOVE(POT_NAME) this->__Insert(&POT_NAME, true)
+
+	void Node::NodeFactory::_Insert(pot::Factor& shape) {
+		INSERT_WITH_CHECK(pot::Factor, INSERT_NORMAL, shape, __SimpleShapes)
 	}
 
-	pot::ExpFactor* Node::NodeFactory::_Insert(pot::ExpFactor* exp_shape) {
+	void Node::NodeFactory::_Insert(pot::Factor&& shape) {
+		INSERT_WITH_CHECK(pot::Factor, INSERT_MOVE, shape, __SimpleShapes)
+	}
 
-		pot::ExpFactor* temp = nullptr;
-		try { temp = this->__Insert(exp_shape); }
-		catch (...) {
-			temp = nullptr;
-			cout << "warning: invalid potential to insert detected\n";
-		}
-		if (temp != nullptr)  this->__ExpShapes.push_back(temp);
+	pot::ExpFactor* Node::NodeFactory::_Insert(pot::ExpFactor& exp_shape) {
+		INSERT_WITH_CHECK(pot::ExpFactor, INSERT_NORMAL, exp_shape, __ExpShapes)
 		return temp;
-
 	}
 
-	void Node::NodeFactory::_Insert(const Structure& strct) {
+	pot::ExpFactor* Node::NodeFactory::_Insert(pot::ExpFactor&& exp_shape) {
+		INSERT_WITH_CHECK(pot::ExpFactor, INSERT_MOVE, exp_shape, __ExpShapes)
+		return temp;
+	}
 
-#define INSERT_LAMBDA(_POT) [this](const vector<pot::_POT*>& arr) { \
-		std::for_each(arr.begin(), arr.end(), [this](pot::_POT* p) { this->_Insert(p); }); \
+	void Node::NodeFactory::_Insert(const Structure& strct, const bool& useMove) {
+	// also here a MACRO can be used, but will result in complicated structure difficult to debug
+		class Inserter {
+		public:
+			Inserter(NodeFactory& user) : user(&user) { };
+
+			void Insert(const Structure* strct) {
+				(*this)(get<0>(*strct));
+				(*this)(get<2>(*strct));
+				std::for_each(get<1>(*strct).begin(), get<1>(*strct).end(), [this](const vector<pot::ExpFactor*>& c) { (*this)(c); });
+			}
+		protected:
+			virtual void operator()(const vector<pot::Factor*>& collection) = 0;
+			virtual void operator()(const vector<pot::ExpFactor*>& collection) = 0;
+
+			NodeFactory* user;
 		};
 
-		auto inserter_factors = INSERT_LAMBDA(Factor);
-		inserter_factors(get<0>(strct));
+		if (useMove) {
+			class MoveInserter : public Inserter {
+			public:
+				MoveInserter(NodeFactory& user) : Inserter(user) {};
+			private:
+				void operator()(const vector<pot::Factor*>& collection) final { std::for_each(collection.begin(), collection.end(), [this](pot::Factor* p) { this->user->_Insert(std::move(*p)); }); };
+				void operator()(const vector<pot::ExpFactor*>& collection) final { std::for_each(collection.begin(), collection.end(), [this](pot::ExpFactor* p) { this->user->_Insert(std::move(*p)); }); };
+			};
+			MoveInserter(*this).Insert(&strct);
+		}
+		else {
+			class NormalInserter : public Inserter {
+			public:
+				NormalInserter(NodeFactory& user) : Inserter(user) {};
+			private:
+				void operator()(const vector<pot::Factor*>& collection) final { std::for_each(collection.begin(), collection.end(), [this](pot::Factor* p) { this->user->_Insert(*p); }); };
+				void operator()(const vector<pot::ExpFactor*>& collection) final { std::for_each(collection.begin(), collection.end(), [this](pot::ExpFactor* p) { this->user->_Insert(*p); }); };
+			};
+			NormalInserter(*this).Insert(&strct);
+		}
 
-		auto inserter_exp_factors = INSERT_LAMBDA(ExpFactor);
-		inserter_exp_factors(get<2>(strct));
-		std::for_each(get<1>(strct).begin() , get<1>(strct).end(), inserter_exp_factors);
-	
 	}
 
 	void Node::NodeFactory::SetIteration4Propagation(const unsigned int& iter_to_use) {
@@ -537,9 +587,6 @@ namespace EFG::node {
 		else return &it->second->second;
 
 	}
-
-
-
 
 }
 

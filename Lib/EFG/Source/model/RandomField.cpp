@@ -18,7 +18,7 @@ namespace EFG::model {
 		}
 		if (reader != nullptr) {
 			XmlStructureImporter strct(*reader, prefix_config_xml_file);
-			this->_Insert(strct.GetStructure());
+			this->_Insert(strct.GetStructure(), true);
 			this->_SetEvidences(strct.GetObservations());
 		}
 		delete reader;
@@ -39,21 +39,30 @@ namespace EFG::model {
 
 	}
 
+#define INSERT_SHARE \
+	if (P != nullptr) {\
+		vector<CategoricVariable*> vars_shared;\
+		vars_shared.reserve(vars_of_pot_whose_weight_is_to_share.size());\
+		for (size_t k = 0; k < vars_of_pot_whose_weight_is_to_share.size(); ++k) {\
+			node::Node* temp = this->_FindNode(vars_of_pot_whose_weight_is_to_share[k]);\
+			if (temp == nullptr) throw std::runtime_error("inexistent variable");\
+			vars_shared.push_back(temp->GetVar());\
+		}\
+		this->_Share(vars_shared, pot.GetDistribution().GetVariables());\
+	}
+
 	void RandomField::Insert(pot::ExpFactor& pot, const std::vector<std::string>& vars_of_pot_whose_weight_is_to_share) {
 
-		auto P = this->GraphLearnable::_Insert(&pot, true);
-		if (P != nullptr) {
-			vector<CategoricVariable*> vars_shared;
-			vars_shared.reserve(vars_of_pot_whose_weight_is_to_share.size());
-			for (size_t k = 0; k < vars_of_pot_whose_weight_is_to_share.size(); ++k) {
-				node::Node* temp = this->_FindNode(vars_of_pot_whose_weight_is_to_share[k]);
-				if (temp == nullptr) throw std::runtime_error("inexistent variable");
-				vars_shared.push_back(temp->GetVar());
-			}
-			this->_Share(vars_shared, pot.GetDistribution().GetVariables());
-		}
+		auto P = this->GraphLearnable::_Insert(pot, true);
+		INSERT_SHARE
 
 	};
 
+	void RandomField::InsertMove(pot::ExpFactor&& pot, const std::vector<std::string>& vars_of_pot_whose_weight_is_to_share) {
+
+		auto P = this->GraphLearnable::_Insert(std::move(pot), true);
+		INSERT_SHARE
+
+	};
 
 }

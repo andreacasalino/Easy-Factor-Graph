@@ -15,11 +15,11 @@ ostream& operator<<(ostream& s, const EFG::distr::DiscreteDistribution& pot) {
 
 	size_t K = pot.GetVariables().size(), k;
 
+	s << "<" << pot.GetVariables()[0]->GetName();
+	for (k = 1; k < K; ++k) s << "," << pot.GetVariables()[k]->GetName();
+	s << ">\n";
 	auto it = pot.getIter();
 	if (it.isNotAtEnd()) {
-		s << "<" << pot.GetVariables()[0]->GetName();
-		for (k = 1; k < K; ++k) s << "," << pot.GetVariables()[k]->GetName();
-		s << ">\n";
 		EFG::itr::forEach<EFG::distr::DiscreteDistribution::constIterator>(it, [&s, &k, &K](EFG::distr::DiscreteDistribution::constIterator& itt) {
 			s << "<" << itt->GetIndeces()[0];
 			for (k = 1; k < K; ++k) s << "," << itt->GetIndeces()[k];

@@ -29,7 +29,7 @@ namespace EFG::model {
 				ev.push_back(o.first);
 				ev_val.push_back(o.second);
 			});
-			this->_Import(strct.GetStructure(), ev);
+			this->_Import(strct.GetStructure(), true, ev);
 			this->SetEvidences(ev_val);
 		}
 		delete reader;
@@ -39,7 +39,7 @@ namespace EFG::model {
 	ConditionalRandomField::ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert, const node::bp::BeliefPropagator& propagator) :
 		GraphLearnable(use_cloning_Insert, propagator) {
 
-		this->_Import(strct, observed_var);
+		this->_Import(strct, false, observed_var); //not sure that is always false that must be passed
 
 	}
 
@@ -55,7 +55,7 @@ namespace EFG::model {
 			ev_val.push_back(o.second);
 		});
 
-		this->_Import(o.GetStructure(), ev);
+		this->_Import(o.GetStructure(), false, ev);
 		this->SetEvidences(ev_val);
 
 	};
@@ -83,7 +83,7 @@ namespace EFG::model {
 			return minimal;
 		};
 	};
-	void ConditionalRandomField::_Import(const Structure& strct, const std::vector<std::string>& evidences) {
+	void ConditionalRandomField::_Import(const Structure& strct, const bool& use_move, const std::vector<std::string>& evidences) {
 
 		// import the minimal structure that excludes the potential fully connected to obeservatons
 		std::set<std::string> ordered_evidences;
@@ -97,7 +97,7 @@ namespace EFG::model {
 			vector<pot::ExpFactor*> temp = Rm(get<1>(strct)[k], ordered_evidences);
 			if (!temp.empty()) get<1>(strct_minimal).emplace_back(move(temp));
 		}
-		this->_Insert(strct_minimal);
+		this->_Insert(strct_minimal, use_move);
 
 		//create set of observations and hidden vars
 		if (evidences.empty()) cout << "Warning in when building a Conditional_Random_Field: empty evidences set" << endl;

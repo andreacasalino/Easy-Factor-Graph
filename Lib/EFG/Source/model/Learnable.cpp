@@ -48,22 +48,81 @@ namespace EFG::model {
 
 	}
 
-	pot::ExpFactor* GraphLearnable::_Insert(pot::ExpFactor* pot, const bool& weight_tunability) {
+#define INSERT_TUNABLE \
+	if (pot_inserted == nullptr) return nullptr; \
+	if (weight_tunability) {\
+		if (pot_inserted->GetDistribution().GetVariables().size() == 1) {\
+			this->_Add<UnaryHandler>(this, pot_inserted);\
+		}\
+		else {\
+			this->_Add<BinaryHandler>(this, pot_inserted);\
+		}\
+	}\
+	return pot_inserted;
 
+	pot::ExpFactor* GraphLearnable::_Insert(pot::ExpFactor& pot, const bool& weight_tunability) {
 		auto pot_inserted = this->NodeFactory::_Insert(pot);
-		if (pot_inserted == nullptr) return nullptr;
+		INSERT_TUNABLE
+	}
 
-		if (weight_tunability) {
-			if (pot_inserted->GetDistribution().GetVariables().size() == 1) {
-				//new unary
-				this->_Add<UnaryHandler>(this, pot_inserted);
+	pot::ExpFactor* GraphLearnable::_Insert(pot::ExpFactor&& pot, const bool& weight_tunability) {
+		auto pot_inserted = this->NodeFactory::_Insert(std::move(pot));
+		INSERT_TUNABLE
+	}
+
+	void GraphLearnable::_Insert(const Structure& strct, const bool& useMove) {
+		// also here a MACRO can be used, but will result in complicated structure difficult to debug
+		class Inserter {
+		public:
+			Inserter(GraphLearnable& user) : user(&user) { };
+
+			void Insert(const Structure* strct) {
+				(*this)(get<0>(*strct));
+				(*this)(get<2>(*strct));
+				const vector<vector<pot::ExpFactor*>>& learnable_exp = get<1>(*strct);
+				std::for_each(learnable_exp.begin(), learnable_exp.end(), [this](const vector<pot::ExpFactor*>& cluster) {
+					auto it = cluster.begin();
+					auto first_inserted = (*this)(*it);
+					++it;
+					if (it != cluster.end()) {
+						const vector<CategoricVariable*>& vars_to_share = first_inserted->GetDistribution().GetVariables();
+						std::for_each(it, cluster.end(), [this, &vars_to_share](pot::ExpFactor* e) {
+							(*this)(e);
+							this->user->_Share(e->GetDistribution().GetVariables(), vars_to_share);
+						});
+					}
+				});
 			}
-			else {
-				//new binary
-				this->_Add<BinaryHandler>(this, pot_inserted);
-			}
+		protected:
+			virtual void operator()(const vector<pot::Factor*>& collection) = 0;
+			virtual void operator()(const vector<pot::ExpFactor*>& untunable) = 0;
+			virtual pot::ExpFactor* operator()(pot::ExpFactor* tunable) = 0;
+
+			GraphLearnable* user;
+		};
+
+		if (useMove) {
+			class MoveInserter : public Inserter {
+			public:
+				MoveInserter(GraphLearnable& user) : Inserter(user) {};
+			private:
+				void operator()(const vector<pot::Factor*>& collection) final { std::for_each(collection.begin(), collection.end(), [this](pot::Factor* p) { this->user->node::Node::NodeFactory::_Insert(std::move(*p)); }); };
+				void operator()(const vector<pot::ExpFactor*>& untunable) final { std::for_each(untunable.begin(), untunable.end(), [this](pot::ExpFactor* p) { this->user->_Insert(std::move(*p), false); }); };
+				pot::ExpFactor* operator()(pot::ExpFactor* tunable) final { return this->user->_Insert(std::move(*tunable), true); };
+			};
+			MoveInserter(*this).Insert(&strct);
 		}
-		return pot_inserted;
+		else {
+			class NormalInserter : public Inserter {
+			public:
+				NormalInserter(GraphLearnable& user) : Inserter(user) {};
+			private:
+				void operator()(const vector<pot::Factor*>& collection) final { std::for_each(collection.begin(), collection.end(), [this](pot::Factor* p) { this->user->node::Node::NodeFactory::_Insert(*p); }); };
+				void operator()(const vector<pot::ExpFactor*>& untunable) final { std::for_each(untunable.begin(), untunable.end(), [this](pot::ExpFactor* p) { this->user->_Insert(*p, false); }); };
+				pot::ExpFactor* operator()(pot::ExpFactor* tunable) final { return this->user->_Insert(*tunable, true); };
+			};
+			NormalInserter(*this).Insert(&strct);
+		}
 
 	}
 
@@ -166,7 +225,7 @@ namespace EFG::model {
 
 	}
 
-	const node::Node::NodeFactory::Structure GraphLearnable::GetStructure() const {
+	node::Node::NodeFactory::Structure GraphLearnable::GetStructure() const {
 
 		vector<pot::Factor*> sh;
 		vector<pot::ExpFactor*> exp_sh;
@@ -202,30 +261,6 @@ namespace EFG::model {
 		std::for_each(exp_sh.begin(), exp_sh.end(), [&constant , &S](pot::ExpFactor* e) { if (S.find(e) == S.end()) constant.push_back(e); });
 
 		return make_tuple(sh, tunab_clusters, constant);
-
-	}
-
-	void GraphLearnable::_Insert(const Structure& strct) {
-
-		const vector<pot::Factor*>& sh = get<0>(strct);
-		std::for_each(sh.begin(), sh.end(), [this](pot::Factor* p) { this->NodeFactory::_Insert(p); });
-
-		const vector<pot::ExpFactor*>& constant = get<2>(strct);
-		std::for_each(constant.begin(), constant.end(), [this](pot::ExpFactor* p) { this->NodeFactory::_Insert(p); });
-
-		const vector<vector<pot::ExpFactor*>>& learnable_exp = get<1>(strct);
-		std::for_each(learnable_exp.begin(), learnable_exp.end(), [this](const vector<pot::ExpFactor*>& cluster) {
-			auto it = cluster.begin();
-			auto first_inserted = this->_Insert(*it, true);
-			++it;
-			if (it!=cluster.end()) {
-				const vector<CategoricVariable*>& vars_to_share = first_inserted->GetDistribution().GetVariables();
-				std::for_each(it, cluster.end(), [this, &vars_to_share](pot::ExpFactor* e) {
-					this->_Insert(e, true);
-					this->_Share(e->GetDistribution().GetVariables(), vars_to_share);
-				});
-			}
-		});
 
 	}
 

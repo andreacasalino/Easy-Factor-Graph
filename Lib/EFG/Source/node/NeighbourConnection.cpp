@@ -1,6 +1,7 @@
 #include "NeighbourConnection.h"
 #include <distribution/PartialMatchFinder.h>
 #include <algorithm>
+#include <float.h>
 using namespace std;
 
 namespace EFG::node {

@@ -4,7 +4,7 @@
 namespace EFG::model {
 
 	GraphLearnable::AtomicHandler::AtomicHandler(pot::ExpFactor* pot_to_handle) :
-		pot::IPotentialDecorator(pot_to_handle), Modifier(*pot_to_handle) { }
+		pot::IPotentialDecorator(pot_to_handle), WeightModifier(*pot_to_handle) { }
 
 	void GraphLearnable::AtomicHandler::RecomputeAlfaPart(const distr::Combinations& train_set) {
 

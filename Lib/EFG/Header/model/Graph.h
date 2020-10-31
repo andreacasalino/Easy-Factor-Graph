@@ -42,27 +42,32 @@ namespace EFG::model {
 		Also all the additional future potentials inserted will be copied.
 		* @param[in] o the Graph to copy
 		*/
-		Graph(const node::Node::NodeFactory& o) : node::Node::NodeFactory(true, *_GetPropagator(o)) { this->_Insert(o.GetStructure()); };
+		Graph(const node::Node::NodeFactory& o) : node::Node::NodeFactory(true, *_GetPropagator(o)) { this->_Insert(o.GetStructure(), false); };
 
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] pot the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input
 		* a potential which involves that variable).
 		*/
-		inline void Insert(pot::Factor& pot) { this->_Insert(&pot); };
+		inline void Insert(pot::Factor& pot) { this->_Insert(pot); };
 
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] pot the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one
 		* of the variable involved must be already inserted to the model before (with a previous Insert having as input
 		* a potential which involves that variable).
 		*/
-		inline void Insert(pot::ExpFactor& pot) { this->_Insert(&pot); };
+		inline void Insert(pot::ExpFactor& pot) { this->_Insert(pot); };
 		/** \brief Absorbs all the variables and the potentials contained in the model passed as input.
 		* \details The model receiving the potentials must be defined to do copying insertion.
 		Consistency checks are performed: it is possible that some inconsistent components in the model passed
 		* will be not absorbed.
 		*/
-		inline void	Insert(const Structure& strct) { this->_Insert(strct); };
+		inline void	Insert(const Structure& strct, const bool& use_move) { this->_Insert(strct, use_move); };
+
+		inline void InsertMove(pot::Factor&& pot) { this->_Insert(std::move(pot)); };
+
+		inline void InsertMove(pot::ExpFactor&& pot) { this->_Insert(std::move(pot)); };
+		
 		/*!
 		 * \brief see Node::Node_factory::Set_Evidences(const std::list<Categoric_var*>& new_observed_vars, const std::list<size_t>& new_observed_vals)
 		 */

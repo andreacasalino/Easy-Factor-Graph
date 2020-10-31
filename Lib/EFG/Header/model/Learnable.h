@@ -59,7 +59,7 @@ namespace EFG::model {
 		 */
 		inline void DeactivateRegularization() { this->UseRegularization = false; };
 
-		const Structure GetStructure() const override;
+		Structure GetStructure() const override;
 	protected:
 		GraphLearnable(const bool& use_cloning_Insert, const node::bp::BeliefPropagator& propagator) : NodeFactory(use_cloning_Insert, propagator), LastTrainingSetUsed(nullptr), UseRegularization(false) {};
 
@@ -71,8 +71,10 @@ namespace EFG::model {
 		class UnaryHandler;
 		class BinaryHandler;
 
-		void 				 						 _Insert(const Structure& strct) override;
-		pot::ExpFactor*								 _Insert(pot::ExpFactor* pot, const bool& weight_tunability);
+		pot::ExpFactor*								 _Insert(pot::ExpFactor& pot, const bool& weight_tunability);
+		pot::ExpFactor*								 _Insert(pot::ExpFactor&& pot, const bool& weight_tunability);
+
+		void 										 _Insert(const Structure& strct, const bool& useMove) override;
 
 		template<typename Handler, typename ... Args>
 		inline void									 _Add(Args ... args);
@@ -114,10 +116,10 @@ namespace EFG::model {
 		virtual float			GetBetaPart() = 0; //according to last performed belief propagation
 	};
 
-	class GraphLearnable::AtomicHandler : public LearningHandler, public pot::IPotentialDecorator, public pot::ExpFactor::Modifier {
+	class GraphLearnable::AtomicHandler : public LearningHandler, public pot::IPotentialDecorator, public pot::ExpFactor::WeightModifier {
 	public:
 		inline const float&		GetWeight() override { return this->GetWrappedExp()->GetWeight(); };
-		inline void				SetWeight(const float& w_new) override { this->pot::ExpFactor::Modifier::SetWeight(w_new); };
+		inline void				SetWeight(const float& w_new) override { this->EFG::pot::ExpFactor::WeightModifier::SetWeight(w_new); };
 
 		void					RecomputeAlfaPart(const distr::Combinations& train_set) override;
 		const float&			GetAlfaPart() override { return this->alfaPart; };

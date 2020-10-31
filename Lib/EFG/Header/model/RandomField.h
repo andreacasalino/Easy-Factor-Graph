@@ -38,12 +38,12 @@ namespace EFG::model {
 		Also all the additional future potentials inserted will be copied.
 		* @param[in] o the Random_Field to copy
 		*/
-		RandomField(const NodeFactory& o) : GraphLearnable(true, *_GetPropagator(o)) { this->_Insert(o.GetStructure()); };
+		RandomField(const NodeFactory& o) : GraphLearnable(true, *_GetPropagator(o)) { this->_Insert(o.GetStructure(), false); };
 
 		/*!
 		 * \brief Similar to Graph::Insert(Potential_Shape* pot)
 		 */
-		inline void Insert(pot::Factor& pot) { this->NodeFactory::_Insert(&pot); };
+		inline void Insert(pot::Factor& pot) { this->NodeFactory::_Insert(pot); };
 		/*!
 		 * \brief Similar to Graph::Insert(Potential_Exp_Shape* pot).
 		* @param[in] is_weight_tunable When true, you are specifying that this potential has a weight learnable, otherwise the value
@@ -52,7 +52,7 @@ namespace EFG::model {
 		* a potential which involves that variable).
 		* of the weight is assumed constant.
 		 */
-		inline void Insert(pot::ExpFactor& pot, const bool& is_weight_tunable = true) { this->GraphLearnable::_Insert(&pot, is_weight_tunable); };
+		inline void Insert(pot::ExpFactor& pot, const bool& is_weight_tunable = true) { this->GraphLearnable::_Insert(pot, is_weight_tunable); };
 		/*!
 		 * \brief Insert a tunable exponential shape, whose weight is shared with another already inserted tunable shape.
 		 * \details This allows having many exponential tunable potetials which share the value of the weight: this is automatically account for when
@@ -65,6 +65,12 @@ namespace EFG::model {
 		* of the weight is assumed constant.
 		 */
 		void Insert(pot::ExpFactor& pot, const std::vector<std::string>& vars_of_pot_whose_weight_is_to_share);
+
+		inline void InsertMove(pot::Factor&& pot) { this->NodeFactory::_Insert(std::move(pot)); };
+
+		inline void InsertMove(pot::ExpFactor&& pot, const bool& is_weight_tunable = true) { this->GraphLearnable::_Insert(std::move(pot), is_weight_tunable); };
+
+		void InsertMove(pot::ExpFactor&& pot, const std::vector<std::string>& vars_of_pot_whose_weight_is_to_share);
 
 		/*!
 		 * \brief see Node::Node_factory::Set_Evidences(const std::list<Categoric_var*>& new_observed_vars, const std::list<size_t>& new_observed_vals)
@@ -80,7 +86,7 @@ namespace EFG::model {
 		Consistency checks are performed: it is possible that some inconsistent components in the model passed
 		* will be not absorbed.
 		*/
-		inline void					Insert(const Structure& strct) { this->_Insert(strct); };
+		inline void					Insert(const Structure& strct, const bool& use_move) { this->GraphLearnable::_Insert(strct, use_move); };
 	private:
 		std::vector<float>   		 _GetBetaPart(const distr::Combinations& training_set) override;
 	};

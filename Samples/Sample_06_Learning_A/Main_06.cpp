@@ -81,14 +81,10 @@ void part_01() {
 
 	float alfa = 1.f, beta = 3.f, gamma = 0.1f;
 
-	pot::ExpFactor Pot_AB(pot::Factor(vector<CategoricVariable*>{ &A,&B }, true), alfa);
-	pot::ExpFactor Pot_AC(pot::Factor(vector<CategoricVariable*>{ &A,&C }, true), beta);
-	pot::ExpFactor Pot_BC(pot::Factor(vector<CategoricVariable*>{ &B,&C }, true), gamma);
-
-	model::RandomField graph_2(false); //the potentials are not cloned, but simply absorbed
-	graph_2.Insert(Pot_AB, false);
-	graph_2.Insert(Pot_AC);
-	graph_2.Insert(Pot_BC);
+	model::RandomField graph_2; //the potentials will be moved
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A, & B }, true), alfa), false);
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A, & C }, true), beta));
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B, & C }, true), gamma));
 
 	//extract some samples form the joint distributions of the variable in the graph, using a Gibbs sampling method
 	list<vector<size_t>> samples = graph_2.GibbsSamplingHiddenSet(500, 500);
@@ -107,7 +103,7 @@ void part_01() {
 	//build a second graph, with the same potentials, but all weights equal to 1. Then use the train set made by the previous samples to train 
 	//this model, for obtaining a combination of weights similar to the original one
 	model::RandomField graph_to_learn; //the potentials are cloned here
-	graph_to_learn.Insert(graph_2.GetStructure());
+	graph_to_learn.Insert(graph_2.GetStructure(), false);
 	graph_to_learn.SetTunable({1.f, 1.f});
 
 	//create the training set
@@ -155,14 +151,14 @@ void part_02() {
 
 	float alfa = 0.4f, beta = 1.f, gamma = 0.3f, delta = 1.5f;
 
-	model::RandomField graph_2; //the potentials inserted will be cloned
+	model::RandomField graph_2; //the potentials will be moved
 	//the unique_pointer are used in order to realize that the passed potentials are destroyed after the Inesertion ends 
-	graph_2.Insert(*unique_ptr<pot::ExpFactor>(new pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A,&B }, true), alfa)).get(), false); // the weight of this potential will be kept constant
-	graph_2.Insert(*unique_ptr<pot::ExpFactor>(new pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A,&C }, true), beta)).get());
-	graph_2.Insert(*unique_ptr<pot::Factor>(new pot::Factor(vector<CategoricVariable*>{ &B,&C }, true)).get());
-	graph_2.Insert(*unique_ptr<pot::ExpFactor>(new pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B,&E }, true), gamma)).get(), false); // the weight of this potential will be kept constant
-	graph_2.Insert(*unique_ptr<pot::ExpFactor>(new pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B,&D }, true), delta)).get());
-	graph_2.Insert(*unique_ptr<pot::Factor>(new pot::Factor(vector<CategoricVariable*>{ &D,&E }, true)).get());
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A,&B }, true), alfa), false); // the weight of this potential will be kept constant
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &A,&C }, true), beta));
+	graph_2.InsertMove(pot::Factor(vector<CategoricVariable*>{ &B,&C }, true));
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B,&E }, true), gamma), false); // the weight of this potential will be kept constant
+	graph_2.InsertMove(pot::ExpFactor(pot::Factor(vector<CategoricVariable*>{ &B,&D }, true), delta));
+	graph_2.InsertMove(pot::Factor(vector<CategoricVariable*>{ &D,&E }, true));
 
 	//export into an xml the built graph (just to show the syntax that would have been required to defined the same stucture into an xml)
 	graph_2.Reprint(Get_prefix() + "Sample_06_graphs/graph_2_printed.xml");
@@ -174,7 +170,7 @@ void part_02() {
 	//this model, for obtaining a combination of weights similar to the original ones
 
 	model::RandomField graph_to_learn; //all the future insertion will be cloning
-	graph_to_learn.Insert(graph_2.GetStructure());
+	graph_to_learn.Insert(graph_2.GetStructure(), false);
 	set_ones_tunable(graph_to_learn);
 
 #ifdef USE_TEXTUAL_TRAIN_SET
@@ -224,7 +220,7 @@ void part_03() {
 	list<vector<size_t>> samples = graph_3.GibbsSamplingHiddenSet(500, 500);
 
 	model::RandomField graph_to_learn;
-	graph_to_learn.Insert(graph_3.GetStructure());
+	graph_to_learn.Insert(graph_3.GetStructure(), false);
 	//set all weights equal to 1
 	set_ones_tunable(graph_to_learn);
 
@@ -277,17 +273,12 @@ void part_04() {
 	CategoricVariable Y1(2, "Y1"); CategoricVariable Y2(2, "Y2"); CategoricVariable Y3(2, "Y3");
 	CategoricVariable X1(2, "X1"); CategoricVariable X2(2, "X2"); CategoricVariable X3(2, "X3");
 
-	pot::ExpFactor XY1(pot::Factor(vector<CategoricVariable*>{ &Y1, &X1 }, true), beta);
-	pot::ExpFactor XY2(pot::Factor(vector<CategoricVariable*>{ &Y2, &X2 }, true));
-	pot::ExpFactor XY3(pot::Factor(vector<CategoricVariable*>{ &Y3, &X3 }, true));
-	pot::ExpFactor YY1(pot::Factor(vector<CategoricVariable*>{ &Y1, &Y2 }, true), alfa);
-	pot::ExpFactor YY2(pot::Factor(vector<CategoricVariable*>{ &Y2, &Y3 }, true));
-	model::RandomField graph_5(false); //potentials are not cloned when Insert is used
-	graph_5.Insert(XY1);
-	graph_5.Insert(XY2, { "Y1", "X1" }); // the same weight of XY1 is assumed
-	graph_5.Insert(XY3, { "X1", "Y1" }); // the same weight of XY1 is assumed
-	graph_5.Insert(YY1);
-	graph_5.Insert(YY2, { "Y1", "Y2" }); // the same weight of YY1 is assumed
+	model::RandomField graph_5;
+	graph_5.InsertMove(pot::Factor(vector<CategoricVariable*>{ &Y1, & X1 }, true), beta);
+	graph_5.InsertMove(pot::Factor(vector<CategoricVariable*>{ &Y2, & X2 }, true), { "Y1", "X1" }); // the same weight of XY1 is assumed
+	graph_5.InsertMove(pot::Factor(vector<CategoricVariable*>{ &Y3, & X3 }, true), { "X1", "Y1" }); // the same weight of XY1 is assumed
+	graph_5.InsertMove(pot::Factor(vector<CategoricVariable*>{ &Y1, & Y2 }, true), alfa);
+	graph_5.InsertMove(pot::Factor(vector<CategoricVariable*>{ &Y2, & Y3 }, true), { "Y1", "Y2" }); // the same weight of YY1 is assumed
 
 	//extract some samples from the graph with a Gibbs sampling method, for building a train set
 	list<vector<size_t>> samples = graph_5.GibbsSamplingHiddenSet(500, 500);
@@ -295,7 +286,7 @@ void part_04() {
 
 	//build a model having the same structure (sharing of potential) with different values for the weight
 	model::RandomField graph_to_learn;
-	graph_to_learn.Insert(graph_5.GetStructure());
+	graph_to_learn.Insert(graph_5.GetStructure(), false);
 	//set all weights equal to 1
 	set_ones_tunable(graph_to_learn);
 

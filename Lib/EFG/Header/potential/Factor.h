@@ -19,6 +19,13 @@ namespace EFG::pot {
 	 */
 	class Factor : public IFactor<distr::DiscreteDistribution> {
 	public:
+		Factor(Factor&& o) : IFactor<distr::DiscreteDistribution>(std::move(o)){};
+
+		template<typename ... Args>
+		static Factor makeFactor(Args ... args) { return std::move(Factor(args...)); };
+
+		Factor(const Factor&) = delete;
+
 		/** \brief When building a new shape potential, all values of the image are assumed as all zeros
 		*
 		* @param[in] var_involved variables involved in the domain of this variables

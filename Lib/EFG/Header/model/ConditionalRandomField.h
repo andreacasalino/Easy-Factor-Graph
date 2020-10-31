@@ -58,7 +58,7 @@ namespace EFG::model {
 	private:
 		class BinaryHandlerWithObservation;
 
-		void 				 				 _Import(const Structure& strct, const std::vector<std::string>& evidences);
+		void 				 				 _Import(const Structure& strct, const bool& use_move, const std::vector<std::string>& evidences);
 
 		std::vector<float>   				_GetBetaPart(const distr::Combinations& training_set) override;
 

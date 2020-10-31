@@ -1,19 +1,35 @@
 #include <distribution/Distribution.h>
 #include <fstream>
+#include <algorithm>
 using namespace std;
 
 namespace EFG::distr {
 
     DiscreteDistribution::DiscreteDistribution(const std::vector<CategoricVariable*>& vars) :
-    Group(vars), Map(comparator(vars.size())) {
-        class DefaultEvaluator : public ImageEvaluator {
-            inline float operator()(const float& rawVal) const override { return rawVal; };
-        };
-        this->evaluator.reset(new DefaultEvaluator());
+        Group(vars), Map(comparator(vars.size())) { }
+
+    DiscreteDistribution::DiscreteDistribution(DiscreteDistribution&& o) :
+        DiscreteDistribution(o.GetVariables()) { 
+        (*this) = std::move(o);
     }
 
-    DiscreteDistribution::DiscreteDistribution(const std::vector<CategoricVariable*>& vars, std::unique_ptr<ImageEvaluator> evaluator) :
-    Group(vars), evaluator(std::move(evaluator)), Map(comparator(vars.size())) {
+    void DiscreteDistribution::operator=(DiscreteDistribution&& o) {
+        const vector<CategoricVariable*>& varThis = this->GetVariables();
+        const vector<CategoricVariable*>& varO = o.GetVariables();
+        std::size_t S = varThis.size();
+        if (varO.size() != S) throw std::runtime_error("move assignment not possible");
+        for (std::size_t k = 0; k < S; ++k) {
+            if(varThis[k]->size() < varO[k]->size()) throw std::runtime_error("move assignment not possible");
+        }
+        this->Map = std::move(o.Map);
+        
+        for (auto it = this->Map.begin(); it != this->Map.end(); ++it) {
+            it->second->source = this;
+        }
+
+        for (auto it = o.Map.begin(); it != o.Map.end(); ++it) {
+            it->second->source = &o;
+        }
     }
 
     DiscreteDistribution::~DiscreteDistribution(){ for(auto it=this->Map.begin(); it!=this->Map.end(); ++it) delete it->second; }

@@ -60,13 +60,9 @@ unique_ptr<model::Graph> create_Matrix(const std::size_t& Size, const std::size_
 			CategoricVariable Y_att(var_size, "V" + to_string(r) + "_" + to_string(c));
 			if (c == 1) {
 				CategoricVariable Y_prev(var_size, "V" + to_string(r) + "_0");
-				pot::ExpFactor P_temp(P_ab, { &Y_prev , &Y_att });
-				Mat->Insert(P_temp);
+				Mat->InsertMove(pot::ExpFactor(P_ab, { &Y_prev , &Y_att }));
 			}
-			else {
-				pot::ExpFactor P_temp(P_ab, { Mat->FindVariable("V" + to_string(r) + "_" + to_string(c - 1)) , &Y_att });
-				Mat->Insert(P_temp);
-			}
+			else  Mat->InsertMove(pot::ExpFactor(P_ab, { Mat->FindVariable("V" + to_string(r) + "_" + to_string(c - 1)) , &Y_att }));
 		}
 
 		if (r > 0) {
@@ -74,8 +70,7 @@ unique_ptr<model::Graph> create_Matrix(const std::size_t& Size, const std::size_
 			for (c = 0; c < Size; c++) {
 				CategoricVariable* Va = Mat->FindVariable("V" + to_string(r) + "_" + to_string(c));
 				CategoricVariable* Vb = Mat->FindVariable("V" + to_string(r - 1) + "_" + to_string(c));
-				pot::ExpFactor P_temp(P_ab, { Va , Vb });
-				Mat->Insert(P_temp);
+				Mat->InsertMove(pot::ExpFactor(P_ab, { Va , Vb }));
 			}
 		}
 	}
