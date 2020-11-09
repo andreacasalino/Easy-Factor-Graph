@@ -22,6 +22,7 @@ namespace EFG::node {
 		inline Node* GetNeighbour() const { return this->Neighbour; };
 		inline const pot::IPotential* GetIncomingMessage() const { return this->Message2This; };
 		inline NeighbourConnection* GetLinked() const { return this->Linked; };
+		inline const std::list<NeighbourConnection*>* GetNeighbourhood() { return &this->Neighbourhood; };
 
 		void 							Disable();
 

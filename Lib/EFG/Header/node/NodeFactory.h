@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <potential/ExpFactor.h>
 #include <node/belprop/BeliefPropagator.h>
+#include <EquiPool.h>
 
 namespace EFG::node {
 
@@ -97,6 +98,8 @@ namespace EFG::node {
 		void							Reprint(const std::string& file_name) const;
 
 		pot::Factor 					GetJointMarginalDistribution(const std::vector<std::string>& subgroup); //the returned shape has the variable in the same order as the ones passed
+
+		void							ActivateThreadPool(const std::size_t& poolSize); //when passing <= 1 the actual pool is destroyed
 	protected:
 
 		NodeFactory(const bool& use_cloning_Insert, const bp::BeliefPropagator& propagator);
@@ -186,6 +189,10 @@ namespace EFG::node {
 	//these lists are used only for having a direct reference to the differet kind of potentials in the model
 		std::list<pot::Factor*>															__SimpleShapes;
 		std::list<pot::ExpFactor*>														__ExpShapes;
+
+	protected:
+	//this thread pool can be exploited to speed up different kinds of computations
+		std::unique_ptr<thpl::equi::Pool>												ThPool;
 	};
 
 }

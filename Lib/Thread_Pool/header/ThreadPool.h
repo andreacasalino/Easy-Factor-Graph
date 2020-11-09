@@ -35,6 +35,11 @@ namespace thpl{
          */
         void wait();
 
+        /**
+         * \brief returns the pool size
+         */
+        inline std::size_t size() const { return this->pool.size(); };
+
     protected:
 
         class QueueStrategy;
