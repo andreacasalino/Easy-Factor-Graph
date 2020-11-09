@@ -34,7 +34,17 @@ namespace EFG::model {
 		vector<float> betas;
 		betas.reserve(this->GetModelSize());
 		auto L = this->_GetLearnerList();
-		std::for_each(L->begin(), L->end(), [&betas](LearningHandler* l) { betas.push_back(l->GetBetaPart()); });
+		if (this->ThPool == nullptr) {
+			std::for_each(L->begin(), L->end(), [&betas](LearningHandler* l) { betas.push_back(l->GetBetaPart()); });
+		}
+		else {
+			std::for_each(L->begin(), L->end(), [&betas, this](LearningHandler* l) { 
+				betas.push_back(0.f);
+				float* pval = &betas.back();
+				this->ThPool->push([pval, l]() { *pval = l->GetBetaPart(); });
+			});
+			this->ThPool->wait();
+		}
 		return betas;
 
 	}
