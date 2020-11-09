@@ -39,7 +39,7 @@ namespace EFG::node::bp {
 			for (it_a = (*it)->GetActiveConnections()->begin(); it_a != (*it)->GetActiveConnections()->end(); ++it_a) open_set.push_back(*it_a);
 		}
 
-		bool advance_done;
+		std::atomic_bool advance_done;
 		list<Node::NeighbourConnection*>::iterator it_o;
 		if (pool == nullptr) {
 			while (!open_set.empty()) {
@@ -63,7 +63,7 @@ namespace EFG::node::bp {
 				while (it_o != open_set.end()) {
 					if ((*it_o)->isOutgoingRecomputationPossible()) {
 						advance_done = true;
-						pool->push([&it_o, &sum_or_MAP]() { (*it_o)->RecomputeOutgoing(sum_or_MAP); });
+						pool->push([it_o, &sum_or_MAP]() { (*it_o)->RecomputeOutgoing(sum_or_MAP); });
 						it_o = open_set.erase(it_o);
 					}
 					else ++it_o;
@@ -94,14 +94,15 @@ namespace EFG::node::bp {
 			}
 		}
 
-		float max_variation, temp;
-		auto recalibrate_all = [&max_variation, &temp, &sum_or_MAP](auto mex_to_calibrate) {
-			std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &temp, &sum_or_MAP](Node::NeighbourConnection* c) {
-				temp = c->RecomputeOutgoing(sum_or_MAP);
-				if (temp > max_variation) max_variation = temp;
-				});
-		};
 		if (pool == nullptr) {
+			float max_variation, temp;
+			auto recalibrate_all = [&max_variation, &temp, &sum_or_MAP](auto mex_to_calibrate) {
+				std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &temp, &sum_or_MAP](Node::NeighbourConnection* c) {
+					temp = c->RecomputeOutgoing(sum_or_MAP);
+					if (temp > max_variation) max_variation = temp;
+					});
+			};
+
 			for (unsigned int k = 0; k < max_iterations; ++k) {
 				max_variation = 0.f; //it's a positive quantity
 				recalibrate_all(mex_to_calibrate);
@@ -109,6 +110,8 @@ namespace EFG::node::bp {
 			}
 		}
 		else {
+			std::atomic<float> max_variation;
+
 			set<Node::NeighbourConnection*> inProgress;
 			list<Node::NeighbourConnection*>  mex_remaining;
 
@@ -132,7 +135,12 @@ namespace EFG::node::bp {
 						}
 						if (moveToProgress) inProgress.emplace(*rr);
 					}
-					recalibrate_all(inProgress);
+					std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &sum_or_MAP, pool](Node::NeighbourConnection* c) {
+						pool->push([&max_variation, &sum_or_MAP, c]() {
+							float temp = c->RecomputeOutgoing(sum_or_MAP);
+							if (temp > max_variation) max_variation = temp;
+						});
+					});
 					pool->wait();
 				}
 				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached

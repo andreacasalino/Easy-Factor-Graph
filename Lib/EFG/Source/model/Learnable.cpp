@@ -194,7 +194,15 @@ namespace EFG::model {
 		w_grad.reserve(this->GetModelSize());
 
 		if (recompute_alfa) {
-			for (auto it : this->LearnerList) it->RecomputeAlfaPart(*this->LastTrainingSetUsed);
+			if (this->ThPool != nullptr) {
+				for (auto it : this->LearnerList) {
+					this->ThPool->push([it, this]() {it->RecomputeAlfaPart(*this->LastTrainingSetUsed); });
+				}
+				this->ThPool->wait();
+			}
+			else {
+				for (auto it : this->LearnerList) it->RecomputeAlfaPart(*this->LastTrainingSetUsed);
+			}
 		}
 		for (auto it : this->LearnerList) w_grad.push_back(it->GetAlfaPart());
 
