@@ -13,6 +13,8 @@ namespace thpl{
 
     class IPool::QueueStrategy{
     public:
+        virtual ~QueueStrategy() = default;
+
         virtual bool isEmpty() = 0;
 
         virtual std::function<void(void)> pop() = 0;

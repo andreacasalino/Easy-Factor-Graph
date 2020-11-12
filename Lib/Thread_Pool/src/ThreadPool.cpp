@@ -10,67 +10,57 @@
 
 namespace thpl{
 
-    IPool::IPool(const std::size_t& poolSize, IPool::QueueStrategy* queue) 
-        : poolSize(poolSize)
-        , queue(queue)
+    IPool::IPool(const std::size_t& poolSize, std::unique_ptr<QueueStrategy> queue)
+        : queue(std::move(queue))
         , poolLife(true)
         , remainingTasks(0) {
-        if(this->poolSize == 0) throw std::runtime_error("invalid pool size");
+        if(poolSize == 0) throw std::runtime_error("invalid pool size");
 
         //spawn all the threads in the pool
-        for(std::size_t k=0; k<this->poolSize; ++k)
-            this->pool.emplace_back(&IPool::threadTask, this);
+        for(std::size_t k=0; k< poolSize; ++k)
+            this->pool.emplace_back([this]() {
+                bool isEmpty;
+                while (this->poolLife) {
+                    std::function<void(void)> task;
+                    {
+                        std::lock_guard<std::mutex> lk(this->queueMtx);
+                        isEmpty = this->queue->isEmpty();
+                        if (!isEmpty) task = this->queue->pop();
+                    }
+                    if (!isEmpty) {
+                        task();
+                        --this->remainingTasks;
+                        this->oneTaskFinishedBarrier.second.notify_all();
+                    }
+                    else {
+                        // wait till at least one task is inserted or destructor is called
+                        std::unique_lock<std::mutex> lk(this->newTaskReadyBarrier.first);
+                        this->newTaskReadyBarrier.second.wait_for(lk, std::chrono::seconds(1));
+                    }
+                }
+        });
     }
 
-    IPool::QueueStrategy* IPool::getQueue(){
-        return this->queue;
-    }
-
-    void IPool::notifyTaskInsertion(){
+    void IPool::newTaskReady(){
         ++this->remainingTasks;
-        this->insertionBarrier.notify_one();
-    }
-
-    void IPool::threadTask(){
-        bool isEmpty;
-        while (this->poolLife) {
-            std::function<void(void)> task;
-            {
-                std::lock_guard<std::mutex> lk(this->insertionMtx);
-                isEmpty = this->queue->isEmpty();
-                if(!isEmpty) task = std::move(this->queue->pop());
-            }
-            if(!isEmpty) {
-                task();
-                --this->remainingTasks;
-                this->finishBarrier.notify_one();
-            }
-            else{
-            // wait till at least one task is inserted or destructor is called
-                std::unique_lock<std::mutex> lk(this->insertionBarrierMtx);
-                this->insertionBarrier.wait(lk);
-            }
-        }
-        
+        this->newTaskReadyBarrier.second.notify_one();
     }
 
     void IPool::wait(){
-        size_t remaining;
         while (true) {
-            remaining = this->remainingTasks;
-            if(remaining == 0) break;
+            if(this->remainingTasks == 0) break;
 
-            //wait till at least one thread notify finish task
-            std::unique_lock<std::mutex> lk(this->finishBarrierMtx);
-            this->finishBarrier.wait(lk);
+            // wait for another 1 second that least one thread notify finish task
+            std::unique_lock<std::mutex> lk(this->oneTaskFinishedBarrier.first);
+            this->oneTaskFinishedBarrier.second.wait_for(lk, std::chrono::seconds(1));
         }
         
     }
 
     IPool::~IPool(){
         this->poolLife = false;
-        this->insertionBarrier.notify_all();
-        std::for_each(this->pool.begin(), this->pool.end(), [](std::thread& t){ t.join(); });
+        this->newTaskReadyBarrier.second.notify_all();
+        std::for_each(this->pool.begin(), this->pool.end(), [](std::thread& t) { t.join(); });
     }
 
 }

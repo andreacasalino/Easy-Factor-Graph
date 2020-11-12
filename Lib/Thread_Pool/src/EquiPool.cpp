@@ -12,9 +12,7 @@ namespace thpl::equi{
 
     class Pool::EquiQueue : public IPool::QueueStrategy {
     public:
-        inline bool isEmpty() override{
-            return this->queue.empty();
-        };
+        inline bool isEmpty() override{ return this->queue.empty(); };
 
         inline std::function<void(void)> pop() override{
             std::function<void(void)> temp = std::move(this->queue.front());
@@ -22,31 +20,21 @@ namespace thpl::equi{
             return temp;
         };
 
-        void push(const std::function<void(void)>& task){
-            this->queue.push_back(task);
-        };
-
+        inline void push(const std::function<void(void)>& task){ this->queue.push_back(task); };
     private:
-
         std::list<std::function<void(void)>> queue;
-
     };
 
     Pool::Pool(const std::size_t& poolSize)
-        : IPool(poolSize, new EquiQueue()) {
-        this->Q = static_cast<EquiQueue*>(this->getQueue());
-    }
-
-    Pool::~Pool(){
-        delete this->Q;
+        : IPool(poolSize, std::make_unique<Pool::EquiQueue>()) {
     }
 
     void Pool::push(const std::function<void(void)>& newTask){
         {
-            std::lock_guard<std::mutex>(this->insertionMtx);
-            this->Q->push(newTask);
+            std::lock_guard<std::mutex> lk(this->queueMtx);
+            static_cast<EquiQueue*>(this->queue.get())->push(newTask);
         }
-        this->notifyTaskInsertion();
+        this->newTaskReady();
     }
 
 }

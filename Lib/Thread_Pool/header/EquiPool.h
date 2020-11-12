@@ -17,25 +17,17 @@ namespace thpl::equi {
      */
     class Pool : public IPool {
     public:
-
-    /**
-     * \brief Constructor
-     * @param[in] poolSize the number of threads to spawn that will be part of the pool
-     */
-    Pool(const std::size_t& poolSize);
-
-    ~Pool() override;
-
-    /**
-     * @param[in] newTask the newer task to add to the FIFO queue
-     */
-    void push(const std::function<void(void)>& newTask);
-
+        /**
+         * \brief Constructor
+         * @param[in] poolSize the number of threads to spawn that will be part of the pool
+         */
+        Pool(const std::size_t& poolSize);
+        /**
+         * @param[in] newTask the newer task to add to the FIFO queue
+         */
+        void push(const std::function<void(void)>& newTask);
     private:
-
         class EquiQueue;
-        EquiQueue* Q;
-
     };
 
 }

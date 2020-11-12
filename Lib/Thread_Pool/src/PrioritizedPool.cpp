@@ -16,9 +16,7 @@ namespace thpl::prty{
     public:
         PriorityQueue();
 
-        inline bool isEmpty() override{
-            return this->queue.empty();
-        };
+        inline bool isEmpty() override{ return this->queue.empty(); };
 
         inline std::function<void(void)> pop() override{
             std::function<void(void)> temp = std::move(this->queue.top().second);
@@ -26,38 +24,26 @@ namespace thpl::prty{
             return temp;
         };
 
-        void push(const std::function<void(void)>& task, const unsigned int& pr);
-
+        inline void push(const std::function<void(void)>& task, const unsigned int& pr) { this->queue.push(std::make_pair(pr, task)); };
     private:
-
         typedef std::pair<unsigned int, std::function<void(void)>> task;
         std::priority_queue< task, std::vector<task>, std::function<bool(const task&, const task&)>> queue;
-
     };
 
     Pool::PriorityQueue::PriorityQueue()
         : queue([](const task& a, const task& b){ return a.first < b.first; }) {
     };
 
-    void Pool::PriorityQueue::push(const std::function<void(void)>& task, const unsigned int& pr){
-        this->queue.push(std::make_pair(pr, task));
-    };
-
     Pool::Pool(const std::size_t& poolSize)
-        : IPool(poolSize, new PriorityQueue()) {
-        this->Q = static_cast<PriorityQueue*>(this->getQueue());
-    }
-
-    Pool::~Pool(){
-        delete this->Q;
+        : IPool(poolSize, std::make_unique<PriorityQueue>()) {
     }
 
     void Pool::push(const std::function<void(void)>& newTask, const unsigned int& priority){
         {
-            std::lock_guard<std::mutex>(this->insertionMtx);
-            this->Q->push(newTask, priority);
+            std::lock_guard<std::mutex> lk(this->queueMtx);
+            static_cast<PriorityQueue*>(this->queue.get())->push(newTask, priority);
         }
-        this->notifyTaskInsertion();
+        this->newTaskReady();
     }
 
 }
