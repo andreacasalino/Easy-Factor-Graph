@@ -39,7 +39,7 @@ namespace EFG::node::bp {
 			for (it_a = (*it)->GetActiveConnections()->begin(); it_a != (*it)->GetActiveConnections()->end(); ++it_a) open_set.push_back(*it_a);
 		}
 
-		std::atomic_bool advance_done;
+		bool advance_done;
 		list<Node::NeighbourConnection*>::iterator it_o;
 		if (pool == nullptr) {
 			while (!open_set.empty()) {
@@ -63,7 +63,8 @@ namespace EFG::node::bp {
 				while (it_o != open_set.end()) {
 					if ((*it_o)->isOutgoingRecomputationPossible()) {
 						advance_done = true;
-						pool->push([it_o, &sum_or_MAP]() { (*it_o)->RecomputeOutgoing(sum_or_MAP); });
+						Node::NeighbourConnection* temp = *it_o;
+						pool->push([temp, &sum_or_MAP]() { temp->RecomputeOutgoing(sum_or_MAP); });
 						it_o = open_set.erase(it_o);
 					}
 					else ++it_o;
@@ -110,10 +111,13 @@ namespace EFG::node::bp {
 			}
 		}
 		else {
-			std::atomic<float> max_variation;
+			float max_variation;
+			std::mutex max_variationMtx;
 
-			set<Node::NeighbourConnection*> inProgress;
 			list<Node::NeighbourConnection*>  mex_remaining;
+
+			set<const pot::IPotential*> mex_under_recomputation;
+			list<Node::NeighbourConnection*> to_recompute;
 
 			bool moveToProgress;
 			for (unsigned int k = 0; k < max_iterations; ++k) {
@@ -121,23 +125,28 @@ namespace EFG::node::bp {
 				mex_remaining = mex_to_calibrate;
 				//recompute all the messages
 				while (!mex_remaining.empty()) {
-					inProgress.clear();
-					inProgress.emplace(mex_remaining.front());
+					mex_under_recomputation.clear();
+					to_recompute.push_back(mex_remaining.front());
+					mex_under_recomputation.emplace(mex_remaining.front()->GetLinked()->GetIncomingMessage());
 					mex_remaining.pop_front();
 					for (auto rr = mex_remaining.begin(); rr != mex_remaining.end(); ++rr) {
 						//check that none of the messages in its neighbour is in inProgress
 						moveToProgress = true;
 						for (auto nn = (*rr)->GetNeighbourhood()->begin(); nn != (*rr)->GetNeighbourhood()->end(); ++nn) {
-							if (inProgress.find(*nn) != inProgress.end()) {
+							if (mex_under_recomputation.find((*nn)->GetIncomingMessage()) != mex_under_recomputation.end()) {
 								moveToProgress = false;
 								break;
 							}
 						}
-						if (moveToProgress) inProgress.emplace(*rr);
+						if (moveToProgress) {
+							to_recompute.push_back(*rr);
+							mex_under_recomputation.emplace((*rr)->GetLinked()->GetIncomingMessage());
+						}
 					}
-					std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &sum_or_MAP, pool](Node::NeighbourConnection* c) {
-						pool->push([&max_variation, &sum_or_MAP, c]() {
+					std::for_each(to_recompute.begin(), to_recompute.end(), [&max_variation, &max_variationMtx, &sum_or_MAP, pool](Node::NeighbourConnection* c) {
+						pool->push([&max_variation, &max_variationMtx, &sum_or_MAP, c]() {
 							float temp = c->RecomputeOutgoing(sum_or_MAP);
+							std::lock_guard<std::mutex> lk(max_variationMtx);
 							if (temp > max_variation) max_variation = temp;
 						});
 					});

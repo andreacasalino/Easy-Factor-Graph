@@ -34,6 +34,8 @@ namespace thpl{
          */
         void wait();
 
+        inline std::size_t size() { return this->pool.size(); };
+
         IPool(const IPool&) = delete;
         void operator=(const IPool&) = delete;
     protected:
