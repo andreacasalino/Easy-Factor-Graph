@@ -43,7 +43,7 @@ namespace thpl::prty{
             std::lock_guard<std::mutex> lk(this->queueMtx);
             static_cast<PriorityQueue*>(this->queue.get())->push(newTask, priority);
         }
-        this->newTaskReady();
+        ++this->remainingTasks;
     }
 
 }

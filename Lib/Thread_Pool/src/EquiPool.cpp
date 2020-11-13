@@ -34,7 +34,7 @@ namespace thpl::equi{
             std::lock_guard<std::mutex> lk(this->queueMtx);
             static_cast<EquiQueue*>(this->queue.get())->push(newTask);
         }
-        this->newTaskReady();
+        ++this->remainingTasks;
     }
 
 }

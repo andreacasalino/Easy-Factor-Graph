@@ -101,7 +101,7 @@ namespace EFG::node::bp {
 				std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &temp, &sum_or_MAP](Node::NeighbourConnection* c) {
 					temp = c->RecomputeOutgoing(sum_or_MAP);
 					if (temp > max_variation) max_variation = temp;
-					});
+				});
 			};
 
 			for (unsigned int k = 0; k < max_iterations; ++k) {
@@ -112,41 +112,32 @@ namespace EFG::node::bp {
 		}
 		else {
 			float max_variation;
-			std::mutex max_variationMtx;
-
-			list<Node::NeighbourConnection*>  mex_remaining;
-
-			set<const pot::IPotential*> mex_under_recomputation;
-			list<Node::NeighbourConnection*> to_recompute;
-
-			bool moveToProgress;
+			list<Node::NeighbourConnection*> mex_remaining, mex_to_recompute;
+			set<const pot::IPotential*> mex_locked; //the ones involved in the recomputation of another message
 			for (unsigned int k = 0; k < max_iterations; ++k) {
 				max_variation = 0.f; //it's a positive quantity
 				mex_remaining = mex_to_calibrate;
 				//recompute all the messages
 				while (!mex_remaining.empty()) {
-					mex_under_recomputation.clear();
-					to_recompute.push_back(mex_remaining.front());
-					mex_under_recomputation.emplace(mex_remaining.front()->GetLinked()->GetIncomingMessage());
-					mex_remaining.pop_front();
-					for (auto rr = mex_remaining.begin(); rr != mex_remaining.end(); ++rr) {
-						//check that none of the messages in its neighbour is in inProgress
-						moveToProgress = true;
-						for (auto nn = (*rr)->GetNeighbourhood()->begin(); nn != (*rr)->GetNeighbourhood()->end(); ++nn) {
-							if (mex_under_recomputation.find((*nn)->GetIncomingMessage()) != mex_under_recomputation.end()) {
-								moveToProgress = false;
-								break;
+					mex_locked.clear();
+					mex_to_recompute.clear();
+					auto rr = mex_remaining.begin();
+					while (rr != mex_remaining.end()) {
+						// check the message to recompute is not locked
+						if (mex_locked.find((*rr)->GetLinked()->GetIncomingMessage()) == mex_locked.end()) {
+							mex_to_recompute.push_back(*rr);
+							// add the neighbour to the locked message
+							auto required = (*rr)->GetNeighbourhood();
+							for (auto nn = required->begin(); nn != required->end(); ++nn) {
+								if (mex_locked.find((*nn)->GetIncomingMessage()) == mex_locked.end()) mex_locked.emplace((*nn)->GetIncomingMessage());
 							}
+							rr = mex_remaining.erase(rr);
 						}
-						if (moveToProgress) {
-							to_recompute.push_back(*rr);
-							mex_under_recomputation.emplace((*rr)->GetLinked()->GetIncomingMessage());
-						}
+						else ++rr;
 					}
-					std::for_each(to_recompute.begin(), to_recompute.end(), [&max_variation, &max_variationMtx, &sum_or_MAP, pool](Node::NeighbourConnection* c) {
-						pool->push([&max_variation, &max_variationMtx, &sum_or_MAP, c]() {
+					std::for_each(mex_remaining.begin(), mex_remaining.end(), [&max_variation, &sum_or_MAP, &pool](Node::NeighbourConnection* c) {
+						pool->push([&max_variation, &sum_or_MAP, c]() {
 							float temp = c->RecomputeOutgoing(sum_or_MAP);
-							std::lock_guard<std::mutex> lk(max_variationMtx);
 							if (temp > max_variation) max_variation = temp;
 						});
 					});

@@ -34,10 +34,13 @@ namespace thpl{
          */
         void wait();
 
-        inline std::size_t size() { return this->pool.size(); };
-
         IPool(const IPool&) = delete;
         void operator=(const IPool&) = delete;
+		
+		/**
+         * \brief Returns the size of the pool
+         */
+		inline std::size_t size() const { return this->pool.size(); };
     protected:
         class QueueStrategy;
         std::unique_ptr<QueueStrategy> queue;
@@ -45,17 +48,10 @@ namespace thpl{
 
         IPool(const std::size_t& poolSize, std::unique_ptr<QueueStrategy> queue);
 
-        // called in deriving class after inserting the task in the queue
-        void newTaskReady();
+        std::atomic<std::size_t> remainingTasks;
     private:
         std::atomic<bool> poolLife;
         std::list<std::thread> pool;
-
-        std::atomic<std::size_t> remainingTasks;
-
-        std::pair<std::mutex, std::condition_variable> newTaskReadyBarrier;
-
-        std::pair<std::mutex, std::condition_variable> oneTaskFinishedBarrier;
     };
 
 }
