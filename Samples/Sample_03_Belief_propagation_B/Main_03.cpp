@@ -197,7 +197,7 @@ void part_02() {
 	model::Graph politree("graph_2.xml", Get_prefix() +  "Sample_03_graphs/");
 
 	//active the thread pool to fasten the computation
-	politree.ActivateThreadPool(3);
+	politree.SetThreadPoolSize(3);
 
 	vector<float> marginals;
 
@@ -305,7 +305,7 @@ void part_04() {
 	model::Graph loop("graph_4.xml", Get_prefix() +  "Sample_03_graphs/");
 
 	//active the thread pool to fasten the computation
-	loop.ActivateThreadPool(3);
+	loop.SetThreadPoolSize(3);
 
 	vector<float> marginals;
 

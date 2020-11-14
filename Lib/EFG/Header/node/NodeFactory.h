@@ -100,7 +100,7 @@ namespace EFG::node {
 		pot::Factor 					GetJointMarginalDistribution(const std::vector<std::string>& subgroup); //the returned shape has the variable in the same order as the ones passed
 
 		// use only for big graphs
-		void							ActivateThreadPool(const std::size_t& poolSize); //when passing <= 1 the actual pool is destroyed
+		void							SetThreadPoolSize(const std::size_t& poolSize); //when passing <= 1 the actual pool is destroyed. When building the object, a defualt 0 size value is assumed
 	protected:
 
 		NodeFactory(const bool& use_cloning_Insert, const bp::BeliefPropagator& propagator);

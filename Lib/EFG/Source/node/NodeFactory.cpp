@@ -589,7 +589,7 @@ namespace EFG::node {
 
 	}
 
-	void Node::NodeFactory::ActivateThreadPool(const std::size_t& poolSize) {
+	void Node::NodeFactory::SetThreadPoolSize(const std::size_t& poolSize) {
 		if (poolSize <= 1) {
 			this->ThPool.reset();
 			return;
