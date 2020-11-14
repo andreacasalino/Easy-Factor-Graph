@@ -88,10 +88,8 @@ namespace EFG::node::bp {
 		for (auto it = cluster.begin(); it != it_end; ++it) {
 			itc_end = (*it)->GetActiveConnections()->end();
 			for (itc = (*it)->GetActiveConnections()->begin(); itc != itc_end; ++itc) {
-				//if((*itc)->Get_Linked()->Get_IncomingMessage() == nullptr){
-				(*itc)->GetLinked()->SetIncoming2Ones();
-				mex_to_calibrate.push_back((*itc)->GetLinked());
-				//}
+				(*itc)->SetIncoming2Ones();
+				mex_to_calibrate.push_back(*itc);
 			}
 		}
 
@@ -121,34 +119,31 @@ namespace EFG::node::bp {
 					auto rr = mex_remaining.begin();
 					while (rr != mex_remaining.end()) {
 						// check that the message to recompute is not locked
-						if (mex_locked.find((*rr)->GetLinked()) == mex_locked.end()) {
+						if (mex_locked.find(*rr) == mex_locked.end()) {
 							//check that none of the element in the neighbourhood will be recomputed
 							recomputation_possible = true;
-							auto required = (*rr)->GetNeighbourhood();
+							auto required = (*rr)->GetLinked()->GetNeighbourhood();
 							for (auto nn = required->begin(); nn != required->end(); ++nn) {
-								if (mex_to_recompute.find((*nn)->GetLinked()) != mex_to_recompute.end()) {
+								if (mex_to_recompute.find(*nn) != mex_to_recompute.end()) {
 									recomputation_possible = false;
 									break;
 								}
 							}
 							if (recomputation_possible) {
 								mex_to_recompute.emplace(*rr);
-								// add the neighbour to the locked message
-								for (auto nn = required->begin(); nn != required->end(); ++nn) {
-									if (mex_locked.find((*nn)->GetLinked()) == mex_locked.end()) mex_locked.emplace((*nn)->GetLinked());
-								}
+								// add the neighbourhood to the locked group
+								for (auto nn = required->begin(); nn != required->end(); ++nn) mex_locked.emplace(*nn);
+								Node::NeighbourConnection* c = *rr;
 								rr = mex_remaining.erase(rr);
+								pool->push([&max_variation, &sum_or_MAP, c]() {
+									float temp = c->GetLinked()->RecomputeOutgoing(sum_or_MAP);
+									if (temp > max_variation) max_variation = temp;
+								});
 							}
 							else ++rr;
 						}
 						else ++rr;
 					}
-					std::for_each(mex_to_recompute.begin(), mex_to_recompute.end(), [&max_variation, &sum_or_MAP, &pool](Node::NeighbourConnection* c) {
-						pool->push([&max_variation, &sum_or_MAP, c]() {
-							float temp = c->RecomputeOutgoing(sum_or_MAP);
-							if (temp > max_variation) max_variation = temp;
-						});
-					});
 					pool->wait();
 				}
 				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached

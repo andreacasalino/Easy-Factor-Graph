@@ -9,7 +9,7 @@
 
 namespace EFG::sbj {
 
-#define SYNC_SEMAPHORE std::lock_guard<std::mutex> lk(this->semaphore);
+#define LOCK std::lock_guard<std::mutex> lk(this->semaphore);
 
 	/*!
 	 * \brief An object that can be observed
@@ -58,16 +58,16 @@ namespace EFG::sbj {
 			SingleObsvervbleImpl() : observer(nullptr) {};
 
 			inline bool isObserved() final { 
-				SYNC_SEMAPHORE
+				LOCK
 				return (this->observer != nullptr); 
 			};
 			void addObserver(Observer* obsv) final { 
-				SYNC_SEMAPHORE
+				LOCK
 				if (this->observer != nullptr) abort(); 
 				this->observer = obsv; 
 			};
 			void remObserver(Observer* obsv) final { 
-				SYNC_SEMAPHORE
+				LOCK
 				this->observer = nullptr; 
 			};
 		private:
@@ -86,15 +86,15 @@ namespace EFG::sbj {
 		class MultiObservablempl : public SubjectImpl {
 		public:
 			inline bool isObserved() final { 
-				SYNC_SEMAPHORE
+				LOCK
 				return (!this->observers.empty()); 
 			};
 			void addObserver(Observer* obsv) final { 
-				SYNC_SEMAPHORE
+				LOCK
 				this->observers.push_back(obsv); 
 			};
 			void remObserver(Observer* obsv) final { 
-				SYNC_SEMAPHORE
+				LOCK
 				this->observers.remove(obsv); 
 			};
 		private:
