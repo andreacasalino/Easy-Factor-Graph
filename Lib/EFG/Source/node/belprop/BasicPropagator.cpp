@@ -97,23 +97,20 @@ namespace EFG::node::bp {
 
 		if (pool == nullptr) {
 			float max_variation, temp;
-			auto recalibrate_all = [&max_variation, &temp, &sum_or_MAP](auto mex_to_calibrate) {
+			for (unsigned int k = 0; k < max_iterations; ++k) {
+				max_variation = 0.f; //it's a positive quantity
 				std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &temp, &sum_or_MAP](Node::NeighbourConnection* c) {
 					temp = c->RecomputeOutgoing(sum_or_MAP);
 					if (temp > max_variation) max_variation = temp;
 				});
-			};
-
-			for (unsigned int k = 0; k < max_iterations; ++k) {
-				max_variation = 0.f; //it's a positive quantity
-				recalibrate_all(mex_to_calibrate);
 				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached
 			}
 		}
 		else {
 			float max_variation;
-			list<Node::NeighbourConnection*> mex_remaining, mex_to_recompute;
-			set<const pot::IPotential*> mex_locked; //the ones involved in the recomputation of another message
+			list<Node::NeighbourConnection*> mex_remaining;
+			set<Node::NeighbourConnection*> mex_to_recompute, mex_locked;
+			bool recomputation_possible;
 			for (unsigned int k = 0; k < max_iterations; ++k) {
 				max_variation = 0.f; //it's a positive quantity
 				mex_remaining = mex_to_calibrate;
@@ -123,19 +120,30 @@ namespace EFG::node::bp {
 					mex_to_recompute.clear();
 					auto rr = mex_remaining.begin();
 					while (rr != mex_remaining.end()) {
-						// check the message to recompute is not locked
-						if (mex_locked.find((*rr)->GetLinked()->GetIncomingMessage()) == mex_locked.end()) {
-							mex_to_recompute.push_back(*rr);
-							// add the neighbour to the locked message
+						// check that the message to recompute is not locked
+						if (mex_locked.find((*rr)->GetLinked()) == mex_locked.end()) {
+							//check that none of the element in the neighbourhood will be recomputed
+							recomputation_possible = true;
 							auto required = (*rr)->GetNeighbourhood();
 							for (auto nn = required->begin(); nn != required->end(); ++nn) {
-								if (mex_locked.find((*nn)->GetIncomingMessage()) == mex_locked.end()) mex_locked.emplace((*nn)->GetIncomingMessage());
+								if (mex_to_recompute.find((*nn)->GetLinked()) != mex_to_recompute.end()) {
+									recomputation_possible = false;
+									break;
+								}
 							}
-							rr = mex_remaining.erase(rr);
+							if (recomputation_possible) {
+								mex_to_recompute.emplace(*rr);
+								// add the neighbour to the locked message
+								for (auto nn = required->begin(); nn != required->end(); ++nn) {
+									if (mex_locked.find((*nn)->GetLinked()) == mex_locked.end()) mex_locked.emplace((*nn)->GetLinked());
+								}
+								rr = mex_remaining.erase(rr);
+							}
+							else ++rr;
 						}
 						else ++rr;
 					}
-					std::for_each(mex_remaining.begin(), mex_remaining.end(), [&max_variation, &sum_or_MAP, &pool](Node::NeighbourConnection* c) {
+					std::for_each(mex_to_recompute.begin(), mex_to_recompute.end(), [&max_variation, &sum_or_MAP, &pool](Node::NeighbourConnection* c) {
 						pool->push([&max_variation, &sum_or_MAP, c]() {
 							float temp = c->RecomputeOutgoing(sum_or_MAP);
 							if (temp > max_variation) max_variation = temp;

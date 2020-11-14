@@ -5,8 +5,11 @@
 #include <list>
 #include <stdlib.h>
 #include <memory>
+#include <mutex>
 
 namespace EFG::sbj {
+
+#define SYNC_SEMAPHORE std::lock_guard<std::mutex> lk(this->semaphore);
 
 	/*!
 	 * \brief An object that can be observed
@@ -22,7 +25,7 @@ namespace EFG::sbj {
 
 		class SubjectImpl {
 		public:
-			virtual bool isObserved() const = 0;
+			virtual bool isObserved() = 0;
 			virtual void addObserver(Subject::Observer* obsv) = 0;
 			virtual void remObserver(Subject::Observer* obsv) = 0;
 		};
@@ -54,10 +57,21 @@ namespace EFG::sbj {
 		public:
 			SingleObsvervbleImpl() : observer(nullptr) {};
 
-			inline bool isObserved() const final { return (this->observer != nullptr); };
-			void addObserver(Observer* obsv) final { if (this->observer != nullptr) abort(); this->observer = obsv; };
-			void remObserver(Observer* obsv) final { this->observer = nullptr; };
+			inline bool isObserved() final { 
+				SYNC_SEMAPHORE
+				return (this->observer != nullptr); 
+			};
+			void addObserver(Observer* obsv) final { 
+				SYNC_SEMAPHORE
+				if (this->observer != nullptr) abort(); 
+				this->observer = obsv; 
+			};
+			void remObserver(Observer* obsv) final { 
+				SYNC_SEMAPHORE
+				this->observer = nullptr; 
+			};
 		private:
+			std::mutex semaphore;
 			Observer* observer;
 		};
 	public:
@@ -71,10 +85,20 @@ namespace EFG::sbj {
 	private:
 		class MultiObservablempl : public SubjectImpl {
 		public:
-			inline bool isObserved() const final { return (!this->observers.empty()); };
-			void addObserver(Observer* obsv) final { this->observers.push_back(obsv); };
-			void remObserver(Observer* obsv) final { this->observers.remove(obsv); };
+			inline bool isObserved() final { 
+				SYNC_SEMAPHORE
+				return (!this->observers.empty()); 
+			};
+			void addObserver(Observer* obsv) final { 
+				SYNC_SEMAPHORE
+				this->observers.push_back(obsv); 
+			};
+			void remObserver(Observer* obsv) final { 
+				SYNC_SEMAPHORE
+				this->observers.remove(obsv); 
+			};
 		private:
+			std::mutex semaphore;
 			std::list<Observer*>  	observers;
 		};
 	public:
