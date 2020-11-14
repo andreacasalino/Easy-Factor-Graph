@@ -9,18 +9,17 @@ namespace EFG::model {
 	Graph::Graph(const std::string& config_xml_file, const std::string& prefix_config_xml_file, const node::bp::BeliefPropagator& propagator) :
 		NodeFactory(true, propagator) {
 
-		XML_reader* reader = nullptr;
-		try { reader = new XML_reader(prefix_config_xml_file + config_xml_file); }
-		catch (int) {
+		std::unique_ptr<XML_reader> reader;
+		try { reader = std::make_unique<XML_reader>(prefix_config_xml_file + config_xml_file); }
+		catch (...) {
 			cout << "warninig: file not readable in Graph construction" << endl;
-			reader = nullptr;
+			reader.reset();
 		}
 		if (reader != nullptr) {
-			XmlStructureImporter strct(*reader, prefix_config_xml_file);
+			XmlStructureImporter strct(*reader.get(), prefix_config_xml_file);
 			this->_Insert(strct.GetStructure(), true);
 			this->_SetEvidences(strct.GetObservations());
 		}
-		delete reader;
 
 	};
 

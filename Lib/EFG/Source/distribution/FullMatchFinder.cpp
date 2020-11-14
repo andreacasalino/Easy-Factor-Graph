@@ -8,7 +8,7 @@ namespace EFG::distr {
         if (vars.size() < distr_vars.size()) throw std::runtime_error("number of vars must be higher or equal to the domain cardinality");
         if (!CategoricVariable::AreAllVarsDifferent(vars)) throw std::runtime_error("repeated variable in set");
 
-        this->varOrder = new std::vector<size_t>();
+        this->varOrder = std::make_unique<std::vector<size_t>>();
         this->varOrder->reserve(distr_vars.size());
         std::size_t K2 = vars.size();
         for (size_t k = 0; k < distr_vars.size(); ++k) {

@@ -15,21 +15,20 @@ namespace EFG::distr {
 
     class DiscreteDistribution::IFullfinder : public DiscreteDistribution::Ifinder {
     protected:
-        IFullfinder(const DiscreteDistribution& distrib) : Ifinder(distrib), varOrder(nullptr) { };
+        IFullfinder(const DiscreteDistribution& distrib) : Ifinder(distrib) { };
         IFullfinder(const DiscreteDistribution& distrib, const std::vector<CategoricVariable*>& vars);
-        ~IFullfinder() { delete this->varOrder; };
 
         template<typename Array, typename Val>
         Val* __find(const Array& combination) const {
 
-            auto it = this->source->Map.find(DiscreteDistribution::Key{ &combination[0] , this->varOrder });
+            auto it = this->source->Map.find(DiscreteDistribution::Key{ &combination[0] , this->varOrder.get() });
             if (it == this->source->Map.end()) return nullptr;
             return it->second;
 
         };
     private:
         // data
-        std::vector<size_t>* varOrder;
+        std::unique_ptr<std::vector<size_t>> varOrder;
     };
 
     class DiscreteDistribution::FullMatchFinder : public DiscreteDistribution::IFullfinder {

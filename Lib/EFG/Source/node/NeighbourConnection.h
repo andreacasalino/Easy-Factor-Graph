@@ -16,17 +16,16 @@ namespace EFG::node {
 	class Node::NeighbourConnection {
 	public:
 		static void initConnection(Node* peer_A, Node* peer_B, const pot::IPotential& pot_shared);
-		~NeighbourConnection() { delete this->Message2This; };
 
 		inline const pot::IPotential* GetPot() const { return this->SharedPotential; };
 		inline Node* GetNeighbour() const { return this->Neighbour; };
-		inline const pot::IPotential* GetIncomingMessage() const { return this->Message2This; };
+		inline const pot::IPotential* GetIncomingMessage() const { return this->Message2This.get(); };
 		inline NeighbourConnection* GetLinked() const { return this->Linked; };
 		inline const std::list<NeighbourConnection*>* GetNeighbourhood() { return &this->Neighbourhood; };
 
 		void 							Disable();
 
-		inline void						ResetOutgoingMessage() { delete this->Linked->Message2This; this->Linked->Message2This = nullptr; this->Neighbourhood.clear(); this->wasNeighbourhoodUpdated = false; };
+		inline void						ResetOutgoingMessage() { this->Linked->Message2This.reset(); this->Neighbourhood.clear(); this->wasNeighbourhoodUpdated = false; };
 
 		bool							isOutgoingRecomputationPossible();
 		float							RecomputeOutgoing(const bool& Sum_or_MAP); //returns the difference 
@@ -61,7 +60,7 @@ namespace EFG::node {
 
 	// data
 		Node*											Neighbour;
-		pot::IPotential*								Message2This;       //nullptr when the message is not already available
+		std::unique_ptr<pot::IPotential> 				Message2This;       //nullptr when the message is not already available
 		NeighbourConnection*							Linked;
 		const pot::IPotential*							SharedPotential;
 	// cache

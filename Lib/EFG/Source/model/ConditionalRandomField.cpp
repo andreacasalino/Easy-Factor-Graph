@@ -12,14 +12,14 @@ namespace EFG::model {
 	ConditionalRandomField::ConditionalRandomField(const std::string& config_xml_file, const std::string& prefix_config_xml_file, const node::bp::BeliefPropagator& propagator) :
 		GraphLearnable(true, propagator) {
 
-		XML_reader* reader = nullptr;
-		try { reader = new XML_reader(prefix_config_xml_file + config_xml_file); }
-		catch (int) {
+		std::unique_ptr<XML_reader> reader;
+		try { reader = std::make_unique<XML_reader>(prefix_config_xml_file + config_xml_file); }
+		catch (...) {
 			cout << "warninig: file not readable in Random_Field construction" << endl;
-			reader = nullptr;
+			reader.reset();
 		}
 		if (reader != nullptr) {
-			XmlStructureImporter strct(*reader, prefix_config_xml_file);
+			XmlStructureImporter strct(*reader.get(), prefix_config_xml_file);
 			auto obsv = strct.GetObservations();
 			std::vector<std::string> ev;
 			vector<size_t> ev_val;
@@ -32,7 +32,6 @@ namespace EFG::model {
 			this->_Import(strct.GetStructure(), true, ev);
 			this->SetEvidences(ev_val);
 		}
-		delete reader;
 
 	};
 
