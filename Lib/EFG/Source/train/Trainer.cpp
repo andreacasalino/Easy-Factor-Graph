@@ -88,7 +88,7 @@ namespace EFG::train {
 		float variation;
 		train::TrainingSet::UsableTrainingSet Set(training_set, model_to_train);
 		unique_ptr<Trainer::LikelihhodEvaluator> lklhd_eval;
-		if(descend_story != nullptr) lklhd_eval.reset(new LikelihhodEvaluator(model_to_train));
+		if(descend_story != nullptr) lklhd_eval = std::make_unique<LikelihhodEvaluator>(model_to_train);
 		for (unsigned int k = 0; k < Max_Iterations; ++k) {
 			variation = this->advStrtgy->advance(&model_to_train, Set, false);
 			if (descend_story != nullptr)  descend_story->push_back((*lklhd_eval)(Set));
@@ -106,7 +106,7 @@ namespace EFG::train {
 		float variation;
 		train::TrainingSet::UsableTrainingSet Set(training_set, model_to_train, this->Percentage);
 		unique_ptr<Trainer::LikelihhodEvaluator> lklhd_eval;
-		if(descend_story != nullptr) lklhd_eval.reset(new LikelihhodEvaluator(model_to_train));
+		if(descend_story != nullptr) lklhd_eval = std::make_unique<LikelihhodEvaluator>(model_to_train);
 		for (unsigned int k = 0; k < Max_Iterations; ++k) {
 			if(k > 0) Set.Resample();
 			variation = this->advStrtgy->advance(&model_to_train, Set, true);

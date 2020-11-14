@@ -17,9 +17,6 @@ namespace EFG::node {
 		A_B->wasNeighbourhoodUpdated = false;
 		B_A->wasNeighbourhoodUpdated = false;
 
-		A_B->Message2This = nullptr;
-		B_A->Message2This = nullptr;
-
 		A_B->Linked = B_A;
 		B_A->Linked = A_B;
 
@@ -73,24 +70,23 @@ namespace EFG::node {
 		una_pot.reserve(this_node->TemporaryUnary.size() + this_node->PermanentUnary.size() + this->Neighbourhood.size());
 		std::for_each(this_node->TemporaryUnary.begin(), this_node->TemporaryUnary.end(), [&una_pot](pot::Factor& f) { una_pot.push_back(&f); });
 		std::for_each(this_node->PermanentUnary.begin(), this_node->PermanentUnary.end(), [&una_pot](const pot::IPotential* p) { una_pot.push_back(p); });
-		std::for_each(this->Neighbourhood.begin(), this->Neighbourhood.end(), [&una_pot](NeighbourConnection* c) { una_pot.push_back(c->Message2This); });
+		std::for_each(this->Neighbourhood.begin(), this->Neighbourhood.end(), [&una_pot](NeighbourConnection* c) { una_pot.push_back(c->Message2This.get()); });
 
 		if (this->Linked->Message2This == nullptr) {
-			if (una_pot.empty()) this->Linked->Message2This = new Message(*this->SharedPotential, this_node->GetVar(), Sum_or_MAP);
-			else 		 	    this->Linked->Message2This = new Message(*this->SharedPotential, una_pot, Sum_or_MAP);
+			if (una_pot.empty()) this->Linked->Message2This = std::make_unique<Message>(*this->SharedPotential, this_node->GetVar(), Sum_or_MAP);
+			else 		 	    this->Linked->Message2This = std::make_unique<Message>(*this->SharedPotential, una_pot, Sum_or_MAP);
 			return FLT_MAX;
 		}
 		else {
-			if (una_pot.empty()) return static_cast<Message*>(this->Linked->Message2This)->Update(*this->SharedPotential, this_node->GetVar(), Sum_or_MAP);
-			else 		 	    return static_cast<Message*>(this->Linked->Message2This)->Update(*this->SharedPotential, una_pot, Sum_or_MAP);
+			if (una_pot.empty()) return static_cast<Message*>(this->Linked->Message2This.get())->Update(*this->SharedPotential, this_node->GetVar(), Sum_or_MAP);
+			else 		 	    return static_cast<Message*>(this->Linked->Message2This.get())->Update(*this->SharedPotential, una_pot, Sum_or_MAP);
 		}
 
 	}
 
 	void Node::NeighbourConnection::SetIncoming2Ones() {
 
-		delete this->Message2This;
-		this->Message2This = new Message(this->Linked->Neighbour->GetVar());
+		this->Message2This = std::make_unique<Message>(this->Linked->Neighbour->GetVar());
 
 	}
 
