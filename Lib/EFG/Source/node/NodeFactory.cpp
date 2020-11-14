@@ -1,4 +1,5 @@
 #include <node/NodeFactory.h>
+#include <node/belprop/BeliefPropagator.h>
 #include "NeighbourConnection.h"
 #include <algorithm>
 #include <iostream>
@@ -375,7 +376,7 @@ namespace EFG::node {
 
 		//perform belief propagation
 		bool all_done_within_iter = true;
-		all_done_within_iter = (*this->Propagator)(this->HiddenClusters, sum_or_MAP, this->PropagationMaxIter);
+		all_done_within_iter = (*this->Propagator)(this->HiddenClusters, sum_or_MAP, this->PropagationMaxIter, this->ThPool.get());
 
 		if (this->LastPropagation == nullptr) this->LastPropagation = make_unique<PropagationInfo>();
 		this->LastPropagation->WasSum_or_MAP = sum_or_MAP;
@@ -588,5 +589,17 @@ namespace EFG::node {
 
 	}
 
+	void Node::NodeFactory::SetThreadPoolSize(const std::size_t& poolSize) {
+		if (poolSize <= 1) {
+			this->ThPool.reset();
+			return;
+		}
+
+		if (this->ThPool != nullptr) {
+			if(this->ThPool->size() == poolSize) return;
+			this->ThPool.reset();
+		}
+		this->ThPool = make_unique<thpl::equi::Pool>(poolSize);
+	}
 }
 

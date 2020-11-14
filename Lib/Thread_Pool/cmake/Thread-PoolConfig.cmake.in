@@ -1,0 +1,13 @@
+get_filename_component(TP_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(TP_PROJECT_NAME Thread-Pools)
+list(APPEND CMAKE_MODULE_PATH ${TP_CMAKE_DIR})
+include(CMakeFindDependencyMacro)
+
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+if(NOT TARGET thpl::${TP_PROJECT_NAME})
+  include("${TP_CMAKE_DIR}/${TP_PROJECT_NAME}Targets.cmake")
+  set_property(TARGET thpl::${TP_PROJECT_NAME} APPEND PROPERTY VERSION  ${${TP_PROJECT_NAME}_VERSION})
+endif()
+
+set(${TP_PROJECT_NAME}_LIBRARIES ${TP_PROJECT_NAME})

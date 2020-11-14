@@ -10,18 +10,17 @@
 #include <float.h>
 #include "../NeighbourConnection.h"
 #include <algorithm>
+#include <set>
 using namespace std;
 
 namespace EFG::node::bp {
 
-	bool BasicStrategy::operator()(std::list< std::unordered_set<Node*> >& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations) {
+	bool BasicStrategy::operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations, thpl::equi::Pool* pl) {
 
-		Messagge_Passing MP;
-		Loopy_belief_propagation LP;
 		bool flag = true;
 		for (auto it = cluster.begin(); it != cluster.end(); ++it) {
-			if (!MP(*it, sum_or_MAP)) {
-				if (!LP(*it, sum_or_MAP, max_iterations)) flag = false;
+			if (!this->MessagePassing(pl, *it, sum_or_MAP)) {
+				if (!this->LoopyPropagation(pl, *it, sum_or_MAP, max_iterations)) flag = false;
 			}
 		}
 		return flag;
@@ -30,7 +29,7 @@ namespace EFG::node::bp {
 
 
 
-	bool BasicStrategy::Messagge_Passing::operator()(std::unordered_set<Node*>& cluster, const bool& sum_or_MAP) {
+	bool BasicStrategy::MessagePassing(thpl::equi::Pool* pool, std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP) {
 
 		list<Node::NeighbourConnection*> open_set;
 		auto it = cluster.begin();
@@ -42,18 +41,37 @@ namespace EFG::node::bp {
 
 		bool advance_done;
 		list<Node::NeighbourConnection*>::iterator it_o;
-		while (!open_set.empty()) {
-			advance_done = false;
-			it_o = open_set.begin();
-			while (it_o != open_set.end()) {
-				if ((*it_o)->isOutgoingRecomputationPossible()) {
-					advance_done = true;
-					(*it_o)->RecomputeOutgoing(sum_or_MAP);
-					it_o = open_set.erase(it_o);
+		if (pool == nullptr) {
+			while (!open_set.empty()) {
+				advance_done = false;
+				it_o = open_set.begin();
+				while (it_o != open_set.end()) {
+					if ((*it_o)->isOutgoingRecomputationPossible()) {
+						advance_done = true;
+						(*it_o)->RecomputeOutgoing(sum_or_MAP);
+						it_o = open_set.erase(it_o);
+					}
+					else ++it_o;
 				}
-				else ++it_o;
+				if (!advance_done) return false;
 			}
-			if (!advance_done) return false;
+		}
+		else {
+			while (!open_set.empty()) {
+				advance_done = false;
+				it_o = open_set.begin();
+				while (it_o != open_set.end()) {
+					if ((*it_o)->isOutgoingRecomputationPossible()) {
+						advance_done = true;
+						Node::NeighbourConnection* temp = *it_o;
+						pool->push([temp, &sum_or_MAP]() { temp->RecomputeOutgoing(sum_or_MAP); });
+						it_o = open_set.erase(it_o);
+					}
+					else ++it_o;
+				}
+				pool->wait();
+				if (!advance_done) return false;
+			}
 		}
 		return true;
 
@@ -61,7 +79,7 @@ namespace EFG::node::bp {
 
 
 
-	bool BasicStrategy::Loopy_belief_propagation::operator()(std::unordered_set<Node*>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations) {
+	bool BasicStrategy::LoopyPropagation(thpl::equi::Pool* pool, std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations) {
 
 		//init message not computed
 		list<Node::NeighbourConnection*>  mex_to_calibrate;
@@ -70,26 +88,66 @@ namespace EFG::node::bp {
 		for (auto it = cluster.begin(); it != it_end; ++it) {
 			itc_end = (*it)->GetActiveConnections()->end();
 			for (itc = (*it)->GetActiveConnections()->begin(); itc != itc_end; ++itc) {
-				//if((*itc)->Get_Linked()->Get_IncomingMessage() == nullptr){
-				(*itc)->GetLinked()->SetIncoming2Ones();
-				mex_to_calibrate.push_back((*itc)->GetLinked());
-				//}
+				(*itc)->SetIncoming2Ones();
+				mex_to_calibrate.push_back(*itc);
 			}
 		}
 
-		float max_variation, temp;
-		auto recalibrate_all = [&mex_to_calibrate, &max_variation, &temp, &sum_or_MAP]() {
-			std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &temp, &sum_or_MAP](Node::NeighbourConnection* c) {
-				temp = c->RecomputeOutgoing(sum_or_MAP);
-				if (temp > max_variation) max_variation = temp;
-			});
-		};
-
-		list<Node::NeighbourConnection*>::iterator it_cal, it_cal_end = mex_to_calibrate.end();
-		for (unsigned int k = 0; k < max_iterations; ++k) {
-			max_variation = 0.f; //it's a positive quantity
-			recalibrate_all();
-			if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached
+		if (pool == nullptr) {
+			float max_variation, temp;
+			for (unsigned int k = 0; k < max_iterations; ++k) {
+				max_variation = 0.f; //it's a positive quantity
+				std::for_each(mex_to_calibrate.begin(), mex_to_calibrate.end(), [&max_variation, &temp, &sum_or_MAP](Node::NeighbourConnection* c) {
+					temp = c->RecomputeOutgoing(sum_or_MAP);
+					if (temp > max_variation) max_variation = temp;
+				});
+				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached
+			}
+		}
+		else {
+			float max_variation;
+			list<Node::NeighbourConnection*> mex_remaining;
+			set<Node::NeighbourConnection*> mex_to_recompute, mex_locked;
+			bool recomputation_possible;
+			for (unsigned int k = 0; k < max_iterations; ++k) {
+				max_variation = 0.f; //it's a positive quantity
+				mex_remaining = mex_to_calibrate;
+				//recompute all the messages
+				while (!mex_remaining.empty()) {
+					mex_locked.clear();
+					mex_to_recompute.clear();
+					auto rr = mex_remaining.begin();
+					while (rr != mex_remaining.end()) {
+						// check that the message to recompute is not locked
+						if (mex_locked.find(*rr) == mex_locked.end()) {
+							//check that none of the element in the neighbourhood will be recomputed
+							recomputation_possible = true;
+							auto required = (*rr)->GetLinked()->GetNeighbourhood();
+							for (auto nn = required->begin(); nn != required->end(); ++nn) {
+								if (mex_to_recompute.find(*nn) != mex_to_recompute.end()) {
+									recomputation_possible = false;
+									break;
+								}
+							}
+							if (recomputation_possible) {
+								mex_to_recompute.emplace(*rr);
+								// add the neighbourhood to the locked group
+								for (auto nn = required->begin(); nn != required->end(); ++nn) mex_locked.emplace(*nn);
+								Node::NeighbourConnection* c = *rr;
+								rr = mex_remaining.erase(rr);
+								pool->push([&max_variation, &sum_or_MAP, c]() {
+									float temp = c->GetLinked()->RecomputeOutgoing(sum_or_MAP);
+									if (temp > max_variation) max_variation = temp;
+								});
+							}
+							else ++rr;
+						}
+						else ++rr;
+					}
+					pool->wait();
+				}
+				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached
+			}
 		}
 		return false;
 

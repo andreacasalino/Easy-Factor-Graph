@@ -166,11 +166,20 @@ namespace EFG::model {
 			this->_BeliefPropagation(true);
 
 			k = 0;
-			std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff , &k](LearningHandler* h) {
-				betas[k] += coeff * h->GetBetaPart();
-				++k;
-			});
-
+			if (this->ThPool == nullptr) {
+				std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff, &k](LearningHandler* h) {
+					betas[k] += coeff * h->GetBetaPart();
+					++k;
+				});
+			}
+			else {
+				std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff, &k, this](LearningHandler* h) {
+					float* pval = &betas[k];
+					this->ThPool->push([pval, &coeff, h]() { *pval += coeff * h->GetBetaPart(); });
+					++k;
+				});
+				this->ThPool->wait();
+			}
 		});
 
 		return betas;

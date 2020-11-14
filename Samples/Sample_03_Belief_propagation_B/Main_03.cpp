@@ -25,7 +25,7 @@ void part_04();
 int main() {
 
 	///////////////////////////////////////////
-	//            part 01 graph_1, simple politree            //
+	//  part 01 graph_1, simple politree     //
 	///////////////////////////////////////////
 	cout << "-----------------------\n";
 	cout << "part 01 \n\n\n";
@@ -33,7 +33,7 @@ int main() {
 	part_01();
 	
 	/////////////////////////////////////////////
-	////            part 02 graph_2, complex politree            //
+	//  part 02 graph_2, complex politree	   //
 	/////////////////////////////////////////////
 	cout << "-----------------------\n";
 	cout << "part 02 \n\n\n";
@@ -41,7 +41,7 @@ int main() {
 	part_02();
 
 	/////////////////////////////////////////////
-	////            part 03 graph_3, simple loopy graph            //
+	//  part 03 graph_3, simple loopy graph    //
 	/////////////////////////////////////////////
 	cout << "-----------------------\n";
 	cout << "part 03 \n\n\n";
@@ -49,7 +49,7 @@ int main() {
 	part_03();
 
 	/////////////////////////////////////////////
-	////            part 04 graph_4, complex loopy graph            //
+	//  part 04 graph_4, complex loopy graph   //
 	/////////////////////////////////////////////
 	cout << "-----------------------\n";
 	cout << "part 04 \n\n\n";
@@ -196,6 +196,9 @@ void part_02() {
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 02' from an existing xml file
 	model::Graph politree("graph_2.xml", Get_prefix() +  "Sample_03_graphs/");
 
+	//active the thread pool to fasten the computation
+	politree.SetThreadPoolSize(3);
+
 	vector<float> marginals;
 
 	// set v1,v2,v3 as observations and use a Gibbs sampler 
@@ -301,8 +304,8 @@ void part_04() {
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 04' from an existing xml file
 	model::Graph loop("graph_4.xml", Get_prefix() +  "Sample_03_graphs/");
 
-	//CategoricVariable* v1 = loop.FindVariable("v1");
-	//CategoricVariable* v8 = loop.FindVariable("v8");
+	//active the thread pool to fasten the computation
+	loop.SetThreadPoolSize(3);
 
 	vector<float> marginals;
 
