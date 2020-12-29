@@ -1,6 +1,6 @@
 log("building libXML_Manager" ${CMAKE_CURRENT_LIST_LINE})
 add_subdirectory(XML_Manager)
 log("building libThread_Pool" ${CMAKE_CURRENT_LIST_LINE})
-add_subdirectory(Thread_Pool)
+add_subdirectory(Thread-Pool/Lib)
 log("building libEFG" ${CMAKE_CURRENT_LIST_LINE})
 add_subdirectory(EFG)
