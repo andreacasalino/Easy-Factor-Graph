@@ -84,7 +84,7 @@ namespace EFG::node {
 	
 	const std::string* attrFinder(const std::multimap<std::string, std::string>& attr, const std::string& name) {
 		auto it = attr.find(name);
-		if(it == attr.end()) throw std::runtime_error(name + "not found");
+		if(it == attr.end()) throw std::runtime_error(name + " not found");
 		return &it->second;
 	};
 
