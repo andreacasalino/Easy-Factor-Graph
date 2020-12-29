@@ -1,5 +1,5 @@
 #include <model/RandomField.h>
-#include <XML_Manager.h>
+#include <Parser.h>
 #include <iostream>
 #include "../node/NodeFactoryXmlIO.h"
 #include <algorithm>
@@ -10,8 +10,8 @@ namespace EFG::model {
 	RandomField::RandomField(const std::string& config_xml_file, const std::string& prefix_config_xml_file, const node::bp::BeliefPropagator& propagator) :
 		GraphLearnable(true, propagator) {
 
-		std::unique_ptr<XML_reader> reader;
-		try { reader = std::make_unique<XML_reader>(prefix_config_xml_file + config_xml_file); }
+		std::unique_ptr<xmlPrs::Parser> reader;
+		try { reader = std::make_unique<xmlPrs::Parser>(prefix_config_xml_file + config_xml_file); }
 		catch (...) {
 			cout << "warninig: file not readable in Random_Field construction" << endl;
 			reader.reset();

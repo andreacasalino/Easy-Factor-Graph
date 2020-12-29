@@ -1,11 +1,11 @@
 #include <node/NodeFactory.h>
-#include <XML_Manager.h>
+#include <Parser.h>
 
 namespace EFG::node {
 
 	class Node::NodeFactory::XmlStructureImporter {
 	public:
-		XmlStructureImporter(XML_reader& reader, const std::string& prefix_config_xml_file);
+		XmlStructureImporter(xmlPrs::Parser& reader, const std::string& prefix_config_xml_file);
 		~XmlStructureImporter() { this->Shapes.clear(); this->ExpShapes.clear(); this->Vars.clear(); };
 
 		inline const Structure& GetStructure() const { return this->ParsedStructure; };
@@ -13,7 +13,7 @@ namespace EFG::node {
 		inline const std::vector<std::pair<std::string, size_t>>& GetObservations() const { return this->Observations; };
 	private:
 		CategoricVariable*				__FindVar(const std::string& name);
-		void						    __ImportShape(const std::string& prefix, XML_reader::Tag_readable& tag);
+		void						    __ImportShape(const std::string& prefix, xmlPrs::Tag& tag);
 	
 	// data
 		std::list<CategoricVariable>					Vars;
