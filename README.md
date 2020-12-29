@@ -10,8 +10,9 @@ The library contains some minimal functionalities to also perform training.
 **Compile**
 
  * Let CMake do all the work for you, but rember to initialize the git submodules by running the following commands after having cloned the repository:
-  * `git submodule init`
-  * `git submodule update`
+   
+   * `git submodule init`
+   * `git submodule update`
 
 **Contents**
 
