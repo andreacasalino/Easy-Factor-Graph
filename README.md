@@ -14,5 +14,3 @@ The library contains some minimal functionalities to also perform training.
  * ./EFG_Samples contains 8 classes of examples, extensively showing how to use **EFG**
  
  ![the kind of model handled by this library](https://github.com/andreacasalino/Easy-Factor-Graph/tree/master/img/img1.png)
- 
- ![the kind of model handled by this library](https://github.com/andreacasalino/Easy-Factor-Graph/tree/master/img/img2.png)
