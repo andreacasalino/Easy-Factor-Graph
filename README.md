@@ -7,6 +7,12 @@ The library contains some minimal functionalities to also perform training.
 
 **EFG** is completely cross platform: use [CMake](https://cmake.org) to configure the entire project.
 
+**Compile**
+
+ * Let CMake do all the work for you, but rember to initialize the git submodules by running the following commands after having cloned the repository:
+  * `git submodule init`
+  * `git submodule update`
+
 **Contents**
 
  * the documentation in ./doc explains both how to use **EFG** as well give some theoretical background 
