@@ -1,18 +1,14 @@
-<h1> Easy factor graph: EFG </h1>
+**Easy Factor Graph**, aka **EFG**, is a general purpose c++ library for handling **undirected graphical models**.
+**undirected graphical models** are probabilistic models similar to **bayesian networks**, but offerring much more nice 
+properties. Not familiar with this kind of things? Don?t worry, have a look at the documentation in the **doc** folder
+before diving into the code ;).
+**undirected graphical models** can be saved as **xml** files and later re-imported.
+The library contains some minimal functionalities to also perform training.
 
-General purpose c++ library for handling undirected graphical models.
+**EFG** is completely cross platform: use [CMake](https://cmake.org) to configure the entire project.
 
-<h2> CONTENTS <h2>
+**Contents**
 
-<li> ./EFG: contains the sources of the library </li>
-<li> ./EFG_Samples: contains 8 classes of examples, showing how to use EFG  </li>
-<li> ./EFG_GUI: contains an interactive application for managing medium-size factor graphs through a responsive interface (for the moment only for Windows). Some javascript scripts are included from the net, therefore a connection is required. </li>
-<li> ./doc/EFG.pdf: an extensive guide that contains details about the theoretical concepts EFG is based on as well the structure of the classes constituting EFG. It explains also how to use the EFG_GUI. </li>
-
-<h2> HOW TO COMPILE <h2>
-
-<li> Windows: Use the Visual Studio solution ./EFG.sln to compile EFG as well as all the examples. A folder, at .\x64\Debug or .\x64\Release will be created with all the binaries. Alternatively you can build the library and all the examples using g++, by launching gpp_make.bat </li>
-<li> UNIX: Use ./Makefile to compile EFG as well as all the examples.   A folder, at .\bin or .\bin will be created with all the binaries. </li>
-
-<h2> RUN THE EXAMPLES <h2>
-After compiling, a folder called bin is created storing a static library and all the examples, together with the materials required to run them. Launch the example you are interested in from that folder.
+ * the documentation in ./doc explains both how to use **EFG** as well give some theoretical background 
+ * the sources of the library are contained in ./Lib
+ * ./EFG_Samples contains 8 classes of examples, extensively showing how to use **EFG**
