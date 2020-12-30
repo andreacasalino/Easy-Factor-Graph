@@ -3,6 +3,12 @@
 
 namespace EFG::node {
 
+	struct importInfo {
+		std::unique_ptr<xmlPrs::Parser> reader;
+		std::string prefix;
+	};
+	importInfo createXmlReader(const std::string& fileLocation);
+
 	class Node::NodeFactory::XmlStructureImporter {
 	public:
 		XmlStructureImporter(xmlPrs::Parser& reader, const std::string& prefix_config_xml_file);

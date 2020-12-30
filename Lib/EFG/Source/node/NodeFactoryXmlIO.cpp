@@ -5,6 +5,28 @@ using namespace std;
 
 namespace EFG::node {
 
+	importInfo createXmlReader(const std::string& fileLocation) {
+		importInfo info;
+		info.prefix = "./";
+		std::string correctLocation = fileLocation;
+		std::size_t sepPos = correctLocation.size(), pos = 0;
+		std::for_each(correctLocation.begin(), correctLocation.end(), [&pos, &sepPos](char& c){
+			if('\\' == c) c = '/'; 
+			if('/' == c) {
+				sepPos = pos;
+			}
+			++pos;
+		});
+		if(sepPos != correctLocation.size()){
+			info.prefix = std::string(correctLocation, 0, sepPos + 1);
+		}
+		try { info.reader = std::make_unique<xmlPrs::Parser>(correctLocation); }
+		catch (...) {
+			info.reader = nullptr;
+		}
+		return info;
+	}
+
 	struct TunabInfo {
 		pot::ExpFactor*				tunab_exp;
 		vector<CategoricVariable*>  vars_to_share;
