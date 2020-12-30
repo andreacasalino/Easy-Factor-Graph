@@ -22,10 +22,9 @@ namespace EFG::model {
 	public:
 		/** \brief The model is built considering the information contained in an xml configuration file.  @latexonly\label{CRF_XML}@endlatexonly
 		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
-		* @param[in] configuration file
-		* @param[in] prefix to use. The file prefix_config_xml_file/config_xml_file is searched.
+		* @param[in] configuration the file to import (can be simply a file name, a relative path or an absolute path)
 		*/
-		ConditionalRandomField(const std::string& config_xml_file, const std::string& prefix_config_xml_file = "", const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy());
+		ConditionalRandomField(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy());
 
 		/** \brief Copy constructor.
 		\details The same evidence set is assumed, considering as initial observations a set of null values.

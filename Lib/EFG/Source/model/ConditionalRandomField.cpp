@@ -9,17 +9,11 @@ using namespace std;
 
 namespace EFG::model {
 
-	ConditionalRandomField::ConditionalRandomField(const std::string& config_xml_file, const std::string& prefix_config_xml_file, const node::bp::BeliefPropagator& propagator) :
+	ConditionalRandomField::ConditionalRandomField(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator) :
 		GraphLearnable(true, propagator) {
-
-		std::unique_ptr<xmlPrs::Parser> reader;
-		try { reader = std::make_unique<xmlPrs::Parser>(prefix_config_xml_file + config_xml_file); }
-		catch (...) {
-			cout << "warninig: file not readable in Random_Field construction" << endl;
-			reader.reset();
-		}
-		if (reader != nullptr) {
-			XmlStructureImporter strct(*reader.get(), prefix_config_xml_file);
+		EFG::node::importInfo readerInfo = EFG::node::createXmlReader(config_xml_file);
+		if(nullptr != readerInfo.reader) {
+			XmlStructureImporter strct(*readerInfo.reader, readerInfo.prefix);
 			auto obsv = strct.GetObservations();
 			std::vector<std::string> ev;
 			vector<size_t> ev_val;
@@ -32,7 +26,6 @@ namespace EFG::model {
 			this->_Import(strct.GetStructure(), true, ev);
 			this->SetEvidences(ev_val);
 		}
-
 	};
 
 	ConditionalRandomField::ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert, const node::bp::BeliefPropagator& propagator) :
