@@ -103,14 +103,14 @@ namespace EFG::node {
 		this->Observations.reserve(variableIt.size());
 		const string* var_flag = nullptr;
 		for(auto it = variableIt.begin(); it!=variableIt.end(); ++it) {
-			const auto& attr = it->second->getAttributesConst();
+			const auto& attr = it->second->getAttributes();
 			const string* Size = attrFinder(attr, "Size");
 			const string* Name = attrFinder(attr, "name");
 			if (this->__FindVar(*Name) != nullptr)  throw std::runtime_error("found multiple variables with the same name");
 			this->Vars.emplace_back((size_t)atoi(Size->c_str()), *Name);
 
 			try { var_flag = attrFinder(attr, "flag"); }
-			catch (int) { var_flag = nullptr; }
+			catch (...) { var_flag = nullptr; }
 			if (var_flag != nullptr) {
 				if (var_flag->compare("O") == 0) {
 					this->Observations.emplace_back(make_pair(this->Vars.back().GetName(), 0));
@@ -132,13 +132,13 @@ namespace EFG::node {
 			const auto& attr = it->second->getAttributesConst();
 			this->__ImportShape(prefix_config_xml_file, *it->second);
 			try { w_temp = attrFinder(attr, "weight"); }
-			catch (int) { w_temp = nullptr; }
+			catch (...) { w_temp = nullptr; }
 			if(w_temp != nullptr) {
 				w_val_temp = (float)atof(w_temp->c_str());
 				this->ExpShapes.emplace_back(this->Shapes.back() , w_val_temp);
 				this->Shapes.pop_back();
 				try { tun_temp = attrFinder(attr, "tunability"); }
-				catch (int) { tun_temp = nullptr; }
+				catch (...) { tun_temp = nullptr; }
 				is_const = false;
 				if (tun_temp != nullptr) {
 					if (tun_temp->compare("Y") == 0) is_const = false;
@@ -200,14 +200,14 @@ namespace EFG::node {
 
 		const string* val = nullptr;
 		try { val = attrFinder(attr,"Source"); }
-		catch (int) { val = nullptr; }
+		catch (...) { val = nullptr; }
 		if (val != nullptr){
 			this->Shapes.emplace_back(var_involved, prefix + *val);
 			return;
 		}  
 
 		try { val =  attrFinder(attr,"Correlation"); }
-		catch (int) { val = NULL; }
+		catch (...) { val = NULL; }
 		if (val != NULL) {
 			if (val->compare("T") == 0) {
 				this->Shapes.emplace_back(var_involved, true);
