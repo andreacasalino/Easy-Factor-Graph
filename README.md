@@ -7,19 +7,22 @@ The library contains some minimal functionalities to also perform training.
 
 **EFG** is completely cross platform: use [CMake](https://cmake.org) to configure the entire project.
 
-**Compile**
-
- * Let CMake do all the work for you, but rember to initialize the git submodules by running the following commands after having cloned the repository:
-   
-   * `git submodule init`
-   * `git submodule update`
-
 **Contents**
 
  * the documentation in ./doc explains both how to use **EFG** as well give some theoretical background 
  * the sources of the library are contained in ./Lib
  * ./EFG_Samples contains 8 classes of examples, extensively showing how to use **EFG**
 
+**Compile**
+
+ * After cloning the library you need to initialize the git submodules by running the following commands:
+   
+   * `git submodule init`
+   * `git submodule update`
+   
+ * Configure the project using [CMake](https://cmake.org)
+ * Compile the library and the samles
+   
 [Easy-Factor-Graph-GUI](https://github.com/andreacasalino/Easy-Factor-Graph-GUI) wraps this library as C++ backend to a nice graphical user interactive application:
 
 ![the kind of model handled by this library](https://github.com/andreacasalino/Easy-Factor-Graph/tree/master/img/img1.png)
