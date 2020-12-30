@@ -5,7 +5,7 @@ before diving into the code ;).
 **undirected graphical models** can be saved as **xml** files and later re-imported.
 The library contains some minimal functionalities to also perform training.
 
-**EFG** is completely cross platform: use [CMake](https://cmake.org) to configure the entire project.
+**EFG** is completely **cross platform**: use [CMake](https://cmake.org) to configure the entire project.
 
 **Contents**
 
