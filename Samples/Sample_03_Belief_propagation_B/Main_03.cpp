@@ -63,7 +63,7 @@ int main() {
 void part_01() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 01' from an existing xml file
-	model::Graph graph_1("graph_1.xml", Get_prefix() + "Sample_03_graphs/"); 
+	model::Graph graph_1(Get_prefix() + "Sample_03_graphs/graph_1.xml"); 
 
 	vector<float> marginals;
 
@@ -194,7 +194,7 @@ void part_01() {
 void part_02() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 02' from an existing xml file
-	model::Graph politree("graph_2.xml", Get_prefix() +  "Sample_03_graphs/");
+	model::Graph politree(Get_prefix() +  "Sample_03_graphs/graph_2.xml");
 
 	//active the thread pool to fasten the computation
 	politree.SetThreadPoolSize(3);
@@ -247,7 +247,7 @@ void part_03() {
 	vector<float> marginals_theoretical;
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 03' from an existing xml file
-	model::Graph loop("graph_3.xml", Get_prefix() +  "Sample_03_graphs/");
+	model::Graph loop(Get_prefix() +  "Sample_03_graphs/graph_3.xml");
 
 	// set the observation
 	loop.SetEvidences(vector<pair<string, size_t>>{ {"E",1}});
@@ -302,7 +302,7 @@ void part_03() {
 void part_04() {
 
 	//import the graph described in 'Sample 03: Belief propagation, part B / part 04' from an existing xml file
-	model::Graph loop("graph_4.xml", Get_prefix() +  "Sample_03_graphs/");
+	model::Graph loop(Get_prefix() +  "Sample_03_graphs/graph_4.xml");
 
 	//active the thread pool to fasten the computation
 	loop.SetThreadPoolSize(3);
