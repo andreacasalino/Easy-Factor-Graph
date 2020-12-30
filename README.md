@@ -15,7 +15,7 @@ The library contains some minimal functionalities to also perform training.
 
 **Compile**
 
- * After cloning the library you need to initialize the git submodules by running the following commands:
+ * After cloning the library you need to initialize the git submodules by running the following commands from the root folder:
    
    * `git submodule init`
    * `git submodule update`
