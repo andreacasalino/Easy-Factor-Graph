@@ -80,22 +80,3 @@ if(BUILD_SAMPLES)
     add_subdirectory(Samples)
 endif()
 
-# write a config file with version information for complete framework
-set(FRAMEWORK_NAME "EasyFactorGraph")
-write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${FRAMEWORK_NAME}ConfigVersion.cmake
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-set(INSTALL_CONFIGDIR "${CMAKE_INSTALL_LIBDIR}/cmake/${FRAMEWORK_NAME}")
-#Install the config, configversion and custom find modules
-install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/${FRAMEWORK_NAME}ConfigVersion.cmake
-    DESTINATION ${INSTALL_CONFIGDIR}
-)
-install(FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/${FRAMEWORK_NAME}Config.cmake.in
-    DESTINATION ${INSTALL_CONFIGDIR}
-    RENAME ${FRAMEWORK_NAME}Config.cmake
-)
-

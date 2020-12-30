@@ -6,7 +6,7 @@
  **/
 
 #include <train/TrainingSet.h>
-#include <XML_Manager.h>
+#include <Parser.h>
 #include <fstream>
 #include <cmath>
 #include <algorithm>
@@ -32,7 +32,7 @@ namespace EFG::train {
 		}
 
 		getline(f_set, line);
-		XML_reader::splitta_riga(line, &slices);
+		slices =  xmlPrs::Parser::sliceFragments(line);
 		vector<string> names;
 		names.reserve(slices.size());
 		while (!slices.empty()) {
@@ -49,7 +49,7 @@ namespace EFG::train {
 		size_t k, K;
 		while (!f_set.eof()) {
 			getline(f_set, line);
-			XML_reader::splitta_riga(line, &slices);
+			slices = xmlPrs::Parser::sliceFragments(line);
 
 			K = slices.size();
 			raw.emplace_back(make_pair((size_t*)malloc(sizeof(size_t) * K) , K));
