@@ -20,7 +20,10 @@ The library contains some minimal functionalities to also perform training.
    * `git submodule init`
    * `git submodule update`
    
- * Configure the project using [CMake](https://cmake.org)
+ * Configure and generate the project using [CMake](https://cmake.org)
+   
+   * check this [tutorial](https://www.youtube.com/watch?v=LxHV-KNEG3k) (it is valid for any kind of IDE and not only VS) if you are not familiar
+   
  * Compile the library and the samles
    
 [Easy-Factor-Graph-GUI](https://github.com/andreacasalino/Easy-Factor-Graph-GUI) wraps this library as C++ backend to a nice graphical user interactive application:
