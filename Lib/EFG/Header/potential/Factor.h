@@ -10,6 +10,7 @@
 #define __EFG_POTENTIAL_FACTOR_H__
 
 #include <potential/Potential.h>
+#include <ErrorRaiser.h>
 
 namespace EFG::pot {
 
@@ -82,12 +83,12 @@ namespace EFG::pot {
 		template<typename Array>
 		void AddValue(const Array& new_indeces, const float& new_val) {
 
-			if (this->subject.isObserved()) throw std::runtime_error("cannot modify object while being observed");
+			if (this->subject.isObserved()) raiseError("pot::Factor", "cannot modify object while being observed");
 
 			auto val = this->distribution.add(new_indeces, new_val);
 			if (val->GetVal() < 0.f) {
 				this->distribution.remove(new_indeces);
-				throw std::runtime_error("invalid value requested to add: refused");
+				raiseError("pot::Factor", "invalid value requested to add: refused");
 			}
 
 		};

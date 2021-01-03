@@ -3,6 +3,7 @@
 #include <distribution/FullMatchFinder.h>
 #include <set>
 #include <algorithm>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::node {
@@ -15,7 +16,7 @@ namespace EFG::node {
 		varG.reserve(subgroup.size());
 		for (size_t k = 0; k < subgroup.size(); ++k) {
 			Node* temp = this->_FindNode(subgroup[k]);
-			if (temp == nullptr) throw std::runtime_error("variable not found");
+			if (temp == nullptr) throw Error("node::Node::NodeFactory", "variable not found when computing joint marginal distribution");
 			Group.emplace(temp);
 			varG.push_back(temp->GetVar());
 		}

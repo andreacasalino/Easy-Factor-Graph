@@ -1,4 +1,5 @@
 #include <CategoricVariable.h>
+#include <Error.h>
 #include <algorithm>
 #include <set>
 using namespace std;
@@ -7,9 +8,9 @@ namespace EFG {
 
     CategoricVariable::CategoricVariable(const std::size_t& size, const std::string& name) :Size(size), Name(name) {
 
-        if (name.size() == 0)  throw std::runtime_error("empty name for Categoric variable");
+        if (name.size() == 0)  throw Error("CategoricVariable", "empty name forbidden");
 
-        if (size == 0) throw std::runtime_error("null size of categorical variable");
+        if (size == 0) throw Error("CategoricVariable", "null size forbidden");
 
     }
 
@@ -17,7 +18,7 @@ namespace EFG {
 
     bool CategoricVariable::AreAllVarsDifferent(const std::vector<CategoricVariable*>& variables){
 
-        if(variables.empty()) throw std::runtime_error("empty set of variables cannot be check");
+        if(variables.empty()) throw Error("CategoricVariable", "empty set cannot be check");
 
         set<CategoricVariable*> passed;
 		for (auto it = variables.begin(); it != variables.end(); ++it) {
@@ -40,7 +41,7 @@ namespace EFG {
 
 	itr::Iterator& JointDomainIterator::operator++() {
 
-		if (!this->isNotAtEnd()) throw std::runtime_error("iterator not incrementable");
+		if (!this->isNotAtEnd()) throw Error("JointDomainIterator", "not incrementable");
 
 		size_t k = this->Comb.size() - 1;
 		while (true) {
@@ -64,7 +65,7 @@ namespace EFG {
 
 	JointDomainIterator::JointDomainIterator(const std::vector<CategoricVariable*>& vars) {
 
-		if (!CategoricVariable::AreAllVarsDifferent(vars)) throw std::runtime_error("found repeated variables in domain");
+		if (!CategoricVariable::AreAllVarsDifferent(vars)) throw Error("JointDomainIterator", "found repeated variables in domain");
 
 		this->Sizes.reserve(vars.size());
 		this->Comb.reserve(vars.size());
@@ -79,5 +80,10 @@ namespace EFG {
 		JointDomainIterator temp(vars);
 		itr::forEach<JointDomainIterator>(temp, [&action](JointDomainIterator& it) { action(it()); });
 	}
+
+	const std::vector<size_t>& JointDomainIterator::operator()() const { 
+		if (!this->isNotAtEnd()) throw Error("JointDomainIterator", "not dereferenciable"); 
+		return this->Comb; 
+	};
 
 }

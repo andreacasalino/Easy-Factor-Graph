@@ -11,6 +11,7 @@
 
 #include <map>
 #include <distribution/Group.h>
+#include <ErrorRaiser.h>
 
 namespace EFG::distr {
 
@@ -103,14 +104,14 @@ namespace EFG::distr {
             clone[k] = comb[k];
             if (clone[k] >= Vars[k]->size()) {
                 free(clone);
-                throw std::runtime_error("combination out of bounds");
+                raiseError("distr::DiscreteDistribution", "combination out of bounds");
             } 
         }
 
         Key key = {clone, nullptr};
         if(this->Map.find(key) != this->Map.end()) {
             free(clone);
-            throw std::runtime_error("combination already added");
+            raiseError("distr::DiscreteDistribution", "combination already added");
         }
 
         Value* to_add = new Value(this, clone, val);
@@ -124,7 +125,7 @@ namespace EFG::distr {
 
         Key key = {&comb[0], nullptr};
         auto it = this->Map.find(key);
-        if(it == this->Map.end()) throw std::runtime_error("inexistent combination");
+        if(it == this->Map.end()) raiseError("distr::DiscreteDistribution", "inexistent combination");
         this->Map.erase(it);
 
     }

@@ -78,10 +78,7 @@ namespace EFG::pot {
 		*/
 		class Mover {
 		protected:
-			inline std::unique_ptr<ExpFactor> createMoving(ExpFactor&& o) {
-				if (o.distribution.size() == 0) throw std::runtime_error("cannot move an already moved ExpFactor");
-				return std::unique_ptr<ExpFactor>(new ExpFactor(std::move(o)));
-			};
+			std::unique_ptr<ExpFactor> createMoving(ExpFactor&& o);
 		};
 
 		inline const float& GetWeight() const { return this->distribution.getWeight(); };

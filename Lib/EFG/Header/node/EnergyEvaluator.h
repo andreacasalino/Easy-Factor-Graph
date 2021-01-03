@@ -12,6 +12,7 @@
 #include <node/NodeFactory.h>
 #include <algorithm>
 #include <distribution/FullMatchFinder.h>
+#include <ErrorRaiser.h>
 
 namespace EFG::node {
 
@@ -34,7 +35,7 @@ namespace EFG::node {
 		template<typename Array>
 		std::vector<float>		  EvalNormalized(const std::vector<Array>& combinations) const {
 
-			if (combinations.empty()) throw std::runtime_error("empty combinations vector");
+			if (combinations.empty()) raiseError("node::Node::NodeFactory::EnergyEvaluator", "empty combinations vector");
 
 			auto max_extractor = [](const distr::DiscreteDistribution& distr) {
 				auto it = distr.getIter();
