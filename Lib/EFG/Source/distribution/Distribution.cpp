@@ -1,6 +1,7 @@
 #include <distribution/Distribution.h>
 #include <fstream>
 #include <algorithm>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::distr {
@@ -17,9 +18,9 @@ namespace EFG::distr {
         const vector<CategoricVariable*>& varThis = this->GetVariables();
         const vector<CategoricVariable*>& varO = o.GetVariables();
         std::size_t S = varThis.size();
-        if (varO.size() != S) throw std::runtime_error("move assignment not possible");
+        if (varO.size() != S) throw Error("distr::DiscreteDistribution", "move assignment not possible");
         for (std::size_t k = 0; k < S; ++k) {
-            if(varThis[k]->size() < varO[k]->size()) throw std::runtime_error("move assignment not possible");
+            if(varThis[k]->size() < varO[k]->size()) throw Error("distr::DiscreteDistribution", "move assignment not possible");
         }
         this->Map = std::move(o.Map);
         
@@ -60,7 +61,7 @@ namespace EFG::distr {
 
 		list<string> elements = split_string(line);
 
-		if(elements.size() != (N_var + 1)) throw std::runtime_error("invalid line");
+		if(elements.size() != (N_var + 1)) throw Error("distr::DiscreteDistribution", "invalid line when importing from file");
 		
 		*val = (float)atof(elements.back().c_str());
 		elements.pop_back();
@@ -77,7 +78,7 @@ namespace EFG::distr {
 		ifstream f(file_to_read);
 		if (!f.is_open()) {
 			f.close();
-            throw std::runtime_error("invalid line");
+            throw Error("distr::DiscreteDistribution", "invalid file to import");
 		}
 
 		string line;

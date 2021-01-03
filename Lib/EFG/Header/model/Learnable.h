@@ -11,6 +11,7 @@
 
 #include <node/NodeFactory.h>
 #include <distribution/Combinations.h>
+#include <ErrorRaiser.h>
 
 namespace EFG::model {
 
@@ -182,8 +183,7 @@ namespace EFG::model {
 			return;
 		}
 
-		throw std::runtime_error("inexistent potential");
-
+		raiseError("model::GraphLearnable", "inexistent potential");
 	};
 
 }

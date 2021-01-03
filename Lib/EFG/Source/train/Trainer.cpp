@@ -7,6 +7,7 @@
 
 #include <train/Trainer.h>
 #include <cmath>
+#include <Error.h>
 using namespace std;
 
 //#define COMPILE_BFGS
@@ -81,7 +82,7 @@ namespace EFG::train {
 
 	void Trainer::EntireSet::operator()(model::GraphLearnable& model_to_train, train::TrainingSet& training_set, const unsigned int& Max_Iterations , std::list<float>* descend_story) {
 
-		if (model_to_train.GetModelSize() == 0) throw 0;
+		if (model_to_train.GetModelSize() == 0) throw Error("train::Trainer::EntireSet", "can't train model without tunable parameters");
 		if (descend_story != nullptr) descend_story->clear();
 
 		this->advStrtgy->Reset();
@@ -99,7 +100,7 @@ namespace EFG::train {
 
 	void Trainer::StochSet::operator()(model::GraphLearnable& model_to_train, train::TrainingSet& training_set, const unsigned int& Max_Iterations , std::list<float>* descend_story) {
 
-		if (model_to_train.GetModelSize() == 0) throw 0;
+		if (model_to_train.GetModelSize() == 0) throw Error("train::Trainer::StochSet", "can't train model without tunable parameters");;
 		if (descend_story != nullptr) descend_story->clear();
 
 		this->advStrtgy->Reset();

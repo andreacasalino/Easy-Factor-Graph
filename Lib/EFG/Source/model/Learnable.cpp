@@ -2,6 +2,7 @@
 #include <algorithm>
 #include "handler/UnaryHandler.h"
 #include "handler/BinaryHandler.h"
+#include <Error.h>
 using namespace std;
 
 namespace EFG::model {
@@ -137,8 +138,8 @@ namespace EFG::model {
 		a2 = this->__FindInAtomics(set2);
 		c2 = this->__FindInComposites(set2);
 
-		if ((c1.first == this->CompositeLearner.end()) && (a1 == this->AtomicLearner.end())) throw std::runtime_error("inexistent handler");
-		if ((c2.first == this->CompositeLearner.end()) && (a2 == this->AtomicLearner.end())) throw std::runtime_error("inexistent handler");
+		if ((c1.first == this->CompositeLearner.end()) && (a1 == this->AtomicLearner.end())) throw Error("model::GraphLearnable", "inexistent handler");
+		if ((c2.first == this->CompositeLearner.end()) && (a2 == this->AtomicLearner.end())) throw Error("model::GraphLearnable", "inexistent handler");
 
 		if ((a1 != this->AtomicLearner.end()) && (a2 != this->AtomicLearner.end())) {
 			this->CompositeLearner.emplace_back(*a1, *a2);
@@ -228,7 +229,7 @@ namespace EFG::model {
 
 	void GraphLearnable::SetTunable(const std::vector<float>& w_vector) {
 
-		if (this->GetModelSize() != w_vector.size()) throw std::runtime_error("inconsistent vector of weights");
+		if (this->GetModelSize() != w_vector.size()) throw Error("model::GraphLearnable", "inconsistent vector of weights");
 		size_t k = 0;
 		for (auto it : this->LearnerList) {
 			it->SetWeight(w_vector[k]);

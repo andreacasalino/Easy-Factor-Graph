@@ -1,5 +1,6 @@
 #include <potential/ExpFactor.h>
 #include <distribution/FullMatchFinder.h>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::pot {
@@ -29,7 +30,7 @@ namespace EFG::pot {
 	ExpFactor::ExpFactor(const ExpFactor& to_copy, const std::vector<CategoricVariable*>& var_involved) 
 		: IFactor<distr::ExpDistribution>(var_involved) {
 
-		if (var_involved.size() != to_copy.distribution.GetVariables().size()) throw std::runtime_error("invalid variable set");
+		if (var_involved.size() != to_copy.distribution.GetVariables().size()) throw Error("pot::ExpFactor", "invalid variable set");
 
 		this->distribution.setWeight(to_copy.distribution.getWeight());
 
@@ -38,5 +39,10 @@ namespace EFG::pot {
 	};
 
 	ExpFactor::WeightModifier::WeightModifier(ExpFactor& involved_pot) : sbj::Subject::Observer(involved_pot.subjectWeightHndlr), pot(involved_pot) {};
+
+	std::unique_ptr<ExpFactor> ExpFactor::Mover::createMoving(ExpFactor&& o) {
+		if (o.distribution.size() == 0) throw Error("pot::ExpFactor::Mover" , "cannot move an already moved ExpFactor");
+		return std::unique_ptr<ExpFactor>(new ExpFactor(std::move(o)));
+	};
 
 }

@@ -4,6 +4,7 @@
 #include <set>
 #include <iostream>
 #include <algorithm>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::pot {
@@ -25,12 +26,12 @@ namespace EFG::pot {
 
 	Factor::Factor(const std::vector<CategoricVariable*>& var_involved, const bool& correlated_or_not) : Factor(var_involved) {
 
-		if (var_involved.size() <= 1) throw std::runtime_error("simply correlating potential must involve at least two variables");
+		if (var_involved.size() <= 1) throw Error("pot::Factor" , "simply correlating potential must involve at least two variables");
 
 		auto it = var_involved.begin();
 		size_t Size = (*it)->size(); ++it;
 		for (it; it != var_involved.end(); ++it) {
-			if ((*it)->size() != Size) throw std::runtime_error("variables in a simply correlating potential must have all same sizes");
+			if ((*it)->size() != Size) throw Error("pot::Factor" , "variables in a simply correlating potential must have all same sizes");
 		}
 
 		vector<size_t> comb;
@@ -59,7 +60,7 @@ namespace EFG::pot {
 
 	Factor::Factor(const Factor& to_copy, const std::vector<CategoricVariable*>& var_involved) : Factor(var_involved) {
 
-		if (var_involved.size() != to_copy.GetDistribution().GetVariables().size()) throw std::runtime_error("invalid variables set");
+		if (var_involved.size() != to_copy.GetDistribution().GetVariables().size()) throw Error("pot::Factor" , "invalid variables set");
 		auto it = to_copy.GetDistribution().getIter();
 		itr::forEach<distr::DiscreteDistribution::constIterator>(it, [this](distr::DiscreteDistribution::constIterator& itt) { 
 			this->distribution.add(itt->GetIndeces(), itt->GetValRaw()); });
@@ -68,7 +69,7 @@ namespace EFG::pot {
 
 	vector<CategoricVariable*> compute_merged_domain(const std::vector<const IPotential*>& potential_to_merge, const bool& merge_domain) {
 
-		if (potential_to_merge.empty())  throw std::runtime_error("empty set of potentials to merge");
+		if (potential_to_merge.empty())  throw Error("pot::Factor" , "empty set of potentials to merge");
 
 		if (!merge_domain) return potential_to_merge.front()->GetDistribution().GetVariables();
 
@@ -125,7 +126,7 @@ namespace EFG::pot {
 			auto it = potential_to_merge.begin();
 			++it;
 			std::for_each(it, potential_to_merge.end(), [&N_var, &finders, &vars](const IPotential* p) {
-				if (p->GetDistribution().GetVariables().size() != N_var) throw std::runtime_error("potentials to merge must have all the same cardinality");
+				if (p->GetDistribution().GetVariables().size() != N_var) throw Error("pot::Factor" , "potentials to merge must have all the same cardinality");
 				finders.emplace_back(p->GetDistribution(), vars);
 			});
 
@@ -150,7 +151,7 @@ namespace EFG::pot {
 	std::vector<CategoricVariable*> get_hidden_set(const std::vector<CategoricVariable*>& var_observed, const IPotential& pot_to_reduce) {
 
 		auto vars = pot_to_reduce.GetDistribution().GetVariables();
-		if (var_observed.size() >= vars.size()) throw std::runtime_error("at least one non observed variables must exist");
+		if (var_observed.size() >= vars.size()) throw Error("pot::Factor" , "at least one non observed variables must exist");
 
 		list<CategoricVariable*> temp;
 		for (auto it = vars.begin(); it != vars.end(); ++it) temp.push_back(*it);
@@ -165,7 +166,7 @@ namespace EFG::pot {
 					break;
 				}
 			}
-			if (!is_in_pot) throw std::runtime_error("invalid observations");
+			if (!is_in_pot) throw Error("pot::Factor" , "invalid observations");
 			temp.remove(*ob);
 		}
 
@@ -178,7 +179,7 @@ namespace EFG::pot {
 	Factor::Factor(const std::vector<size_t>& val_observed, const std::vector<CategoricVariable*>& var_observed, const IPotential& pot_to_reduce) :
 		Factor(get_hidden_set(var_observed, pot_to_reduce)) {
 
-		if (val_observed.size() != var_observed.size()) throw std::runtime_error("number of observations must be equal to the number of observed variables");
+		if (val_observed.size() != var_observed.size()) throw Error("pot::Factor" , "number of observations must be equal to the number of observed variables");
 
 		auto vars = pot_to_reduce.GetDistribution().GetVariables();
 		size_t K = vars.size();
@@ -213,7 +214,7 @@ namespace EFG::pot {
 
 	void Factor::SetOnes() {
 
-		if (this->subject.isObserved()) throw std::runtime_error("cannot modify object while being observed");
+		if (this->subject.isObserved()) throw Error("pot::Factor" , "cannot modify object while being observed");
 
 		this->distribution.clear();
 
@@ -223,7 +224,7 @@ namespace EFG::pot {
 
 	void Factor::Normalize() {
 
-		if (this->subject.isObserved()) throw std::runtime_error("cannot modify object while being observed");
+		if (this->subject.isObserved()) throw Error("pot::Factor" , "cannot modify object while being observed");
 
 		float Rescale = 0.f, temp = 0.f;
 		{
@@ -243,7 +244,7 @@ namespace EFG::pot {
 
 	void Factor::Normalize2() {
 
-		if (this->subject.isObserved()) throw std::runtime_error("cannot modify object while being observed");
+		if (this->subject.isObserved()) throw Error("pot::Factor" , "cannot modify object while being observed");
 
 		float Rescale = 0.f;
 		{

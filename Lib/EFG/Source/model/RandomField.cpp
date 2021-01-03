@@ -3,6 +3,7 @@
 #include <iostream>
 #include "../node/NodeFactoryXmlIO.h"
 #include <algorithm>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::model {
@@ -51,7 +52,7 @@ namespace EFG::model {
 		vars_shared.reserve(vars_of_pot_whose_weight_is_to_share.size());\
 		for (size_t k = 0; k < vars_of_pot_whose_weight_is_to_share.size(); ++k) {\
 			node::Node* temp = this->_FindNode(vars_of_pot_whose_weight_is_to_share[k]);\
-			if (temp == nullptr) throw std::runtime_error("inexistent variable");\
+			if (temp == nullptr) throw Error("model::RandomField", "inexistent variable");\
 			vars_shared.push_back(temp->GetVar());\
 		}\
 		this->_Share(vars_shared, pot.GetDistribution().GetVariables());\

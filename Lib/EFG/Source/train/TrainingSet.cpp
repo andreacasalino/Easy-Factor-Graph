@@ -10,6 +10,7 @@
 #include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::train {
@@ -20,7 +21,7 @@ namespace EFG::train {
 		ifstream f_set(file_to_import);
 		if (!f_set.is_open()) {
 			f_set.close();
-			throw std::runtime_error("invalid training set file");
+			throw Error("train::TrainingSet" , "invalid training set file");
 		}
 
 		string line;
@@ -28,7 +29,7 @@ namespace EFG::train {
 
 		if (f_set.eof()) {
 			f_set.close();
-			throw std::runtime_error("invalid training set file"); //found empty training set
+			throw Error("train::TrainingSet" , "invalid training set file"); //found empty training set
 		}
 
 		getline(f_set, line);
@@ -42,7 +43,7 @@ namespace EFG::train {
 
 		if (f_set.eof()) {
 			f_set.close();
-			throw std::runtime_error("invalid training set file"); //found empty training set
+			throw Error("train::TrainingSet" , "invalid training set file"); //found empty training set
 		}
 
 		std::list<std::pair<size_t* , size_t>> raw;
@@ -67,8 +68,8 @@ namespace EFG::train {
 
 	void TrainingSet::__Import(const std::vector<std::string>& var_names, const std::list<std::pair<size_t* , size_t>>& combs_raw) {
 
-		if (combs_raw.empty()) throw std::runtime_error("train set empty is invalid");
-		if (var_names.empty()) throw std::runtime_error("train set empty is invalid");
+		if (combs_raw.empty()) throw Error("train::TrainingSet" , "train set empty is invalid");
+		if (var_names.empty()) throw Error("train::TrainingSet" , "train set empty is invalid");
 
 		this->varNames = var_names;
 
@@ -76,7 +77,7 @@ namespace EFG::train {
 		this->maxCombVals.reserve(K);
 		for (k = 0; k < K; ++k) this->maxCombVals.push_back(0);
 		std::for_each(combs_raw.begin(), combs_raw.end(), [this, &K, &k](const std::pair<size_t*, size_t>& p) {
-			if (p.second != K) throw std::runtime_error("mismatch in the combination sizes");
+			if (p.second != K) throw Error("train::TrainingSet" , "mismatch in the combination sizes");
 			this->combs.push_back(p.first);
 			for (k = 0; k < K; ++k) {
 				if (p.first[k] > this->maxCombVals[k])
@@ -88,7 +89,7 @@ namespace EFG::train {
 
 	void TrainingSet::operator+=(const TrainingSet& tr){
 
-		if(tr.varNames.size() != this->varNames.size()) throw std::runtime_error("cannot copy training set with different combinations sizes");
+		if(tr.varNames.size() != this->varNames.size()) throw Error("train::TrainingSet" , "cannot copy training set with different combinations sizes");
 
 		size_t k, K = this->varNames.size();
 		std::for_each(tr.combs.begin(), tr.combs.end(), [this, &K, &k](size_t* c) {
@@ -107,7 +108,7 @@ namespace EFG::train {
 		ofstream f(file_name);
 		if (!f.is_open()) {
 			f.close();
-			throw std::runtime_error("invalid file to print training set");
+			throw Error("train::TrainingSet" , "invalid file to print training set");
 		}
 
 		size_t K = this->varNames.size();
@@ -128,15 +129,15 @@ namespace EFG::train {
 
 	vector<CategoricVariable*> extract(const std::vector<string>& names, const std::vector<size_t>& max_vals, const model::GraphLearnable& model_to_train) {
 		auto vars = model_to_train.GetAllVariables();
-		if(names.size() != vars.size()) throw std::runtime_error("invalid training set sizes");
+		if(names.size() != vars.size()) throw Error("train::TrainingSet" , "invalid training set sizes");
 
 		vector<CategoricVariable*> result;
 		result.reserve(names.size());
 		for (size_t k = 0; k < names.size(); ++k) {
 			auto temp = model_to_train.FindVariable(names[k]);
-			if(temp == nullptr)  throw std::runtime_error("variable not found in the model");
+			if(temp == nullptr)  throw Error("train::TrainingSet" , "variable not found in the model");
 			result.push_back(temp);
-			if(max_vals[k] >= temp->size()) throw std::runtime_error("invalid combinations in training set");
+			if(max_vals[k] >= temp->size()) throw Error("train::TrainingSet" , "invalid combinations in training set");
 		}
 		return result;
 	}

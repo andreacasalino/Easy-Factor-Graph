@@ -10,6 +10,7 @@
 #define __EFG_POTENTIAL_H__
 
 #include <distribution/Distribution.h>
+#include <ErrorRaiser.h>
 
 namespace EFG::pot {
 
@@ -58,13 +59,13 @@ namespace EFG::pot {
 		*
 		* @param[in] new_var variables to consider for the substitution
 		*/
-		inline void SubstituteVariables(const std::vector<CategoricVariable*>& new_var) override { if (this->subject.isObserved()) throw std::runtime_error("cannot modify object while being observed"); this->distribution.replace(new_var);};
+		inline void SubstituteVariables(const std::vector<CategoricVariable*>& new_var) override { if (this->subject.isObserved()) raiseError("pot::IFactor", "cannot modify object while being observed"); this->distribution.replace(new_var);};
 
 		/** \brief All values in the image of the domain are randomly set.
 		\details The modification is allowed only in case this potential is not inserted in a graph or a Potential_Exp_Shape
 		*/
 		void SetRandom() {
-			if (this->subject.isObserved()) throw std::runtime_error("cannot modify object while being observed");
+			if (this->subject.isObserved()) raiseError("pot::IFactor", "cannot modify object while being observed");
 			//srand((unsigned int)time(NULL));
 
 			this->distribution.clear();
@@ -81,7 +82,7 @@ namespace EFG::pot {
 				itt->SetValRaw(operation(old_val));
 				if (itt->GetVal() < 0.f) {
 					itt->SetValRaw(old_val);
-					throw std::runtime_error("operation on domain led to negative value: refused");
+					raiseError("pot::IFactor", "operation on domain led to negative value: refused");
 				}
 			});
 		};
@@ -98,7 +99,7 @@ namespace EFG::pot {
 		IFactor(IFactor&& o) : distribution(std::move(o.distribution)) {
 			if (o.subject.isObserved()) {
 				static_cast<distr::DiscreteDistribution&>(this->distribution) = std::move(static_cast<distr::DiscreteDistribution&>(o.distribution));
-				throw std::runtime_error("potential to move should be not observed by anyone at the time the move is invoked");
+				raiseError("pot::IFactor", "potential to move should be not observed by anyone at the time the move is invoked");
 			}
 		};
 

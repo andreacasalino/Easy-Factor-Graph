@@ -11,6 +11,7 @@
 
 #include <distribution/Group.h>
 #include <util/Iterator.h>
+#include <ErrorRaiser.h>
 
 namespace EFG::distr {
 
@@ -42,7 +43,7 @@ namespace EFG::distr {
             clone[k] = comb[k];
             if (clone[k] >= vars[k]->size()) {
                 free(clone);
-                throw std::runtime_error("combination out of bounds");
+                raiseError("distr::Combinations", "combination out of bounds");
             }
         }
         this->combinations.push_back(clone);

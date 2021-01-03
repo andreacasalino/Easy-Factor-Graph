@@ -1,12 +1,13 @@
 #include <distribution/PartialMatchFinder.h>
+#include <Error.h>
 
 namespace EFG::distr {
 
     DiscreteDistribution::IPartialfinder::IPartialfinder(const DiscreteDistribution& distrib, const std::vector<CategoricVariable*>& vars) : Ifinder(distrib) {
 
         auto distr_vars = distrib.GetVariables();
-        if (vars.size() >= distr_vars.size()) throw std::runtime_error("number of vars must be lower than the domain cardinality");
-        if (!CategoricVariable::AreAllVarsDifferent(vars)) throw std::runtime_error("repeated variable in set");
+        if (vars.size() >= distr_vars.size()) throw Error("distr::DiscreteDistribution::IPartialfinder", "number of vars must be lower than the domain cardinality");
+        if (!CategoricVariable::AreAllVarsDifferent(vars)) throw Error("distr::DiscreteDistribution::IPartialfinder", "repeated variable in set");
 
         this->varOrder.reserve(vars.size());
         std::size_t K2 = distr_vars.size();
@@ -18,7 +19,7 @@ namespace EFG::distr {
                 }
             }
         }
-        if (this->varOrder.size() != vars.size()) throw std::runtime_error("some variables in vars were not found in this domain");
+        if (this->varOrder.size() != vars.size()) throw Error("distr::DiscreteDistribution::IPartialfinder", "some variables in vars were not found in this domain");
 
     };
 

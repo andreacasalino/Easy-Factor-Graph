@@ -2,6 +2,7 @@
 #include "belprop/BasicPropagator.h"
 #include "NeighbourConnection.h"
 #include <algorithm>
+#include <Error.h>
 #include <iostream>
 using namespace std;
 
@@ -176,7 +177,7 @@ namespace EFG::node {
 	template<typename P>
 	P* Node::NodeFactory::__Insert(P* to_insert, const bool& use_move) {
 		if (use_move) {
-			if (!this->bDestroyPotentials_and_Variables) throw std::runtime_error("no need to move potential that would not be copied");
+			if (!this->bDestroyPotentials_and_Variables) throw Error("node::Node::NodeFactory", "no need to move potential that would not be copied");
 		}
 
 		class NodeHndl {
@@ -188,7 +189,7 @@ namespace EFG::node {
 				auto node = this->Source->_FindNode(var->GetName());
 				if (node != nullptr) {
 					if ((!this->Source->bDestroyPotentials_and_Variables) && (node->GetVar() != var)) {
-						throw std::runtime_error("when using non cloning insertion, you must refer to exactly the same variables already in the model");
+						throw Error("node::Node::NodeFactory", "when using non cloning insertion, you must refer to exactly the same variables already in the model");
 					}
 				}
 				return node;
@@ -231,7 +232,7 @@ namespace EFG::node {
 			if ((peer_A != nullptr) && (peer_B != nullptr)) {
 				// check whether this binary potential was already present
 				auto it_B = this->BinaryPotentials.get_map()->find(std::make_pair(&peer_A->GetVar()->GetName(), &peer_B->GetVar()->GetName()));
-				if (it_B != this->BinaryPotentials.get_map()->end()) throw std::runtime_error("found clone of an already inserted binary potential");
+				if (it_B != this->BinaryPotentials.get_map()->end()) throw Error("node::Node::NodeFactory", "found clone of an already inserted binary potential");
 			}
 			else {
 				if (peer_A == nullptr)  peer_A = Hndl.Create(var_involved.front());
@@ -254,7 +255,7 @@ namespace EFG::node {
 			Node::NeighbourConnection::initConnection(peer_A, peer_B, *inserted);
 		}
 
-		else throw std::runtime_error("Only binary or unary potential can be inserted");
+		else throw Error("node::Node::NodeFactory", "Only binary or unary potential can be inserted");
 
 		this->PotentialObservers.emplace_back(*inserted->GetAsSubject());
 
@@ -401,10 +402,10 @@ namespace EFG::node {
 	void Node::NodeFactory::ObsvContainer::setVals(const std::vector<size_t>& vals) {
 
 		size_t K = this->order.size();
-		if (vals.size() != K) throw std::runtime_error("inconsistent number of edivences");
+		if (vals.size() != K) throw Error("node::Node::NodeFactory", "inconsistent number of edivences");
 		for (size_t k = 0; k < K; ++k) {
 			auto it = this->map.find(this->order[k]);
-			if (order[k]->GetVar()->size() <= vals[k]) throw std::runtime_error("inconsistent number of edivences");
+			if (order[k]->GetVar()->size() <= vals[k]) throw Error("node::Node::NodeFactory", "inconsistent number of edivences");
 			it->second->second = vals[k];
 		}
 
@@ -442,7 +443,7 @@ namespace EFG::node {
 
 		this->_SetEvidences(Vals);
 
-		if (Vars.size() != new_observations.size()) throw std::runtime_error("detected at least one variable not present in this graph");
+		if (Vars.size() != new_observations.size()) throw Error("node::Node::NodeFactory", "detected at least one variable not present in this graph");
 	}
 
 	void Node::NodeFactory::_SetEvidences(const std::vector<size_t>& new_observations) {
@@ -543,11 +544,11 @@ namespace EFG::node {
 		this->__BeliefPropagation(true);
 
 		Node* node = this->_FindNode(var);
-		if (node == nullptr) throw std::runtime_error("variable not present in the model");
+		if (node == nullptr) throw Error("node::Node::NodeFactory", "variable not present in the model");
 		//check the variable is in the hidden set
 		auto it = this->Observations.get_map()->find(node);
 		if (it != this->Observations.get_map()->end())
-			throw std::runtime_error("You asked the marginals of a variable in the evidences set");
+			throw Error("node::Node::NodeFactory", "You asked the marginals of a variable in the evidences set");
 
 		return pot::Factor(node->GetAllUnaries(), false).GetMarginals();
 
@@ -558,11 +559,11 @@ namespace EFG::node {
 		this->__BeliefPropagation(false);
 
 		auto node = this->_FindNode(var);
-		if (node == nullptr) throw std::runtime_error("variable not present in the model");
+		if (node == nullptr) throw Error("node::Node::NodeFactory", "variable not present in the model");
 		//check the variable is in the hidden set
 		auto it = this->Observations.get_map()->find(node);
 		if (it != this->Observations.get_map()->end())
-			throw std::runtime_error("You asked the marginals of a variable in the evidences set");
+			throw Error("node::Node::NodeFactory", "You asked the marginals of a variable in the evidences set");
 
 		vector<float> marginals = pot::Factor(node->GetAllUnaries(), false).GetMarginals();
 		//find values maximising marginals
@@ -624,7 +625,7 @@ namespace EFG::node {
 
 	void Node::NodeFactory::_Copy(const NodeFactory& o) {
 		if(!this->bDestroyPotentials_and_Variables) {
-			throw std::runtime_error("can't call copy on a model not using cloning insertion");
+			throw Error("node::Node::NodeFactory", "can't call copy on a model not using cloning insertion");
 		}
 		this->_Insert(o.GetStructure(), false);
 		this->Propagator = _GetPropagator(o).copy();

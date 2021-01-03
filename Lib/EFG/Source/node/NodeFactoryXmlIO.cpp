@@ -1,6 +1,7 @@
 #include "NodeFactoryXmlIO.h"
 #include <algorithm>
 #include <fstream>
+#include <Error.h>
 using namespace std;
 
 namespace EFG::node {
@@ -83,7 +84,7 @@ namespace EFG::node {
 							break;
 						}
 					}
-					if (!found) throw std::runtime_error("found inexistent potential whose weight is to share");
+					if (!found) throw Error("node::Node::NodeFactory::XmlStructureImporter" , "found inexistent potential whose weight is to share");
 					pots.front().cluster_id = C;
 					++C;
 				}
@@ -106,7 +107,7 @@ namespace EFG::node {
 	
 	const std::string* attrFinder(const std::multimap<std::string, std::string>& attr, const std::string& name) {
 		auto it = attr.find(name);
-		if(it == attr.end()) throw std::runtime_error(name + " not found");
+		if(it == attr.end()) throw Error("node::Node::NodeFactory::XmlStructureImporter" , name + " not found");
 		return &it->second;
 	};
 
@@ -128,7 +129,7 @@ namespace EFG::node {
 			const auto& attr = it->second->getAttributes();
 			const string* Size = attrFinder(attr, "Size");
 			const string* Name = attrFinder(attr, "name");
-			if (this->__FindVar(*Name) != nullptr)  throw std::runtime_error("found multiple variables with the same name");
+			if (this->__FindVar(*Name) != nullptr)  throw Error("node::Node::NodeFactory::XmlStructureImporter" , "found multiple variables with the same name");
 			this->Vars.emplace_back((size_t)atoi(Size->c_str()), *Name);
 
 			try { var_flag = attrFinder(attr, "flag"); }
@@ -137,7 +138,7 @@ namespace EFG::node {
 				if (var_flag->compare("O") == 0) {
 					this->Observations.emplace_back(make_pair(this->Vars.back().GetName(), 0));
 				}
-				else if (var_flag->compare("H") != 0) throw std::runtime_error("unrecognized flag value for var tag");
+				else if (var_flag->compare("H") != 0) throw Error("node::Node::NodeFactory::XmlStructureImporter" , "unrecognized flag value for var tag");
 			}
 		}
 
@@ -165,7 +166,7 @@ namespace EFG::node {
 				if (tun_temp != nullptr) {
 					if (tun_temp->compare("Y") == 0) is_const = false;
 					else if (tun_temp->compare("N") == 0) is_const = true;
-					else throw std::runtime_error("unrecognized parameter");
+					else throw Error("node::Node::NodeFactory::XmlStructureImporter" , "unrecognized parameter");
 				}
 
 				if(is_const)
@@ -179,9 +180,9 @@ namespace EFG::node {
 						tunab_exp.back().vars_to_share.reserve(names_to_share.size());
 						for (auto itn = names_to_share.begin(); itn != names_to_share.end(); ++itn) {
 							tunab_exp.back().vars_to_share.push_back(this->__FindVar(*itn));
-							if (tunab_exp.back().vars_to_share.back() == nullptr) throw std::runtime_error("inexistent variable");
+							if (tunab_exp.back().vars_to_share.back() == nullptr) throw Error("node::Node::NodeFactory::XmlStructureImporter" , "inexistent variable");
 						}
-						if (this->ExpShapes.back().GetDistribution().GetVariables().size() != tunab_exp.back().vars_to_share.size()) throw std::runtime_error("inconsistent var set");
+						if (this->ExpShapes.back().GetDistribution().GetVariables().size() != tunab_exp.back().vars_to_share.size()) throw Error("node::Node::NodeFactory::XmlStructureImporter" , "inconsistent var set");
 					}
 				}
 			}
@@ -211,11 +212,11 @@ namespace EFG::node {
 		vector<CategoricVariable*> var_involved;
 		list<string> names;
 		getAttributes(names, tag, "var");
-		if((names.size() != 1) && (names.size() != 2)) throw std::runtime_error("Only binary or unary potential can be inserted");
+		if((names.size() != 1) && (names.size() != 2)) throw Error("node::Node::NodeFactory::XmlStructureImporter" , "Only binary or unary potential can be inserted");
 		var_involved.reserve(names.size());
 		for(auto it=names.begin(); it!= names.end(); ++it){
 			var_involved.push_back(this->__FindVar(*it));
-			if (var_involved.back() == nullptr) throw std::runtime_error("inexistent variable");
+			if (var_involved.back() == nullptr) throw Error("node::Node::NodeFactory::XmlStructureImporter" , "inexistent variable");
 		}
 
 		const auto& attr = tag.getAttributesConst();
@@ -239,7 +240,7 @@ namespace EFG::node {
 				this->Shapes.emplace_back(var_involved, false);
 				return;
 			}
-			else throw std::runtime_error("found potential with invalid options");
+			else throw Error("node::Node::NodeFactory::XmlStructureImporter" , "found potential with invalid options");
 		}
 
 		this->Shapes.emplace_back(var_involved);
@@ -286,7 +287,7 @@ namespace EFG::node {
 		ofstream f(file_name);
 		if (!f.is_open()) {
 			f.close();
-			throw std::runtime_error("unable to write on the specified file");
+			throw Error("node::Node::NodeFactory::XmlStructureImporter" , "unable to write on the specified file");
 		}
 		f.close();
 		

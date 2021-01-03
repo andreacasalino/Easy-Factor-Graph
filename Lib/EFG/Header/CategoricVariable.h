@@ -13,7 +13,6 @@
 #include <util/Iterator.h>
 #include <string>
 #include <vector>
-#include <stdexcept>
 
 namespace EFG {
 
@@ -75,7 +74,7 @@ namespace EFG {
         JointDomainIterator(const std::vector<CategoricVariable*>& vars);
 
         Iterator& operator++() final;
-        inline const std::vector<size_t>& operator()() const { if (!this->isNotAtEnd()) throw std::runtime_error("iterator not dereferenciable"); return this->Comb; };
+        const std::vector<size_t>& operator()() const;
 
         static void forEach(const std::vector<CategoricVariable*>& vars, const std::function<void(const std::vector<size_t>&)>& action);
     private:
