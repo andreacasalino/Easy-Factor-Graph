@@ -26,8 +26,12 @@ namespace EFG::model {
 		vector<float> betas;
 		betas.reserve(this->GetModelSize());
 		auto L = this->_GetLearnerList();
+
+		#ifdef THREAD_POOL_ENABLED
 		if (this->ThPool == nullptr) {
+		#endif
 			std::for_each(L->begin(), L->end(), [&betas](LearningHandler* l) { betas.push_back(l->GetBetaPart()); });
+		#ifdef THREAD_POOL_ENABLED
 		}
 		else {
 			std::for_each(L->begin(), L->end(), [&betas, this](LearningHandler* l) { 
@@ -37,8 +41,8 @@ namespace EFG::model {
 			});
 			this->ThPool->wait();
 		}
+		#endif
 		return betas;
-
 	}
 
 #define INSERT_SHARE \

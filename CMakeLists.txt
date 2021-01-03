@@ -71,6 +71,7 @@ include(AutoCollect)
 include(Log)
 include(SetInstallRPath)
 
+option(THREAD_POOL_OPT "thread pool enabled (ON) or disabled (OFF)" ON)
 add_subdirectory(Lib)
 if(BUILD_SAMPLES)
     add_subdirectory(Samples)

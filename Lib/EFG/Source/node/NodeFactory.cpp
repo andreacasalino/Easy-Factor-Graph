@@ -377,7 +377,11 @@ namespace EFG::node {
 
 		//perform belief propagation
 		bool all_done_within_iter = true;
-		all_done_within_iter = (*this->Propagator)(this->HiddenClusters, sum_or_MAP, this->PropagationMaxIter, this->ThPool.get());
+		all_done_within_iter = (*this->Propagator)(this->HiddenClusters, sum_or_MAP, this->PropagationMaxIter
+		#ifdef THREAD_POOL_ENABLED
+		,this->ThPool.get()
+		#endif
+		);
 
 		if (this->LastPropagation == nullptr) this->LastPropagation = make_unique<PropagationInfo>();
 		this->LastPropagation->WasSum_or_MAP = sum_or_MAP;
@@ -590,17 +594,22 @@ namespace EFG::node {
 
 	}
 
-	void Node::NodeFactory::SetThreadPoolSize(const std::size_t& poolSize) {
+	bool Node::NodeFactory::SetThreadPoolSize(const std::size_t& poolSize) {
+		#ifdef THREAD_POOL_ENABLED
 		if (poolSize <= 1) {
 			this->ThPool.reset();
-			return;
+			return true;
 		}
 
 		if (this->ThPool != nullptr) {
-			if(this->ThPool->size() == poolSize) return;
+			if(this->ThPool->size() == poolSize) return true;
 			this->ThPool.reset();
 		}
 		this->ThPool = make_unique<thpl::equi::Pool>(poolSize);
+		return true;
+		#else 
+		return false;
+		#endif
 	}
 
 	const bp::BeliefPropagator& Node::NodeFactory::_GetPropagator(const NodeFactory& model) {

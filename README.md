@@ -21,9 +21,11 @@ The library contains some minimal functionalities to also perform training.
    * `git submodule update`
    
  * Configure and generate the project using [CMake](https://cmake.org)
-   
+
    * check this [tutorial](https://www.youtube.com/watch?v=LxHV-KNEG3k) (it is valid for any kind of IDE and not only VS) if you are not familiar
-   
+   * some computations are speed up using a thread pool implemented in an external library. However,
+the compilation of such library might cause problems in some systems. Therefore, you can also decide to not use the thread pool (and not compile it at all) by selecting **OFF** for the [CMake](https://cmake.org) option **THREAD_POOL_OPT**
+      
  * Compile the library and the samples
    
 [Easy-Factor-Graph-GUI](https://github.com/andreacasalino/Easy-Factor-Graph-GUI) wraps this library as C++ backend to a nice graphical user interactive application:

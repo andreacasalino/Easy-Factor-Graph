@@ -15,11 +15,23 @@ namespace EFG::node::bp {
 
     class BasicStrategy : public BeliefPropagator {
     public:
-        bool operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations, thpl::equi::Pool* pl) override;
+        bool operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations 
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pl
+        #endif
+        ) override;
         std::unique_ptr<BeliefPropagator>	copy() const override { return std::make_unique<BasicStrategy>(); };
     protected:
-        bool MessagePassing(thpl::equi::Pool* pool, std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP);//return true when propagation terminated computing all the messages
-        bool LoopyPropagation(thpl::equi::Pool* pool, std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations); //return true when propagation terminated within given iterations
+        bool MessagePassing(std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pl
+        #endif
+        );//return true when propagation terminated computing all the messages
+        bool LoopyPropagation(std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pl
+        #endif
+        ); //return true when propagation terminated within given iterations
     };
 
 }
