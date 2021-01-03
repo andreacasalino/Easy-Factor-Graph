@@ -15,22 +15,36 @@ using namespace std;
 
 namespace EFG::node::bp {
 
-	bool BasicStrategy::operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations, thpl::equi::Pool* pl) {
+	bool BasicStrategy::operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations 
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pl
+        #endif
+        ) {
 
 		bool flag = true;
 		for (auto it = cluster.begin(); it != cluster.end(); ++it) {
-			if (!this->MessagePassing(pl, *it, sum_or_MAP)) {
-				if (!this->LoopyPropagation(pl, *it, sum_or_MAP, max_iterations)) flag = false;
+			if (!this->MessagePassing(*it, sum_or_MAP 
+			#ifdef THREAD_POOL_ENABLED
+        	,pl
+        	#endif
+			)) {
+				if (!this->LoopyPropagation(*it, sum_or_MAP, max_iterations 
+				#ifdef THREAD_POOL_ENABLED
+				,pl
+				#endif
+				)) flag = false;
 			}
 		}
 		return flag;
-
 	};
 
 
 
-	bool BasicStrategy::MessagePassing(thpl::equi::Pool* pool, std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP) {
-
+	bool BasicStrategy::MessagePassing(std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP 
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pool
+        #endif
+        ) {
 		list<Node::NeighbourConnection*> open_set;
 		auto it = cluster.begin();
 		auto it_end = cluster.end();
@@ -41,7 +55,9 @@ namespace EFG::node::bp {
 
 		bool advance_done;
 		list<Node::NeighbourConnection*>::iterator it_o;
+        #ifdef THREAD_POOL_ENABLED
 		if (pool == nullptr) {
+		#endif
 			while (!open_set.empty()) {
 				advance_done = false;
 				it_o = open_set.begin();
@@ -55,6 +71,7 @@ namespace EFG::node::bp {
 				}
 				if (!advance_done) return false;
 			}
+        #ifdef THREAD_POOL_ENABLED
 		}
 		else {
 			while (!open_set.empty()) {
@@ -73,14 +90,17 @@ namespace EFG::node::bp {
 				if (!advance_done) return false;
 			}
 		}
+		#endif
 		return true;
-
 	}
 
 
 
-	bool BasicStrategy::LoopyPropagation(thpl::equi::Pool* pool, std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations) {
-
+	bool BasicStrategy::LoopyPropagation(std::unordered_set<EFG::node::Node*>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pool
+        #endif
+        ) {
 		//init message not computed
 		list<Node::NeighbourConnection*>  mex_to_calibrate;
 		auto it_end = cluster.end();
@@ -93,7 +113,9 @@ namespace EFG::node::bp {
 			}
 		}
 
+        #ifdef THREAD_POOL_ENABLED
 		if (pool == nullptr) {
+		#endif
 			float max_variation, temp;
 			for (unsigned int k = 0; k < max_iterations; ++k) {
 				max_variation = 0.f; //it's a positive quantity
@@ -103,6 +125,7 @@ namespace EFG::node::bp {
 				});
 				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached
 			}
+        #ifdef THREAD_POOL_ENABLED
 		}
 		else {
 			float max_variation;
@@ -149,8 +172,8 @@ namespace EFG::node::bp {
 				if (max_variation < 1e-3) return true; //very little modifications were done -> convergence reached
 			}
 		}
+		#endif
 		return false;
-
 	}
 
 }

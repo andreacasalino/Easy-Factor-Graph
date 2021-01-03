@@ -13,7 +13,9 @@
 #include <util/univocal_map.h>
 #include <unordered_set>
 #include <potential/ExpFactor.h>
+#ifdef THREAD_POOL_ENABLED
 #include <EquiPool.h>
+#endif
 
 namespace EFG::node {
 	namespace bp {
@@ -101,8 +103,12 @@ namespace EFG::node {
 
 		pot::Factor 					GetJointMarginalDistribution(const std::vector<std::string>& subgroup); //the returned shape has the variable in the same order as the ones passed
 
-		// use only for big graphs
-		void							SetThreadPoolSize(const std::size_t& poolSize); //when passing <= 1 the actual pool is destroyed. When building the object, a defualt 0 size value is assumed
+		/** \brief Enable the thread pool. Use for big graphs.
+		 * IMPORTANT!!! If the compile flag THREAD_POOL_ENABLED was not defined, calling this function will have no effect.
+		 * When passing <= 1 the actual pool is destroyed. When building the object, a defualt 0 size value is assumed
+		 * @return true in case the pool was successfully set.
+		 */
+		bool							SetThreadPoolSize(const std::size_t& poolSize);
 	protected:
 		NodeFactory(const bool& use_cloning_Insert);
 
@@ -195,9 +201,11 @@ namespace EFG::node {
 		std::list<pot::Factor*>															__SimpleShapes;
 		std::list<pot::ExpFactor*>														__ExpShapes;
 
+	#ifdef THREAD_POOL_ENABLED
 	protected:
 	//this thread pool can be exploited to speed up different kinds of computations
 		std::unique_ptr<thpl::equi::Pool>												ThPool;
+	#endif
 	};
 
 }

@@ -157,11 +157,14 @@ namespace EFG::model {
 			this->_BeliefPropagation(true);
 
 			k = 0;
+			#ifdef THREAD_POOL_ENABLED
 			if (this->ThPool == nullptr) {
+			#endif
 				std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff, &k](LearningHandler* h) {
 					betas[k] += coeff * h->GetBetaPart();
 					++k;
 				});
+			#ifdef THREAD_POOL_ENABLED
 			}
 			else {
 				std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff, &k, this](LearningHandler* h) {
@@ -171,6 +174,7 @@ namespace EFG::model {
 				});
 				this->ThPool->wait();
 			}
+			#endif
 		});
 
 		return betas;

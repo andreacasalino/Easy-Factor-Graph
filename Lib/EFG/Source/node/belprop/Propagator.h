@@ -17,7 +17,12 @@ namespace EFG::node::bp {
     public:
         virtual ~BeliefPropagator() = default;
 
-        virtual bool operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations, thpl::equi::Pool* pl) = 0; //returns true in case the propagation has completely terminated, i.e. all messagges have been computed
+        //returns true in case the propagation has completely terminated, i.e. all messagges have been computed
+        virtual bool operator()(std::list<std::unordered_set<EFG::node::Node*>>& cluster, const bool& sum_or_MAP, const unsigned int& max_iterations 
+        #ifdef THREAD_POOL_ENABLED
+        ,thpl::equi::Pool* pl
+        #endif
+        ) = 0;
 
         virtual std::unique_ptr<BeliefPropagator>	copy() const = 0;
     };
