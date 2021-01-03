@@ -5,7 +5,7 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <node/belprop/BasicPropagator.h>
+#include "BasicPropagator.h"
 #include <cmath>
 #include <float.h>
 #include "../NeighbourConnection.h"

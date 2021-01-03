@@ -10,7 +10,6 @@
 #define __EFG_MODEL_RANDOM_FIELD_H__
 
 #include <model/Learnable.h>
-#include <node/belprop/BasicPropagator.h>
 
 namespace EFG::model {
 
@@ -24,20 +23,20 @@ namespace EFG::model {
 		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
 		* a novel graph is faster.
 		*/
-		RandomField(const bool& use_cloning_Insert = true, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy()) : GraphLearnable(use_cloning_Insert, propagator) {};
+		RandomField(const bool& use_cloning_Insert = true) : GraphLearnable(use_cloning_Insert) {};
 
 		/** \brief The model is built considering the information contained in an xml configuration file. @latexonly\label{RF_XML}@endlatexonly
 		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
 		* @param[in] configuration the file to import (can be simply a file name, a relative path or an absolute path)
 		*/
-		RandomField(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy());
+		RandomField(const std::string& config_xml_file);
 
 		/** \brief Copy constructor.
 		\details All the potentials of the graph to copy are absorbed, by copying it.
 		Also all the additional future potentials inserted will be copied.
 		* @param[in] o the Random_Field to copy
 		*/
-		RandomField(const NodeFactory& o) : GraphLearnable(true, *_GetPropagator(o)) { this->_Insert(o.GetStructure(), false); };
+		RandomField(const NodeFactory& o) : GraphLearnable(true) { this->_Copy(o); };
 
 		/*!
 		 * \brief Similar to Graph::Insert(Potential_Shape* pot)

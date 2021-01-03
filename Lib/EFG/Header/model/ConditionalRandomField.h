@@ -10,7 +10,6 @@
 #define __EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H__
 
 #include <model/Learnable.h>
-#include <node/belprop/BasicPropagator.h>
 
 namespace EFG::model {
 
@@ -24,7 +23,7 @@ namespace EFG::model {
 		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
 		* @param[in] configuration the file to import (can be simply a file name, a relative path or an absolute path)
 		*/
-		ConditionalRandomField(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy());
+		ConditionalRandomField(const std::string& config_xml_file);
 
 		/** \brief Copy constructor.
 		\details The same evidence set is assumed, considering as initial observations a set of null values.
@@ -46,7 +45,7 @@ namespace EFG::model {
 		* a novel graph is faster.
 		* @param[in] observed_var the name of the variables to assume as evidences. It cannot be empty
 		*/
-		ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert = true, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy());
+		ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert = true);
 
 		~ConditionalRandomField() { delete[] this->posObservationsTrainingSet; };
 

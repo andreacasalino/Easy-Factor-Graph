@@ -6,14 +6,10 @@
 **/
 
 #pragma once
-#ifndef __EFG_BELIEF_PROP_H__
-#define __EFG_BELIEF_PROP_H__
+#ifndef __EFG_PROPAGATOR_H__
+#define __EFG_PROPAGATOR_H__
 
-#include <list>
-#include <util/univocal_map.h>
-#include <node/Node.h>
-#include <unordered_set>
-#include <EquiPool.h>
+#include <node/NodeFactory.h>
 
 namespace EFG::node::bp {
 

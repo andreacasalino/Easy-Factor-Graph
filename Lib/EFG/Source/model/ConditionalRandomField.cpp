@@ -5,12 +5,13 @@
 #include <algorithm>
 #include <set>
 #include "handler/BinaryHandlerWithObservation.h"
+#include "../node/belprop/Propagator.h"
 using namespace std;
 
 namespace EFG::model {
 
-	ConditionalRandomField::ConditionalRandomField(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator) :
-		GraphLearnable(true, propagator) {
+	ConditionalRandomField::ConditionalRandomField(const std::string& config_xml_file) :
+		GraphLearnable(true) {
 		EFG::node::importInfo readerInfo = EFG::node::createXmlReader(config_xml_file);
 		if(nullptr != readerInfo.reader) {
 			XmlStructureImporter strct(*readerInfo.reader, readerInfo.prefix);
@@ -28,14 +29,13 @@ namespace EFG::model {
 		}
 	};
 
-	ConditionalRandomField::ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert, const node::bp::BeliefPropagator& propagator) :
-		GraphLearnable(use_cloning_Insert, propagator) {
-
+	ConditionalRandomField::ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert) :
+		GraphLearnable(use_cloning_Insert) {
 		this->_Import(strct, false, observed_var); //not sure that is always false that must be passed
-
 	}
 
-	ConditionalRandomField::ConditionalRandomField(const NodeFactory& o) : GraphLearnable(true, *_GetPropagator(o)) {
+	ConditionalRandomField::ConditionalRandomField(const NodeFactory& o) : GraphLearnable(true) {
+		this->_SetPropagator(_GetPropagator(o).copy());
 
 		auto obsv = o.GetObservationSet();
 		vector<std::string> ev;
@@ -49,7 +49,6 @@ namespace EFG::model {
 
 		this->_Import(o.GetStructure(), false, ev);
 		this->SetEvidences(ev_val);
-
 	};
 
 	struct RedundantRemover {

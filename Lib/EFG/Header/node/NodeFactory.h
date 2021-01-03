@@ -13,10 +13,12 @@
 #include <util/univocal_map.h>
 #include <unordered_set>
 #include <potential/ExpFactor.h>
-#include <node/belprop/BeliefPropagator.h>
 #include <EquiPool.h>
 
 namespace EFG::node {
+	namespace bp {
+		class BeliefPropagator;
+	}
 
 	class Node::NodeFactory : public EFG::pot::ExpFactor::Mover {
 	public:
@@ -102,8 +104,7 @@ namespace EFG::node {
 		// use only for big graphs
 		void							SetThreadPoolSize(const std::size_t& poolSize); //when passing <= 1 the actual pool is destroyed. When building the object, a defualt 0 size value is assumed
 	protected:
-
-		NodeFactory(const bool& use_cloning_Insert, const bp::BeliefPropagator& propagator);
+		NodeFactory(const bool& use_cloning_Insert);
 
 		class XmlStructureImporter;
 
@@ -119,6 +120,8 @@ namespace EFG::node {
 
 		virtual void 					_Insert(const Structure& strct, const bool& useMove); //when useMove passed as true, every element in strct is transferred into this graph using move, empty the original factors
 
+		void							_Copy(const NodeFactory& o); // copy structure and clone propagator
+
 		/** \brief Set the evidences: identify the variables in the hidden set and the values assumed
 		\details When passing both input as empty list, all the evidences are deleted.
 			*
@@ -132,7 +135,8 @@ namespace EFG::node {
 		*/
 		void					  		_SetEvidences(const std::vector<size_t>& new_observations);
 
-		inline static bp::BeliefPropagator* _GetPropagator(const NodeFactory& factory) { return factory.Propagator.get(); };
+		static const bp::BeliefPropagator& _GetPropagator(const NodeFactory& model);
+		void 							   _SetPropagator(std::unique_ptr<bp::BeliefPropagator> prop);
 
 		void					  		_BeliefPropagation(const bool& sum_or_MAP); //in the protected version, the propagation is forced to be always re-done
 	private:

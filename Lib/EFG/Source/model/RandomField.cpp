@@ -7,8 +7,8 @@ using namespace std;
 
 namespace EFG::model {
 
-	RandomField::RandomField(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator) :
-		GraphLearnable(true, propagator) {
+	RandomField::RandomField(const std::string& config_xml_file) :
+		GraphLearnable(true) {
 		EFG::node::importInfo readerInfo = EFG::node::createXmlReader(config_xml_file);
 		if(nullptr != readerInfo.reader) {
 			XmlStructureImporter strct(*readerInfo.reader, readerInfo.prefix);

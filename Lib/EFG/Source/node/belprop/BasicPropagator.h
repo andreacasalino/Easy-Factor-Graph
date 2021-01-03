@@ -9,7 +9,7 @@
 #ifndef __EFG_BASIC_PROP_H__
 #define __EFG_BASIC_PROP_H__
 
-#include <node/belprop/BeliefPropagator.h>
+#include "Propagator.h"
 
 namespace EFG::node::bp {
 

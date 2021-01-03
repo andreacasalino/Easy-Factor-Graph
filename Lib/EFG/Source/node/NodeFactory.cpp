@@ -1,5 +1,5 @@
 #include <node/NodeFactory.h>
-#include <node/belprop/BeliefPropagator.h>
+#include "belprop/BasicPropagator.h"
 #include "NeighbourConnection.h"
 #include <algorithm>
 #include <iostream>
@@ -78,14 +78,15 @@ namespace EFG::node {
 	Node::NodeFactory::ObsvContainer::ObsvContainer() :
 		univocal_map<Node*, std::pair<Node*, size_t>, std::function<Node * (std::pair<Node*, size_t>&)> >([](std::pair<Node*, size_t>& val) { return val.first; }) {}
 
-	Node::NodeFactory::NodeFactory(const bool& use_cloning_Insert, const bp::BeliefPropagator& propagator) :
-		bDestroyPotentials_and_Variables(use_cloning_Insert), PropagationMaxIter(1000), Propagator(move(propagator.copy())),
+	Node::NodeFactory::NodeFactory(const bool& use_cloning_Insert) :
+		bDestroyPotentials_and_Variables(use_cloning_Insert), PropagationMaxIter(1000),
 		Observations(),
 		Nodes([](Node& n) { return &n.GetVar()->GetName(); }, NameHasher(), NamePred(use_cloning_Insert)),
 		BinaryPotentials([](const pot::IPotential* p) {
 							const vector<CategoricVariable*>& vars = p->GetDistribution().GetVariables();
 							return make_pair(&vars[0]->GetName(), &vars[1]->GetName()); }, BiNameHasher(), BiNamePred(use_cloning_Insert)) {
 		this->_SetEvidences(std::vector<std::pair<std::string, size_t>>{});
+		this->Propagator = std::make_unique<bp::BasicStrategy>();
 	};
 
 	CategoricVariable* Node::NodeFactory::FindVariable(const std::string& var_name) const {
@@ -600,6 +601,24 @@ namespace EFG::node {
 			this->ThPool.reset();
 		}
 		this->ThPool = make_unique<thpl::equi::Pool>(poolSize);
+	}
+
+	const bp::BeliefPropagator& Node::NodeFactory::_GetPropagator(const NodeFactory& model) {
+		return *model.Propagator.get();
+	};
+
+	void Node::NodeFactory::_SetPropagator(std::unique_ptr<bp::BeliefPropagator> prop) {
+		if(nullptr != prop) {
+			this->Propagator = std::move(prop);
+		}
+	};
+
+	void Node::NodeFactory::_Copy(const NodeFactory& o) {
+		if(!this->bDestroyPotentials_and_Variables) {
+			throw std::runtime_error("can't call copy on a model not using cloning insertion");
+		}
+		this->_Insert(o.GetStructure(), false);
+		this->Propagator = _GetPropagator(o).copy();
 	}
 }
 

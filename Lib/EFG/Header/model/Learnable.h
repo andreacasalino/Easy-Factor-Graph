@@ -10,7 +10,6 @@
 #define __EFG_MODEL_LEARNABLE_H__
 
 #include <node/NodeFactory.h>
-#include <node/belprop/BasicPropagator.h>
 #include <distribution/Combinations.h>
 
 namespace EFG::model {
@@ -61,7 +60,7 @@ namespace EFG::model {
 
 		Structure GetStructure() const override;
 	protected:
-		GraphLearnable(const bool& use_cloning_Insert, const node::bp::BeliefPropagator& propagator) : NodeFactory(use_cloning_Insert, propagator), LastTrainingSetUsed(nullptr), UseRegularization(false) {};
+		GraphLearnable(const bool& use_cloning_Insert) : NodeFactory(use_cloning_Insert), LastTrainingSetUsed(nullptr), UseRegularization(false) {};
 
 		class LearningHandler;
 

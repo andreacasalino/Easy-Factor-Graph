@@ -10,7 +10,6 @@
 #define __EFG_MODEL_GRAPH_H__
 
 #include <node/NodeFactory.h>
-#include <node/belprop/BasicPropagator.h>
 
 namespace EFG::model {
 
@@ -29,19 +28,19 @@ namespace EFG::model {
 		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
 		* a novel graph is faster.
 		*/
-		Graph(const bool& use_cloning_Insert = true, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy()) : node::Node::NodeFactory(use_cloning_Insert, propagator) {};
+		Graph(const bool& use_cloning_Insert = true) : node::Node::NodeFactory(use_cloning_Insert) {};
 		/** \brief The model is built considering the information contained in an xml configuration file. @latexonly\label{Graph_XML}@endlatexonly
 		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
 		* @param[in] configuration the file to import (can be simply a file name, a relative path or an absolute path)
 		*/
-		Graph(const std::string& config_xml_file, const node::bp::BeliefPropagator& propagator = node::bp::BasicStrategy());
+		Graph(const std::string& config_xml_file);
 
 		/** \brief Copy constructor.
 		\details All the potentials of the graph to copy are absorbed, by copying it.
 		Also all the additional future potentials inserted will be copied.
 		* @param[in] o the Graph to copy
 		*/
-		Graph(const node::Node::NodeFactory& o) : node::Node::NodeFactory(true, *_GetPropagator(o)) { this->_Insert(o.GetStructure(), false); };
+		Graph(const node::Node::NodeFactory& o) : node::Node::NodeFactory(true) { this->_Copy(o); };
 
 		/** \brief The model is built considering the information contained in an xml configuration file
 		* @param[in] pot the potential to insert. It can be a unary or a binary potential. In case it is binary, at least one
