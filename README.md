@@ -32,3 +32,5 @@ the compilation of such library might cause problems in some systems. Therefore,
 
 ![the kind of model handled by this library](https://github.com/andreacasalino/Easy-Factor-Graph/tree/master/img/img1.png)
 
+![What you should see when using Easy-Factor-Graph-GUI](https://github.com/andreacasalino/Easy-Factor-Graph-GUI/blob/master/Example.png)
+
