@@ -30,5 +30,5 @@ the compilation of such library might cause problems in some systems. Therefore,
    
 [Easy-Factor-Graph-GUI](https://github.com/andreacasalino/Easy-Factor-Graph-GUI) wraps this library as C++ backend to a nice graphical user interactive application:
 
-![Example of model handled by this library](https://github.com/andreacasalino/Easy-Factor-Graph/blob/master/img/img1.png)
+![What you should see when running the application](https://github.com/andreacasalino/Easy-Factor-Graph-GUI/blob/master/Example.png)
 
