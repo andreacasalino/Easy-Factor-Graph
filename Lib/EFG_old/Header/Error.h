@@ -5,8 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_ERROR_H
-#define EFG_ERROR_H
+#ifndef _EFG_ERROR_H_
+#define _EFG_ERROR_H_
 
 #include <stdexcept>
 #include <sstream>
