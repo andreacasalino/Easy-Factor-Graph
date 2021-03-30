@@ -6,8 +6,8 @@
  **/
 
 #include <categoric/Group.h>
-#include <Error.h>
 #include <algorithm>
+#include <Error.h>
 
 namespace EFG::categoric {
     inline bool operator<(const VariablePtr& a, const VariablePtr& b) {
@@ -15,8 +15,8 @@ namespace EFG::categoric {
     };
 
     Group::Group(VariablePtr varA, VariablePtr varB) {
-        this->group.emplace(varA);
-        this->group.emplace(varB);
+        this->add(varA);
+        this->add(varB);
     }
 
     void Group::add(VariablePtr var) {
@@ -24,6 +24,20 @@ namespace EFG::categoric {
             throw Error("Group", "A variable with the same name is already part of the group");
         }
         this->group.emplace(var);
+    }
+
+    void Group::replace(const Group& replacer) {
+        if(replacer.group.size() != this->group.size()) {
+            throw Error("replacing variables should be in number the same");
+        }
+        auto itThis = this->group.begin();
+        std::for_each(replacer.group.begin(), replacer.group.end(), [&itThis](const VariablePtr& v){
+            if((*itThis)->size() != v->size()) {
+                throw Error("replacing variables should have the same sizes");
+            }
+            ++itThis;
+        });
+        this->group = replacer.group;
     }
 
     std::size_t Group::size() const {

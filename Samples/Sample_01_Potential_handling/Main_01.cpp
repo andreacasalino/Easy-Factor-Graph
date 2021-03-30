@@ -18,12 +18,23 @@ int main () {
 								  						 EFG::categoric::makeVariable(2 , "D")
 														}));
 
+	auto rangeAB2 = rangeAB;
+
 	EFG::iterator::forEach(rangeAB, [](EFG::categoric::Range& r){
 		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
 			std::cout << " " << *it;
 		}
 		std::cout << std::endl;
 	});
+	std::cout << std::endl;
+	
+	EFG::iterator::forEach(rangeAB2, [](EFG::categoric::Range& r){
+		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
+			std::cout << " " << *it;
+		}
+		std::cout << std::endl;
+	});
+	std::cout << std::endl;
 
 	return EXIT_SUCCESS;
 }

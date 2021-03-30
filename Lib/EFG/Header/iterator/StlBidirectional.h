@@ -20,6 +20,9 @@ namespace EFG::iterator {
             , end(end) {
         };
 
+        StlBidirectional(const StlBidirectional& ) = default;
+        StlBidirectional& operator=(const StlBidirectional& ) = default;
+
         void operator++() final {
             return ++this->cursor;
         };
