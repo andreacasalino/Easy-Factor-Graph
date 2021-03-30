@@ -5,22 +5,22 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_SUBJECT_H
-#define EFG_SUBJECT_H
+#ifndef EFG_OBSERVER_SUBJECT_H
+#define EFG_OBSERVER_SUBJECT_H
 
-#include <observers/ObserverCounter.h>
+#include <observers/Counter.h>
 
-namespace EFG {
+namespace EFG::observer {
     class Subject {
     friend class Observer;
     public:
         virtual ~Subject();
         
     protected:
-        Subject(ObserverCounterPtr counter);
+        Subject(CounterPtr counter);
 
     private:
-        ObserverCounterPtr counter;
+        CounterPtr counter;
     };
 }
 

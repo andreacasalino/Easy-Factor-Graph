@@ -8,8 +8,8 @@
 #include <observers/Subject.h>
 #include <Error.h>
 
-namespace EFG {
-    Subject::Subject(ObserverCounterPtr counter)
+namespace EFG::observer {
+    Subject::Subject(CounterPtr counter)
         : counter(counter) {
     }
 

@@ -5,15 +5,15 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_SUBJECT_MULTI_H
-#define EFG_SUBJECT_MULTI_H
+#ifndef EFG_OBSERVER_UNIQUE_OBSERVABLE_H
+#define EFG_OBSERVER_UNIQUE_OBSERVABLE_H
 
 #include <observers/Subject.h>
 
-namespace EFG {
-    class SubjectMulti : Subject {
+namespace EFG::observer {
+    class UniqueObservable : Subject {
     protected:
-        SubjectMulti();
+        UniqueObservable();
     };
 }
 

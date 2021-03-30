@@ -5,15 +5,15 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_SUBJECT_UNIQUE_COUNTER_H
-#define EFG_SUBJECT_UNIQUE_COUNTER_H
+#ifndef EFG_OBSERVER_UNIQUE_COUNTER_H
+#define EFG_OBSERVER_UNIQUE_COUNTER_H
 
-#include <observers/ObserverCounter.h>
+#include <observers/Counter.h>
 #include <Error.h>
 #include <atomic>
 
-namespace EFG {
-    class SubjectUniqueCounter : public ObserverCounter {
+namespace EFG::observer {
+    class UniqueCounter : public Counter {
     public:
         inline void addObserver() final { if(this->counter) throw Error("SubjectUniqueCounter", "subject already observed"); this->counter = true; };
         void rmObserver() final { this->counter = false; };

@@ -7,9 +7,10 @@
 
 #include <observers/Observer.h>
 
-namespace EFG {
+namespace EFG::observer {
     Observer::Observer(const Subject& subject) {
         this->counter = subject.counter;
+        this->counter->addObserver();
     };
 
     Observer::~Observer(){

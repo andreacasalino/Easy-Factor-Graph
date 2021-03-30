@@ -5,14 +5,14 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_SUBJECT_MULTI_COUNTER_H
-#define EFG_SUBJECT_MULTI_COUNTER_H
+#ifndef EFG_OBSERVER_MULTI_COUNTER_H
+#define EFG_OBSERVER_MULTI_COUNTER_H
 
-#include <observers/ObserverCounter.h>
+#include <observers/Counter.h>
 #include <atomic>
 
-namespace EFG {
-    class SubjectMultiCounter : public ObserverCounter {
+namespace EFG::observer {
+    class MultiCounter : public Counter {
     public:
         inline void addObserver() final { ++this->counter; };
         void rmObserver() final { --this->counter; };

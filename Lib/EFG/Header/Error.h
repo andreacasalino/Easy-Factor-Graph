@@ -16,6 +16,8 @@ namespace EFG {
 	 */
     class Error : public std::runtime_error {
     public:
+        Error(const std::string& what);
+
         explicit Error(const std::string& objectName, const std::string& what);
 
         template<typename ... Args>
