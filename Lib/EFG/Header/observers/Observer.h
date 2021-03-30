@@ -16,6 +16,9 @@ namespace EFG::observer {
         Observer(const Subject& subject);
         ~Observer();
 
+        Observer(const Observer&) = delete;
+        Observer& operator=(const Observer&) = delete;
+
     private:
         CounterPtr counter;
     };

@@ -15,6 +15,9 @@ namespace EFG::observer {
     friend class Observer;
     public:
         virtual ~Subject();
+
+        Subject(const Subject&) = delete;
+        Subject& operator=(const Subject&) = delete;
         
     protected:
         Subject(CounterPtr counter);
