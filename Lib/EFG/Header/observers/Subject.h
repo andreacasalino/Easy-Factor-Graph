@@ -18,6 +18,8 @@ namespace EFG::observer {
 
         Subject(const Subject&) = delete;
         Subject& operator=(const Subject&) = delete;
+
+        inline bool isObserved() const { return this->counter->isObserved(); };
         
     protected:
         Subject(CounterPtr counter);

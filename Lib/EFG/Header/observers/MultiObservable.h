@@ -11,7 +11,7 @@
 #include <observers/Subject.h>
 
 namespace EFG::observer {
-    class MultiObservable : Subject {
+    class MultiObservable : public Subject {
     protected:
         MultiObservable();
     };

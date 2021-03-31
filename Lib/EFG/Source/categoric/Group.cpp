@@ -10,10 +10,6 @@
 #include <Error.h>
 
 namespace EFG::categoric {
-    inline bool operator<(const VariablePtr& a, const VariablePtr& b) {
-        return (a->name() < b->name());
-    };
-
     Group::Group(VariablePtr varA, VariablePtr varB) {
         this->add(varA);
         this->add(varB);

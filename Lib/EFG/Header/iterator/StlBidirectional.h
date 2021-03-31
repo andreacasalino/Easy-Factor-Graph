@@ -13,7 +13,7 @@
 namespace EFG::iterator {
     template<typename IteratorStl>
     // check inherits from std::Iterator
-    class StlBidirectional : public Forward {
+    class StlBidirectional : public Bidirectional {
     public:
         StlBidirectional(const IteratorStl& begin, const IteratorStl& end) 
             : cursor(begin)
@@ -24,18 +24,18 @@ namespace EFG::iterator {
         StlBidirectional& operator=(const StlBidirectional& ) = default;
 
         void operator++() final {
-            return ++this->cursor;
+            ++this->cursor;
         };
 
         void operator--() final {
-            return --this->cursor;
+            --this->cursor;
         };
 
         bool operator==(std::nullptr_t) const final {
             return (this->cursor == this->end);
         };
 
-    private:
+    protected:
         IteratorStl cursor;
         const IteratorStl end;
     };

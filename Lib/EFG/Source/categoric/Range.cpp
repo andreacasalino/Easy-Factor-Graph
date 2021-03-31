@@ -10,8 +10,8 @@
 
 namespace EFG::categoric {
     Range::Range(const Group& group) {
-        this->sizes.reserve(group.getGroup().size());
-        for(auto it = group.getGroup().begin(); it!=group.getGroup().end(); ++it) {
+        this->sizes.reserve(group.getVariables().size());
+        for(auto it = group.getVariables().begin(); it!=group.getVariables().end(); ++it) {
             this->sizes.push_back((*it)->size());
         }
         this->combination = std::vector<std::size_t>(this->sizes.size() , 0);

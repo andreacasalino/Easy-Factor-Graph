@@ -12,10 +12,9 @@
 
 int main () {
 
-	EFG::categoric::Range rangeAB(EFG::categoric::Group({EFG::categoric::makeVariable(3 , "A"), 
+	EFG::categoric::Range rangeAB(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
 								  						 EFG::categoric::makeVariable(2 , "B"), 
-								  						 EFG::categoric::makeVariable(4 , "C"),
-								  						 EFG::categoric::makeVariable(2 , "D")
+								  						 EFG::categoric::makeVariable(2 , "C")
 														}));
 
 	auto rangeAB2 = rangeAB;

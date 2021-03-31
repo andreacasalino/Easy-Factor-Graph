@@ -11,7 +11,7 @@
 #include <observers/Subject.h>
 
 namespace EFG::observer {
-    class UniqueObservable : Subject {
+    class UniqueObservable : public Subject {
     protected:
         UniqueObservable();
     };

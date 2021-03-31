@@ -12,6 +12,10 @@
 #include <set>
 
 namespace EFG::categoric {
+    inline bool operator<(const VariablePtr& a, const VariablePtr& b) {
+        return (a->name() < b->name());
+    };
+
     class Group {
     public:
         Group(VariablePtr varA, VariablePtr varB);
@@ -41,7 +45,7 @@ namespace EFG::categoric {
         */
         std::size_t size() const;
 
-        inline const std::set<VariablePtr>& getGroup() const { return this->group; }
+        inline const std::set<VariablePtr>& getVariables() const { return this->group; }
         
     protected:
         template<typename ... Vars>
