@@ -25,6 +25,16 @@ namespace EFG::distribution {
         Distribution(const Distribution& o);
         Distribution& operator=(const Distribution&) = delete;
 
+        // basic evaluator is assumed (even for exponential distribution)
+        Distribution(const std::vector<const Distribution*>& distributions);
+
+        // basic evaluator is assumed (even for exponential distribution)
+        template<typename ... Distributions>
+        Distribution(const Distribution& first, const Distribution& second, Distributions ... distr);
+
+        // basic evaluator is assumed (even for exponential distribution)
+        Distribution marginalize(const categoric::Group& group) const;
+
         void clear();
 
         void add(const Combination& comb, const float& value);
@@ -37,10 +47,8 @@ namespace EFG::distribution {
         float find(const Combination& comb) const;
 
         // group size should be bigger and contain this->variables
+        // returns <nullptr, 0> in case such a combination does not exist
         std::pair<const Combination*, float> find(const Combination& comb, const categoric::Group& group) const;
-
-        // basic evaluator is assumed (even for exponential distribution)
-        Distribution collapse(const categoric::Group& group) const;
 
     protected:
         Distribution(image::EvaluatorPtr evaluator, const categoric::Group& variables);

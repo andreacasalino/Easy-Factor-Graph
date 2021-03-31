@@ -53,7 +53,7 @@ namespace EFG::distribution {
         std::size_t k;
         std::for_each(this->variables.getVariables().begin(), this->variables.getVariables().end(), [&k, &comb](const categoric::VariablePtr& v){
             if(comb.data()[k] >= v->size()) {
-                throw Error("invalid value");
+                throw Error("combination value exceed variable domain size");
             }
             ++k;
         });
@@ -110,7 +110,7 @@ namespace EFG::distribution {
         }
 
         std::set<std::size_t> indices;
-        for(std::size_t k=0; k<group.getVariables().size(); ++k) {
+        for(std::size_t k=0; k<this->variables.getVariables().size(); ++k) {
             indices.emplace(k);
         }
         std::for_each(group.getVariables().begin(), group.getVariables().end(), [this , &indices](const categoric::VariablePtr& v){
