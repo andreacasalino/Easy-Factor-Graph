@@ -10,30 +10,64 @@
 #include <categoric/Range.h>
 #include <iostream>
 
+// // group
+// int main () {
+
+// 	EFG::categoric::Range rangeAB(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
+// 								  						 EFG::categoric::makeVariable(2 , "B"), 
+// 								  						 EFG::categoric::makeVariable(2 , "C")
+// 														}));
+
+// 	auto rangeAB2 = rangeAB;
+
+// 	EFG::iterator::forEach(rangeAB, [](EFG::categoric::Range& r){
+// 		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
+// 			std::cout << " " << *it;
+// 		}
+// 		std::cout << std::endl;
+// 	});
+// 	std::cout << std::endl;
+	
+// 	EFG::iterator::forEach(rangeAB2, [](EFG::categoric::Range& r){
+// 		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
+// 			std::cout << " " << *it;
+// 		}
+// 		std::cout << std::endl;
+// 	});
+// 	std::cout << std::endl;
+
+// 	return EXIT_SUCCESS;
+// }
+
+// distribution
+#include <distribution/Distribution.h>
+#include <distribution/DistributionIterator.h>
+void print(EFG::distribution::Distribution& distr) {
+	EFG::distribution::DistributionIterator iter = distr.getIterator();
+	EFG::iterator::forEach(iter, [](EFG::distribution::DistributionIterator& i) {
+		for(std::size_t k=0; k<i.getCombination().size(); ++k) {
+			std::cout << " " << i.getCombination().data()[k];
+		}
+		std::cout << " -> " << i.getImage() << std::endl;
+	});
+	std::cout << std::endl << std::endl;
+}
 int main () {
 
-	EFG::categoric::Range rangeAB(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
-								  						 EFG::categoric::makeVariable(2 , "B"), 
-								  						 EFG::categoric::makeVariable(2 , "C")
-														}));
+	EFG::categoric::Group group({EFG::categoric::makeVariable(2 , "A"), 
+								 EFG::categoric::makeVariable(3 , "B"), 
+								 EFG::categoric::makeVariable(2 , "C"), 
+								 EFG::categoric::makeVariable(3 , "D")});
 
-	auto rangeAB2 = rangeAB;
+	EFG::distribution::Distribution distrABC(group);
 
-	EFG::iterator::forEach(rangeAB, [](EFG::categoric::Range& r){
-		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
-			std::cout << " " << *it;
-		}
-		std::cout << std::endl;
-	});
-	std::cout << std::endl;
-	
-	EFG::iterator::forEach(rangeAB2, [](EFG::categoric::Range& r){
-		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
-			std::cout << " " << *it;
-		}
-		std::cout << std::endl;
-	});
-	std::cout << std::endl;
+	distrABC.emplaceEntireDomain(1.f);
+	print(distrABC);
+
+	auto distrAB = distrABC.marginalize(EFG::distribution::Combination({1,1}) , EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
+								 							   				    					   EFG::categoric::makeVariable(2 , "C")}));
+
+	print(distrAB);
 
 	return EXIT_SUCCESS;
 }

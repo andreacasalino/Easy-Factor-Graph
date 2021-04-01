@@ -15,7 +15,9 @@
 namespace EFG::distribution {
     bool operator<(const Combination& a, const Combination& b) {
         for(std::size_t k=0; k<a.size(); ++k) {
-            if(a.data()[k] < b.data()[k]) return true;
+            if(a.data()[k] != b.data()[k]) {
+                return (a.data()[k] < b.data()[k]); 
+            }
         }
         return false;
     };
@@ -70,7 +72,7 @@ namespace EFG::distribution {
         categoric::Range range(this->variables);
         this->clear();
         iterator::forEach(range, [this, &value](categoric::Range& r){
-            this->add(r.getCombination(), value);
+            this->add(Combination(r.getCombination()), value);
         });
     }
 
@@ -88,14 +90,14 @@ namespace EFG::distribution {
         indices.reserve(this->variables.getVariables().size());
         std::for_each(this->variables.getVariables().begin(), this->variables.getVariables().end(), [&indices, &group](const categoric::VariablePtr& v) {
             auto it = group.getVariables().find(v);
-            if(it != group.getVariables().end()) {
+            if(it == group.getVariables().end()) {
                 throw Error("invalid group");
             }
             indices.push_back(std::distance(group.getVariables().begin(), it));
         });
 
         std::vector<std::size_t> combOrdered;
-        combOrdered.reserve(indices.size());
+        combOrdered.resize(indices.size());
         for(std::size_t k=0; k<indices.size(); ++k) {
             combOrdered[k] = comb.data()[indices[k]];
         }
@@ -106,7 +108,7 @@ namespace EFG::distribution {
     };
 
     Distribution Distribution::marginalize(const Combination& comb, const categoric::Group& evidences) const {
-        if(evidences.size() >= this->variables.getVariables().size()) {
+        if(evidences.getVariables().size() >= this->variables.getVariables().size()) {
             throw Error("new group should be smaller than initial one");
         }
 

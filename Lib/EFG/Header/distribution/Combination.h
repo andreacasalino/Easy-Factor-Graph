@@ -15,16 +15,13 @@ namespace EFG::distribution {
     public:
         Combination(const std::vector<std::size_t>& values);
         Combination(const Combination& o);
-        ~Combination();
+        Combination& operator=(const Combination& o) = delete;
 
-        inline std::size_t size() const { return this->size_; };
-        inline const std::size_t* data() const { return this->data_; };
+        inline std::size_t size() const { return this->combination.size(); };
+        inline const std::size_t* data() const { return this->combination.data(); };
 
     private:        
-        Combination(const std::size_t* buffer, std::size_t size);
-
-        std::size_t        size_;
-        const std::size_t* data_;
+        std::vector<std::size_t> combination;
     };
 }
 

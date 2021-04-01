@@ -13,7 +13,7 @@
 namespace EFG::distribution {
     class ExponentialDistribution : public Distribution {
     public:
-        ExponentialDistribution(const categoric::Group& variables, const float& weight = 1.f);
+        ExponentialDistribution(const categoric::Group& variables, const float& weight);
 
         float getWeight() const;
         void setWeight(float w);
