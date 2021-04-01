@@ -15,4 +15,12 @@ namespace EFG::distribution {
     ExponentialDistribution::ExponentialDistribution(const categoric::Group& variables, const float& weight)
         : Distribution(std::make_shared<image::Exponential>(weight) , variables) {
     }
+
+    float ExponentialDistribution::getWeight() const {
+        return static_cast<const image::Exponential&>(*this->evaluator).getWeight();
+    };
+
+    void ExponentialDistribution::setWeight(float w) {
+        static_cast<image::Exponential&>(*this->evaluator).setWeight(w);
+    };
 }

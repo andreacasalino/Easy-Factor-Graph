@@ -14,7 +14,7 @@ namespace EFG::distribution::image {
     class Basic : public Evaluator {
     public:
         inline float evaluate(const float& toConvert) const override { return toConvert; };
-        std::shared_ptr<Evaluator> copy() override { return std::make_shared<Basic>(); };
+        std::shared_ptr<Evaluator> copy() const override { return std::make_shared<Basic>(); };
     };
 }
 

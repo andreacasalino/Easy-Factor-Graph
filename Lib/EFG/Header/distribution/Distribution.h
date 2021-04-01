@@ -30,10 +30,12 @@ namespace EFG::distribution {
 
         // basic evaluator is assumed (even for exponential distribution)
         template<typename ... Distributions>
-        Distribution(const Distribution& first, const Distribution& second, Distributions ... distr);
+        Distribution(const Distribution& first, const Distribution& second, Distributions ... distr) 
+            : Distribution(pack(first, second, distr...)) {
+        };
 
         // basic evaluator is assumed (even for exponential distribution)
-        Distribution marginalize(const categoric::Group& group) const;
+        Distribution marginalize(const Combination& comb, const categoric::Group& evidences) const;
 
         void clear();
 
@@ -50,8 +52,25 @@ namespace EFG::distribution {
         // returns <nullptr, 0> in case such a combination does not exist
         std::pair<const Combination*, float> find(const Combination& comb, const categoric::Group& group) const;
 
+        inline const categoric::Group& getGroup() const { return this->variables; };
+
     protected:
         Distribution(image::EvaluatorPtr evaluator, const categoric::Group& variables);
+
+        template<typename ... Distributions>
+        static std::vector<const Distribution*> pack(const Distribution& distr, Distributions ... remaining){
+            std::vector<const Distribution*> packed;
+            pack(packed, remaining...);
+            return packed;
+        };
+        template<typename ... Distributions>
+        static void pack(std::vector<const Distribution*>& packed, const Distribution& distr, Distributions ... remaining){
+            packed.push_back(&distr);
+            pack(remaining...);
+        };
+        static void pack(std::vector<const Distribution*>& packed, const Distribution& distr) {
+            packed.push_back(&distr);
+        };
         
         categoric::Group variables;
         image::EvaluatorPtr evaluator;

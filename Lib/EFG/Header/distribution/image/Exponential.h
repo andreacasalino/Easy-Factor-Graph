@@ -14,13 +14,13 @@
 namespace EFG::distribution::image {
     class Exponential : public Evaluator {
     public:
-        Exponential(const float& weight = 1.f);
+        Exponential(const float& weight);
 
         inline float getWeight() const { return this->weight; };
-        float setWeight(float w) { this->weight = w; };
+        void setWeight(float w) { this->weight = w; };
 
         inline float evaluate(const float& toConvert) const { return expf(toConvert); };
-        std::shared_ptr<Evaluator> copy() override { return std::make_shared<Exponential>(this->weight); };
+        std::shared_ptr<Evaluator> copy() const override { return std::make_shared<Exponential>(this->weight); };
 
     private:
         float weight;

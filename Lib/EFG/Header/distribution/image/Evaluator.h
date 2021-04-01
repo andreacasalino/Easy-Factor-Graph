@@ -15,7 +15,7 @@ namespace EFG::distribution::image {
     public:
         virtual float evaluate(const float& toConvert) const = 0;
 
-        virtual std::shared_ptr<Evaluator> copy() = 0;
+        virtual std::shared_ptr<Evaluator> copy() const = 0;
     };
 
     typedef std::shared_ptr<Evaluator> EvaluatorPtr;

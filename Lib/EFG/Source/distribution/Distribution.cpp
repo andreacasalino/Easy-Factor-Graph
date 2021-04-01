@@ -8,6 +8,7 @@
 #include <distribution/Distribution.h>
 #include <distribution/image/Basic.h>
 #include <categoric/Range.h>
+#include <list>
 #include <Error.h>
 #include <algorithm>
 
@@ -50,7 +51,7 @@ namespace EFG::distribution {
         if(comb.size() != this->variables.getVariables().size()) {
             throw Error("invalid combination size");
         }
-        std::size_t k;
+        std::size_t k = 0;
         std::for_each(this->variables.getVariables().begin(), this->variables.getVariables().end(), [&k, &comb](const categoric::VariablePtr& v){
             if(comb.data()[k] >= v->size()) {
                 throw Error("combination value exceed variable domain size");
@@ -104,35 +105,84 @@ namespace EFG::distribution {
         return std::make_pair(&it->first , it->second);
     };
 
-    Distribution Distribution::collapse(const categoric::Group& group) const {
-        if(group.size() >= this->variables.getVariables().size()) {
+    Distribution Distribution::marginalize(const Combination& comb, const categoric::Group& evidences) const {
+        if(evidences.size() >= this->variables.getVariables().size()) {
             throw Error("new group should be smaller than initial one");
         }
 
-        std::set<std::size_t> indices;
+        std::list<std::size_t> indexRemaining, indexEvidence;
         for(std::size_t k=0; k<this->variables.getVariables().size(); ++k) {
-            indices.emplace(k);
+            indexRemaining.push_back(k);
         }
-        std::for_each(group.getVariables().begin(), group.getVariables().end(), [this , &indices](const categoric::VariablePtr& v){
+        std::for_each(evidences.getVariables().begin(), evidences.getVariables().end(), [this , &indexRemaining, &indexEvidence](const categoric::VariablePtr& v){
             auto it = this->variables.getVariables().find(v);
             if(it == this->variables.getVariables().end()) {
                 throw Error("inexistent variable");
             }
-            indices.erase(indices.find(std::distance( this->variables.getVariables().begin(), it)));
+            std::size_t ind = std::distance( this->variables.getVariables().begin(), it);
+            indexEvidence.push_back(ind);
+            indexRemaining.remove(ind);
         });
 
-        Distribution collapsed(group);
-        std::vector<std::size_t> combRaw;
-        std::size_t c;
-        combRaw.resize(indices.size());
+        auto isMatching = [&indexEvidence, &comb](const Combination& combThis){
+            std::size_t k=0;
+            for (auto it = indexEvidence.begin(); it!=indexEvidence.end(); ++it) {
+                if(combThis.data()[*it] != comb.data()[k]) {
+                    return false;
+                }
+                ++k;
+            }
+            return true;
+        };
+
+        auto extractRemainingComb = [&indexRemaining](const Combination& combThis){
+            std::vector<std::size_t> combRaw;
+            combRaw.reserve(indexRemaining.size());
+            for (auto it = indexRemaining.begin(); it!=indexRemaining.end(); ++it) {
+                combRaw.push_back(combThis.data()[*it]);
+            }
+            return Combination(combRaw);
+        };
+
+        Distribution marginalized(evidences);
         for(auto it = this->values.begin(); it!=this->values.end(); ++it) {
-            c = 0;
-            std::for_each(indices.begin(), indices.end(), [&c, &combRaw, &it](const std::size_t& i){
-                combRaw[c] = it->first.data()[i];
-                ++c;
-            });
-            collapsed.add(combRaw, this->evaluator->evaluate(it->second));
+            if(isMatching(it->first)) {
+                marginalized.values.emplace(extractRemainingComb(it->first) , this->evaluator->evaluate(it->second));
+            }
         }
-        return collapsed;
+        return marginalized;
+    }
+
+    categoric::Group mergeGroups(const std::vector<const Distribution*>& distributions){
+        if(distributions.size() < 2) {
+            throw Error("Two distributions are at least required");
+        }
+        categoric::Group merged = distributions.front()->getGroup();
+        for (std::size_t k=1; k<distributions.size(); ++k) {
+            std::for_each(distributions[k]->getGroup().getVariables().begin(), distributions[k]->getGroup().getVariables().end(), [&merged](const categoric::VariablePtr& v) {
+                try {   
+                    merged.add(v);
+                }
+                catch(...) {
+                }
+            });
+        }
+        return merged;
+    };
+    Distribution::Distribution(const std::vector<const Distribution*>& distributions) 
+        : Distribution(mergeGroups(distributions)) {
+        categoric::Range range(this->variables);
+        iterator::forEach(range, [this, &distributions](categoric::Range& r){
+            float val = 1.f;
+            for(auto it = distributions.begin(); it!=distributions.end(); ++it) {
+                auto addendum = (*it)->find(r.getCombination(), this->variables);
+                if(0.f == addendum.second) {
+                    val = 0.f;
+                    break;
+                }
+                val *= addendum.second;
+            }
+            this->add(r.getCombination(), val);
+        }); 
     }
 }
