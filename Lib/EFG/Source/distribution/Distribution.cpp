@@ -68,11 +68,23 @@ namespace EFG::distribution {
         }        
     }
 
-    void Distribution::emplaceEntireDomain(const float& value) {
+    void Distribution::setImageEntireDomain(const float& value) {
         categoric::Range range(this->variables);
         this->clear();
         iterator::forEach(range, [this, &value](categoric::Range& r){
             this->add(Combination(r.getCombination()), value);
+        });
+    }
+
+    void Distribution::emplaceEntireDomain() {
+        categoric::Range range(this->variables);
+        this->clear();
+        iterator::forEach(range, [this](categoric::Range& r){
+            Combination comb(r.getCombination());
+            auto it = this->values.find(comb);
+            if(it == this->values.end()) {
+                this->values.emplace(comb, 0.f);
+            }
         });
     }
 
@@ -155,36 +167,4 @@ namespace EFG::distribution {
         return marginalized;
     }
 
-    categoric::Group mergeGroups(const std::vector<const Distribution*>& distributions){
-        if(distributions.size() < 2) {
-            throw Error("Two distributions are at least required");
-        }
-        categoric::Group merged = distributions.front()->getGroup();
-        for (std::size_t k=1; k<distributions.size(); ++k) {
-            std::for_each(distributions[k]->getGroup().getVariables().begin(), distributions[k]->getGroup().getVariables().end(), [&merged](const categoric::VariablePtr& v) {
-                try {   
-                    merged.add(v);
-                }
-                catch(...) {
-                }
-            });
-        }
-        return merged;
-    };
-    Distribution::Distribution(const std::vector<const Distribution*>& distributions) 
-        : Distribution(mergeGroups(distributions)) {
-        categoric::Range range(this->variables);
-        iterator::forEach(range, [this, &distributions](categoric::Range& r){
-            float val = 1.f;
-            for(auto it = distributions.begin(); it!=distributions.end(); ++it) {
-                auto addendum = (*it)->find(r.getCombination(), this->variables);
-                if(0.f == addendum.second) {
-                    val = 0.f;
-                    break;
-                }
-                val *= addendum.second;
-            }
-            this->add(r.getCombination(), val);
-        }); 
-    }
 }

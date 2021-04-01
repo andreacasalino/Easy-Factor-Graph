@@ -26,13 +26,11 @@ namespace EFG::distribution {
         Distribution& operator=(const Distribution&) = delete;
 
         // basic evaluator is assumed (even for exponential distribution)
-        Distribution(const std::vector<const Distribution*>& distributions);
+        template<typename ... Distributions>
+        Distribution(const Distribution& first, const Distribution& second, Distributions ... distr);
 
         // basic evaluator is assumed (even for exponential distribution)
-        template<typename ... Distributions>
-        Distribution(const Distribution& first, const Distribution& second, Distributions ... distr) 
-            : Distribution(pack(first, second, distr...)) {
-        };
+        Distribution(const std::vector<const Distribution*>& distr);
 
         // basic evaluator is assumed (even for exponential distribution)
         Distribution marginalize(const Combination& comb, const categoric::Group& evidences) const;
@@ -41,7 +39,10 @@ namespace EFG::distribution {
 
         void add(const Combination& comb, const float& value);
 
-        void emplaceEntireDomain(const float& value);
+        // put 0 for all not added combinations
+        void emplaceEntireDomain();
+
+        void setImageEntireDomain(const float& value);
 
         DistributionIterator getIterator() const;
 
@@ -56,21 +57,6 @@ namespace EFG::distribution {
 
     protected:
         Distribution(image::EvaluatorPtr evaluator, const categoric::Group& variables);
-
-        template<typename ... Distributions>
-        static std::vector<const Distribution*> pack(const Distribution& distr, Distributions ... remaining){
-            std::vector<const Distribution*> packed;
-            pack(packed, remaining...);
-            return packed;
-        };
-        template<typename ... Distributions>
-        static void pack(std::vector<const Distribution*>& packed, const Distribution& distr, Distributions ... remaining){
-            packed.push_back(&distr);
-            pack(remaining...);
-        };
-        static void pack(std::vector<const Distribution*>& packed, const Distribution& distr) {
-            packed.push_back(&distr);
-        };
         
         categoric::Group variables;
         image::EvaluatorPtr evaluator;

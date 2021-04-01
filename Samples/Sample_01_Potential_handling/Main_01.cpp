@@ -58,16 +58,44 @@ int main () {
 								 EFG::categoric::makeVariable(3 , "B"), 
 								 EFG::categoric::makeVariable(2 , "C"), 
 								 EFG::categoric::makeVariable(3 , "D")});
-
 	EFG::distribution::Distribution distrABC(group);
-
-	distrABC.emplaceEntireDomain(1.f);
+	distrABC.setImageEntireDomain(1.f);
 	print(distrABC);
 
+// marginalization
+{
 	auto distrAB = distrABC.marginalize(EFG::distribution::Combination({1,1}) , EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
 								 							   				    					   EFG::categoric::makeVariable(2 , "C")}));
 
 	print(distrAB);
+}
+
+// fill missing values 
+{
+	// distrABC.clear();
+	// distrABC.add(EFG::distribution::Combination({0,0,0,0}), 1.f);
+	// distrABC.add(EFG::distribution::Combination({0,0,1,0}), 2.f);
+	// distrABC.add(EFG::distribution::Combination({1,0,1,1}), 3.f);
+	// print(distrABC);
+	// distrABC.emplaceEntireDomain();
+	// print(distrABC);
+}
+
+// merge distributions
+{
+	EFG::distribution::Distribution distrAC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
+								 								   EFG::categoric::makeVariable(2 , "C")}));
+	distrAC.setImageEntireDomain(2.f);
+	print(distrAC);
+
+	EFG::distribution::Distribution distrBD(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "B"), 
+								 								   EFG::categoric::makeVariable(2 , "D")}));
+	distrBD.setImageEntireDomain(0.5f);
+	print(distrBD);
+
+	EFG::distribution::Distribution distrMerged(distrAC, distrBD);
+	print(distrMerged);
+}
 
 	return EXIT_SUCCESS;
 }
