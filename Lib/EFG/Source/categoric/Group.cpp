@@ -22,7 +22,7 @@ namespace EFG::categoric {
         this->group.emplace(var);
     }
 
-    void Group::replace(const Group& replacer) {
+    Group& Group::operator=(const Group& replacer) {
         if(replacer.group.size() != this->group.size()) {
             throw Error("replacing variables should be in number the same");
         }
@@ -34,6 +34,7 @@ namespace EFG::categoric {
             ++itThis;
         });
         this->group = replacer.group;
+        return *this;
     }
 
     std::size_t Group::size() const {

@@ -21,8 +21,8 @@ namespace EFG::categoric {
         */
         Variable(const std::size_t& size, const std::string& name);
 
-        Variable(const Variable& o) = default;
-        Variable& operator=(const Variable& o) = delete;
+        Variable(const Variable& ) = default;
+        Variable& operator=(const Variable& ) = delete;
 
         inline std::size_t size() const { return this->Size; };
         inline const std::string& name() const { return this->Name; };

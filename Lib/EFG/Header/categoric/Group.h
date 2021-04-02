@@ -21,10 +21,7 @@ namespace EFG::categoric {
         Group(VariablePtr varA, VariablePtr varB);
 
         Group(const Group& ) = default;
-        inline Group& operator=(const Group& o) {
-            this->replace(o);
-            return *this;
-        }
+        Group& operator=(const Group& o);
 
         template<typename ... Vars>
         Group(VariablePtr varA, VariablePtr varB, Vars ... vars) {
@@ -38,7 +35,7 @@ namespace EFG::categoric {
         // throw in case of size mismatch
         template<typename ... Vars>
         void replace(VariablePtr varA, VariablePtr varB, Vars ... vars) {
-            this->replace(Group(varA, varB, vars...));
+            *this = Group(varA, varB, vars...);
         };
 
         /** \brief Returns the size of the joint domain
@@ -53,8 +50,6 @@ namespace EFG::categoric {
             this->add(var);
             this->add(vars...);
         }
-
-        void replace(const Group& g);
 
     // data
         std::set<VariablePtr> group;

@@ -14,7 +14,7 @@
 namespace EFG::distribution::image {
     class Exponential : public Evaluator {
     public:
-        Exponential(const float& weight);
+        Exponential(const float& weight) : weight(weight) {};
 
         inline float getWeight() const { return this->weight; };
         void setWeight(float w) { this->weight = w; };

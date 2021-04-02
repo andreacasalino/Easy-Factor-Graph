@@ -36,6 +36,52 @@ namespace EFG::distribution {
         this->values = o.values;
     };
 
+    Distribution& Distribution::operator=(const Distribution& o) {
+        this->variables = o.variables;
+        this->values = o.values;
+        return *this;
+    }
+
+    categoric::Group mergeGroups(const std::set<const Distribution*>& distr) {
+        if (distr.size() <= 1) {
+            throw Error("you can merge at least 2 distributions");
+        }
+        auto it = distr.begin();
+        categoric::Group merged((*it)->getGroup());
+        ++it;
+        std::for_each(it, distr.end(), [&merged](const Distribution* d) {
+            for (auto itV = d->getGroup().getVariables().begin(); itV!= d->getGroup().getVariables().end(); ++itV) {
+                try {
+                    merged.add(*itV);
+                }
+                catch (...) {
+                }
+            }
+        });
+        return merged;
+    }
+    Distribution::Distribution(const std::set<const Distribution*>& distr)
+        : Distribution(mergeGroups(distr)) {
+        categoric::Range jointDomain(this->variables);
+        iterator::forEach(jointDomain, [this, &distr](const categoric::Range& jointDomain) {
+            float val = 1.f;
+            Combination comb(jointDomain.get());
+            for (auto it = distr.begin(); it != distr.end(); ++it) {
+                auto result = (*it)->find(comb, this->variables);
+                if (nullptr == result.first) {
+                    val = 0.f;
+                    break;
+                }
+                val *= result.second;
+            }
+            if (0.f != val) {
+                this->add(comb, val);
+            }
+        });
+    }
+
+    ///////////////////// modifiers /////////////////////
+
     void Distribution::clear() {
         if(this->isObserved()) {
             throw Error("distribution can't be changed");
@@ -72,21 +118,22 @@ namespace EFG::distribution {
         categoric::Range range(this->variables);
         this->clear();
         iterator::forEach(range, [this, &value](categoric::Range& r){
-            this->add(Combination(r.getCombination()), value);
+            this->add(Combination(r.get()), value);
         });
     }
 
     void Distribution::emplaceEntireDomain() {
         categoric::Range range(this->variables);
-        this->clear();
         iterator::forEach(range, [this](categoric::Range& r){
-            Combination comb(r.getCombination());
+            Combination comb(r.get());
             auto it = this->values.find(comb);
             if(it == this->values.end()) {
                 this->values.emplace(comb, 0.f);
             }
         });
     }
+
+    /////////////////////   query   /////////////////////
 
     float Distribution::find(const Combination& comb) const {
         if(comb.size() != this->variables.getVariables().size()) {

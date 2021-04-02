@@ -14,6 +14,7 @@ namespace EFG::distribution {
     class Combination {
     public:
         Combination(const std::vector<std::size_t>& values);
+
         Combination(const Combination& o);
         Combination& operator=(const Combination& o) = delete;
 

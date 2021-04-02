@@ -23,15 +23,15 @@ namespace EFG::iterator {
         StlBidirectional(const StlBidirectional& ) = default;
         StlBidirectional& operator=(const StlBidirectional& ) = default;
 
-        void operator++() final {
+        inline void operator++() final {
             ++this->cursor;
         };
 
-        void operator--() final {
+        inline void operator--() final {
             --this->cursor;
         };
 
-        bool operator==(std::nullptr_t) const final {
+        inline bool operator==(std::nullptr_t) const final {
             return (this->cursor == this->end);
         };
 

@@ -23,17 +23,22 @@ namespace EFG::distribution {
         Distribution(const categoric::Group& variables);
 
         Distribution(const Distribution& o);
-        Distribution& operator=(const Distribution&) = delete;
+        Distribution& operator=(const Distribution& o);
 
         // basic evaluator is assumed (even for exponential distribution)
         template<typename ... Distributions>
-        Distribution(const Distribution& first, const Distribution& second, Distributions ... distr);
+        Distribution(const Distribution* first, const Distribution* second, Distributions ... distr)
+            : Distribution(pack(first, second, distr...)) {
+        };
 
         // basic evaluator is assumed (even for exponential distribution)
         Distribution(const std::set<const Distribution*>& distr);
 
-        // basic evaluator is assumed (even for exponential distribution)
-        Distribution marginalize(const Combination& comb, const categoric::Group& evidences) const;
+        DistributionIterator getIterator() const;
+
+        inline const categoric::Group& getGroup() const { return this->variables; };
+
+        ///////////////////// modifiers /////////////////////
 
         void clear();
 
@@ -44,7 +49,10 @@ namespace EFG::distribution {
 
         void setImageEntireDomain(const float& value);
 
-        DistributionIterator getIterator() const;
+        /////////////////////   query   /////////////////////
+
+        // basic evaluator is assumed (even for exponential distribution)
+        Distribution marginalize(const Combination& comb, const categoric::Group& evidences) const;
 
         // returns 0 in case such a combination does not exist
         float find(const Combination& comb) const;
@@ -53,10 +61,23 @@ namespace EFG::distribution {
         // returns <nullptr, 0> in case such a combination does not exist
         std::pair<const Combination*, float> find(const Combination& comb, const categoric::Group& group) const;
 
-        inline const categoric::Group& getGroup() const { return this->variables; };
-
     protected:
         Distribution(image::EvaluatorPtr evaluator, const categoric::Group& variables);
+
+        template<typename ... Distributions>
+        static std::set<const Distribution*> pack(const Distribution* first, const Distribution* second, Distributions ... distr) {
+            std::set<const Distribution*> packed;
+            pack(packed , first, second, distr...);
+            return packed;
+        };
+        template<typename ... Distributions>
+        static void pack(std::set<const Distribution*>& packed, const Distribution* first, Distributions ... distr) {
+            packed.emplace(first);
+            pack(packed, distr...);
+        }
+        static void pack(std::set<const Distribution*>& packed, const Distribution* first) {
+            packed.emplace(first);
+        }
         
         categoric::Group variables;
         image::EvaluatorPtr evaluator;

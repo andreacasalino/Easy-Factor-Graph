@@ -18,7 +18,7 @@ namespace EFG::distribution {
         DistributionIterator(const Distribution& distribution);
 
         DistributionIterator(const DistributionIterator& ) = default;
-        DistributionIterator& operator=(const DistributionIterator& ) = delete;
+        DistributionIterator& operator=(const DistributionIterator& ) = default;
 
         inline const Combination& getCombination() const { return this->cursor->first; }
         inline float getImage() const { return this->evaluator->evaluate(this->cursor->second); }

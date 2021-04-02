@@ -34,10 +34,15 @@ namespace EFG::categoric {
     public:
         Range(const Group& group);
 
-        inline const std::vector<std::size_t>& getCombination() const { return this->combination; };
+        Range(const Range& ) = default;
+        Range& operator=(const Range& ) = default;
+
+        inline const std::vector<std::size_t>& get() const { return this->combination; };
 
         void operator++() final;
         inline bool operator==(std::nullptr_t) const final { return this->isAtEnd; };
+
+        inline void reset() { this->combination = std::vector<std::size_t>(this->sizes.size(), 0); this->isAtEnd = false; };
 
     private:
         std::vector<size_t>		sizes;

@@ -18,9 +18,7 @@ namespace EFG::iterator {
         // nullptr when the iterator is at the end, i.e. not anymore incrementable
         virtual bool operator==(std::nullptr_t) const = 0;
 
-        inline bool operator!=(std::nullptr_t) const {
-            return !(*this == nullptr);
-        };
+        inline bool operator!=(std::nullptr_t) const { return !(*this == nullptr); };
     };
 
     template<typename Iter, typename Action>
@@ -33,10 +31,8 @@ namespace EFG::iterator {
 
     template<typename Iter, typename ActionCondition>
     void forEachConditioned(Iter& iter, ActionCondition action) {
-        while (iter != nullptr) {
-            if(!action(iter)) {
-                break;
-            }
+        while ((iter != nullptr) &&
+                !action(iter)) {
             ++iter;
         }
     };
