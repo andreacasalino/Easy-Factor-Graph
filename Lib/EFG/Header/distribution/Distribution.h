@@ -30,7 +30,7 @@ namespace EFG::distribution {
         Distribution(const Distribution& first, const Distribution& second, Distributions ... distr);
 
         // basic evaluator is assumed (even for exponential distribution)
-        Distribution(const std::vector<const Distribution*>& distr);
+        Distribution(const std::set<const Distribution*>& distr);
 
         // basic evaluator is assumed (even for exponential distribution)
         Distribution marginalize(const Combination& comb, const categoric::Group& evidences) const;
