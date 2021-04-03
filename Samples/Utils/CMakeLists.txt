@@ -19,7 +19,7 @@ target_include_directories(${PROJECT_SHORTNAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Header>
 )
 
-# target_link_libraries(${PROJECT_SHORTNAME}
-    # PUBLIC
-        # EFG
-# )
+target_link_libraries(${PROJECT_SHORTNAME}
+    PUBLIC
+        EFG
+)

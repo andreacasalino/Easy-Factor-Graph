@@ -6,152 +6,89 @@
  **/
 
 #include <Presenter.h>
+#include <print/DistributionPrint.h>
+#include <iostream>
+using namespace std;
 
-int main() {
+int main () {
+	// define a group and a distribution
+	EFG::categoric::Group group({EFG::categoric::makeVariable(2 , "A"), 
+								 EFG::categoric::makeVariable(3 , "B"), 
+								 EFG::categoric::makeVariable(2 , "C"), 
+								 EFG::categoric::makeVariable(3 , "D")});
+	EFG::distribution::Distribution distr(group);
+
 {
-	EFG::sample::Presenter presenter("distributions" , "1.2.3", "have a lokkat the results");
-
+	EFG::sample::Presenter presenter("fill domain with a unique number" , "", "");
+	distr.setImageEntireDomain(3.f);
+	cout << distr << endl << endl;
 }
-{
-	EFG::sample::Presenter presenter("" , "1.2.3", "have a lokkat the results");
 
+{
+	EFG::sample::Presenter presenter("marginalize the distribution" , "", "");
+	cout << "marginalize considering A=1 and C=1" << endl;
+	auto distrBD = distr.marginalize(EFG::distribution::Combination({1,1}) , EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"),
+								 							   				    					EFG::categoric::makeVariable(2 , "C")}));
+	cout << distrBD << endl << endl;
 }
-{
-	EFG::sample::Presenter presenter("distributions" , "", "have a lokkat the results");
 
+{
+	EFG::sample::Presenter presenter("find combinations" , "", "");
+	distr.clear();
+	distr.add(EFG::distribution::Combination({ 0,0,0,0 }), 1.f);
+	distr.add(EFG::distribution::Combination({ 0,0,1,0 }), 2.f);
+	distr.add(EFG::distribution::Combination({ 1,0,1,1 }), 3.f);
+	cout << "current content of the distribution" << endl;
+	cout << distr << endl << endl;
+
+	auto group2 = group;
+	group2.add(EFG::categoric::makeVariable(2, "E"));
+	auto find1 = distr.find(EFG::distribution::Combination({ 1,0,1,1,0 }), group2);
+	if (find1.second == 3.f) {
+		std::cout << "first find correct";
+	}
+	else {
+		std::cout << "first find uncorrect";
+	}
+	std::cout << std::endl << std::endl;
+
+	auto find2 = distr.find(EFG::distribution::Combination({ 0,0,1,0 }));
+	if (find2 == 2.f) {
+		std::cout << "second find correct";
+	}
+	else {
+		std::cout << "second find uncorrect";
+	}
+	std::cout << std::endl << std::endl;
 }
 
 {
-	EFG::sample::Presenter presenter("distributions" , "", "");
+	EFG::sample::Presenter presenter("emplace missing values" , "", "");
+	distr.emplaceEntireDomain();
+	std::cout << distr << std::endl << std::endl;
+}
 
+{
+	EFG::sample::Presenter presenter("distributions merge" , "", "");
+	EFG::distribution::Distribution distrAC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
+								 								   EFG::categoric::makeVariable(2 , "C")}));
+	distrAC.setImageEntireDomain(2.f);
+
+	EFG::distribution::Distribution distrBC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "B"), 
+								 								   EFG::categoric::makeVariable(2 , "C")}));
+	distrBC.setImageEntireDomain(0.5f);
+	
+	std::cout << "distributions to merge" << std::endl;
+	cout << distrAC << endl << endl;
+	cout << distrBC << endl << endl;
+
+	EFG::distribution::Distribution distrMerged(&distrAC, &distrBC);
+	std::cout << "merged distribution" << std::endl;
+	cout << distrMerged << endl << endl;
 }
 
 	return EXIT_SUCCESS;
 }
-
-
-
-
-// #include <categoric/Variable.h>
-// #include <categoric/Group.h>
-// #include <categoric/Range.h>
-// #include <iostream>
-
-// // group
-// int main () {
-
-// 	EFG::categoric::Range rangeAB(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
-// 								  						 EFG::categoric::makeVariable(2 , "B"), 
-// 								  						 EFG::categoric::makeVariable(2 , "C")
-// 														}));
-
-// 	auto rangeAB2 = rangeAB;
-
-// 	EFG::iterator::forEach(rangeAB, [](EFG::categoric::Range& r){
-// 		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
-// 			std::cout << " " << *it;
-// 		}
-// 		std::cout << std::endl;
-// 	});
-// 	std::cout << std::endl;
-	
-// 	EFG::iterator::forEach(rangeAB2, [](EFG::categoric::Range& r){
-// 		for(auto it = r.getCombination().begin(); it!=r.getCombination().end(); ++it) {
-// 			std::cout << " " << *it;
-// 		}
-// 		std::cout << std::endl;
-// 	});
-// 	std::cout << std::endl;
-
-// 	return EXIT_SUCCESS;
-// }
-
-
-
-
-// distribution
-// #include <distribution/Distribution.h>
-// #include <distribution/DistributionIterator.h>
-// void print(EFG::distribution::Distribution& distr) {
-// 	EFG::distribution::DistributionIterator iter = distr.getIterator();
-// 	EFG::iterator::forEach(iter, [](EFG::distribution::DistributionIterator& i) {
-// 		for(std::size_t k=0; k<i.getCombination().size(); ++k) {
-// 			std::cout << " " << i.getCombination().data()[k];
-// 		}
-// 		std::cout << " -> " << i.getImage() << std::endl;
-// 	});
-// 	std::cout << std::endl << std::endl;
-// }
-// int main () {
-
-// 	EFG::categoric::Group group({EFG::categoric::makeVariable(2 , "A"), 
-// 								 EFG::categoric::makeVariable(3 , "B"), 
-// 								 EFG::categoric::makeVariable(2 , "C"), 
-// 								 EFG::categoric::makeVariable(3 , "D")});
-// 	EFG::distribution::Distribution distr(group);
-// 	distr.setImageEntireDomain(1.f);
-// 	print(distr);
-
-// // marginalization
-// {
-// 	auto distrBD = distr.marginalize(EFG::distribution::Combination({1,1}) , EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"),
-// 								 							   				    					EFG::categoric::makeVariable(2 , "C")}));
-// 	print(distrBD);
-// }
-
-// // find
-// {
-// 	distr.clear();
-// 	distr.add(EFG::distribution::Combination({ 0,0,0,0 }), 1.f);
-// 	distr.add(EFG::distribution::Combination({ 0,0,1,0 }), 2.f);
-// 	distr.add(EFG::distribution::Combination({ 1,0,1,1 }), 3.f);
-// 	print(distr);
-
-// 	auto group2 = group;
-// 	group2.add(EFG::categoric::makeVariable(2, "E"));
-// 	auto find1 = distr.find(EFG::distribution::Combination({ 1,0,1,1,0 }), group2);
-// 	if (find1.second == 3.f) {
-// 		std::cout << "first find correct";
-// 	}
-// 	else {
-// 		std::cout << "first find uncorrect";
-// 	}
-// 	std::cout << std::endl << std::endl;
-
-// 	auto find2 = distr.find(EFG::distribution::Combination({ 0,0,1,0 }));
-// 	if (find1.second == 2.f) {
-// 		std::cout << "second find correct";
-// 	}
-// 	else {
-// 		std::cout << "second find uncorrect";
-// 	}
-// 	std::cout << std::endl << std::endl;
-// }
-
-// // fill missing values 
-// {;
-// 	 distr.emplaceEntireDomain();
-// 	 print(distr);
-// }
-
-// // merge distributions
-// {
-// 	EFG::distribution::Distribution distrAC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
-// 								 								   EFG::categoric::makeVariable(2 , "C")}));
-// 	distrAC.setImageEntireDomain(2.f);
-// 	print(distrAC);
-
-// 	EFG::distribution::Distribution distrBC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "B"), 
-// 								 								   EFG::categoric::makeVariable(2 , "C")}));
-// 	distrBC.setImageEntireDomain(0.5f);
-// 	print(distrBC);
-
-// 	EFG::distribution::Distribution distrMerged(&distrAC, &distrBC);
-// 	print(distrMerged);
-// }
-
-// 	return EXIT_SUCCESS;
-// }
 
 
 

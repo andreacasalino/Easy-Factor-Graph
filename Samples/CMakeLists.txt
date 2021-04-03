@@ -5,12 +5,13 @@ function(AddSample NAME_ SOURCE_)
 
     target_link_libraries( ${NAME_}
 		PUBLIC
-			EFG
 			Sample-Utils
     )	
 endfunction()
 
-AddSample(Sample01-Factors Sample01-Factors.cpp)
+AddSample(Sample01-Variables Sample01-Variables.cpp)
+
+AddSample(Sample02-Factors Sample02-Factors.cpp)
 
 # option(BUILD_02 "Build Sample_02" ON)
 # if(BUILD_02)
