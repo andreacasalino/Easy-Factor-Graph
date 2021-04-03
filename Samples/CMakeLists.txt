@@ -1,13 +1,16 @@
+add_subdirectory(Utils)
+
 function(AddSample NAME_ SOURCE_)
     add_executable(${NAME_} ${SOURCE_} )
 
     target_link_libraries( ${NAME_}
 		PUBLIC
 			EFG
+			Sample-Utils
     )	
 endfunction()
 
-AddSample(Sample01-Distributions ./Sample_01_Potential_handling/Main_01.cpp)
+AddSample(Sample01-Factors Sample01-Factors.cpp)
 
 # option(BUILD_02 "Build Sample_02" ON)
 # if(BUILD_02)
