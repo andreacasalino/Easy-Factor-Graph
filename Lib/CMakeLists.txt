@@ -1,4 +1,4 @@
-project(Easy-Factor-Graph-Core)
+project(EFG-Core)
 
 add_subdirectory(XML-parser/Lib)
 

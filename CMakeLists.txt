@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+project(EFG-PRJ)
+
 option(LIB_OPT "Compile shared libraries (ON) or static (OFF)" OFF)
 option(BUILD_SAMPLES "Build the samples showing how to use EFG" ON)
 
