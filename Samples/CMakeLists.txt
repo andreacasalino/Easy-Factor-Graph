@@ -1,17 +1,13 @@
-project(Easy-Factor-Graph-samples)
+function(AddSample NAME_ SOURCE_)
+    add_executable(${NAME_} ${SOURCE_} )
 
-option(BUILD_01 "Build Sample_01" ON)
-if(BUILD_01)
-    add_executable(
-        Sample01
-        ./Sample_01_Potential_handling/Main_01.cpp
-    )
-
-    target_link_libraries( Sample01
+    target_link_libraries( ${NAME_}
 		PUBLIC
-			EFG::Easy-Factor-Graph
+			EFG
     )	
-endif()
+endfunction()
+
+AddSample(Sample01-Distributions ./Sample_01_Potential_handling/Main_01.cpp)
 
 # option(BUILD_02 "Build Sample_02" ON)
 # if(BUILD_02)

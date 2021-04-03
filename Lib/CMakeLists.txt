@@ -1,5 +1,3 @@
-project(EFG-Core)
-
 add_subdirectory(XML-parser/Lib)
 
 if(THREAD_POOL_OPT)
