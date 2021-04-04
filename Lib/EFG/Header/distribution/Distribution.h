@@ -16,6 +16,8 @@
 namespace EFG::distribution {
     class DistributionIterator;
 
+    bool operator<(const Combination& a, const Combination& b);
+
     class Distribution {
     public:
         inline const categoric::Group& getGroup() const { return *this->getGroupPtr(); };
@@ -30,6 +32,8 @@ namespace EFG::distribution {
         std::pair<const Combination*, float> find(const Combination& comb, const categoric::Group& group) const;
 
     protected:
+        Distribution() = default;
+
         virtual categoric::Group* getGroupPtr() const = 0;
 
         virtual std::map<Combination, float>* getValuesPtr() const = 0;

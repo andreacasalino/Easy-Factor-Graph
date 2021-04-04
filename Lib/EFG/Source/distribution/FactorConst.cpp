@@ -97,7 +97,7 @@ namespace EFG::distribution {
         };
 
         auto it = toMarginalize.getIterator();
-        iterator::forEach(it, [this](const DistributionIterator& it){
+        iterator::forEach(it, [this, &extractRemainingComb](const DistributionIterator& it){
             this->values->emplace(extractRemainingComb(it.getCombination()), it.getImage());
         });
     }

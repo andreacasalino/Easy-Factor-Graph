@@ -15,11 +15,11 @@ namespace EFG::distribution {
     public:
         FactorConst(const categoric::Group& group);
 
-        FactorConst(const Distribution& o);
-        FactorConst& operator=(const Distribution& o);
+        // FactorConst(const Distribution& o);
+        // FactorConst& operator=(const Distribution& o);
 
-        FactorConst(Distribution&& o);
-        FactorConst& operator=(Distribution&& o);
+        // FactorConst(Distribution&& o);
+        // FactorConst& operator=(Distribution&& o);
 
         template<typename ... Distributions>
         FactorConst(const Distribution* first, const Distribution* second, Distributions ... distr)

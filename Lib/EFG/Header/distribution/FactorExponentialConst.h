@@ -18,8 +18,8 @@ namespace EFG::distribution {
 
         FactorExponentialConst(const FactorConst& factor, float weight);
 
-        FactorExponentialConst(const FactorExponentialConst& o);
-        FactorExponentialConst& operator=(const FactorExponentialConst& o);
+        // FactorExponentialConst(const FactorExponentialConst& o);
+        // FactorExponentialConst& operator=(const FactorExponentialConst& o);
     };
 }
 
