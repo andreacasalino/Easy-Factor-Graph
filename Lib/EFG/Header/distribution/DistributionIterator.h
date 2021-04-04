@@ -9,13 +9,13 @@
 #define EFG_DISTRIBUTION_DISTRIBUTION_ITERATOR_H
 
 #include <iterator/StlBidirectional.h>
-#include <distribution/Distribution.h>
+#include <distribution/DistributionBase.h>
 
 namespace EFG::distribution {
     class DistributionIterator 
         : public iterator::StlBidirectional<std::map<Combination, float>::const_iterator> {
     public:
-        DistributionIterator(const Distribution& distribution);
+        DistributionIterator(const DistributionBase& distribution);
 
         DistributionIterator(const DistributionIterator& ) = default;
         DistributionIterator& operator=(const DistributionIterator& ) = default;
@@ -24,6 +24,7 @@ namespace EFG::distribution {
         inline float getImage() const { return this->evaluator->evaluate(this->cursor->second); }
 
     private:
+        std::shared_ptr<std::map<Combination, float>> values;
         image::EvaluatorPtr evaluator;
     };
 }
