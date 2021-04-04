@@ -23,7 +23,7 @@ namespace EFG::distribution {
 
         template<typename ... Distributions>
         FactorConst(const Distribution* first, const Distribution* second, Distributions ... distr)
-            : Distribution(pack(first, second, distr...)) {
+            : FactorConst(pack(first, second, distr...)) {
         };
 
         // basic evaluator is assumed (even for exponential distribution)

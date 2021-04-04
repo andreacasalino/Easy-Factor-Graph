@@ -7,6 +7,7 @@
 
 #include <Presenter.h>
 #include <print/DistributionPrint.h>
+#include <distribution/FactorMutable.h>
 #include <iostream>
 using namespace std;
 
@@ -16,7 +17,7 @@ int main () {
 								 EFG::categoric::makeVariable(3 , "B"), 
 								 EFG::categoric::makeVariable(2 , "C"), 
 								 EFG::categoric::makeVariable(3 , "D")});
-	EFG::distribution::Distribution distr(group);
+	EFG::distribution::Factor distr(group);
 
 {
 	EFG::sample::Presenter presenter("fill domain with a unique number" , "", "");
@@ -27,8 +28,9 @@ int main () {
 {
 	EFG::sample::Presenter presenter("marginalize the distribution" , "", "");
 	cout << "marginalize considering A=1 and C=1" << endl;
-	auto distrBD = distr.marginalize(EFG::distribution::Combination({1,1}) , EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"),
-								 							   				    					EFG::categoric::makeVariable(2 , "C")}));
+	EFG::categoric::Group groupAB({EFG::categoric::makeVariable(2 , "A"), 
+								 EFG::categoric::makeVariable(3 , "B")});
+	EFG::distribution::FactorConst distrBD(distr, EFG::distribution::Combination({1,1}) , groupAB);
 	cout << distrBD << endl << endl;
 }
 
@@ -70,19 +72,19 @@ int main () {
 
 {
 	EFG::sample::Presenter presenter("distributions merge" , "", "");
-	EFG::distribution::Distribution distrAC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
-								 								   EFG::categoric::makeVariable(2 , "C")}));
+	EFG::distribution::Factor distrAC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "A"), 
+								 							 EFG::categoric::makeVariable(2 , "C")}));
 	distrAC.setImageEntireDomain(2.f);
 
-	EFG::distribution::Distribution distrBC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "B"), 
-								 								   EFG::categoric::makeVariable(2 , "C")}));
+	EFG::distribution::Factor distrBC(EFG::categoric::Group({EFG::categoric::makeVariable(2 , "B"), 
+								 							 EFG::categoric::makeVariable(2 , "C")}));
 	distrBC.setImageEntireDomain(0.5f);
 	
 	std::cout << "distributions to merge" << std::endl;
 	cout << distrAC << endl << endl;
 	cout << distrBC << endl << endl;
 
-	EFG::distribution::Distribution distrMerged(&distrAC, &distrBC);
+	EFG::distribution::FactorConst distrMerged(&distrAC, &distrBC);
 	std::cout << "merged distribution" << std::endl;
 	cout << distrMerged << endl << endl;
 }

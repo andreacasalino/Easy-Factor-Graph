@@ -17,11 +17,11 @@ namespace EFG::distribution {
   class FactorMutable
       : public FactorT_
       , public MutableT_ {
-  static_assert(std::is_base_of<DistributionBase, FactorT_>::value , "FactorT_ should be derived from DistributionBase")
-  static_assert(std::is_base_of<DistributionSettable, MutableT_>::value , "MutableT_ should be derived from DistributionSettable")
+  static_assert(std::is_base_of<DistributionBase, FactorT_>::value , "FactorT_ should be derived from DistributionBase");
+  static_assert(std::is_base_of<DistributionSettable, MutableT_>::value , "MutableT_ should be derived from DistributionSettable");
       public:
       template<typename ... Args>
-      FactorModifiable(Args&&... args)
+      FactorMutable(Args&&... args)
         : FactorT_(std::forward<Args>(args)...) {
       };
   };
