@@ -10,6 +10,10 @@
 #include <Error.h>
 
 namespace EFG::categoric {
+    Group::Group(VariablePtr var) {
+        this->add(var);
+    }
+
     Group::Group(VariablePtr varA, VariablePtr varB) {
         this->add(varA);
         this->add(varB);

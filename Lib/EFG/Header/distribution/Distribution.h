@@ -20,6 +20,8 @@ namespace EFG::distribution {
 
     class Distribution {
     public:
+        virtual ~Distribution() = default;
+
         inline const categoric::Group& getGroup() const { return *this->getGroupPtr(); };
 
         virtual DistributionIterator getIterator() const = 0;

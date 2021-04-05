@@ -28,6 +28,8 @@ namespace EFG::distribution {
         image::EvaluatorPtr evaluator;
 
     };
+
+    typedef std::shared_ptr<DistributionBase> DistributionPtr;
 }
 
 #endif

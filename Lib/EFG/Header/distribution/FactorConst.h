@@ -26,7 +26,6 @@ namespace EFG::distribution {
             : FactorConst(pack(first, second, distr...)) {
         };
 
-        // basic evaluator is assumed (even for exponential distribution)
         FactorConst(const std::set<const Distribution*>& distr);
 
         // marginalization

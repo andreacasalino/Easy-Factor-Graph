@@ -18,6 +18,7 @@ namespace EFG::categoric {
 
     class Group {
     public:
+        Group(VariablePtr var);
         Group(VariablePtr varA, VariablePtr varB);
 
         Group(const Group& ) = default;
