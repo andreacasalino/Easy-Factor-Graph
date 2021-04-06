@@ -8,7 +8,7 @@
 #ifndef EFG_NODES_EVIDENCE_AWARE_H
 #define EFG_NODES_EVIDENCE_AWARE_H
 
-#include <nodes/NodesBase.h>
+#include <nodes/NodesCollection.h>
 #include <list>
 
 namespace EFG::nodes {
@@ -20,7 +20,7 @@ namespace EFG::nodes {
     };
     
 
-    class EvidenceAware : virtual public NodesBase {
+    class EvidenceAware : virtual public NodesCollection {
     public:
         // the same variables inside the model shoudld be used
         void setEvidences(const std::set<Evidence>& evidences);

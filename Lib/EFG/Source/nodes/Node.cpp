@@ -5,15 +5,10 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <nodes/Node.h>
-#include <nodes/NodeConnection.h>
+#include <nodes/Nodes.h>
 
 namespace EFG::nodes {
     Node::Node(categoric::VariablePtr variable)
         : variable(variable) {
     };
-
-    bool operator<(const Node::Connection& a, const Node::Connection& b) {
-        return (a.getNeighbour()->getVariable().name() < b.getNeighbour()->getVariable().name());
-    }
 }

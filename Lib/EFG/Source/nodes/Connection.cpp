@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <nodes/NodeConnection.h>
+#include <nodes/Nodes.h>
 
 namespace EFG::nodes {
     Node::Connection::Connection(Node* neighbour, distribution::DistributionPtr factor) 

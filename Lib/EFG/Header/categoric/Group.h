@@ -16,6 +16,10 @@ namespace EFG::categoric {
         return (a->name() < b->name());
     };
 
+    inline bool operator==(const VariablePtr& a, const VariablePtr& b) {
+        return *a == *b;
+    };
+
     class Group {
     public:
         Group(VariablePtr var);
@@ -23,6 +27,10 @@ namespace EFG::categoric {
 
         Group(const Group& ) = default;
         Group& operator=(const Group& o);
+
+        inline bool operator==(const Group& o) const {
+            return (this->group == o.group);
+        };
 
         template<typename ... Vars>
         Group(VariablePtr varA, VariablePtr varB, Vars ... vars) {

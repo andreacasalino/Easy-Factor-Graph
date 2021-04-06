@@ -24,6 +24,8 @@ namespace EFG::categoric {
         Variable(const Variable& ) = default;
         Variable& operator=(const Variable& ) = delete;
 
+        inline bool operator==(const Variable& o) const { return (this->Size == o.Size) && (this->Name == o.Name); };
+
         inline std::size_t size() const { return this->Size; };
         inline const std::string& name() const { return this->Name; };
         
