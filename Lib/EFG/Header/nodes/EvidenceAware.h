@@ -12,23 +12,30 @@
 #include <list>
 
 namespace EFG::nodes {
+    struct Evidence {
+        bool operator<(const Evidence& o) const;
+
+        categoric::VariablePtr variable;
+        std::size_t value;
+    };
+    
+
     class EvidenceAware : virtual public NodesBase {
     public:
-        categoric::Group getEvidenceVariables() const;
-        // same order inside Group is assumed
-        std::list<std::size_t> getEvidenceValues() const;
-        std::list<std::pair<std::size_t, categoric::VariablePtr>> getEvidence() const;
+        // the same variables inside the model shoudld be used
+        void setEvidences(const std::set<Evidence>& evidences);
+        void setEvidences(const std::set<categoric::VariablePtr>& variables, const std::list<std::size_t>& values);
+        void setEvidences(const std::list<std::size_t>& values);
 
-        void setEvidenceVariables(const categoric::Group& vars);
-        // same order inside last set Group is assumed
-        void setEvidenceValues(const std::list<std::size_t>& vals);
-        void setEvidence(const std::list<std::pair<std::size_t, categoric::VariablePtr>>& evidences);
+        inline const std::set<Evidence>& getEvidences() const { return this->evidences; };
+        std::set<categoric::VariablePtr> getHiddenVariables() const;
 
     protected:
-        inline const std::list<std::set<Node>>& getHiddenVariablesClusters() const { return this->hiddenVariablesClusters; };
+        inline const std::list<std::set<Node>>& getHiddenVariablesClusters() const { return this->hiddenClusters; };
 
     private:
-        std::list<std::set<Node>> hiddenVariablesClusters;
+        std::set<Evidence> evidences;
+        std::list<std::set<Node>> hiddenClusters;
     };
 }
 

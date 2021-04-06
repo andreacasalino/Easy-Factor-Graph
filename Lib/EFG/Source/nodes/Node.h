@@ -18,7 +18,7 @@ namespace EFG::nodes {
 
         Node(categoric::VariablePtr variable);
 
-        inline const categoric::Variable& getVariable() const { return *this->variable; };
+        inline categoric::VariablePtr getVariable() const { return this->variable; };
         inline const std::list<distribution::DistributionPtr>& getUnaryFactors() { return this->unaryFactors; };
         inline const std::set<Connection>& getConnections() const { return this->connections; };
 
