@@ -12,20 +12,25 @@
 #include <list>
 
 namespace EFG::nodes {
-    struct Connection;
+    struct Connection {
+        Connection(distribution::DistributionPtr factor, std::unique_ptr<distribution::DistributionBase> message = nullptr)
+            : factor(factor)
+            , message2This(std::move(message)) {
+        };
+
+        distribution::DistributionPtr factor;
+        //nullptr when the message is not already available
+        std::unique_ptr<distribution::DistributionBase> message2This;
+    };
 
     struct Node {
+        Node(categoric::VariablePtr var) { variable = var; };
+
         categoric::VariablePtr variable;
         std::list<distribution::DistributionPtr> unaryFactors;
         std::map<Node*, Connection> activeConnections;
         // here message to this is the marginalized factor
         std::map<Node*, Connection> disabledConnections;
-    };
-
-    struct Connection {
-        distribution::DistributionPtr factor;
-        //nullptr when the message is not already available
-        std::unique_ptr<distribution::DistributionBase> message2This;
     };
 }
 

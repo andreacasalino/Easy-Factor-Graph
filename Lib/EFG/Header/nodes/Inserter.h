@@ -17,6 +17,10 @@ namespace EFG::nodes {
 
     protected:
         std::set<distribution::DistributionPtr> binaryFactors;
+
+    private:
+        void InsertUnary(distribution::DistributionPtr factor);
+        void InsertBinary(distribution::DistributionPtr factor);
     };
 }
 

@@ -26,8 +26,18 @@ namespace EFG::nodes {
 
         std::map<categoric::VariablePtr, Node> nodes;
 
+        struct HiddenClusters {
+            HiddenClusters(const std::set<Node*>& toSplit);
+            HiddenClusters() = default;
+            void add(const std::list<std::set<Node*>>& toAdd);
+            std::list<std::set<Node*>>::iterator find(Node& node);
+
+            std::list<std::set<Node*>> clusters;
+        };
+        static void add(std::set<Node*>& recipient, const std::set<Node*>& toAdd);
+
+        HiddenClusters hidden;
         std::map<categoric::VariablePtr, const std::size_t> evidences;
-        std::list<std::set<Node*>> hiddenClusters;
     };
 }
 

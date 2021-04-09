@@ -13,10 +13,10 @@
 namespace EFG::nodes {
     class EvidencesSetter : virtual public NodesContainer {
     public:
-        void addEvidence(categoric::VariablePtr variable, std::size_t value);
+        void addEvidence(const std::string& name, std::size_t value);
         // previous evidences are deleted
-        void setEvidences(const std::map<categoric::VariablePtr, const std::size_t>& evidences);
-        void setEvidences(const std::list<std::size_t>& observations);
+        void setEvidences(const std::map<std::string, const std::size_t>& evidences);
+        void setEvidences(const std::vector<std::size_t>& observations);
     };
 }
 

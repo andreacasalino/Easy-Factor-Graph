@@ -30,8 +30,8 @@ namespace EFG::nodes {
         std::for_each(this->hiddenClusters.begin(), this->hiddenClusters.end(), [&hiddens](const std::set<Node>& cluster) {
             std::for_each(cluster.begin(), cluster.end(), [&hiddens](const Node& n) {
                 hiddens.emplace(n.variable);
-                });
             });
+        });
         return hiddens;
     }
 }
