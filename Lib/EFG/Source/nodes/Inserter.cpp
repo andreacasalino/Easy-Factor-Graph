@@ -67,6 +67,11 @@ namespace EFG::nodes {
 
         VariablePair factorKey(nodeAInfo.nodePtr->variable->name(), nodeBInfo.nodePtr->variable->name());
 
+        if (!nodeAInfo.wasNew && !nodeBInfo.wasNew) {
+            if (this->binaryFactors.find(factorKey) != this->binaryFactors.end()) {
+                throw Error("The variables involved in the passed factor are already connected by an existing factor");
+            }
+        }
         this->binaryFactors.emplace(factorKey, factor);
 
         auto connect1 = [&nodeAInfo, &nodeBInfo, &factor]() {
@@ -89,9 +94,6 @@ namespace EFG::nodes {
         }
 
         if (!nodeAInfo.wasNew && !nodeBInfo.wasNew) {
-            if (this->binaryFactors.find(factorKey) != this->binaryFactors.end()) {
-                throw Error("The variables involved in the passed factor are already connected by an existing factor");
-            }
             auto clusterA = this->hidden.find(*nodeAInfo.nodePtr);
             auto clusterB = this->hidden.find(*nodeBInfo.nodePtr);
 
@@ -105,8 +107,13 @@ namespace EFG::nodes {
                 // both are hidden
                 std::set<Node*> merged = *clusterA;
                 add(merged, *clusterB);
-                this->hidden.clusters.erase(clusterA);
-                this->hidden.clusters.erase(clusterB);
+                if (clusterA == clusterB) {
+                    this->hidden.clusters.erase(clusterA);
+                }
+                else {
+                    this->hidden.clusters.erase(clusterA);
+                    this->hidden.clusters.erase(clusterB);
+                }
                 this->hidden.clusters.push_back(merged);
                 connect1();
                 return;

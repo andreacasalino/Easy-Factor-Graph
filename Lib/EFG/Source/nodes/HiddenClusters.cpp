@@ -9,9 +9,14 @@
 #include <algorithm>
 
 namespace EFG::nodes {
+    typedef std::list<std::set<Node*>>::iterator ClusterIter;
+    bool operator<(const ClusterIter& a, const ClusterIter& b) {
+        return (*a->begin() < *b->begin());
+    }
+
     NodesContainer::HiddenClusters::HiddenClusters(const std::set<Node*>& toSplit) {
         std::set<Node*> openSet = toSplit;
-        std::list<std::list<std::set<Node*>>::iterator> connectedClusters;
+        std::set<ClusterIter> connectedClusters;
         auto itOpen = openSet.begin();
         clusters.push_back({ *itOpen });
         itOpen = openSet.erase(itOpen);
@@ -25,15 +30,14 @@ namespace EFG::nodes {
                     openSet.erase(openSet.find(itConn->first));
                 }
                 else {
-                    connectedClusters.push_back(clusterIt);
+                    connectedClusters.emplace(clusterIt);
                 }
-
-                for (auto conn = connectedClusters.begin(); conn != connectedClusters.end(); ++conn) {
-                    NodesContainer::add(newCluster, **conn);
-                    clusters.erase(*conn);
-                }
-                clusters.push_back(newCluster);
             }
+            for (auto conn = connectedClusters.begin(); conn != connectedClusters.end(); ++conn) {
+                NodesContainer::add(newCluster, **conn);
+                clusters.erase(*conn);
+            }
+            clusters.push_back(newCluster);
             itOpen = openSet.erase(itOpen);
         }
     }

@@ -6,10 +6,39 @@
  **/
 
 #include <nodes/Inserter.h>
+#include <nodes/EvidenceSetter.h>
+#include <distribution/factor/modifiable/Factor.h>
+#include <iostream>
+using namespace std;
 
-class TestModel : public EFG::nodes::Inserter {
+class TestModel 
+    : public EFG::nodes::Inserter
+    , public EFG::nodes::EvidencesSetter {
 public:
     TestModel() = default;
+
+    void print() {
+        for (auto it = this->nodes.begin(); it != this->nodes.end(); ++it) {
+            std::cout << std::endl;
+            std::cout << it->first->name() << std::endl;
+
+            std::cout << "active connections: ";
+            for (auto c = it->second.activeConnections.begin(); c != it->second.activeConnections.end(); ++c) {
+                std::cout << " " << c->first->variable->name();
+            }
+            std::cout << std::endl;
+
+            std::cout << "inactive connections: ";
+            for (auto c = it->second.disabledConnections.begin(); c != it->second.disabledConnections.end(); ++c) {
+                std::cout << " " << c->first->variable->name();
+            }
+            std::cout << std::endl;
+        }
+    };
+};
+
+EFG::distribution::DistributionPtr makeSimpleFactor(EFG::categoric::VariablePtr a, EFG::categoric::VariablePtr b, bool corrAnti) {
+    return std::make_shared<EFG::distribution::factor::cnst::Factor>(EFG::categoric::Group(a, b), corrAnti);
 };
 
 int main() {
@@ -19,6 +48,26 @@ int main() {
     EFG::categoric::VariablePtr varD = EFG::categoric::makeVariable(3, "D");
 
     TestModel model;
+
+    {
+        auto potA = std::make_shared<EFG::distribution::factor::modif::Factor>(EFG::categoric::Group(varA));
+        potA->add(EFG::Combination({ 0 }), 1.f);
+        potA->add(EFG::Combination({ 1 }), 2.f);
+        model.Insert(potA);
+    }
+
+    model.Insert(makeSimpleFactor(varA, varB, true));
+    model.Insert(makeSimpleFactor(varA, varC, true));
+    model.Insert(makeSimpleFactor(varB, varC, true));
+    model.Insert(makeSimpleFactor(varC, varD, true));
+
+    model.print();
+
+    std::map<std::string, const std::size_t> evidences;
+    evidences.emplace("C", 0);
+    model.setEvidences(evidences);
+
+    model.print();
 
     return EXIT_SUCCESS;
 }
