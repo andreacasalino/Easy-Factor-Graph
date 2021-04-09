@@ -11,20 +11,9 @@ endfunction()
 
 AddSample(Sample01-Variables Sample01-Variables.cpp)
 
-AddSample(Sample02-Factors Sample02-Factors.cpp)
+AddSample(Sample01-Factors Sample01-Factors.cpp)
 
-# option(BUILD_02 "Build Sample_02" ON)
-# if(BUILD_02)
-    # add_executable(
-        # Sample02
-        # ./Sample_02_Belief_propagation_A/Main_02.cpp
-    # )
-
-    # target_link_libraries( Sample02
-		# PUBLIC
-			# EFG::Easy-Factor-Graph
-    # )	
-# endif()
+AddSample(Sample02-BeliefPropagation Sample02-BeliefPropagation.cpp)
 
 # option(BUILD_03 "Build Sample_03" ON)
 # if(BUILD_03)

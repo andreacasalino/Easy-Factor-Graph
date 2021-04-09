@@ -6,26 +6,18 @@
  **/
 
 #include <distribution/Distribution.h>
+#include <distribution/DistributionIterator.h>
 #include <Error.h>
 #include <algorithm>
 
 namespace EFG::distribution {
-    bool operator<(const Combination& a, const Combination& b) {
-        for(std::size_t k=0; k<a.size(); ++k) {
-            if(a.data()[k] != b.data()[k]) {
-                return (a.data()[k] < b.data()[k]); 
-            }
-        }
-        return false;
-    };
-
     float Distribution::find(const Combination& comb) const {
         if(comb.size() != this->getGroup().getVariables().size()) {
             throw Error("invalid combination");
         }
-        auto it = this->getValuesPtr()->find(comb);
-        if(it == this->getValuesPtr()->end()) return 0.f;
-        return this->getEvaluatorPtr()->evaluate(it->second);
+        auto it = this->values->find(comb);
+        if(it == this->values->end()) return 0.f;
+        return this->evaluator->evaluate(it->second);
     }
 
     std::pair<const Combination*, float> Distribution::find(const Combination& comb, const categoric::Group& group) const {
@@ -45,35 +37,12 @@ namespace EFG::distribution {
             combOrdered[k] = comb.data()[indices[k]];
         }
 
-        auto it = this->getValuesPtr()->find(Combination(combOrdered));
-        if(it == this->getValuesPtr()->end()) return std::make_pair(nullptr, 0.f);
+        auto it = this->values->find(Combination(combOrdered));
+        if(it == this->values->end()) return std::make_pair(nullptr, 0.f);
         return std::make_pair(&it->first , it->second);
     };
 
- 
-
-
-
-
-    // Distribution::Distribution(image::EvaluatorPtr evaluator, const categoric::Group& variables)
-    //     : variables(variables) {
-    //     this->evaluator = evaluator;
-    // }
-
-    // Distribution::Distribution(const categoric::Group& variables)
-    //     : Distribution(std::make_shared<image::Basic>(), variables) {
-    // }
-
-    // Distribution::Distribution(const Distribution& o) 
-    //     : Distribution(o.evaluator->copy() , o.variables) {
-    //     this->values = o.values;
-    // };
-
-    // Distribution& Distribution::operator=(const Distribution& o) {
-    //     this->variables = o.variables;
-    //     this->values = o.values;
-    //     return *this;
-    // }
-
-
+    DistributionIterator Distribution::getIterator() const {
+        return DistributionIterator(*this);
+    }
 }

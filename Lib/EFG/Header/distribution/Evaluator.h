@@ -5,12 +5,12 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_DISTRIBUTION_IMAGE_EVALUATOR_H
-#define EFG_DISTRIBUTION_IMAGE_EVALUATOR_H
+#ifndef EFG_DISTRIBUTION_EVALUATOR_H
+#define EFG_DISTRIBUTION_EVALUATOR_H
 
 #include <memory>
 
-namespace EFG::distribution::image {
+namespace EFG::distribution {
     class Evaluator {
     public:
         virtual float evaluate(const float& toConvert) const = 0;

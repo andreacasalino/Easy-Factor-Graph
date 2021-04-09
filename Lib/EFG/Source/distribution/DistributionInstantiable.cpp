@@ -5,17 +5,12 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <distribution/DistributionBase.h>
-#include <distribution/DistributionIterator.h>
+#include <distribution/DistributionInstantiable.h>
 
 namespace EFG::distribution {
-    DistributionBase::DistributionBase(const categoric::Group& group, image::EvaluatorPtr evaluator) {
+    DistributionInstantiable::DistributionInstantiable(const categoric::Group& group, EvaluatorPtr evaluator) {
         this->group = std::make_unique<categoric::Group>(group);
         this->values = std::make_shared<std::map<Combination, float>>();
         this->evaluator = std::move(evaluator);
-    }
-
-    DistributionIterator DistributionBase::getIterator() const {
-        return DistributionIterator(*this);
     }
 }

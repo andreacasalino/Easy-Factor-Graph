@@ -5,33 +5,35 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_DISTRIBUTION_FACTOR_CONST_H
-#define EFG_DISTRIBUTION_FACTOR_CONST_H
+#ifndef EFG_DISTRIBUTION_FACTOR_CONST_FACTOR_H
+#define EFG_DISTRIBUTION_FACTOR_CONST_FACTOR_H
 
-#include <distribution/DistributionBase.h>
+#include <distribution/DistributionInstantiable.h>
 
-namespace EFG::distribution {
-    class FactorConst : public DistributionBase {
+namespace EFG::distribution::factor::cnst {
+    class Factor : public DistributionInstantiable {
     public:
-        FactorConst(const categoric::Group& group);
+        Factor(const categoric::Group& group, bool corrOrAnti);
 
-        // FactorConst(const Distribution& o);
-        // FactorConst& operator=(const Distribution& o);
+        // Factor(const Distribution& o);
+        // Factor& operator=(const Distribution& o);
 
-        // FactorConst(Distribution&& o);
-        // FactorConst& operator=(Distribution&& o);
+        // Factor(Distribution&& o);
+        // Factor& operator=(Distribution&& o);
 
         template<typename ... Distributions>
-        FactorConst(const Distribution* first, const Distribution* second, Distributions ... distr)
-            : FactorConst(pack(first, second, distr...)) {
+        Factor(const Distribution* first, const Distribution* second, Distributions ... distr)
+            : Factor(pack(first, second, distr...)) {
         };
 
-        FactorConst(const std::set<const Distribution*>& distr);
+        Factor(const std::set<const Distribution*>& distr);
 
         // marginalization
-        FactorConst(const DistributionBase& toMarginalize, const Combination& comb, const categoric::Group& evidences);
+        Factor(const Distribution& toMarginalize, const Combination& comb, const categoric::Group& evidences);
 
     protected:
+        Factor(const categoric::Group& group);
+
         template<typename ... Distributions>
         static std::set<const Distribution*> pack(const Distribution* first, const Distribution* second, Distributions ... distr) {
             std::set<const Distribution*> packed;

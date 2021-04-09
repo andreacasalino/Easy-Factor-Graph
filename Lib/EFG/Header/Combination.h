@@ -5,15 +5,17 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_DISTRIBUTION_COMBINATION_H
-#define EFG_DISTRIBUTION_COMBINATION_H
+#ifndef EFG_COMBINATION_H
+#define EFG_COMBINATION_H
 
 #include <vector>
 
-namespace EFG::distribution {
+namespace EFG {
     class Combination {
     public:
         Combination(const std::vector<std::size_t>& values);
+
+        Combination(const std::size_t* buffer, std::size_t bufferSize);
 
         Combination(const Combination& o);
         Combination& operator=(const Combination& o) = delete;
@@ -24,6 +26,8 @@ namespace EFG::distribution {
     private:        
         std::vector<std::size_t> combination;
     };
+
+    bool operator<(const Combination& a, const Combination& b);
 }
 
 #endif
