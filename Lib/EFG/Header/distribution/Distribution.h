@@ -39,6 +39,8 @@ namespace EFG::distribution {
         std::shared_ptr<std::map<Combination, float>> values;
         EvaluatorPtr evaluator;
     };
+
+    typedef std::shared_ptr<Distribution> DistributionPtr;
 }
 
 #endif
