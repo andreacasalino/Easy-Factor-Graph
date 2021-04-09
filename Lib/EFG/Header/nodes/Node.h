@@ -17,6 +17,10 @@ namespace EFG::nodes {
             : factor(factor)
             , message2This(std::move(message)) {
         };
+        Connection(Connection&& o) {
+            this->factor = o.factor;
+            this->message2This = std::move(o.message2This);
+        };
 
         distribution::DistributionPtr factor;
         //nullptr when the message is not already available

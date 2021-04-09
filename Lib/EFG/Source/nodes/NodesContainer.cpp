@@ -27,9 +27,9 @@ namespace EFG::nodes {
 
     std::set<categoric::VariablePtr> NodesContainer::getHiddenVariables() const {
         std::set<categoric::VariablePtr> hiddens;
-        std::for_each(this->hiddenClusters.begin(), this->hiddenClusters.end(), [&hiddens](const std::set<Node>& cluster) {
-            std::for_each(cluster.begin(), cluster.end(), [&hiddens](const Node& n) {
-                hiddens.emplace(n.variable);
+        std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&hiddens](const std::set<Node*>& cluster) {
+            std::for_each(cluster.begin(), cluster.end(), [&hiddens](const Node* n) {
+                hiddens.emplace(n->variable);
             });
         });
         return hiddens;

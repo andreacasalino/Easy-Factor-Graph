@@ -9,6 +9,18 @@
 #include <Error.h>
 
 namespace EFG::nodes {
+    Inserter::VariablePair::VariablePair(const std::string& nameA, const std::string& nameB) {
+        this->pairName.reserve(nameA.size() + nameB.size());
+        if (nameA < nameB) {
+            this->pairName += nameA;
+            this->pairName += nameB;
+        }
+        else {
+            this->pairName += nameB;
+            this->pairName += nameA;
+        }
+    }
+
     void Inserter::Insert(distribution::DistributionPtr factor) {
         if (factor->getGroup().getVariables().size() == 1) {
             this->InsertUnary(factor);
@@ -71,13 +83,14 @@ namespace EFG::nodes {
             }
         }
 
+        VariablePair factorKey(itNA->first->name(), itNB->first->name());
+
         if (varAIsNew && varBIsNew) {
             this->hidden.clusters.push_back({ &itNA->second, &itNB->second });
         }
         else if (!varAIsNew && !varBIsNew) {
-            if (this->binaryFactors.find(factor) != this->binaryFactors.end()) {
+            if (this->binaryFactors.find(factorKey) != this->binaryFactors.end()) {
                 throw Error("The variables involved in the passed factor are already connected by an existing factor");
-
             }
             auto clusterA = this->hidden.find(itNA->second);
             auto clusterB = this->hidden.find(itNB->second);
@@ -96,7 +109,7 @@ namespace EFG::nodes {
             cluster->emplace(&itNB->second);
         }
 
-        this->binaryFactors.emplace(factor);
+        this->binaryFactors.emplace(factorKey, factor);
         itNA->second.activeConnections.emplace(&itNB->second, factor);
         itNB->second.activeConnections.emplace(&itNA->second, factor);
     }

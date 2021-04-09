@@ -18,7 +18,8 @@ namespace EFG::nodes {
 
             node.disabledConnections.emplace(it->first, factor);
 
-            it->first->disabledConnections.emplace(&node, factor , std::make_unique<distribution::FactorConst>(factor, distribution::Combination({ value }), categoric::Group(node.variable)));
+            Connection newConnection(factor, std::make_unique<distribution::FactorConst>(*factor, distribution::Combination({ value }), categoric::Group(node.variable)));
+            it->first->disabledConnections.emplace(&node,  std::move(newConnection));
             it->first->activeConnections.erase(toDisable);
         }
         node.activeConnections.clear();
@@ -37,7 +38,7 @@ namespace EFG::nodes {
             throw Error("invalid evidence value");
         }
         disconnect(itN->second, value);
-        this->evidences.emplace(itN->second, value);
+        this->evidences.emplace(itN->first, value);
         // split cluster cause one node is gone
         HiddenClusters splitted(*itCluster);
         this->hidden.clusters.erase(itCluster);
