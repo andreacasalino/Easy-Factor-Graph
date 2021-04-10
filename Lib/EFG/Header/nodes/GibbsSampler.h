@@ -13,7 +13,7 @@
 namespace EFG::nodes {
     class GibbsSampler : virtual public NodesContainer {
     public:
-        std::vector<std::vector<std::size_t>> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
+        std::vector<Combination> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
 
     private:
         struct NodeHidden;

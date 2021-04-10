@@ -41,6 +41,10 @@ namespace EFG::nodes {
 
         HiddenClusters hidden;
         std::map<categoric::VariablePtr, const std::size_t> evidences;
+
+
+        enum BeliefPropagationInfo { NotDone, Sum, MAP };
+        BeliefPropagationInfo lastPropagationDone = BeliefPropagationInfo::NotDone;
     };
 }
 

@@ -17,14 +17,11 @@ namespace EFG::distribution::factor::modif {
         : public cnst::FactorExponential
         , public Setter {
     public:
-        template<typename ... Args>
-        FactorExponential(Args&&... args)
-            : FactorExponential(std::forward<Args>(args)...) {
-        };
+        FactorExponential(const FactorExponential& factor, float weight) : cnst::FactorExponential(factor) {};
 
         FactorExponential(const FactorExponential& o) : cnst::FactorExponential(o) {};
 
-        inline FactorExponential& operator=(const FactorExponential& o) { *this = static_cast<const DistributionInstantiable&>(o); return *this; };
+        inline FactorExponential& operator=(const FactorExponential& o) { this->DistributionInstantiable::operator=(o); return *this; };
 
         void setWeight(float w);
     };

@@ -32,6 +32,9 @@ namespace EFG::distribution {
 
     void Changer::emplaceEntireDomain() {
         this->checkModifiable();
+        if (this->group->size() == this->values->size()) {
+            return;
+        }
         categoric::Range range(this->getGroup());
         iterator::forEach(range, [this](categoric::Range& r) {
             Combination comb(r.get());

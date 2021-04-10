@@ -21,8 +21,8 @@ namespace EFG::distribution {
     }
 
     DistributionInstantiable::DistributionInstantiable(const DistributionInstantiable& o) {
-        this->group = std::make_unique<categoric::Group>(o.group);
-        this->values = std::make_shared<std::map<Combination, float>>(o.values);
+        this->group = std::make_unique<categoric::Group>(*o.group);
+        this->values = std::make_shared<std::map<Combination, float>>(*o.values);
         this->evaluator = o.evaluator->copy();
     }
 
@@ -34,7 +34,7 @@ namespace EFG::distribution {
     }
 
     DistributionInstantiable::DistributionInstantiable(DistributionInstantiable&& o) {
-        this->group = std::make_unique<categoric::Group>(o.group);
+        this->group = std::make_unique<categoric::Group>(*o.group);
         this->values = o.values;
         o.values = std::make_shared<std::map<Combination, float>>();
         this->evaluator = o.evaluator->copy();

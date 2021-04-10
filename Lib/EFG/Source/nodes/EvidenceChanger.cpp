@@ -22,6 +22,7 @@ namespace EFG::nodes {
         if (value >= itN->second.variable->size()) {
             throw Error("invalid evidence value");
         }
+        this->lastPropagationDone = BeliefPropagationInfo::NotDone;
         disconnect(itN->second, value);
         this->evidences.emplace(itN->first, value);
         itCluster->erase(&itN->second);
@@ -65,5 +66,6 @@ namespace EFG::nodes {
             }
         }
         this->hidden = HiddenClusters(hiddenVars);
+        this->lastPropagationDone = BeliefPropagationInfo::NotDone;
     }
 }

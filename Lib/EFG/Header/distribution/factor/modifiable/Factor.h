@@ -30,8 +30,8 @@ namespace EFG::distribution::factor::modif {
         Factor(const Factor& o) : cnst::Factor(o) {};
         Factor(Factor&& o) : cnst::Factor(std::move(o)) {};
 
-        inline Factor& operator=(const Factor& o) { *this = static_cast<const DistributionInstantiable&>(o); return *this; };
-        Factor& operator=(Factor&& o) { *this = std::move(static_cast<const DistributionInstantiable&>(o)); return *this; };
+        inline Factor& operator=(const Factor& o) { this->DistributionInstantiable::operator=(o); return *this; };
+        inline Factor& operator=(Factor&& o) { this->DistributionInstantiable::operator=(std::move(o)); return *this; };
     };
 }
 

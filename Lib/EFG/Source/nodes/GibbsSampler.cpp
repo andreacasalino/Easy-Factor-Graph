@@ -6,7 +6,7 @@
  **/
 
 #include <nodes/GibbsSampler.h>
-#include <distribution/factor/const/Factor.h>
+#include <distribution/factor/modifiable/Factor.h>
 #include <algorithm>
 #include <random>
 
@@ -18,8 +18,6 @@ namespace EFG::nodes {
         inline float sample() const { return this->distribution(this->generator); };
 
         std::size_t sampleFromDiscrete(const std::vector<float>& distribution) const;
-
-        std::size_t sampleUniformDiscrete(std::size_t varSize) const;
 
     private:
         mutable std::default_random_engine generator;
@@ -36,10 +34,6 @@ namespace EFG::nodes {
             }
         }
         return distribution.size() - 1;
-    }
-
-    std::size_t GibbsSampler::UniformSampler::sampleUniformDiscrete(std::size_t varSize) const {
-        return static_cast<std::size_t>(roundf(this->sample() * (varSize - 1)));
     }
 
     GibbsSampler::SamplesStructure GibbsSampler::getSamplesStructure() const {
@@ -83,7 +77,9 @@ namespace EFG::nodes {
                     toMerge.emplace(&marginalized.back());
                 }
                 if (toMerge.empty()) {
-                    it->second.sample = sampler.sampleUniformDiscrete(it->first->size());
+                    distribution::factor::modif::Factor temp(categoric::Group(it->first));
+                    temp.setImageEntireDomain(1.f);
+                    it->second.sample = sampler.sampleFromDiscrete(temp.getProbabilities());
                 }
                 else if (1 == toMerge.size()) {
                     it->second.sample = sampler.sampleFromDiscrete((*toMerge.begin())->getProbabilities());
@@ -104,10 +100,10 @@ namespace EFG::nodes {
         return converted;
     }
 
-    std::vector<std::vector<std::size_t>> GibbsSampler::getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration) const {
+    std::vector<Combination> GibbsSampler::getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration) const {
         UniformSampler sampler;
         auto structure = this->getSamplesStructure();
-        std::vector<std::vector<std::size_t>> samples;
+        std::vector<Combination> samples;
         samples.reserve(numberOfSamples);
         evolveSamples(structure, 10 * deltaIteration, sampler);
         for (std::size_t s = 0; s < numberOfSamples; ++s) {

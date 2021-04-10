@@ -46,11 +46,13 @@ namespace EFG::nodes {
     void Inserter::Insert(distribution::DistributionPtr factor) {
         if (factor->getGroup().getVariables().size() == 1) {
             this->InsertUnary(factor);
+            this->lastPropagationDone = BeliefPropagationInfo::NotDone;
             return;
         }
 
         if (factor->getGroup().getVariables().size() == 2) {
             this->InsertBinary(factor);
+            this->lastPropagationDone = BeliefPropagationInfo::NotDone;
             return;
         }
 
