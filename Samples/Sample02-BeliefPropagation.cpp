@@ -7,18 +7,20 @@
 
 #include <nodes/Inserter.h>
 #include <nodes/EvidenceSetter.h>
+#include <nodes/EvidenceChanger.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <iostream>
 using namespace std;
 
 class TestModel 
     : public EFG::nodes::Inserter
-    , public EFG::nodes::EvidencesSetter {
+    , public EFG::nodes::EvidencesSetter
+    , public EFG::nodes::EvidencesChanger {
 public:
     TestModel() = default;
 
     void print() {
-        std::cout << "---------------------------------" << std::endl;
+        std::cout << "---------------------------------------------------------" << std::endl;
         for (auto it = this->nodes.begin(); it != this->nodes.end(); ++it) {
             std::cout << std::endl;
             std::cout << it->first->name() << std::endl;
@@ -66,7 +68,7 @@ int main() {
 
     std::map<std::string, const std::size_t> evidences;
     evidences.emplace("C", 0);
-    model.setEvidences(evidences);
+    model.resetEvidences(evidences);
 
     model.addEvidence("D", 0);
 

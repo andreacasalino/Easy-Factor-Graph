@@ -28,7 +28,7 @@ namespace EFG::nodes {
             // add this variable to the container
             auto res = this->nodes.emplace(variable, variable);
             // add an isolated hidden cluster with only this node
-            this->hidden.clusters.push_back({&itNode->second});
+            this->hidden.clusters.push_back({&res.first->second});
             return {&res.first->second, nullptr};
         }
         // already existent node
