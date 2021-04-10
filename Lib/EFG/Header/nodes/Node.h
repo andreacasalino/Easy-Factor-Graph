@@ -6,7 +6,7 @@
  **/
 
 #ifndef EFG_NODES_NODE_H
-#define EFG_NODES_NDOE_H
+#define EFG_NODES_NODE_H
 
 #include <distribution/Distribution.h>
 #include <list>

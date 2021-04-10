@@ -18,6 +18,7 @@ public:
     TestModel() = default;
 
     void print() {
+        std::cout << "---------------------------------" << std::endl;
         for (auto it = this->nodes.begin(); it != this->nodes.end(); ++it) {
             std::cout << std::endl;
             std::cout << it->first->name() << std::endl;
@@ -67,7 +68,15 @@ int main() {
     evidences.emplace("C", 0);
     model.setEvidences(evidences);
 
+    model.addEvidence("D", 0);
+
     model.print();
+
+    model.Insert(makeSimpleFactor(varB, varD, true));
+    model.print();
+
+    model.setEvidences(std::vector<std::size_t>{1,1});
+
 
     return EXIT_SUCCESS;
 }

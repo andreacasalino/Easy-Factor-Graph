@@ -31,14 +31,14 @@ namespace EFG::nodes {
         void InsertUnary(distribution::DistributionPtr factor);
         void InsertBinary(distribution::DistributionPtr factor);
 
-        // boolean -> true is the variable was new
-        // Node ptr -> the node added or already existing 
-        // throw if a variable with same name exists but it is not the passed variable
         struct NodeInfo {
-            bool wasNew;
             Node* nodePtr;
+            const std::size_t* evidence;
         };
-        NodeInfo checkAddNode(categoric::VariablePtr variable);
+        NodeInfo findOrInsertNode(categoric::VariablePtr variable);
+        void connectHidden(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor);
+        void connectObserved(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor);
+        void connectHiddenObserved(Node* hidden, Node* observed, std::size_t observation, distribution::DistributionPtr factor);
     };
 }
 

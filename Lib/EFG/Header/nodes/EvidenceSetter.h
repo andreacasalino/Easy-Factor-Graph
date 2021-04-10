@@ -13,9 +13,6 @@
 namespace EFG::nodes {
     class EvidencesSetter : virtual public NodesContainer {
     public:
-        void addEvidence(const std::string& name, std::size_t value);
-        // previous evidences are deleted
-        void setEvidences(const std::map<std::string, const std::size_t>& evidences);
         void setEvidences(const std::vector<std::size_t>& observations);
     };
 }
