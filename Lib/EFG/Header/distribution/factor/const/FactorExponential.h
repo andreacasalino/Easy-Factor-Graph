@@ -9,16 +9,18 @@
 #define EFG_DISTRIBUTION_FACTOR_CONST_FACTOR_EXP_H
 
 #include <distribution/factor/const/Factor.h>
+#include <distribution/modifiers/Changer.h>
 
 namespace EFG::distribution::factor::cnst {
-    class FactorExponential : public DistributionInstantiable {
+    class FactorExponential 
+        : public DistributionInstantiable
+        , protected Changer {
     public:
-        FactorExponential(const categoric::Group& group, float weight);
-
         FactorExponential(const Factor& factor, float weight);
 
-        // FactorExponentialConst(const FactorExponentialConst& o);
-        // FactorExponentialConst& operator=(const FactorExponentialConst& o);
+        FactorExponential(const Factor& o) : DistributionInstantiable(o) {};
+
+        float getWeight() const;
     };
 }
 

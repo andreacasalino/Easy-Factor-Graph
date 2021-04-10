@@ -26,6 +26,12 @@ namespace EFG::distribution::factor::modif {
         Factor(const categoric::Group& group)
             : cnst::Factor(group) {
         };
+
+        Factor(const Factor& o) : cnst::Factor(o) {};
+        Factor(Factor&& o) : cnst::Factor(std::move(o)) {};
+
+        inline Factor& operator=(const Factor& o) { *this = static_cast<const DistributionInstantiable&>(o); return *this; };
+        Factor& operator=(Factor&& o) { *this = std::move(static_cast<const DistributionInstantiable&>(o)); return *this; };
     };
 }
 

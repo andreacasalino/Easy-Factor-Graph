@@ -14,6 +14,12 @@ namespace EFG::distribution {
     class DistributionInstantiable : public virtual Distribution {
     protected:
         DistributionInstantiable(const categoric::Group& group, EvaluatorPtr evaluator);
+
+        DistributionInstantiable(const DistributionInstantiable& o);
+        DistributionInstantiable& operator=(const DistributionInstantiable& o);
+
+        DistributionInstantiable(DistributionInstantiable&& o);
+        DistributionInstantiable& operator=(DistributionInstantiable&& o);
     };
 }
 

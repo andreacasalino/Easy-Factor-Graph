@@ -15,11 +15,8 @@ namespace EFG::distribution::factor::cnst {
     public:
         Factor(const categoric::Group& group, bool corrOrAnti);
 
-        // Factor(const Distribution& o);
-        // Factor& operator=(const Distribution& o);
-
-        // Factor(Distribution&& o);
-        // Factor& operator=(Distribution&& o);
+        Factor(const Factor& o) : DistributionInstantiable(o) {};
+        Factor(Factor&& o) : DistributionInstantiable(std::move(o)) {};
 
         template<typename ... Distributions>
         Factor(const Distribution* first, const Distribution* second, Distributions ... distr)

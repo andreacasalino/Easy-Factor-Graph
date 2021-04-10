@@ -7,18 +7,17 @@
 
 #include <distribution/factor/const/FactorExponential.h>
 #include <distribution/factor/EvaluatorExponential.h>
+#include <distribution/DistributionIterator.h>
 
 namespace EFG::distribution::factor::cnst {
-    FactorExponential::FactorExponential(const categoric::Group& group, float weight)
-        : DistributionInstantiable(group, std::make_unique<EvaluatorExponential>(weight)) {
-        // fill values inside domain
-        throw 0;
-    }
-
     FactorExponential::FactorExponential(const Factor& factor, float weight)
-        : FactorExponential(factor.getGroup(), weight) {
-        // fill values inside domain
-        throw 0;
+        : DistributionInstantiable(factor) {
+        if (this->group->size() != this->values->size()) {
+            this->emplaceEntireDomain();
+        }
     }
     
+    float FactorExponential::getWeight() const {
+        return static_cast<const EvaluatorExponential*>(this->evaluator.get())->getWeight();
+    }
 }

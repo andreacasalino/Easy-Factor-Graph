@@ -13,4 +13,30 @@ namespace EFG::distribution {
         this->values = std::make_shared<std::map<Combination, float>>();
         this->evaluator = std::move(evaluator);
     }
+
+    DistributionInstantiable& DistributionInstantiable::operator=(const DistributionInstantiable& o) {
+        *this->group = *o.group;
+        *this->values = *o.values;
+        return *this;
+    }
+
+    DistributionInstantiable::DistributionInstantiable(const DistributionInstantiable& o) {
+        this->group = std::make_unique<categoric::Group>(o.group);
+        this->values = std::make_shared<std::map<Combination, float>>(o.values);
+        this->evaluator = o.evaluator->copy();
+    }
+
+    DistributionInstantiable& DistributionInstantiable::operator=(DistributionInstantiable&& o) {
+        *this->group = *o.group;
+        this->values = o.values;
+        o.values = std::make_shared<std::map<Combination, float>>();
+        return *this;
+    }
+
+    DistributionInstantiable::DistributionInstantiable(DistributionInstantiable&& o) {
+        this->group = std::make_unique<categoric::Group>(o.group);
+        this->values = o.values;
+        o.values = std::make_shared<std::map<Combination, float>>();
+        this->evaluator = o.evaluator->copy();
+    }
 }

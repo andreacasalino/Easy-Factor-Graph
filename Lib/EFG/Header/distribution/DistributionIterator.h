@@ -22,6 +22,9 @@ namespace EFG::distribution {
 
         inline const Combination& getCombination() const { return this->cursor->first; }
         inline float getImage() const { return this->evaluator->evaluate(this->cursor->second); }
+        inline float getImageRaw() const { return this->cursor->second; }
+
+        inline std::size_t getNumberOfValues() const { return this->values->size(); }
 
     private:
         std::shared_ptr<std::map<Combination, float>> values;
