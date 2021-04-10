@@ -7,7 +7,7 @@
 
 #include <nodes/EvidenceSetter.h>
 #include <Error.h>
-#include "EvidenceCommon.h"
+#include "Commons.h"
 
 namespace EFG::nodes {
     void EvidencesSetter::setEvidences(const std::vector<std::size_t>& observations) {
@@ -29,6 +29,6 @@ namespace EFG::nodes {
             disconnect(itN->second, *itOb);
             ++itOb;
         }
-        this->lastaPropagationDone = BeliefPropagationInfo::NotDone;
+        this->lastPropagationDone = BeliefPropagationInfo::NotDone;
     }
 }

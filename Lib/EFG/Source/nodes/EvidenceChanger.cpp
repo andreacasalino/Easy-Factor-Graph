@@ -7,7 +7,7 @@
 
 #include <nodes/EvidenceChanger.h>
 #include <Error.h>
-#include "EvidenceCommon.h"
+#include "Commons.h"
 
 namespace EFG::nodes {
     void EvidencesChanger::addEvidence(const std::string& name, std::size_t value) {

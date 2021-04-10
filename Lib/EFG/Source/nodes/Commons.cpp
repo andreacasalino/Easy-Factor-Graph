@@ -5,8 +5,9 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include "EvidenceCommon.h"
+#include "Commons.h"
 #include <distribution/factor/const/Factor.h>
+#include <algorithm>
 
 namespace EFG::nodes {
     void disconnect(Node& node, std::size_t value) {
@@ -35,5 +36,11 @@ namespace EFG::nodes {
             node.activeConnections.emplace(neighbour, factor);
         }
         node.disabledConnections.clear();
+    }
+
+    void gatherUnaries(std::set<const distribution::Distribution*>& result, const Node& node) {
+        std::for_each(node.unaryFactors.begin(), node.unaryFactors.end(), [&result](const distribution::DistributionPtr& d) {
+            result.emplace(d.get());
+        });
     }
 }

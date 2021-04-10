@@ -5,8 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_NODES_EVIDENCE_COMMON_H
-#define EFG_NODES_EVIDENCE_COMMON_H
+#ifndef EFG_NODES_COMMONS_H
+#define EFG_NODES_COMMONS_H
 
 #include <nodes/Node.h>
 
@@ -14,6 +14,8 @@ namespace EFG::nodes {
     void disconnect(Node& node, std::size_t value);
 
     void reconnnect(Node& node);
+
+    void gatherUnaries(std::set<const distribution::Distribution*>& result, const Node& node);
 }
 
 #endif

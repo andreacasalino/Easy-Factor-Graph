@@ -7,6 +7,7 @@
 
 #include <nodes/GibbsSampler.h>
 #include <distribution/factor/modifiable/Factor.h>
+#include "Commons.h"
 #include <algorithm>
 #include <random>
 
@@ -43,9 +44,7 @@ namespace EFG::nodes {
                 distribution::DistributionPtr unaryMerged;
                 if (!n->unaryFactors.empty()) {
                     std::set<const distribution::Distribution*> toMerge;
-                    std::for_each(n->unaryFactors.begin(), n->unaryFactors.end(), [&toMerge](const distribution::DistributionPtr& d) {
-                        toMerge.emplace(d.get());
-                        });
+                    gatherUnaries(toMerge, *n);
                     unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(toMerge);
                 }
                 NodeHidden node{ 0, unaryMerged, {} };

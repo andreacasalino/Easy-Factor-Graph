@@ -8,15 +8,14 @@
 #include <nodes/QueryHandler.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/DistributionIterator.h>
+#include "Commons.h"
 #include <algorithm>
 #include <Error.h>
 
 namespace EFG::nodes {
     distribution::factor::cnst::Factor mergeMessages(const Node& node) {
         std::set<const distribution::Distribution*> toMerge;
-        std::for_each(node.unaryFactors.begin(), node.unaryFactors.end(), [&toMerge](const distribution::DistributionPtr& d) {
-            toMerge.emplace(d.get());
-        });
+        gatherUnaries(toMerge, node);
         for (auto it = node.activeConnections.begin(); it != node.activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }
@@ -36,7 +35,54 @@ namespace EFG::nodes {
         return mergeMessages(itN->second).getProbabilities();
     }
 
-    // distribution::factor::cnst::Factor getJointMarginalDistribution(const std::vector<std::string>& subgroup)
+    class IndicatorFactor : public distribution::factor::cnst::Factor {
+    public:
+        IndicatorFactor(categoric::VariablePtr var, std::size_t evidence)
+            : Factor(categoric::Group(var)) {
+            this->values->emplace(Combination({ evidence }), 1.f);
+        };
+    };
+    distribution::factor::cnst::Factor QueryHandler::getJointMarginalDistribution(const std::vector<std::string>& subgroup) {
+        std::set<Node*> subGraphSet;
+        std::list<IndicatorFactor> indicators;
+        std::for_each(subgroup.begin(), subgroup.end(), [&](const std::string& name) {
+            auto itN = this->nodes.find(categoric::makeVariable(2, name));
+            if (itN == this->nodes.end()) {
+                throw Error("non existent variable");
+            }
+            auto itOb = this->evidences.find(itN->first);
+            if (itOb == this->evidences.end()) {
+                // hidden
+                subGraphSet.emplace(&itN->second);
+            }
+            else {
+                indicators.emplace_back(itN->first, itOb->second);
+            }
+        });
+
+        if (BeliefPropagationInfo::Sum != this->lastPropagationDone) {
+            this->propagateBelief(PropagationKind::Sum);
+        }
+
+        std::set<const distribution::Distribution*> toMerge;
+        std::for_each(indicators.begin(), indicators.end(), [&toMerge](const IndicatorFactor& i) {
+            toMerge.emplace(&i);
+        });
+        std::for_each(subGraphSet.begin(), subGraphSet.end(), [&toMerge, &subGraphSet](const Node* n) {
+            gatherUnaries(toMerge, *n);
+            for (auto c = n->activeConnections.begin(); c != n->activeConnections.end(); ++c) {
+                if (subGraphSet.find(c->first) == subGraphSet.end()) {
+                    // connection to node outside of the subgraph
+                    toMerge.emplace(c->second.message2This.get());
+                }
+                else {
+                    // connection to node inside of the subgraph
+                    toMerge.emplace(c->second.factor.get());
+                }
+            }
+        });
+        return distribution::factor::cnst::Factor(toMerge);
+    }
 
     std::size_t getMAPnode(const Node& node) {
         auto iter = mergeMessages(node).getIterator();
@@ -44,7 +90,7 @@ namespace EFG::nodes {
         float maxVal = iter.getImage(), val;
         ++iter;
         ++pos;
-        iterator::forEach(iter, [&](distribution::DistributionIterator& i) {
+        iterator::forEach(iter, [&maxPos, &pos, &maxVal, &val](distribution::DistributionIterator& i) {
             float val = i.getImage();
             if (val > maxVal) {
                 maxPos = pos;
