@@ -9,11 +9,14 @@
 #define EFG_NODES_INSERTER_H
 
 #include <nodes/NodesContainer.h>
+#include <nodes/InsertCapable.h>
 
 namespace EFG::nodes {
-    class Inserter : virtual public NodesContainer {
+    class Inserter 
+        : virtual public NodesContainer
+        , virtual public InsertCapable {
     public:
-        virtual void Insert(distribution::DistributionPtr factor);
+        void Insert(distribution::DistributionPtr factor) override;
 
     protected:
         class VariablePair {
