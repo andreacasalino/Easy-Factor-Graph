@@ -32,6 +32,9 @@ namespace EFG::distribution {
         // returns <nullptr, 0> in case such a combination does not exist
         std::pair<const Combination*, float> find(const Combination& comb, const categoric::Group& group) const;
 
+        // same order of combinations obtained with Range is returned
+        std::vector<float> getProbabilities() const;
+
     protected:
         Distribution() = default;
 

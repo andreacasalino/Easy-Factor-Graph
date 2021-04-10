@@ -7,6 +7,7 @@
 
 #include <distribution/Distribution.h>
 #include <distribution/DistributionIterator.h>
+#include <categoric/Range.h>
 #include <Error.h>
 #include <algorithm>
 
@@ -44,5 +45,32 @@ namespace EFG::distribution {
 
     DistributionIterator Distribution::getIterator() const {
         return DistributionIterator(*this);
+    }
+
+    std::vector<float> Distribution::getProbabilities() const {
+        std::vector<float> probs;
+        probs.reserve(this->group->size());
+        if (this->group->size() == this->values->size()) {
+            for (auto it = this->values->begin(); it != this->values->end(); ++it) {
+                probs.push_back(this->evaluator->evaluate(it->second));
+            }
+        }
+        else {
+            categoric::Range jointDomain(*this->group);
+            iterator::forEach(jointDomain, [this, &probs](categoric::Range& jointDomain) {
+                auto it = this->values->find(jointDomain.get());
+                if (it == this->values->end()) {
+                    probs.push_back(0.f);
+                }
+                else {
+                    probs.push_back(this->evaluator->evaluate(it->second));
+                }
+            });
+        }
+        // normalize values
+        float sum = 0.f;
+        std::for_each(probs.begin(), probs.end(), [&sum](const float& v) { sum += v; });
+        std::for_each(probs.begin(), probs.end(), [&sum](float& v) { v /= sum; });
+        return probs;
     }
 }
