@@ -8,6 +8,7 @@
 #include <nodes/Inserter.h>
 #include <nodes/EvidenceSetter.h>
 #include <nodes/EvidenceChanger.h>
+#include <nodes/GibbsSampler.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <iostream>
 using namespace std;
@@ -15,7 +16,8 @@ using namespace std;
 class TestModel 
     : public EFG::nodes::Inserter
     , public EFG::nodes::EvidencesSetter
-    , public EFG::nodes::EvidencesChanger {
+    , public EFG::nodes::EvidencesChanger
+    , public EFG::nodes::GibbsSampler {
 public:
     TestModel() = default;
 
@@ -44,43 +46,65 @@ EFG::distribution::DistributionPtr makeSimpleFactor(EFG::categoric::VariablePtr 
     return std::make_shared<EFG::distribution::factor::cnst::Factor>(EFG::categoric::Group(a, b), corrAnti);
 };
 
+//int main() {
+//    EFG::categoric::VariablePtr varA = EFG::categoric::makeVariable(3, "A");
+//    EFG::categoric::VariablePtr varB = EFG::categoric::makeVariable(3, "B");
+//    EFG::categoric::VariablePtr varC = EFG::categoric::makeVariable(3, "C");
+//    EFG::categoric::VariablePtr varD = EFG::categoric::makeVariable(3, "D");
+//
+//    TestModel model;
+//
+//    {
+//        auto potA = std::make_shared<EFG::distribution::factor::modif::Factor>(EFG::categoric::Group(varA));
+//        potA->add(EFG::Combination({ 0 }), 1.f);
+//        potA->add(EFG::Combination({ 1 }), 2.f);
+//        model.Insert(potA);
+//    }
+//
+//    model.Insert(makeSimpleFactor(varA, varB, true));
+//    model.Insert(makeSimpleFactor(varA, varC, true));
+//    model.Insert(makeSimpleFactor(varB, varC, true));
+//    model.Insert(makeSimpleFactor(varC, varD, true));
+//
+//    model.print();
+//
+//    std::map<std::string, const std::size_t> evidences;
+//    evidences.emplace("C", 0);
+//    model.resetEvidences(evidences);
+//
+//    model.addEvidence("D", 0);
+//
+//    model.print();
+//
+//    model.Insert(makeSimpleFactor(varB, varD, true));
+//    model.print();
+//
+//    model.setEvidences(std::vector<std::size_t>{1,1});
+//
+//    return EXIT_SUCCESS;
+//}
+
 int main() {
     EFG::categoric::VariablePtr varA = EFG::categoric::makeVariable(3, "A");
     EFG::categoric::VariablePtr varB = EFG::categoric::makeVariable(3, "B");
     EFG::categoric::VariablePtr varC = EFG::categoric::makeVariable(3, "C");
-    EFG::categoric::VariablePtr varD = EFG::categoric::makeVariable(3, "D");
 
     TestModel model;
 
-    {
-        auto potA = std::make_shared<EFG::distribution::factor::modif::Factor>(EFG::categoric::Group(varA));
-        potA->add(EFG::Combination({ 0 }), 1.f);
-        potA->add(EFG::Combination({ 1 }), 2.f);
-        model.Insert(potA);
-    }
+    //{
+    //    auto potA = std::make_shared<EFG::distribution::factor::modif::Factor>(EFG::categoric::Group(varA));
+    //    potA->add(EFG::Combination({ 0 }), 1.f);
+    //    potA->add(EFG::Combination({ 1 }), 2.f);
+    //    model.Insert(potA);
+    //}
 
-    model.Insert(makeSimpleFactor(varA, varB, true));
-    model.Insert(makeSimpleFactor(varA, varC, true));
-    model.Insert(makeSimpleFactor(varB, varC, true));
-    model.Insert(makeSimpleFactor(varC, varD, true));
+    model.Insert(makeSimpleFactor(varA, varB, false));
+    model.Insert(makeSimpleFactor(varA, varC, false));
+    model.Insert(makeSimpleFactor(varB, varC, false));
 
-    model.print();
+   auto samples =  model.getHiddenSetSamples(10);
 
-    std::map<std::string, const std::size_t> evidences;
-    evidences.emplace("C", 0);
-    model.resetEvidences(evidences);
-
-    model.addEvidence("D", 0);
-
-    model.print();
-
-    model.Insert(makeSimpleFactor(varB, varD, true));
-    model.print();
-
-    model.setEvidences(std::vector<std::size_t>{1,1});
-
-
-    return EXIT_SUCCESS;
+   return EXIT_SUCCESS;
 }
 
 

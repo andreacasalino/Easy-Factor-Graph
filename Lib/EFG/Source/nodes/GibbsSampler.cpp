@@ -44,21 +44,23 @@ namespace EFG::nodes {
 
     GibbsSampler::SamplesStructure GibbsSampler::getSamplesStructure() const {
         SamplesStructure structure;
-        for (auto itN = this->nodes.begin(); itN != this->nodes.end(); ++itN) {
-            distribution::DistributionPtr unaryMerged;
-            if(!itN->second.unaryFactors.empty()) {
-                std::set<const distribution::Distribution*> toMerge;
-                std::for_each(itN->second.unaryFactors.begin(), itN->second.unaryFactors.end(), [&toMerge](const distribution::DistributionPtr& d) {
-                    toMerge.emplace(d.get());
-                });
-                unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(toMerge);
-            }
-            NodeHidden node{ 0, unaryMerged, {} };
-            for (auto itC = itN->second.activeConnections.begin(); itC != itN->second.activeConnections.end(); ++itC) {
-                node.connections.push_back(NodeHiddenConnection{ itC->second.factor, itC->first->variable, nullptr});
-            }
-            structure.emplace(itN->first, node);
-        }
+        std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&structure](const std::set<Node*>& s) {
+            std::for_each(s.begin(), s.end(), [&structure](const Node* n) {
+                distribution::DistributionPtr unaryMerged;
+                if (!n->unaryFactors.empty()) {
+                    std::set<const distribution::Distribution*> toMerge;
+                    std::for_each(n->unaryFactors.begin(), n->unaryFactors.end(), [&toMerge](const distribution::DistributionPtr& d) {
+                        toMerge.emplace(d.get());
+                        });
+                    unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(toMerge);
+                }
+                NodeHidden node{ 0, unaryMerged, {} };
+                for (auto itC = n->activeConnections.begin(); itC != n->activeConnections.end(); ++itC) {
+                    node.connections.push_back(NodeHiddenConnection{ itC->second.factor, itC->first->variable, nullptr });
+                }
+                structure.emplace(n->variable, node);
+            });
+        });
         for (auto itS = structure.begin(); itS != structure.end(); ++itS) {
             for (auto itC = itS->second.connections.begin(); itC != itS->second.connections.end(); ++itC) {
                 auto itSS = structure.find(itC->neighbourVariable);
@@ -71,7 +73,7 @@ namespace EFG::nodes {
     void GibbsSampler::evolveSamples(SamplesStructure& structure, std::size_t iterations, UniformSampler& sampler) {
         for (std::size_t i = 0; i < iterations; ++i) {
             for (auto it = structure.begin(); it != structure.end(); ++it) {
-                std::set<const distribution::Distribution*> toMerge = { it->second.unaryMerged.get() };
+                std::set<const distribution::Distribution*> toMerge;
                 if (nullptr != it->second.unaryMerged) {
                     toMerge.emplace(it->second.unaryMerged.get());
                 }
@@ -82,6 +84,9 @@ namespace EFG::nodes {
                 }
                 if (toMerge.empty()) {
                     it->second.sample = sampler.sampleUniformDiscrete(it->first->size());
+                }
+                else if (1 == toMerge.size()) {
+                    it->second.sample = sampler.sampleFromDiscrete((*toMerge.begin())->getProbabilities());
                 }
                 else {
                     it->second.sample = sampler.sampleFromDiscrete(distribution::factor::cnst::Factor(toMerge).getProbabilities());

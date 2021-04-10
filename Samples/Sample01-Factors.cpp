@@ -7,6 +7,7 @@
 
 #include <Presenter.h>
 #include <print/DistributionPrint.h>
+#include <print/ProbabilityDistributionPrint.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <iostream>
 using namespace std;
@@ -97,9 +98,15 @@ int main () {
 	std::cout << "correlating " << std::endl;
 	cout << corr << endl << endl;
 
+	std::cout << "probability distribution pre emplace domain" << std::endl;
+	cout << corr.getProbabilities() << endl << endl;
+
 	corr.emplaceEntireDomain(),
 	std::cout << "correlating emplaced" << std::endl;
 	cout << corr << endl << endl;
+
+	std::cout << "probability distribution post emplace domain" << std::endl;
+	cout << corr.getProbabilities() << endl << endl;
 }
 
 {
