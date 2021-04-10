@@ -17,7 +17,7 @@ namespace EFG::distribution {
             throw Error("invalid combination");
         }
         auto it = this->values->find(comb);
-        if(it == this->values->end()) return 0.f;
+        if(it == this->values->end()) return this->evaluator->evaluate(0.f);
         return this->evaluator->evaluate(it->second);
     }
 
@@ -39,8 +39,8 @@ namespace EFG::distribution {
         }
 
         auto it = this->values->find(Combination(combOrdered));
-        if(it == this->values->end()) return std::make_pair(nullptr, 0.f);
-        return std::make_pair(&it->first , it->second);
+        if(it == this->values->end()) return std::make_pair(nullptr, this->evaluator->evaluate(0.f));
+        return std::make_pair(&it->first , this->evaluator->evaluate(it->second));
     };
 
     DistributionIterator Distribution::getIterator() const {
