@@ -10,11 +10,18 @@
 
 #include <nodes/bases/EvidenceAware.h>
 #include <nodes/bases/BeliefAware.h>
+#ifdef THREAD_POOL_ENABLED
+#include <nodes/bases/ThreadPoolAware.h>
+#endif
 
 namespace EFG::nodes {
     class BeliefPropagator
         : virtual public EvidenceAware
-        , virtual public BeliefAware {
+        , virtual public BeliefAware
+#ifdef THREAD_POOL_ENABLED
+        , virtual public ThreadPoolAware
+#endif
+        {
     protected:
         void propagateBelief(const PropagationKind& kind) override;
     };

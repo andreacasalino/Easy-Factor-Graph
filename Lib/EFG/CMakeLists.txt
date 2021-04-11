@@ -26,6 +26,7 @@ target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC THREAD_POOL_ENABLED)
 target_link_libraries(${PROJECT_SHORTNAME}
     PRIVATE
         XMLPrs::XML-Parser
+	PUBLIC
 		thpl::Thread-Pool
 )
 else()

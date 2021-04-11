@@ -29,7 +29,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC THREAD_POOL_ENABLED)
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
         XMLPrs::XML-Parser
-	thpl::Thread-Pool
+		thpl::Thread-Pool
 )
 else()
 target_link_libraries(${PROJECT_NAME}
