@@ -6,6 +6,7 @@
  **/
 
 #include <nodes/bases/StructureTunableAware.h>
+#include <nodes/bases/StructureAware.h>
 #include <algorithm>
 
 namespace EFG::nodes {
@@ -16,5 +17,13 @@ namespace EFG::nodes {
             result.push_back(convert(s));
         });
         return result;
+    }
+
+    std::vector<float> StructureTunableAware::getWeights() const {
+        std::vector<float> w;
+        w.reserve(this->factorsTunable.size());
+        std::for_each(this->factorsTunable.begin(), this->factorsTunable.end(), [&w](const std::set<distribution::factor::modif::FactorExponential*>& f) {
+            w.push_back((*f.begin())->getWeight());
+        });
     }
 }

@@ -14,8 +14,7 @@
 
 namespace EFG::nodes {
     class XmlExporter 
-        : virtual public NodesAware
-        , virtual public EvidenceAware
+        : virtual public EvidenceAware
         , virtual public StructureAware {
     public:
         void exportToXml(const std::string& path, const std::string& name = "") const;

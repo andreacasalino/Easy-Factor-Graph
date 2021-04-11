@@ -8,11 +8,11 @@
 #ifndef EFG_NODES_INSERT_TUNABLE_CAPABLE_H
 #define EFG_NODES_INSERT_TUNABLE_CAPABLE_H
 
-#include <nodes/bases/InsertCapable.h>
+#include <nodes/bases/Base.h>
 #include <distribution/factor/modifiable/FactorExponential.h>
 
 namespace EFG::nodes {
-    class InsertTunableCapable : virtual public InsertCapable {
+    class InsertTunableCapable : virtual public Base {
     public:
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) = 0;
 
