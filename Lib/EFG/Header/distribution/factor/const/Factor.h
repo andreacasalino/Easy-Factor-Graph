@@ -28,6 +28,9 @@ namespace EFG::distribution::factor::cnst {
         // marginalization
         Factor(const Distribution& toMarginalize, const Combination& comb, const categoric::Group& evidences);
 
+        //import from file
+        Factor(const categoric::Group& group, const std::string& fileName);
+
     protected:
         Factor(const categoric::Group& group);
 

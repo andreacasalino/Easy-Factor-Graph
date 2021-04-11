@@ -15,6 +15,8 @@ namespace EFG::nodes {
     class InsertTunableCapable : virtual public InsertCapable {
     public:
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) = 0;
+
+        virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) = 0;
     };
 }
 

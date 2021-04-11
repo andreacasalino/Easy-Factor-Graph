@@ -36,7 +36,7 @@ namespace EFG::nodes {
         this->hidden.add(splitted.clusters);
     }
 
-    void EvidencesChanger::resetEvidences(const std::map<std::string, const std::size_t>& evidences) {
+    void EvidencesChanger::resetEvidences(const std::map<std::string, std::size_t>& evidences) {
         std::map<Node*, const std::size_t> obs;
         // check values
         for (auto it = evidences.begin(); it != evidences.end(); ++it) {

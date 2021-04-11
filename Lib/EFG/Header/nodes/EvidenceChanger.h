@@ -21,7 +21,7 @@ namespace EFG::nodes {
         void addEvidence(const std::string& name, std::size_t value);
 
         // previous evidences are deleted
-        void resetEvidences(const std::map<std::string, const std::size_t>& evidences);
+        void resetEvidences(const std::map<std::string, std::size_t>& evidences);
     };
 }
 
