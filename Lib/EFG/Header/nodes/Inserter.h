@@ -8,12 +8,16 @@
 #ifndef EFG_NODES_INSERTER_H
 #define EFG_NODES_INSERTER_H
 
-#include <nodes/NodesContainer.h>
-#include <nodes/InsertCapable.h>
+#include <nodes/bases/NodesAware.h>
+#include <nodes/bases/EvidenceAware.h>
+#include <nodes/bases/BeliefAware.h>
+#include <nodes/bases/InsertCapable.h>
 
 namespace EFG::nodes {
-    class Inserter 
-        : virtual public NodesContainer
+    class Inserter
+        : virtual public NodesAware
+        , virtual public EvidenceAware
+        , virtual public BeliefAware
         , virtual public InsertCapable {
     public:
         void Insert(distribution::DistributionPtr factor) override;

@@ -46,13 +46,13 @@ namespace EFG::nodes {
     void Inserter::Insert(distribution::DistributionPtr factor) {
         if (factor->getGroup().getVariables().size() == 1) {
             this->InsertUnary(factor);
-            this->lastPropagationDone = BeliefPropagationInfo::NotDone;
+            this->lastPropagation.kind = PropagationResultInfo::NotDone;
             return;
         }
 
         if (factor->getGroup().getVariables().size() == 2) {
             this->InsertBinary(factor);
-            this->lastPropagationDone = BeliefPropagationInfo::NotDone;
+            this->lastPropagation.kind = PropagationResultInfo::NotDone;
             return;
         }
 
@@ -71,7 +71,7 @@ namespace EFG::nodes {
         auto clusterA = this->hidden.find(*nodeA);
         auto clusterB = this->hidden.find(*nodeB);
         std::set<Node*> merged = *clusterA;
-        add(merged, *clusterB);
+        add2(merged, *clusterB);
         if (clusterA == clusterB) {
             this->hidden.clusters.erase(clusterA);
         }

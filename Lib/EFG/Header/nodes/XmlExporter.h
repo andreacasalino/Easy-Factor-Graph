@@ -8,10 +8,13 @@
 #ifndef EFG_NODES_XML_EXPORTER_H
 #define EFG_NODES_XML_EXPORTER_H
 
-#include <nodes/NodesContainer.h>
+#include <nodes/bases/NodesAware.h>
+#include <nodes/bases/StructureAware.h>
 
 namespace EFG::nodes {
-    class XmlExporter : virtual public NodesContainer {
+    class XmlExporter 
+        : virtual public NodesAware
+        , virtual public StructureAware {
     public:
         void exportToXml(const std::string& path, const std::string& file);
     };

@@ -8,14 +8,16 @@
 #ifndef EFG_NODES_QUERY_HANDLER_H
 #define EFG_NODES_QUERY_HANDLER_H
 
-#include <nodes/NodesContainer.h>
-#include <nodes/BeliefPropagationCapable.h>
+#include <nodes/bases/NodesAware.h>
+#include <nodes/bases/EvidenceAware.h>
+#include <nodes/bases/BeliefAware.h>
 #include <distribution/factor/const/Factor.h>
 
 namespace EFG::nodes {
-    class QueryHandler 
-		: virtual public NodesContainer
-		, virtual public BeliefPropagationCapable {
+    class QueryHandler
+		: virtual public NodesAware
+		, virtual public EvidenceAware
+		, virtual public BeliefAware {
     public:
 		/** \brief Returns the marginal probabilty of the variable passed P(var|model, observations),
 		* \details on the basis of the last observations set (see Node_factory::Set_Observation_Set_var)

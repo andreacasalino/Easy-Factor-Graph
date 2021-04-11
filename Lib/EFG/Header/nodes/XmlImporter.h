@@ -8,12 +8,12 @@
 #ifndef EFG_NODES_XML_IMPORTER_H
 #define EFG_NODES_XML_IMPORTER_H
 
-#include <nodes/NodesContainer.h>
-#include <nodes/InsertCapable.h>
+#include <nodes/bases/NodesAware.h>
+#include <nodes/bases/InsertCapable.h>
 
 namespace EFG::nodes {
-    class XmlImporter 
-        : virtual public NodesContainer
+    class XmlImporter
+        : virtual public NodesAware
         , virtual public InsertCapable {
     public:
         void importFromXml(const std::string& path, const std::string& file);

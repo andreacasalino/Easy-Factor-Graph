@@ -8,12 +8,18 @@
 #ifndef EFG_NODES_EVIDENCE_CHANGER_H
 #define EFG_NODES_EVIDENCE_CHANGER_H
 
-#include <nodes/NodesContainer.h>
+#include <nodes/bases/NodesAware.h>
+#include <nodes/bases/EvidenceAware.h>
+#include <nodes/bases/BeliefAware.h>
 
 namespace EFG::nodes {
-    class EvidencesChanger : virtual public NodesContainer {
+    class EvidencesChanger 
+        : virtual public NodesAware
+        , virtual public EvidenceAware
+        , virtual public BeliefAware {
     public:
         void addEvidence(const std::string& name, std::size_t value);
+
         // previous evidences are deleted
         void resetEvidences(const std::map<std::string, const std::size_t>& evidences);
     };

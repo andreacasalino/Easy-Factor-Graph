@@ -8,15 +8,13 @@
 #ifndef EFG_NODES_INSERT_CAPABLE_H
 #define EFG_NODES_INSERT_CAPABLE_H
 
+#include <nodes/bases/Base.h>
 #include <distribution/Distribution.h>
 
 namespace EFG::nodes {
-    class InsertCapable {
+    class InsertCapable : virtual public Base {
     public:
-        virtual void Insert(distribution::DistributionPtr factor) = 0;
-
-    protected:
-        InsertCapable() = default;
+        virtual void Insert(distribution::DistributionPtr toInsert) = 0;
     };
 }
 

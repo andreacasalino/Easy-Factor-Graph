@@ -8,13 +8,13 @@
 #ifndef EFG_NODES_BELIEF_PROPAGATOR_H
 #define EFG_NODES_BELIEF_PROPAGATOR_H
 
-#include <nodes/NodesContainer.h>
-#include <nodes/BeliefPropagationCapable.h>
+#include <nodes/bases/EvidenceAware.h>
+#include <nodes/bases/BeliefAware.h>
 
 namespace EFG::nodes {
     class BeliefPropagator
-        : virtual public NodesContainer
-        , virtual public BeliefPropagationCapable {
+        : virtual public EvidenceAware
+        , virtual public BeliefAware {
     protected:
         void propagateBelief(const PropagationKind& kind) override;
     };

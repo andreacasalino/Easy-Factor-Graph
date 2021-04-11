@@ -25,11 +25,11 @@ namespace EFG::nodes {
     }
 
     std::vector<float> QueryHandler::getMarginalDistribution(const std::string& var) {
-        auto itN = this->nodes.find(categoric::makeVariable(2, var));
+        auto itN = this->findNode(var);
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
-        if (BeliefPropagationInfo::Sum != this->lastPropagationDone) {
+        if (PropagationResultInfo::Sum != this->lastPropagation.kind) {
             this->propagateBelief(PropagationKind::Sum);
         }
         return mergeMessages(itN->second).getProbabilities();
@@ -46,7 +46,7 @@ namespace EFG::nodes {
         std::set<Node*> subGraphSet;
         std::list<IndicatorFactor> indicators;
         std::for_each(subgroup.begin(), subgroup.end(), [&](const std::string& name) {
-            auto itN = this->nodes.find(categoric::makeVariable(2, name));
+            auto itN = this->findNode(name);
             if (itN == this->nodes.end()) {
                 throw Error("non existent variable");
             }
@@ -60,7 +60,7 @@ namespace EFG::nodes {
             }
         });
 
-        if (BeliefPropagationInfo::Sum != this->lastPropagationDone) {
+        if (PropagationResultInfo::Sum != this->lastPropagation.kind) {
             this->propagateBelief(PropagationKind::Sum);
         }
 
@@ -102,18 +102,18 @@ namespace EFG::nodes {
     }
 
     std::size_t QueryHandler::getMAP(const std::string& var) {
-        auto itN = this->nodes.find(categoric::makeVariable(2, var));
+        auto itN = this->findNode(var);
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
-        if (BeliefPropagationInfo::Sum != this->lastPropagationDone) {
+        if (PropagationResultInfo::MAP != this->lastPropagation.kind) {
             this->propagateBelief(PropagationKind::MAP);
         }
         return getMAPnode(itN->second);
     }
 
     std::vector<size_t> QueryHandler::getHiddenSetMAP() {
-        if (BeliefPropagationInfo::Sum != this->lastPropagationDone) {
+        if (PropagationResultInfo::MAP != this->lastPropagation.kind) {
             this->propagateBelief(PropagationKind::MAP);
         }
         auto hiddenVars = this->getHiddenVariables();

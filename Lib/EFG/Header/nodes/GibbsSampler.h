@@ -8,10 +8,10 @@
 #ifndef EFG_NODES_GIBBS_SAMPLER_H
 #define EFG_NODES_GIBBS_SAMPLER_H
 
-#include <nodes/NodesContainer.h>
+#include <nodes/bases/EvidenceAware.h>
 
 namespace EFG::nodes {
-    class GibbsSampler : virtual public NodesContainer {
+    class GibbsSampler : virtual public EvidenceAware {
     public:
         std::vector<Combination> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
 
