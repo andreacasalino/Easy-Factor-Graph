@@ -12,13 +12,15 @@
 #include <nodes/bases/EvidenceAware.h>
 #include <nodes/bases/BeliefAware.h>
 #include <nodes/bases/InsertCapable.h>
+#include <nodes/bases/StructureAware.h>
 
 namespace EFG::nodes {
     class Inserter
         : virtual public NodesAware
         , virtual public EvidenceAware
         , virtual public BeliefAware
-        , virtual public InsertCapable {
+        , virtual public InsertCapable
+        , virtual public StructureAware {
     public:
         void Insert(distribution::DistributionPtr factor) override;
 

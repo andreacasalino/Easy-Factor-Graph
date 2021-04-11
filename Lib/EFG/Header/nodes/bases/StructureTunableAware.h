@@ -9,14 +9,15 @@
 #define EFG_NODES_STRUCTURE_TUNABLE_AWARE_H
 
 #include <nodes/bases/StructureAware.h>
+#include <distribution/factor/modifiable/FactorExponential.h>
 
 namespace EFG::nodes {
     class StructureTunableAware : virtual public StructureAware {
     public:
-        inline const std::vector<std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>>>& getFactorsTunable() const { return this->factorstunable; };
+        std::vector<std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>> getFactorsTunable() const;
 
     protected:
-        std::vector<std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>>> factorstunable;
+        std::vector<std::set<distribution::factor::modif::FactorExponential*>> factorsTunable;
     };
 }
 

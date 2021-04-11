@@ -44,19 +44,32 @@ namespace EFG::nodes {
     }
 
     void Inserter::Insert(distribution::DistributionPtr factor) {
+        if (3 <= factor->getGroup().getVariables().size()) {
+            throw Error("Only binary or unary factors can be added");
+        }
+
         if (factor->getGroup().getVariables().size() == 1) {
             this->InsertUnary(factor);
-            this->lastPropagation.kind = PropagationResultInfo::NotDone;
-            return;
         }
-
-        if (factor->getGroup().getVariables().size() == 2) {
+        else {
             this->InsertBinary(factor);
-            this->lastPropagation.kind = PropagationResultInfo::NotDone;
+        }
+
+        this->lastPropagation.kind = PropagationResultInfo::NotDone;
+
+        distribution::factor::cnst::Factor* factorPt = dynamic_cast<distribution::factor::cnst::Factor*>(factor.get());
+        if (nullptr != factorPt) {
+            this->factors.emplace(factorPt);
             return;
         }
 
-        throw Error("Only binary or unary factors can be added");
+        distribution::factor::cnst::FactorExponential* factorExpPt = dynamic_cast<distribution::factor::cnst::FactorExponential*>(factor.get());
+        if (nullptr != factorExpPt) {
+            this->factorsExp.emplace(factorExpPt);
+            return;
+        }
+
+        throw Error("unrecognized factor type");
     }
 
     void Inserter::InsertUnary(distribution::DistributionPtr factor) {

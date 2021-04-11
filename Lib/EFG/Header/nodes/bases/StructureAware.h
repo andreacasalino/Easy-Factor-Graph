@@ -16,12 +16,24 @@
 namespace EFG::nodes {
     class StructureAware : virtual public Base {
     public:
-        inline const std::vector<std::shared_ptr<distribution::factor::cnst::Factor>>& getFactors() const { return this->factors; };
-        inline const std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>>& getFactorsExp() const { return this->factorsExp; };
+        inline std::vector<std::shared_ptr<distribution::factor::cnst::Factor>> getFactors() const { return convert(this->factors); };
+        inline std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>> getFactorsExp() const { return convert(this->factorsExp); };
 
     protected:
-        std::vector<std::shared_ptr<distribution::factor::cnst::Factor>> factors;
-        std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>> factorsExp;
+        template <typename F> 
+        static std::vector<std::shared_ptr<F>> convert(const std::set<F*>& collection) {
+            std::vector<std::shared_ptr<F>> result;
+            result.reserve(collection.size());
+            for (auto it = collection.begin(); it != collection.end(); ++it) {
+                std::shared_ptr<F> temp;
+                temp.reset(*it);
+                result.push_back(temp);
+            }
+            return result;
+        };
+
+        std::set<distribution::factor::cnst::Factor*> factors;
+        std::set<distribution::factor::cnst::FactorExponential*> factorsExp;
     };
 }
 
