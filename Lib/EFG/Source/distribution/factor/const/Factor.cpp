@@ -12,6 +12,8 @@
 #include <Error.h>
 #include <algorithm>
 #include <list>
+#include <fstream>
+#include <Parser.h>
 
 namespace EFG::distribution::factor::cnst {
     Factor::Factor(const categoric::Group& group)
@@ -152,6 +154,36 @@ namespace EFG::distribution::factor::cnst {
         for (std::size_t s = 0; s < size; ++s) {
             this->values->erase(comb);
             std::for_each(comb.begin(), comb.end(), [](std::size_t& v) { v += 1; });
+        }
+    }
+
+    void convertCombination(const std::list<std::string>& slices, std::vector<std::size_t>& comb, float& image) {
+        if (slices.size() != (comb.size() + 1)) {
+            throw Error("invalid combination");
+        }
+        auto it = slices.begin();
+        for (std::size_t k = 0; k<comb.size(); ++k) {
+            comb[k] = std::atoi(it->c_str());
+            ++it;
+        }
+        image = static_cast<float>(std::atof(it->c_str()));
+    };
+    Factor::Factor(const categoric::Group& group, const std::string& fileName)
+        : Factor(group) {
+        std::ifstream reader(fileName);
+        if (!reader.is_open()) {
+            throw Error("invalid file to import factor");
+        }
+        std::vector<std::size_t> combination;
+        float image;
+        combination.resize(this->group->getVariables().size());
+        std::string line;
+        while (!reader.eof()) {
+            std::getline(reader, line);
+            convertCombination(xmlPrs::Parser::sliceFragments(line), combination, image);
+            Combination comb(combination);
+            this->checkCombination(comb, image);
+            this->values->emplace(comb, image);
         }
     }
 }

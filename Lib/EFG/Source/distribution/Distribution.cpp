@@ -12,6 +12,22 @@
 #include <algorithm>
 
 namespace EFG::distribution {
+    void Distribution::checkCombination(const Combination& comb, const float& value) const {
+        if (value < 0.f) {
+            throw Error("negative value is invalid");
+        }
+        if (comb.size() != this->getGroup().getVariables().size()) {
+            throw Error("invalid combination size");
+        }
+        std::size_t k = 0;
+        std::for_each(this->getGroup().getVariables().begin(), this->getGroup().getVariables().end(), [&k, &comb](const categoric::VariablePtr& v) {
+            if (comb.data()[k] >= v->size()) {
+                throw Error("combination value exceed variable domain size");
+            }
+            ++k;
+            });
+    }
+
     float Distribution::find(const Combination& comb) const {
         if(comb.size() != this->getGroup().getVariables().size()) {
             throw Error("invalid combination");

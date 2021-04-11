@@ -38,6 +38,8 @@ namespace EFG::distribution {
     protected:
         Distribution() = default;
 
+        void checkCombination(const Combination& comb, const float& value) const;
+
         std::unique_ptr<categoric::Group> group;
         std::shared_ptr<std::map<Combination, float>> values;
         EvaluatorPtr evaluator;

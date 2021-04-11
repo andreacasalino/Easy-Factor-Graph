@@ -16,8 +16,6 @@ namespace EFG::distribution {
         : public virtual Distribution
         , public observer::MultiObservable {
     protected:
-        void checkCombination(const Combination& comb, const float& value) const;
-
         void checkModifiable() const;
     };
 }
