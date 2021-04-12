@@ -24,7 +24,7 @@ namespace EFG::nodes {
     public:
         void Insert(distribution::DistributionPtr factor) override;
 
-        void Insert(const distribution::factor::cnst::Factor& factor) override;
+        void Insert(const distribution::Distribution& factor) override;
 
         void Insert(const distribution::factor::cnst::FactorExponential& factor) override;
 

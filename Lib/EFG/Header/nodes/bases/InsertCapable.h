@@ -9,7 +9,6 @@
 #define EFG_NODES_INSERT_CAPABLE_H
 
 #include <nodes/bases/Base.h>
-#include <distribution/factor/const/Factor.h>
 #include <distribution/factor/const/FactorExponential.h>
 
 namespace EFG::nodes {
@@ -18,7 +17,7 @@ namespace EFG::nodes {
         virtual void Insert(distribution::DistributionPtr toInsert) = 0;
 
         // here is copied using the variables stored inside this model
-        virtual void Insert(const distribution::factor::cnst::Factor& factor) = 0;
+        virtual void Insert(const distribution::Distribution& factor) = 0;
 
         // here is copied using the variables stored inside this model
         virtual void Insert(const distribution::factor::cnst::FactorExponential& factor) = 0;

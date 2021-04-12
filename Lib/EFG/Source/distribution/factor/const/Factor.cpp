@@ -20,6 +20,14 @@ namespace EFG::distribution::factor::cnst {
         : DistributionInstantiable(group, std::make_unique<EvaluatorBasic>()) {
     }
 
+    Factor::Factor(const Distribution& o)
+        : Factor(o.getGroup()) {
+        auto it = o.getIterator();
+        iterator::forEach(it, [this](const DistributionIterator& i) {
+            this->values->emplace(i.getCombination(), i.getImage());
+        });
+    }
+
     categoric::Group mergeGroups(const std::set<const Distribution*>& distr) {
         if (distr.size() <= 1) {
             throw Error("you can merge at least 2 distributions");

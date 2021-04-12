@@ -150,7 +150,7 @@ namespace EFG::nodes {
         return converted;
     }
 
-    void Inserter::Insert(const distribution::factor::cnst::Factor& factor) {
+    void Inserter::Insert(const distribution::Distribution& factor) {
         std::shared_ptr<distribution::factor::modif::Factor> distr = std::make_shared<distribution::factor::modif::Factor>(factor);
         distr->replaceGroup(this->convert(factor.getGroup()));
         this->Insert(distr);

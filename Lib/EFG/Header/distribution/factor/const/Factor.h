@@ -18,6 +18,8 @@ namespace EFG::distribution::factor::cnst {
         Factor(const Factor& o) : DistributionInstantiable(o) {};
         Factor(Factor&& o) : DistributionInstantiable(std::move(o)) {};
 
+        Factor(const Distribution& o);
+
         template<typename ... Distributions>
         Factor(const Distribution* first, const Distribution* second, Distributions ... distr)
             : Factor(pack(first, second, distr...)) {
