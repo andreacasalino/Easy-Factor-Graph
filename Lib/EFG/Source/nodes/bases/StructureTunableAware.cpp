@@ -25,5 +25,6 @@ namespace EFG::nodes {
         std::for_each(this->factorsTunable.begin(), this->factorsTunable.end(), [&w](const std::set<distribution::factor::modif::FactorExponential*>& f) {
             w.push_back((*f.begin())->getWeight());
         });
+        return w;
     }
 }

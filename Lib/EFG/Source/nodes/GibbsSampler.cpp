@@ -37,8 +37,8 @@ namespace EFG::nodes {
         return distribution.size() - 1;
     }
 
-    GibbsSampler::SamplesStructure GibbsSampler::getSamplesStructure() const {
-        SamplesStructure structure;
+    GibbsSampler::HiddenStructure GibbsSampler::getHiddenStructure() const {
+        HiddenStructure structure;
         std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&structure](const std::set<Node*>& s) {
             std::for_each(s.begin(), s.end(), [&structure](const Node* n) {
                 distribution::DistributionPtr unaryMerged;
@@ -56,17 +56,17 @@ namespace EFG::nodes {
         });
         for (auto itS = structure.begin(); itS != structure.end(); ++itS) {
             for (auto itC = itS->second.connections.begin(); itC != itS->second.connections.end(); ++itC) {
-                auto itSS = structure.find(itC->neighbourVariable);
-                itC->neighbourSample = &itSS->second.sample;
+                itC->neighbourSample = &structure.find(itC->neighbourVariable)->second.sample;
             }
         }
         return structure;
     }
 
-    void GibbsSampler::evolveSamples(SamplesStructure& structure, std::size_t iterations, UniformSampler& sampler) {
+    void GibbsSampler::evolveSamples(HiddenStructure& structure, std::size_t iterations, UniformSampler& sampler) {
+        std::set<const distribution::Distribution*> toMerge;
         for (std::size_t i = 0; i < iterations; ++i) {
             for (auto it = structure.begin(); it != structure.end(); ++it) {
-                std::set<const distribution::Distribution*> toMerge;
+                toMerge.clear();
                 if (nullptr != it->second.unaryMerged) {
                     toMerge.emplace(it->second.unaryMerged.get());
                 }
@@ -90,7 +90,7 @@ namespace EFG::nodes {
         }
     }
 
-    std::vector<std::size_t> GibbsSampler::convert(const SamplesStructure& structure) {
+    std::vector<std::size_t> GibbsSampler::convert(const HiddenStructure& structure) {
         std::vector<std::size_t> converted;
         converted.reserve(structure.size());
         for (auto it = structure.begin(); it != structure.end(); ++it) {
@@ -101,14 +101,13 @@ namespace EFG::nodes {
 
     std::vector<Combination> GibbsSampler::getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration) const {
         UniformSampler sampler;
-        auto structure = this->getSamplesStructure();
+        auto structure = this->getHiddenStructure();
         std::vector<Combination> samples;
         samples.reserve(numberOfSamples);
         evolveSamples(structure, 10 * deltaIteration, sampler);
         for (std::size_t s = 0; s < numberOfSamples; ++s) {
             evolveSamples(structure, deltaIteration, sampler);
             samples.push_back(convert(structure));
-
         }
         return samples;
     }

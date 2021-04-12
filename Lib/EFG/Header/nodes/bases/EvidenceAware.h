@@ -20,7 +20,7 @@ namespace EFG::nodes {
 
         std::list<std::set<Node*>> clusters;
     };
-    void add2(std::set<Node*>& recipient, const std::set<Node*>& toAdd);
+    void copyCluster(std::set<Node*>& recipient, const std::set<Node*>& toAdd);
 
     class EvidenceAware : virtual public Base {
     public:

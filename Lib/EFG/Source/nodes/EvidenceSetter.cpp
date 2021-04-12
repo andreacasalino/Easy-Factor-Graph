@@ -29,6 +29,6 @@ namespace EFG::nodes {
             disconnect(itN->second, *itOb);
             ++itOb;
         }
-        this->lastPropagation.kind = PropagationResultInfo::NotDone;
+        this->lastPropagation.reset();
     }
 }

@@ -10,19 +10,7 @@
 #include <Error.h>
 
 namespace EFG::nodes {
-    Inserter::VariablePair::VariablePair(const std::string& nameA, const std::string& nameB) {
-        this->pairName.reserve(nameA.size() + nameB.size());
-        if (nameA < nameB) {
-            this->pairName += nameA;
-            this->pairName += nameB;
-        }
-        else {
-            this->pairName += nameB;
-            this->pairName += nameA;
-        }
-    }
-
-    Inserter::NodeInfo Inserter::findOrInsertNode(categoric::VariablePtr variable) {
+    Inserter::FindOrInsertionResult Inserter::findOrInsertNode(categoric::VariablePtr variable) {
         auto itNode = this->nodes.find(variable);
         if (itNode == this->nodes.end()) {
             // add this variable to the container
@@ -35,12 +23,11 @@ namespace EFG::nodes {
         if (variable.get() != itNode->first.get()) {
             throw Error("New factor to insert should refer to the same variable stored inside the model");
         }
-        const std::size_t* ob = nullptr;
         auto itEv = this->evidences.find(variable);
         if(itEv != this->evidences.end()) {
-            ob = &itEv->second;
+            return { &itNode->second, &itEv->second };
         }
-        return {&itNode->second, ob};
+        return {&itNode->second, nullptr};
     }
 
     void Inserter::Insert(distribution::DistributionPtr factor) {
@@ -55,7 +42,7 @@ namespace EFG::nodes {
             this->InsertBinary(factor);
         }
 
-        this->lastPropagation.kind = PropagationResultInfo::NotDone;
+        this->lastPropagation.reset();
 
         distribution::factor::cnst::Factor* factorPt = dynamic_cast<distribution::factor::cnst::Factor*>(factor.get());
         if (nullptr != factorPt) {
@@ -83,8 +70,11 @@ namespace EFG::nodes {
         // update clusters
         auto clusterA = this->hidden.find(*nodeA);
         auto clusterB = this->hidden.find(*nodeB);
+        if (clusterA == clusterB) {
+            return;
+        }
         std::set<Node*> merged = *clusterA;
-        add2(merged, *clusterB);
+        copyCluster(merged, *clusterB);
         if (clusterA == clusterB) {
             this->hidden.clusters.erase(clusterA);
         }
@@ -100,7 +90,7 @@ namespace EFG::nodes {
         nodeB->disabledConnections.emplace(nodeA, factor);
     };
 
-    void Inserter::connectHiddenObserved(Node* hidden, Node* observed, std::size_t observation, distribution::DistributionPtr factor) {
+    void Inserter::connectHiddenObserved(Node* hidden, Node* observed, distribution::DistributionPtr factor, std::size_t observation) {
         observed->disabledConnections.emplace(hidden, factor);
 
         Connection newConnection(factor, std::make_unique<distribution::factor::cnst::Factor>(*factor, Combination({ observation }), categoric::Group(observed->variable)));
@@ -108,15 +98,15 @@ namespace EFG::nodes {
     };
 
     void Inserter::InsertBinary(distribution::DistributionPtr factor) {
-        VariablePair factorKey((*factor->getGroup().getVariables().begin())->name(), (*factor->getGroup().getVariables().rbegin())->name());
-        if (this->binaryFactors.find(factorKey) != this->binaryFactors.end()) {
-            throw Error("The variables involved in the passed factor are already connected by an existing factor");
-        }
-
         auto nodeAInfo = this->findOrInsertNode(*factor->getGroup().getVariables().begin());
         auto nodeBInfo = this->findOrInsertNode(*factor->getGroup().getVariables().rbegin());
 
-        this->binaryFactors.emplace(factorKey, factor);
+        if (nodeAInfo.nodePtr->activeConnections.find(nodeBInfo.nodePtr) != nodeAInfo.nodePtr->activeConnections.end()) {
+            throw Error("The variables involved in the passed factor are already connected by an existing factor");
+        }
+        if (nodeAInfo.nodePtr->disabledConnections.find(nodeBInfo.nodePtr) != nodeAInfo.nodePtr->disabledConnections.end()) {
+            throw Error("The variables involved in the passed factor are already connected by an existing factor");
+        }
 
         if ((nodeAInfo.evidence == nullptr) && (nodeBInfo.evidence == nullptr)) {
             this->connectHidden(nodeAInfo.nodePtr, nodeBInfo.nodePtr, factor);
@@ -128,13 +118,11 @@ namespace EFG::nodes {
             return;
         }
 
-        if (nodeAInfo.evidence != nullptr) {
-            // A is observed, B is hidden
-            this->connectHiddenObserved(nodeBInfo.nodePtr, nodeAInfo.nodePtr, *nodeAInfo.evidence, factor);
-        }
-        else {
+        if (nodeAInfo.evidence == nullptr) {
             // A is hidden, B is observed
-            this->connectHiddenObserved(nodeAInfo.nodePtr, nodeBInfo.nodePtr, *nodeBInfo.evidence, factor);
+            this->connectHiddenObserved(nodeAInfo.nodePtr, nodeBInfo.nodePtr, factor, *nodeBInfo.evidence);
         }
+        // A is observed, B is hidden
+        this->connectHiddenObserved(nodeBInfo.nodePtr, nodeAInfo.nodePtr, factor, *nodeAInfo.evidence);
     }
 }

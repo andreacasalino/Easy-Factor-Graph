@@ -34,7 +34,7 @@ namespace EFG::nodes {
                 }
             }
             for (auto conn = connectedClusters.begin(); conn != connectedClusters.end(); ++conn) {
-                add2(newCluster, **conn);
+                copyCluster(newCluster, **conn);
                 clusters.erase(*conn);
             }
             clusters.push_back(newCluster);
@@ -54,7 +54,7 @@ namespace EFG::nodes {
     void HiddenClusters::add(const std::list<std::set<Node*>>& toAdd) {
         std::for_each(toAdd.begin(), toAdd.end(), [this](const std::set<Node*>& c) {
             this->clusters.emplace_back();
-            add2(this->clusters.back(), c);
+            copyCluster(this->clusters.back(), c);
         });
     }
 

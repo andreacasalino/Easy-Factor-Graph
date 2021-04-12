@@ -24,30 +24,18 @@ namespace EFG::nodes {
     public:
         void Insert(distribution::DistributionPtr factor) override;
 
-    protected:
-        class VariablePair {
-        public:
-            VariablePair(const std::string& nameA, const std::string& nameB);
-
-            inline bool operator<(const VariablePair& o) const { return this->pairName < o.pairName; };
-
-        private:
-            std::string pairName;
-        };
-        std::map<VariablePair, distribution::DistributionPtr> binaryFactors;
-
     private:
         void InsertUnary(distribution::DistributionPtr factor);
         void InsertBinary(distribution::DistributionPtr factor);
 
-        struct NodeInfo {
+        struct FindOrInsertionResult {
             Node* nodePtr;
             const std::size_t* evidence;
         };
-        NodeInfo findOrInsertNode(categoric::VariablePtr variable);
+        FindOrInsertionResult findOrInsertNode(categoric::VariablePtr variable);
         void connectHidden(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor);
         void connectObserved(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor);
-        void connectHiddenObserved(Node* hidden, Node* observed, std::size_t observation, distribution::DistributionPtr factor);
+        void connectHiddenObserved(Node* hidden, Node* observed, distribution::DistributionPtr factor, std::size_t observation);
     };
 }
 

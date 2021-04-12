@@ -19,6 +19,11 @@ namespace EFG::nodes {
         for (auto it = node.activeConnections.begin(); it != node.activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }
+        if (toMerge.empty()) {
+            distribution::factor::modif::Factor factor(categoric::Group(node.variable));
+            factor.setImageEntireDomain(1.f);
+            return factor;
+        }
         distribution::factor::modif::Factor factor(toMerge);
         factor.emplaceEntireDomain();
         return factor;
@@ -29,7 +34,7 @@ namespace EFG::nodes {
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
-        if (PropagationResultInfo::Sum != this->lastPropagation.kind) {
+        if (nullptr == this->lastPropagation) {
             this->propagateBelief(PropagationKind::Sum);
         }
         return mergeMessages(itN->second).getProbabilities();
@@ -60,7 +65,7 @@ namespace EFG::nodes {
             }
         });
 
-        if (PropagationResultInfo::Sum != this->lastPropagation.kind) {
+        if (nullptr == this->lastPropagation) {
             this->propagateBelief(PropagationKind::Sum);
         }
 
@@ -106,14 +111,14 @@ namespace EFG::nodes {
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
-        if (PropagationResultInfo::MAP != this->lastPropagation.kind) {
+        if (nullptr == this->lastPropagation) {
             this->propagateBelief(PropagationKind::MAP);
         }
         return getMAPnode(itN->second);
     }
 
     std::vector<size_t> QueryHandler::getHiddenSetMAP() {
-        if (PropagationResultInfo::MAP != this->lastPropagation.kind) {
+        if (nullptr == this->lastPropagation) {
             this->propagateBelief(PropagationKind::MAP);
         }
         auto hiddenVars = this->getHiddenVariables();

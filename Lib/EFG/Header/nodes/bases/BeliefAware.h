@@ -10,14 +10,15 @@
 
 #include <nodes/Node.h>
 #include <nodes/bases/Base.h>
+#include <memory>
 
 namespace EFG::nodes {
-    enum PropagationResultInfo { NotDone, Sum, MAP };
+    enum PropagationKind { Sum, MAP };
 
     struct PropagationResult {
-        PropagationResultInfo kind = PropagationResultInfo::NotDone;
-        std::size_t iterations = 0;
-        bool terminated = true;
+        PropagationKind kindDone;
+        std::size_t iterationsRequired;
+        bool wasTerminated;
     };
 
     class BeliefAware : virtual public Base {
@@ -25,14 +26,13 @@ namespace EFG::nodes {
         void setPropagationMaxIterations(std::size_t iterations) { this->maxPropagationIterations = iterations; };
         inline std::size_t getPropagationMaxIterations() const { return this->maxPropagationIterations; }
 
-        inline PropagationResult getLastPropagationResult() const { return this->lastPropagation; };
+        inline const PropagationResult* getLastPropagationResult() const {return this->lastPropagation.get(); };
 
     protected:
-        enum PropagationKind { Sum, MAP };
         virtual void propagateBelief(const PropagationKind& kind) = 0;
 
         std::size_t maxPropagationIterations = 1000;
-        PropagationResult lastPropagation;
+        std::unique_ptr<PropagationResult> lastPropagation;
     };
 }
 

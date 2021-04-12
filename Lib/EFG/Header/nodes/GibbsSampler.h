@@ -27,14 +27,14 @@ namespace EFG::nodes {
             distribution::DistributionPtr unaryMerged;
             std::list<NodeHiddenConnection> connections;
         };
-        typedef std::map<categoric::VariablePtr, NodeHidden> SamplesStructure;
+        typedef std::map<categoric::VariablePtr, NodeHidden> HiddenStructure;
 
-        SamplesStructure getSamplesStructure() const;
+        HiddenStructure getHiddenStructure() const;
 
         class UniformSampler;
-        static void evolveSamples(SamplesStructure& structure, std::size_t iterations, UniformSampler& sampler);
+        static void evolveSamples(HiddenStructure& structure, std::size_t iterations, UniformSampler& sampler);
 
-        static std::vector<std::size_t> convert(const SamplesStructure& structure);
+        static std::vector<std::size_t> convert(const HiddenStructure& structure);
     };
 }
 
