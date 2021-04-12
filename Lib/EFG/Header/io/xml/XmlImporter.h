@@ -9,10 +9,12 @@
 #define EFG_NODES_XML_IMPORTER_H
 
 #include <nodes/bases/InsertCapable.h>
+#include <nodes/EvidenceChanger.h>
 
 namespace EFG::nodes {
     class XmlImporter
-        : virtual public InsertCapable {
+        : virtual public InsertCapable
+        , virtual public EvidencesChanger {
     public:
         void importFromXml(const std::string& path, const std::string& file);
     };

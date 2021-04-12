@@ -7,7 +7,10 @@
 
 #include <nodes/Inserter.h>
 #include <distribution/factor/const/Factor.h>
+#include <distribution/factor/modifiable/Factor.h>
+#include <distribution/factor/modifiable/FactorExponential.h>
 #include <Error.h>
+#include <algorithm>
 
 namespace EFG::nodes {
     Inserter::FindOrInsertionResult Inserter::findOrInsertNode(categoric::VariablePtr variable) {
@@ -124,5 +127,38 @@ namespace EFG::nodes {
         }
         // A is observed, B is hidden
         this->connectHiddenObserved(nodeBInfo.nodePtr, nodeAInfo.nodePtr, factor, *nodeAInfo.evidence);
+    }
+
+    categoric::Group Inserter::convert(const categoric::Group& toConvert) {
+        auto findAndCheck = [this](const categoric::VariablePtr& var) {
+            auto itVar = this->nodes.find(var);
+            if (itVar == this->nodes.end()) {
+                return this->findOrInsertNode(var).nodePtr->variable;
+            }
+            if (itVar->first->size() != var->size()) {
+                throw Error("variable with size mismatch");
+            }
+            return itVar->first;
+        };
+
+        auto itV = toConvert.getVariables().begin();
+        categoric::Group converted(findAndCheck(*itV));
+        ++itV;
+        std::for_each(itV, toConvert.getVariables().end(), [&converted,&findAndCheck](const categoric::VariablePtr& var) {
+            converted.add(findAndCheck(var));
+        });
+        return converted;
+    }
+
+    void Inserter::Insert(const distribution::factor::cnst::Factor& factor) {
+        std::shared_ptr<distribution::factor::modif::Factor> distr = std::make_shared<distribution::factor::modif::Factor>(factor);
+        distr->replaceGroup(this->convert(factor.getGroup()));
+        this->Insert(distr);
+    }
+
+    void Inserter::Insert(const distribution::factor::cnst::FactorExponential& factor) {
+        std::shared_ptr<distribution::factor::modif::FactorExponential> distr = std::make_shared<distribution::factor::modif::FactorExponential>(factor);
+        distr->replaceGroup(this->convert(factor.getGroup()));
+        this->Insert(distr);
     }
 }

@@ -66,12 +66,13 @@
 //
 //		std::shared_ptr<distribution::factor::modif::Factor> factor = std::make_shared<distribution::factor::modif::Factor>(group);
 //		auto itDistr = tag.getNested("Distr_val");
+//		std::vector<std::size_t> comb;
 //		for (auto it = itDistr.begin(); it != itDistr.end(); ++it) {
 //			auto itComb = it->second->getAttributes().equal_range("v");
 //			if (std::distance(itComb.first, itComb.second) != factor->getGroup().getVariables().size()) {
 //				throw Error("invalid combination");
 //			}
-//			std::vector<std::size_t> comb;
+//			comb.clear();
 //			comb.reserve(std::distance(itComb.first, itComb.second));
 //			for (auto itC = itComb.first; itC != itComb.second; ++itC) {
 //				comb.push_back(std::atoi(itC->second.c_str()));
@@ -101,26 +102,30 @@
 //
 //    void XmlImporter::importFromXml(const std::string& path, const std::string& file) {
 //		xmlPrs::Parser data(path + "/" + file);
-//		//import variables
+//		// import variables
 //		std::set<categoric::VariablePtr> variables;
 //		const auto& varTag = data.getRoot().getNested("Variable");
-//		std::map<categoric::VariablePtr, std::size_t> evidence;
+//		std::map<std::string, std::size_t> evidence;
 //		for (auto itV = varTag.begin(); itV != varTag.end(); ++itV) {
-//			const auto& name = itV->second->getAttributes().find("name")->second;
-//			categoric::VariablePtr newVar = categoric::makeVariable(std::atoi(itV->second->getAttributes().find("Size")->second.c_str()), name);
+//			const auto* name = findAttribute(*itV->second, "name");
+//			if (nullptr == name) {
+//				throw Error("variable name not found");
+//			}
+//			const auto* size = findAttribute(*itV->second, "Size");
+//			if (nullptr == size) {
+//				throw Error("variable size not found");
+//			}
+//			categoric::VariablePtr newVar = categoric::makeVariable(std::atoi(size->c_str()), *name);
 //			if (variables.find(newVar) != variables.end()) {
-//				throw Error("Found multiple variables with same name in the xml");
+//				throw Error("Found multiple variables with same name in the passed xml");
 //			}
 //			variables.emplace(newVar);
-//			auto flag = itV->second->getAttributes().find("flag");
-//			if (flag != itV->second->getAttributes().end()) {
-//				if (flag->second.compare("O") == 0) {
-//					evidence.emplace(newVar, 0);
-//				}
+//			const auto* flag = findAttribute(*itV->second, "flag");
+//			if((nullptr != flag) && (0 == flag->compare("O"))) {
+//				evidence.emplace(newVar->name(), 0);
 //			}
 //		}
-//
-//		//import potential
+//		// import potentials
 //		std::list<std::shared_ptr<distribution::factor::modif::FactorExponential>> tunable;
 //		std::list<std::pair<categoric::Group, std::shared_ptr<distribution::factor::modif::FactorExponential>>> sharingTunable;
 //		const auto& potTag = data.getRoot().getNested("Potential");
@@ -128,11 +133,11 @@
 //			auto distribution = importDistribution(path, *itP->second, variables);
 //			distribution::factor::modif::FactorExponential* expPtr = dynamic_cast<distribution::factor::modif::FactorExponential*>(distribution.get());
 //			if (nullptr == expPtr) {
-//				// normal factor
+//				// non tunable factor
 //				this->Insert(distribution);
 //			}
 //			else {
-//				// exponential factor
+//				// tunable factor
 //				std::shared_ptr<distribution::factor::modif::FactorExponential> temp;
 //				temp.reset(expPtr);
 //				auto shareTag = itP->second->getNested("Share");
@@ -140,8 +145,7 @@
 //					tunable.emplace_back(temp);
 //				}
 //				else {
-//					auto shareGroup = importGroup(*shareTag.begin()->second, variables);
-//					sharingTunable.emplace_back(shareGroup, temp);
+//					sharingTunable.emplace_back(importGroup(*shareTag.begin()->second, variables), temp);
 //				}
 //			}
 //		}
@@ -163,5 +167,7 @@
 //				insertTunabPtr->Insert(f.second, f.first);
 //			});
 //		}
+//		// set evidences
+//		this->resetEvidences(evidence);
 //    }
 //}

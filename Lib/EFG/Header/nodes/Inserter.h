@@ -24,9 +24,15 @@ namespace EFG::nodes {
     public:
         void Insert(distribution::DistributionPtr factor) override;
 
+        void Insert(const distribution::factor::cnst::Factor& factor) override;
+
+        void Insert(const distribution::factor::cnst::FactorExponential& factor) override;
+
     private:
         void InsertUnary(distribution::DistributionPtr factor);
         void InsertBinary(distribution::DistributionPtr factor);
+
+        categoric::Group convert(const categoric::Group& toConvert);
 
         struct FindOrInsertionResult {
             Node* nodePtr;

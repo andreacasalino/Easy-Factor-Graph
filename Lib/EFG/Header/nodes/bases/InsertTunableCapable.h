@@ -16,7 +16,13 @@ namespace EFG::nodes {
     public:
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) = 0;
 
+        // here is copied using the variables stored inside this model
+        virtual void Insert(const distribution::factor::modif::FactorExponential& factor) = 0;
+
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) = 0;
+
+        // here is copied using the variables stored inside this model
+        virtual void Insert(const distribution::factor::modif::FactorExponential& factor, const categoric::Group& potentialSharingWeight) = 0;
     };
 }
 
