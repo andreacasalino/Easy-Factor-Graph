@@ -67,9 +67,24 @@ namespace EFG::nodes {
         nodeInfo.nodePtr->unaryFactors.emplace_back(factor);
     }
 
+    // std::map<Node*, Connection>
+    void createConnections(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor, const bool& activeDisabled) {
+        if (activeDisabled) {
+            auto connA = nodeA->activeConnections.emplace(nodeB, factor);
+            auto connB = nodeB->activeConnections.emplace(nodeA, factor);
+            connA.first->second.twin = &connB.first->second;
+            connB.first->second.twin = &connA.first->second;
+        }
+        else {
+            auto connA = nodeA->disabledConnections.emplace(nodeB, factor);
+            auto connB = nodeB->disabledConnections.emplace(nodeA, factor);
+            connA.first->second.twin = &connB.first->second;
+            connB.first->second.twin = &connA.first->second;
+        }
+    };
+
     void Inserter::connectHidden(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor) {
-        nodeA->activeConnections.emplace(nodeB, factor);
-        nodeB->activeConnections.emplace(nodeA, factor);
+        createConnections(nodeA, nodeB, factor, true);
         // update clusters
         auto clusterA = this->hidden.find(*nodeA);
         auto clusterB = this->hidden.find(*nodeB);
@@ -89,15 +104,12 @@ namespace EFG::nodes {
     };
 
     void Inserter::connectObserved(Node* nodeA, Node* nodeB, distribution::DistributionPtr factor) {
-        nodeA->disabledConnections.emplace(nodeB, factor);
-        nodeB->disabledConnections.emplace(nodeA, factor);
+        createConnections(nodeA, nodeB, factor, false);
     };
 
     void Inserter::connectHiddenObserved(Node* hidden, Node* observed, distribution::DistributionPtr factor, std::size_t observation) {
-        observed->disabledConnections.emplace(hidden, factor);
-
-        Connection newConnection(factor, std::make_unique<distribution::factor::cnst::Factor>(*factor, Combination({ observation }), categoric::Group(observed->variable)));
-        hidden->disabledConnections.emplace(observed, std::move(newConnection));
+        createConnections(hidden, observed, factor, false);
+        hidden->disabledConnections.find(observed)->second.factor = std::make_unique<distribution::factor::cnst::Factor>(*factor, Combination({ observation }), categoric::Group(observed->variable));
     };
 
     void Inserter::InsertBinary(distribution::DistributionPtr factor) {

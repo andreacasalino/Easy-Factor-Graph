@@ -40,6 +40,9 @@ public:
             std::cout << std::endl;
         }
     };
+
+private:
+    void propagateBelief(const EFG::nodes::PropagationKind& kind) final { throw 0; }
 };
 
 EFG::distribution::DistributionPtr makeSimpleFactor(EFG::categoric::VariablePtr a, EFG::categoric::VariablePtr b, bool corrAnti) {

@@ -118,7 +118,7 @@ int main () {
 	cout << anti << endl << endl;
 
 	anti.emplaceEntireDomain(),
-		std::cout << "correlating emplaced" << std::endl;
+		std::cout << "anti correlating emplaced" << std::endl;
 	cout << anti << endl << endl;
 }
 

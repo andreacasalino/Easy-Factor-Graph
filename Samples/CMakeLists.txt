@@ -1,7 +1,7 @@
 add_subdirectory(Utils)
 
-function(AddSample NAME_ SOURCE_)
-    add_executable(${NAME_} ${SOURCE_} )
+function(AddSample NAME_)
+    add_executable(${NAME_} ${NAME_}.cpp )
 
     target_link_libraries( ${NAME_}
 		PUBLIC
@@ -9,11 +9,11 @@ function(AddSample NAME_ SOURCE_)
     )	
 endfunction()
 
-AddSample(Sample01-Variables Sample01-Variables.cpp)
+AddSample(Sample01-1-Variables)
 
-AddSample(Sample01-Factors Sample01-Factors.cpp)
+AddSample(Sample01-2-Factors)
 
-AddSample(Sample02-BeliefPropagation Sample02-BeliefPropagation.cpp)
+AddSample(Sample02-BeliefPropagation)
 
 # option(BUILD_03 "Build Sample_03" ON)
 # if(BUILD_03)

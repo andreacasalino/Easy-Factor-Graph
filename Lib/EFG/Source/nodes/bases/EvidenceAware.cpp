@@ -58,7 +58,7 @@ namespace EFG::nodes {
         });
     }
 
-    void add(std::set<Node*>& recipient, const std::set<Node*>& toAdd) {
+    void copyCluster(std::set<Node*>& recipient, const std::set<Node*>& toAdd) {
         std::for_each(toAdd.begin(), toAdd.end(), [&recipient](Node* n) {
             recipient.emplace(n);
             });

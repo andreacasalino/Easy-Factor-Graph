@@ -27,7 +27,7 @@ int main() {
     try {
         groupABCD.add(EFG::categoric::makeVariable(2 , "C"));
     }
-    catch(const EFG::Error& e) {
+    catch(...) {
         cout << "insertion correctly refused" << endl;
     }
     cout << "groupABCD: " << groupABCD << endl; 
