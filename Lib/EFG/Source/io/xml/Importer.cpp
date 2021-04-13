@@ -5,8 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <io/xml/XmlImporter.h>
-#include <nodes/bases/InsertTunableCapable.h>
+#include <io/xml/Importer.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/factor/const/FactorExponential.h>
 #include <distribution/factor/modifiable/FactorExponential.h>
@@ -14,7 +13,7 @@
 #include <Error.h>
 #include <algorithm>
 
-namespace EFG::nodes {
+namespace EFG::io::xml {
 	const std::string* findAttribute(xmlPrs::Tag& tag, const std::string& attributeName) {
 		auto it = tag.getAttributes().find(attributeName);
 		if (it == tag.getAttributes().end()) {
@@ -100,11 +99,11 @@ namespace EFG::nodes {
 		return std::make_shared<distribution::factor::modif::FactorExponential>(*shape, static_cast<float>(std::atof(w->c_str())));
 	};
 
-    void XmlImporter::importFromXml(const std::string& path, const std::string& file) {
-		xmlPrs::Parser data(path + "/" + file);
+	void Importer::importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) {
+		xmlPrs::Parser parser(filePath + "/" + fileName);
 		// import variables
 		std::set<categoric::VariablePtr> variables;
-		const auto& varTag = data.getRoot().getNested("Variable");
+		const auto& varTag = parser.getRoot().getNested("Variable");
 		std::map<std::string, std::size_t> evidence;
 		for (auto itV = varTag.begin(); itV != varTag.end(); ++itV) {
 			const auto* name = findAttribute(*itV->second, "name");
@@ -121,53 +120,29 @@ namespace EFG::nodes {
 			}
 			variables.emplace(newVar);
 			const auto* flag = findAttribute(*itV->second, "flag");
-			if((nullptr != flag) && (0 == flag->compare("O"))) {
+			if ((nullptr != flag) && (0 == flag->compare("O"))) {
 				evidence.emplace(newVar->name(), 0);
 			}
 		}
 		// import potentials
-		std::list<std::shared_ptr<distribution::factor::modif::FactorExponential>> tunable;
-		std::list<std::pair<categoric::Group, std::shared_ptr<distribution::factor::modif::FactorExponential>>> sharingTunable;
-		const auto& potTag = data.getRoot().getNested("Potential");
+		const auto& potTag = parser.getRoot().getNested("Potential");
 		for (auto itP = potTag.begin(); itP != potTag.end(); ++itP) {
-			auto distribution = importDistribution(path, *itP->second, variables);
+			auto distribution = importDistribution(filePath, *itP->second, variables);
 			distribution::factor::modif::FactorExponential* expPtr = dynamic_cast<distribution::factor::modif::FactorExponential*>(distribution.get());
-			if (nullptr == expPtr) {
-				// non tunable factor
-				this->Insert(*distribution);
+			if ((nullptr == expPtr) || (nullptr == std::get<1>(components)))  {
+				// import as non tunable factor
+				std::get<0>(components)->Insert(*distribution);
 			}
 			else {
 				// tunable factor
-				std::shared_ptr<distribution::factor::modif::FactorExponential> temp;
-				temp.reset(expPtr);
 				auto shareTag = itP->second->getNested("Share");
 				if (shareTag.begin() == shareTag.end()) {
-					tunable.emplace_back(temp);
+					std::get<1>(components)->Insert(*expPtr);
 				}
 				else {
-					sharingTunable.emplace_back(importGroup(*shareTag.begin()->second, variables), temp);
+					std::get<1>(components)->Insert(*expPtr, importGroup(*shareTag.begin()->second, variables));
 				}
 			}
 		}
-		// check whether is possible to insert exponential factors
-		nodes::InsertTunableCapable* insertTunabPtr = dynamic_cast<nodes::InsertTunableCapable*>(this);
-		if (nullptr == insertTunabPtr) {
-			std::for_each(tunable.begin(), tunable.end(), [this](const std::shared_ptr<distribution::factor::modif::FactorExponential>& f) {
-				this->Insert(*f);
-			});
-			std::for_each(sharingTunable.begin(), sharingTunable.end(), [this](const std::pair<categoric::Group, std::shared_ptr<distribution::factor::modif::FactorExponential>>& f) {
-				this->Insert(*f.second);
-			});
-		}
-		else {
-			std::for_each(tunable.begin(), tunable.end(), [&insertTunabPtr](const std::shared_ptr<distribution::factor::modif::FactorExponential>& f) {
-				insertTunabPtr->Insert(*f);
-			});
-			std::for_each(sharingTunable.begin(), sharingTunable.end(), [&insertTunabPtr](const std::pair<categoric::Group, std::shared_ptr<distribution::factor::modif::FactorExponential>>& f) {
-				insertTunabPtr->Insert(*f.second, f.first);
-			});
-		}
-		// set evidences
-		this->resetEvidences(evidence);
-    }
+	}
 }
