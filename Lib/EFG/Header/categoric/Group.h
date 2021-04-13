@@ -63,6 +63,8 @@ namespace EFG::categoric {
     // data
         std::set<VariablePtr> group;
     };
+
+    categoric::Group getComplementary(const categoric::Group& set, const categoric::Group& subset);
 }
 
 #endif

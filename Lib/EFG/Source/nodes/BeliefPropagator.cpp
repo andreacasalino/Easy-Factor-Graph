@@ -6,8 +6,13 @@
  **/
 
 #include <nodes/BeliefPropagator.h>
+#include <distribution/factor/const/Factor.h>
 
 namespace EFG::nodes {
+
+
+
+
     //struct Message {
     //    Node* owner;
     //    std::map<Node*, Connection>::iterator edge;
@@ -16,7 +21,9 @@ namespace EFG::nodes {
     //    bool wasPossible = false;
     //    float difference = 0.f;
     //};
-    //MessageComputationInfo computeMessage(Message& message);
+    //MessageComputationInfo computeMessage(Message& message) {
+
+    //};
 
     //void BeliefPropagator::propagateBelief(const PropagationKind& kind) {
 

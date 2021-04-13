@@ -48,4 +48,25 @@ namespace EFG::categoric {
         });
         return S;
     }
+
+    categoric::Group getComplementary(const categoric::Group& set, const categoric::Group& subset) {
+        auto varsComplement = set.getVariables();
+        std::for_each(subset.getVariables().begin(), subset.getVariables().end(), [&varsComplement](const categoric::VariablePtr& v) {
+            auto itV = varsComplement.find(v);
+            if (itV == varsComplement.end()) {
+                throw Error("non existing evidence");
+            }
+            varsComplement.erase(itV);
+        });
+        if (varsComplement.empty()) {
+            throw Error("at least 1 variable should remain");
+        }
+        auto itV = varsComplement.begin();
+        categoric::Group groupComplement(*itV);
+        ++itV;
+        std::for_each(itV, varsComplement.end(), [&groupComplement](const categoric::VariablePtr& v) {
+            groupComplement.add(v);
+            });
+        return groupComplement;
+    };
 }

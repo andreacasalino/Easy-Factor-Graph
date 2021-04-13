@@ -66,26 +66,6 @@ namespace EFG::distribution::factor::cnst {
         });
     }
 
-    categoric::Group getComplementary(const categoric::Group& set, const categoric::Group& subset) {
-        auto varsComplement = set.getVariables();
-        std::for_each(subset.getVariables().begin(), subset.getVariables().end(), [&varsComplement](const categoric::VariablePtr& v) {
-            auto itV = varsComplement.find(v);
-            if (itV == varsComplement.end()) {
-                throw Error("non existing evidence");
-            }
-            varsComplement.erase(itV);
-        });
-        if (varsComplement.empty()) {
-            throw Error("at least 1 variable should remain");
-        }
-        auto itV = varsComplement.begin();
-        categoric::Group groupComplement(*itV);
-        ++itV;
-        std::for_each(itV, varsComplement.end(), [&groupComplement](const categoric::VariablePtr& v) {
-            groupComplement.add(v);
-        });
-        return groupComplement;
-    };
     Factor::Factor(const Distribution& toMarginalize, const Combination& comb, const categoric::Group& evidences)
         : Factor(getComplementary(toMarginalize.getGroup(), evidences)) {
         std::list<std::size_t> indexRemaining, indexEvidence;
@@ -93,11 +73,7 @@ namespace EFG::distribution::factor::cnst {
             indexRemaining.push_back(k);
         }
         std::for_each(evidences.getVariables().begin(), evidences.getVariables().end(), [&toMarginalize , &indexRemaining, &indexEvidence](const categoric::VariablePtr& v){
-            auto it = toMarginalize.getGroup().getVariables().find(v);
-            if(it == toMarginalize.getGroup().getVariables().end()) {
-                throw Error("inexistent variable");
-            }
-            std::size_t ind = std::distance( toMarginalize.getGroup().getVariables().begin(), it);
+            std::size_t ind = std::distance( toMarginalize.getGroup().getVariables().begin(), toMarginalize.getGroup().getVariables().find(v));
             indexEvidence.push_back(ind);
             indexRemaining.remove(ind);
         });
