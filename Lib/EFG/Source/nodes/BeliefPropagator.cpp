@@ -16,6 +16,31 @@
 constexpr float MAX_DIFF = std::numeric_limits<float>::max();
 
 namespace EFG::nodes {
+    void BeliefPropagator::propagateBelief(const PropagationKind& kind) {
+        this->lastPropagation = std::make_unique<PropagationResult>();
+        this->lastPropagation->kindDone = kind;
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
+                if ((!this->messagePassingThreadPool(cluster, kind)) && (!this->loopyPropagationThreadPool(cluster, kind))) {
+                    this->lastPropagation->wasTerminated = false;
+                }
+                this->lastPropagation->wasTerminated = true;
+            });
+        }
+        else {
+#endif
+            std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
+                if ((!this->messagePassing(cluster, kind)) && (!this->loopyPropagation(cluster, kind))) {
+                    this->lastPropagation->wasTerminated = false;
+                }
+                this->lastPropagation->wasTerminated = true;
+            });
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
+    }
+
     class MessageComputer {
     public:
         MessageComputer(Node* sender, const Connection* receiver, const PropagationKind& kind)
@@ -67,31 +92,6 @@ namespace EFG::nodes {
         PropagationKind kind;
         std::set<const distribution::Distribution*> toMerge;
     };
-
-    void BeliefPropagator::propagateBelief(const PropagationKind& kind) {
-        this->lastPropagation = std::make_unique<PropagationResult>();
-        this->lastPropagation->kindDone = kind;
-#ifdef THREAD_POOL_ENABLED
-        if (nullptr != this->threadPool) {
-            std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
-                if ((!this->messagePassingThreadPool(cluster, kind)) && (!this->loopyPropagationThreadPool(cluster, kind))) {
-                    this->lastPropagation->wasTerminated = false;
-                }
-                this->lastPropagation->wasTerminated = true;
-            });
-        }
-        else {
-#endif
-            std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
-                if ((!this->messagePassing(cluster, kind)) && (!this->loopyPropagation(cluster, kind))) {
-                    this->lastPropagation->wasTerminated = false;
-                }
-                this->lastPropagation->wasTerminated = true;
-            });
-#ifdef THREAD_POOL_ENABLED
-        }
-#endif
-    }
 
     std::list<std::pair<Node*, const Connection*>> getOpenSet(const std::set<Node*>& cluster) {
         std::list<std::pair<Node*, const Connection*>> openSet;
@@ -200,28 +200,29 @@ namespace EFG::nodes {
                 std::list<MessageComputer> computers;
                 auto itOp = openSet.begin();
                 while (itOp != openSet.end()) {
-                    for (auto itA = itOp->first->activeConnections.begin(); itA != itOp->first->activeConnections.end(); ++itA) {
-                        computers.emplace_back(itA->first, &itA->second, kind);
-                        MessageComputer* cmpPtr = &computers.back();
-                        bool calibrationPossible = true;
-                        // check that all dependencies will be not calibrated during this iteration
-                        for (auto dep = cmpPtr->getDependencies().begin(); dep != cmpPtr->getDependencies().end(); ++dep) {
-                            if (calibrating.find(*dep) != calibrating.end()) {
-                                calibrationPossible = false;
-                                break;
+                    computers.emplace_back(itOp->first, itOp->second, kind);
+                    MessageComputer* cmpPtr = &computers.back();
+                    bool calibrationPossible = true;
+                    // check that all dependencies will be not calibrated during this iteration
+                    for (auto dep = cmpPtr->getDependencies().begin(); dep != cmpPtr->getDependencies().end(); ++dep) {
+                        if (calibrating.find(*dep) != calibrating.end()) {
+                            calibrationPossible = false;
+                            break;
+                        }
+                    }
+                    if (calibrationPossible) {
+                        itOp = openSet.erase(itOp);
+                        calibrating.emplace(itOp->second->twin->message2This.get());
+                        this->threadPool->push([cmpPtr, &variationMax]() {
+                            float variation = cmpPtr->compute();
+                            if (variation > variationMax) {
+                                variationMax = variation;
                             }
-                        }
-                        if (calibrationPossible) {
-                            itOp = openSet.erase(itOp);
-                            calibrating.emplace(itOp->second->twin->message2This.get());
-                            this->threadPool->push([cmpPtr, &variationMax]() {
-                                float variation = cmpPtr->compute();
-                                if (variation > variationMax) {
-                                    variationMax = variation;
-                                }
-                            });
-                        }
-                        else ++itOp;
+                        });
+                    }
+                    else {
+                        computers.pop_back();
+                        ++itOp;
                     }
                 }
                 this->threadPool->wait();
