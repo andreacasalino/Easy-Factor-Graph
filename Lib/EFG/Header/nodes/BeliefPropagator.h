@@ -24,6 +24,11 @@ namespace EFG::nodes {
         {
     protected:
         void propagateBelief(const PropagationKind& kind) override;
+
+    private:
+        bool messagePassing(const std::set<Node*>& cluster, const PropagationKind& kind);
+
+        bool loopyPropagation(const std::set<Node*>& cluster, const PropagationKind& kind);
     };
 }
 

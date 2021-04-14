@@ -9,6 +9,7 @@
 #include <print/DistributionPrint.h>
 #include <print/ProbabilityDistributionPrint.h>
 #include <distribution/factor/modifiable/Factor.h>
+#include <distribution/factor/const/Message.h>
 #include <iostream>
 using namespace std;
 
@@ -120,6 +121,25 @@ int main () {
 	anti.emplaceEntireDomain(),
 		std::cout << "anti correlating emplaced" << std::endl;
 	cout << anti << endl << endl;
+}
+
+{
+	EFG::sample::Presenter presenter("message computation", "METTERE sec doc", "");
+	EFG::distribution::factor::modif::Factor factor(EFG::categoric::Group({ EFG::categoric::makeVariable(3 , "A"),
+																		    EFG::categoric::makeVariable(3 , "B")}));
+
+	factor.add(std::vector<std::size_t>{0, 0}, 1);
+	factor.add(std::vector<std::size_t>{0, 1}, 2);
+	factor.add(std::vector<std::size_t>{0, 2}, 3);
+	factor.add(std::vector<std::size_t>{1, 0}, 1);
+	factor.add(std::vector<std::size_t>{1, 1}, 2);
+	std::cout << "distribution " << factor << std::endl << std::endl;
+
+	std::cout << "Map message keeping B" << std::endl << std::endl;
+	std::cout << EFG::distribution::factor::cnst::MessageMAP(factor, EFG::categoric::Group(EFG::categoric::makeVariable(3, "B"))) << std::endl;
+
+	std::cout << "Sum message keeping B" << std::endl << std::endl;
+	std::cout << EFG::distribution::factor::cnst::MessageSum(factor, EFG::categoric::Group(EFG::categoric::makeVariable(3, "B"))) << std::endl;
 }
 
 	return EXIT_SUCCESS;

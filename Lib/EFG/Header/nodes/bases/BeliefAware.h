@@ -23,15 +23,15 @@ namespace EFG::nodes {
 
     class BeliefAware : virtual public Base {
     public:
-        void setPropagationMaxIterations(std::size_t iterations) { this->maxPropagationIterations = iterations; };
-        inline std::size_t getPropagationMaxIterations() const { return this->maxPropagationIterations; }
+        void setPropagationMaxIterationsLoopyPropagation(std::size_t iterations) { this->maxIterationsLoopyPropagtion = iterations; };
+        inline std::size_t getPropagationMaxIterationsLoopyPropagation() const { return this->maxIterationsLoopyPropagtion; }
 
         inline const PropagationResult* getLastPropagationResult() const {return this->lastPropagation.get(); };
 
     protected:
         virtual void propagateBelief(const PropagationKind& kind) = 0;
 
-        std::size_t maxPropagationIterations = 1000;
+        std::size_t maxIterationsLoopyPropagtion = 1000;
         std::unique_ptr<PropagationResult> lastPropagation;
     };
 }
