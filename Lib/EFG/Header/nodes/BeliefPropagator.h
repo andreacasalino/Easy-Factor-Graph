@@ -27,8 +27,12 @@ namespace EFG::nodes {
 
     private:
         bool messagePassing(const std::set<Node*>& cluster, const PropagationKind& kind);
-
         bool loopyPropagation(const std::set<Node*>& cluster, const PropagationKind& kind);
+
+#ifdef THREAD_POOL_ENABLED
+        bool messagePassingThreadPool(const std::set<Node*>& cluster, const PropagationKind& kind);
+        bool loopyPropagationThreadPool(const std::set<Node*>& cluster, const PropagationKind& kind);
+#endif
     };
 }
 

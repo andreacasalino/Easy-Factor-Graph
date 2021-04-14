@@ -17,7 +17,7 @@ namespace EFG::nodes {
 
     struct PropagationResult {
         PropagationKind kindDone;
-        std::size_t iterationsRequired;
+        //std::size_t iterationsRequired;
         bool wasTerminated;
     };
 
