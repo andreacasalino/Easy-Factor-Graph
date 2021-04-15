@@ -18,7 +18,7 @@ target_include_directories(${PROJECT_SHORTNAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Header>
 	PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Source>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Source/train/handlers>
 )
 
 if(THREAD_POOL_OPT)

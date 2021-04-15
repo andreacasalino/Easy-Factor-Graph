@@ -8,6 +8,7 @@
 #include <nodes/QueryHandler.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/DistributionIterator.h>
+#include <distribution/factor/const/Indicator.h>
 #include "Commons.h"
 #include <algorithm>
 #include <Error.h>
@@ -40,16 +41,9 @@ namespace EFG::nodes {
         return mergeMessages(itN->second).getProbabilities();
     }
 
-    class IndicatorFactor : public distribution::factor::cnst::Factor {
-    public:
-        IndicatorFactor(categoric::VariablePtr var, std::size_t evidence)
-            : Factor(categoric::Group(var)) {
-            this->values->emplace(Combination({ evidence }), 1.f);
-        };
-    };
     distribution::factor::cnst::Factor QueryHandler::getJointMarginalDistribution(const std::vector<std::string>& subgroup) {
         std::set<Node*> subGraphSet;
-        std::list<IndicatorFactor> indicators;
+        std::list<distribution::factor::cnst::IndicatorFactor> indicators;
         std::for_each(subgroup.begin(), subgroup.end(), [&](const std::string& name) {
             auto itN = this->findNode(name);
             if (itN == this->nodes.end()) {
@@ -70,7 +64,7 @@ namespace EFG::nodes {
         }
 
         std::set<const distribution::Distribution*> toMerge;
-        std::for_each(indicators.begin(), indicators.end(), [&toMerge](const IndicatorFactor& i) {
+        std::for_each(indicators.begin(), indicators.end(), [&toMerge](const distribution::factor::cnst::IndicatorFactor& i) {
             toMerge.emplace(&i);
         });
         std::for_each(subGraphSet.begin(), subGraphSet.end(), [&toMerge, &subGraphSet](const Node* n) {

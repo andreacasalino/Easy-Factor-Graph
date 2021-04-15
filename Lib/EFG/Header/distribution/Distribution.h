@@ -15,9 +15,11 @@
 
 namespace EFG::distribution {
     class DistributionIterator;
+    class DistributionFinder;
 
     class Distribution {
     friend class DistributionIterator;
+    friend class DistributionFinder;
     public:
         virtual ~Distribution() = default;
 
@@ -27,10 +29,9 @@ namespace EFG::distribution {
 
         // returns 0 in case such a combination does not exist
         float find(const Combination& comb) const;
+        float findRaw(const Combination& comb) const;
 
-        // group size should be bigger and contain this->variables
-        // returns <nullptr, 0> in case such a combination does not exist
-        std::pair<const Combination*, float> find(const Combination& comb, const categoric::Group& group) const;
+        DistributionFinder getFinder(const std::set<categoric::VariablePtr>& containingGroup) const;
 
         // same order of combinations obtained with Range is returned
         std::vector<float> getProbabilities() const;

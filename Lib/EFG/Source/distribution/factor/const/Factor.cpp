@@ -9,6 +9,7 @@
 #include <distribution/factor/EvaluatorBasic.h>
 #include <categoric/Range.h>
 #include <distribution/DistributionIterator.h>
+#include <distribution/DistributionFinder.h>
 #include <Error.h>
 #include <algorithm>
 #include <list>
@@ -48,12 +49,16 @@ namespace EFG::distribution::factor::cnst {
     }
     Factor::Factor(const std::set<const Distribution*>& distr)
         : Factor(mergeGroups(distr)) {
+        std::list<distribution::DistributionFinder> finders;
+        std::for_each(distr.begin(), distr.end(), [this, &finders](const Distribution* d) {
+            finders.emplace_back(*d, this->getGroup().getVariables());
+        });
         categoric::Range jointDomain(this->getGroup());
-        iterator::forEach(jointDomain, [this, &distr](const categoric::Range& jointDomain) {
+        iterator::forEach(jointDomain, [this, &finders](const categoric::Range& jointDomain) {
             float val = 1.f;
             Combination comb(jointDomain.get());
-            for (auto it = distr.begin(); it != distr.end(); ++it) {
-                auto result = (*it)->find(comb, this->getGroup());
+            for (auto it = finders.begin(); it != finders.end(); ++it) {
+                auto result = it->find(comb);
                 if (nullptr == result.first) {
                     val = 0.f;
                     break;

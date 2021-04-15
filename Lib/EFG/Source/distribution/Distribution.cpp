@@ -7,6 +7,7 @@
 
 #include <distribution/Distribution.h>
 #include <distribution/DistributionIterator.h>
+#include <distribution/DistributionFinder.h>
 #include <categoric/Range.h>
 #include <Error.h>
 #include <algorithm>
@@ -29,38 +30,24 @@ namespace EFG::distribution {
     }
 
     float Distribution::find(const Combination& comb) const {
-        if(comb.size() != this->getGroup().getVariables().size()) {
+        return this->evaluator->evaluate(this->findRaw(comb));
+    }
+
+    float Distribution::findRaw(const Combination& comb) const {
+        if (comb.size() != this->getGroup().getVariables().size()) {
             throw Error("invalid combination");
         }
         auto it = this->values->find(comb);
-        if(it == this->values->end()) return this->evaluator->evaluate(0.f);
-        return this->evaluator->evaluate(it->second);
+        if (it == this->values->end()) return this->evaluator->evaluate(0.f);
+        return it->second;
     }
-
-    std::pair<const Combination*, float> Distribution::find(const Combination& comb, const categoric::Group& group) const {
-        std::vector<std::size_t> indices;
-        indices.reserve(this->getGroup().getVariables().size());
-        std::for_each(this->getGroup().getVariables().begin(), this->getGroup().getVariables().end(), [&indices, &group](const categoric::VariablePtr& v) {
-            auto it = group.getVariables().find(v);
-            if(it == group.getVariables().end()) {
-                throw Error("invalid group");
-            }
-            indices.push_back(std::distance(group.getVariables().begin(), it));
-        });
-
-        std::vector<std::size_t> combOrdered;
-        combOrdered.resize(indices.size());
-        for(std::size_t k=0; k<indices.size(); ++k) {
-            combOrdered[k] = comb.data()[indices[k]];
-        }
-
-        auto it = this->values->find(Combination(combOrdered));
-        if(it == this->values->end()) return std::make_pair(nullptr, this->evaluator->evaluate(0.f));
-        return std::make_pair(&it->first , this->evaluator->evaluate(it->second));
-    };
 
     DistributionIterator Distribution::getIterator() const {
         return DistributionIterator(*this);
+    }
+
+    DistributionFinder Distribution::getFinder(const std::set<categoric::VariablePtr>& containingGroup) const {
+        return DistributionFinder(*this, containingGroup);
     }
 
     std::vector<float> Distribution::getProbabilities() const {
