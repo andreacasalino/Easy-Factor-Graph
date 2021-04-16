@@ -38,7 +38,7 @@ namespace EFG::distribution {
             throw Error("invalid combination");
         }
         auto it = this->values->find(comb);
-        if (it == this->values->end()) return this->evaluator->evaluate(0.f);
+        if (it == this->values->end()) return 0.f;
         return it->second;
     }
 

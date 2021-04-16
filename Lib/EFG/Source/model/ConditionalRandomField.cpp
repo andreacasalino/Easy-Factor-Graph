@@ -33,7 +33,7 @@ namespace EFG::model {
         if (nullptr != dynamic_cast<train::handler::BinaryHandler*>(handler.get())) {
             auto itOa = this->evidences.find(*factor->getGroup().getVariables().begin());
             auto itOb = this->evidences.find(*factor->getGroup().getVariables().rbegin());
-            if ((itOa == this->evidences.end()) && (itOb == this->evidences.end())) {
+            if ((itOa != this->evidences.end()) && (itOb != this->evidences.end())) {
                 throw Error("tuanble factor connectioning 2 observartions is invalid");
             }
             if (itOa != this->evidences.end()) {
@@ -51,24 +51,10 @@ namespace EFG::model {
         grad.resize(this->handlers.size());
         std::size_t pos = 0;
         // compute alpha part
-#ifdef THREAD_POOL_ENABLED
-        if (nullptr != this->threadPool) {
-            std::for_each(this->handlers.begin(), this->handlers.end(), [this, &grad, &pos](train::TrainHandlerPtr& h) {
-                train::TrainHandler* pt = h.get();
-                this->threadPool->push([pt, pos, &grad]() { grad[pos] = pt->getGradientAlpha(); });
-                ++pos;
-            });
-            this->threadPool->wait();
-        }
-        else {
-#endif
-            std::for_each(this->handlers.begin(), this->handlers.end(), [&grad, &pos](train::TrainHandlerPtr& h) {
-                grad[pos] = h->getGradientAlpha();
-                ++pos;
-            });
-#ifdef THREAD_POOL_ENABLED
-        }
-#endif
+        std::for_each(this->handlers.begin(), this->handlers.end(), [&grad, &pos](train::TrainHandlerPtr& h) {
+            grad[pos] = h->getGradientAlpha();
+            ++pos;
+        });
         // compute beta part
         auto trainSet = this->getTrainSet();
         std::vector<std::size_t> observationPositions;
@@ -80,14 +66,17 @@ namespace EFG::model {
         std::vector<std::size_t> observations;
         observations.resize(observationPositions.size());
         float coeff = 1.f / static_cast<float>(trainSet->getSet().size());
+        auto setObservations = [&](const Combination& comb){
+            for (std::size_t k = 0; k < observationPositions.size(); ++k) {
+                observations[k] = comb.data()[observationPositions[k]];
+            }
+            this->setEvidences(observations);
+            this->propagateBelief(nodes::PropagationKind::Sum);
+        };
 #ifdef THREAD_POOL_ENABLED
         if (nullptr != this->threadPool) {
             std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const Combination& comb) {
-                for (std::size_t k = 0; k < observationPositions.size(); ++k) {
-                    observations[k] = comb.data()[observationPositions[k]];
-                }
-                this->setEvidences(observations);
-                this->propagateBelief(nodes::PropagationKind::Sum);
+                setObservations(comb);
                 pos = 0;
                 std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
                     train::TrainHandler* pt = h.get();
@@ -100,11 +89,7 @@ namespace EFG::model {
         else {
 #endif
             std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const Combination& comb) {
-                for (std::size_t k = 0; k < observationPositions.size(); ++k) {
-                    observations[k] = comb.data()[observationPositions[k]];
-                }
-                this->setEvidences(observations);
-                this->propagateBelief(nodes::PropagationKind::Sum);
+                setObservations(comb);
                 pos = 0;
                 std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
                     grad[pos] -= coeff * h->getGradientBeta();

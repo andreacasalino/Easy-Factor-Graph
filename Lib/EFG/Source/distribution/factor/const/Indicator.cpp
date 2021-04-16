@@ -9,10 +9,14 @@
  **/
 
 #include <distribution/factor/const/Indicator.h>
+#include <Error.h>
 
 namespace EFG::distribution::factor::cnst {
     IndicatorFactor::IndicatorFactor(categoric::VariablePtr var, std::size_t evidence)
         : Factor(categoric::Group(var)) {
+        if(evidence >= var->size()) {
+            throw Error("invalid evidence");
+        }
         this->values->emplace(Combination({ evidence }), 1.f);
     };
 }

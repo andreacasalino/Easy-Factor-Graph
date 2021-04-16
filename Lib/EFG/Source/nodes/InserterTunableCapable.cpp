@@ -33,7 +33,7 @@ namespace EFG::nodes {
     }
 
     void InsertTunableCapable::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
-        auto it = this->findSharingFactor(potentialSharingWeight);
+        auto it = this->findSharingFactor(this->convertUsingLocals(potentialSharingWeight));
         this->InsertCapable::Insert(toInsert);
         this->factorsExp.erase(this->factorsExp.find(toInsert.get()));
         this->factorsTunable.emplace(toInsert.get(), it->second);
