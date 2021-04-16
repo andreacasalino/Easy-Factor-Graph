@@ -37,10 +37,10 @@ namespace EFG::model {
                 throw Error("tuanble factor connectioning 2 observartions is invalid");
             }
             if (itOa != this->evidences.end()) {
-                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOb->first), std::make_pair(itOa->first, itOa->second), nodes::convert(factor));
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOb->first)->second, std::make_pair(itOa->first, &itOa->second), nodes::convert(factor));
             }
             if (itOb != this->evidences.end()) {
-                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOa->first), std::make_pair(itOb->first, itOb->second), nodes::convert(factor));
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOa->first)->second, std::make_pair(itOb->first, &itOb->second), nodes::convert(factor));
             }
         }
         return handler;

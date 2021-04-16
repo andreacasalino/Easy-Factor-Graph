@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <nodes/Inserter.h>
+#include <nodes/InsertCapable.h>
 #include <nodes/EvidenceSetter.h>
 #include <nodes/EvidenceChanger.h>
 #include <nodes/GibbsSampler.h>
@@ -14,7 +14,7 @@
 using namespace std;
 
 class TestModel 
-    : public EFG::nodes::Inserter
+    : public EFG::nodes::InsertCapable
     , public EFG::nodes::EvidencesSetter
     , public EFG::nodes::EvidencesChanger
     , public EFG::nodes::GibbsSampler {

@@ -10,6 +10,7 @@
 #include <print/ProbabilityDistributionPrint.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/factor/const/Message.h>
+#include <distribution/DistributionFinder.h>
 #include <iostream>
 using namespace std;
 
@@ -47,7 +48,8 @@ int main () {
 
 	auto group2 = group;
 	group2.add(EFG::categoric::makeVariable(2, "E"));
-	auto find1 = distr.find(EFG::Combination({ 1,0,1,1,0 }), group2);
+	EFG::distribution::DistributionFinder finder(distr, group2.getVariables());
+	auto find1 = finder.find(EFG::Combination({ 1,0,1,1,0 }));
 	if (find1.second == 3.f) {
 		std::cout << "first find correct";
 	}

@@ -39,9 +39,9 @@ namespace EFG::train {
     TrainHandlerPtr Trainable::makeHandler(distribution::factor::modif::FactorExponential* factor) {
         const auto& variables = factor->getGroup().getVariables();
         if (1 == variables.size()) {
-            return std::make_unique<train::handler::UnaryHandler>(&this->nodes.find(*variables.begin())->second, nodes::convert(factor));
+            return std::make_unique<train::handler::UnaryHandler>(this->nodes.find(*variables.begin())->second, nodes::convert(factor));
         }
-        return std::make_unique<train::handler::BinaryHandler>(&this->nodes.find(*variables.begin())->second, &this->nodes.find(*variables.rbegin())->second, nodes::convert(factor));
+        return std::make_unique<train::handler::BinaryHandler>(this->nodes.find(*variables.begin())->second, this->nodes.find(*variables.rbegin())->second, nodes::convert(factor));
     }
 
     void Trainable::insertHandler(distribution::factor::modif::FactorExponential* factor) {
