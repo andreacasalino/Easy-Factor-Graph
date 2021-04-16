@@ -12,7 +12,7 @@
 #include <nodes/EvidenceChanger.h>
 #include <nodes/EvidenceSetter.h>
 #include <nodes/GibbsSampler.h>
-#include <nodes/Inserter.h>
+#include <nodes/InsertCapable.h>
 #include <nodes/QueryHandler.h>
 
 namespace EFG::model {
@@ -21,7 +21,7 @@ namespace EFG::model {
         , public nodes::EvidencesChanger
         , public nodes::EvidencesSetter
         , public nodes::GibbsSampler
-        , public nodes::Inserter
+        , public nodes::InsertCapable
         , public nodes::QueryHandler {
     public:
         Graph() = default;

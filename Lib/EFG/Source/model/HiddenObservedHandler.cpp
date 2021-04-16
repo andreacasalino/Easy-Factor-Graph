@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <train/handlers/HiddenObservedHandler.h>
+#include "HiddenObservedHandler.h"
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/factor/const/Indicator.h>
 #include "../../nodes/Commons.h"

@@ -40,7 +40,7 @@ namespace EFG::train {
 
     protected:
         virtual TrainHandlerPtr makeHandler(distribution::factor::modif::FactorExponential* factor);
-        void insertHandler(distribution::factor::modif::FactorExponential* factor, TrainHandlerPtr handler);
+        void insertHandler(distribution::factor::modif::FactorExponential* factor);
 
         TrainSetPtr set;
         std::list<TrainHandlerPtr> handlers;

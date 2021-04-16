@@ -44,12 +44,12 @@ namespace EFG::train {
         return std::make_unique<train::handler::BinaryHandler>(&this->nodes.find(*variables.begin())->second, &this->nodes.find(*variables.rbegin())->second, nodes::convert(factor));
     }
 
-    void Trainable::insertHandler(distribution::factor::modif::FactorExponential* factor, TrainHandlerPtr handler) {
+    void Trainable::insertHandler(distribution::factor::modif::FactorExponential* factor) {
         auto newHandler = this->makeHandler(factor);
         auto itF = this->factorsTunable.find(factor);
         if (this->handlers.size() == itF->second) {
             // it is a new cluster
-            this->handlers.emplace_back(std::move(handler));
+            this->handlers.emplace_back(std::move(newHandler));
         }
         else {
             // should be added into a composite
