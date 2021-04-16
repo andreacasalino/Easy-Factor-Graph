@@ -8,8 +8,8 @@
 #ifndef EFG_IO_IMPORTER_H
 #define EFG_IO_IMPORTER_H
 
-#include <nodes/bases/InsertCapable.h>
-#include <nodes/bases/InsertTunableCapable.h>
+#include <nodes/InsertCapable.h>
+#include <nodes/InsertTunableCapable.h>
 #include <Error.h>
 
 namespace EFG::io {

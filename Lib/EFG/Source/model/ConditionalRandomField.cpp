@@ -10,6 +10,7 @@
 #include <train/handlers/UnaryHandler.h>
 #include "HiddenObservedHandler.h"
 #include <Error.h>
+#include <algorithm>
 
 namespace EFG::model {
     void ConditionalRandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
@@ -43,5 +44,76 @@ namespace EFG::model {
             }
         }
         return handler;
+    }
+
+    std::vector<float> ConditionalRandomField::getGradient() {
+        std::vector<float> grad;
+        grad.resize(this->handlers.size());
+        std::size_t pos = 0;
+        // compute alpha part
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::for_each(this->handlers.begin(), this->handlers.end(), [this, &grad, &pos](train::TrainHandlerPtr& h) {
+                train::TrainHandler* pt = h.get();
+                this->threadPool->push([pt, pos, &grad]() { grad[pos] = pt->getGradientAlpha(); });
+                ++pos;
+            });
+            this->threadPool->wait();
+        }
+        else {
+#endif
+            std::for_each(this->handlers.begin(), this->handlers.end(), [&grad, &pos](train::TrainHandlerPtr& h) {
+                grad[pos] = h->getGradientAlpha();
+                ++pos;
+            });
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
+        // compute beta part
+        auto trainSet = this->getTrainSet();
+        std::vector<std::size_t> observationPositions;
+        observationPositions.reserve(this->evidences.size());
+        auto vars = this->getVariables();
+        for (auto it = this->evidences.begin(); it != this->evidences.end(); ++it) {
+            observationPositions.push_back(std::distance(vars.begin(), vars.find(it->first)));
+        }
+        std::vector<std::size_t> observations;
+        observations.resize(observationPositions.size());
+        float coeff = 1.f / static_cast<float>(trainSet->getSet().size());
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const Combination& comb) {
+                for (std::size_t k = 0; k < observationPositions.size(); ++k) {
+                    observations[k] = comb.data()[observationPositions[k]];
+                }
+                this->setEvidences(observations);
+                this->propagateBelief(nodes::PropagationKind::Sum);
+                pos = 0;
+                std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
+                    train::TrainHandler* pt = h.get();
+                    this->threadPool->push([pt, pos, &grad, &coeff]() { grad[pos] -= coeff * pt->getGradientBeta(); });
+                    ++pos;
+                });
+                this->threadPool->wait();
+            });
+        }
+        else {
+#endif
+            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const Combination& comb) {
+                for (std::size_t k = 0; k < observationPositions.size(); ++k) {
+                    observations[k] = comb.data()[observationPositions[k]];
+                }
+                this->setEvidences(observations);
+                this->propagateBelief(nodes::PropagationKind::Sum);
+                pos = 0;
+                std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
+                    grad[pos] -= coeff * h->getGradientBeta();
+                    ++pos;
+                });
+            });
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
+        return grad;
     }
 }
