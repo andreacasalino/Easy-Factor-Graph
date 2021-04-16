@@ -6,6 +6,10 @@
  **/
 
 #include <train/Trainable.h>
+#include <train/handlers/UnaryHandler.h>
+#include <train/handlers/BinaryHandler.h>
+#include <nodes/bases/StructureAware.h>
+#include <train/handlers/CompositeHandler.h>
 #include <algorithm>
 #include <Error.h>
 
@@ -31,4 +35,33 @@ namespace EFG::train {
             ++itW;
         });
     };
+
+    TrainHandlerPtr Trainable::makeHandler(distribution::factor::modif::FactorExponential* factor) {
+        const auto& variables = factor->getGroup().getVariables();
+        if (1 == variables.size()) {
+            return std::make_unique<train::handler::UnaryHandler>(&this->nodes.find(*variables.begin())->second, nodes::convert(factor));
+        }
+        return std::make_unique<train::handler::BinaryHandler>(&this->nodes.find(*variables.begin())->second, &this->nodes.find(*variables.rbegin())->second, nodes::convert(factor));
+    }
+
+    void Trainable::insertHandler(distribution::factor::modif::FactorExponential* factor, TrainHandlerPtr handler) {
+        auto newHandler = this->makeHandler(factor);
+        auto itF = this->factorsTunable.find(factor);
+        if (this->handlers.size() == itF->second) {
+            // it is a new cluster
+            this->handlers.emplace_back(std::move(handler));
+        }
+        else {
+            // should be added into a composite
+            auto itHndl = this->handlers.begin();
+            std::advance(itHndl, itF->second);
+            train::handler::CompositeHandler* compositeIntrf = dynamic_cast<train::handler::CompositeHandler*>(itHndl->get());
+            if (nullptr == compositeIntrf) {
+                *itHndl = std::make_unique<train::handler::CompositeHandler>(std::move(*itHndl), std::move(newHandler));
+            }
+            else {
+                compositeIntrf->addElement(std::move(newHandler));
+            }
+        }
+    }
 }

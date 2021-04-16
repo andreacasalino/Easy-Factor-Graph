@@ -9,8 +9,9 @@
 #include <algorithm>
 
 namespace EFG::train::handler {
-    CompositeHandler::CompositeHandler(TrainHandlerPtr element) {
-        this->addElement(std::move(element));
+    CompositeHandler::CompositeHandler(TrainHandlerPtr elementA, TrainHandlerPtr elementB) {
+        this->elements.emplace_back(std::move(elementA));
+        this->elements.emplace_back(std::move(elementB));
     }
 
     void CompositeHandler::setTrainSet(TrainSetPtr newSet, const std::set<categoric::VariablePtr>& modelVariables) {

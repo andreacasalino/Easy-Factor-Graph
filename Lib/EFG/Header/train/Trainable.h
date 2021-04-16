@@ -11,6 +11,7 @@
 #include <categoric/Group.h>
 #include <train/TrainSet.h>
 #include <nodes/bases/NodesAware.h>
+#include <nodes/bases/StructureTunableAware.h>
 #include <list>
 
 namespace EFG::train {
@@ -20,11 +21,14 @@ namespace EFG::train {
 
         virtual float getGradientAlpha() = 0;
         virtual float getGradientBeta() = 0;
+
         virtual void setWeight(const float& w) = 0;
     };
     typedef std::unique_ptr<TrainHandler> TrainHandlerPtr;
 
-    class Trainable : virtual public nodes::NodesAware {
+    class Trainable 
+        : virtual public nodes::NodesAware
+        , virtual public nodes::StructureTunableAware {
     public:
         void setTrainSet(TrainSetPtr newSet);
 
@@ -35,6 +39,9 @@ namespace EFG::train {
         inline TrainSetPtr getTrainSet() const { return this->set; };
 
     protected:
+        virtual TrainHandlerPtr makeHandler(distribution::factor::modif::FactorExponential* factor);
+        void insertHandler(distribution::factor::modif::FactorExponential* factor, TrainHandlerPtr handler);
+
         TrainSetPtr set;
         std::list<TrainHandlerPtr> handlers;
     };

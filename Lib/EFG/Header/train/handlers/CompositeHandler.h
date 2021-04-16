@@ -13,7 +13,7 @@
 namespace EFG::train::handler {
     class CompositeHandler : public TrainHandler {
     public:
-        CompositeHandler(TrainHandlerPtr element);
+        CompositeHandler(TrainHandlerPtr elementA, TrainHandlerPtr elementB);
 
         void setTrainSet(TrainSetPtr newSet, const std::set<categoric::VariablePtr>& modelVariables) final;
 
