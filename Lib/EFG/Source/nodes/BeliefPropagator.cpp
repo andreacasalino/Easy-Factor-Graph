@@ -12,6 +12,7 @@
 #include "Commons.h"
 #include <limits>
 #include <algorithm>
+#include <math.h>
 
 constexpr float MAX_DIFF = std::numeric_limits<float>::max();
 

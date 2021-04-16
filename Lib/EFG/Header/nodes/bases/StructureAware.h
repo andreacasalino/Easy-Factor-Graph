@@ -23,8 +23,8 @@ namespace EFG::nodes {
 
     class StructureAware : virtual public Base {
     public:
-        inline std::vector<std::shared_ptr<distribution::factor::cnst::Factor>> getFactors() const;
-        inline std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>> getFactorsExp() const;
+        std::vector<std::shared_ptr<distribution::factor::cnst::Factor>> getFactors() const;
+        std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>> getFactorsExp() const;
 
     protected:
         std::set<distribution::factor::cnst::Factor*> factors;
