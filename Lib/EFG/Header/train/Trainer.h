@@ -11,7 +11,20 @@
 #include <train/Trainable.h>
 
 namespace EFG::train {
-    void train(Trainable& model, std::size_t maxIterations, TrainSetPtr trainset);
+    class GradientDescend {
+    public:
+        GradientDescend() = default;
+
+        void train(train::Trainable& model, train::TrainSetPtr trainSet) const;
+
+        void setAdvancement(float coeff) { this->advancementCoefficient = coeff; };
+        void setMaxIterations(std::size_t iterations) { this->maxIterations = iterations; };
+
+    private:
+        float advancementCoefficient = 0.05f;
+        std::size_t maxIterations = 1000;
+
+    };
 }
 
 #endif
