@@ -8,12 +8,11 @@
 #ifndef EFG_CATEGORIC_VARIABLE_H
 #define EFG_CATEGORIC_VARIABLE_H
 
-#include <observers/MultiObservable.h>
 #include <string>
 #include <memory>
 
 namespace EFG::categoric {
-    class Variable : public observer::MultiObservable {
+    class Variable {
     public:
         /** \brief domain is assumed to be {0,1,2,3,...,size}
         * @param[in] size domain size of this variable

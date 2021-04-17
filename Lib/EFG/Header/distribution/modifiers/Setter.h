@@ -8,13 +8,13 @@
 #ifndef EFG_DISTRIBUTION_SETTER_H
 #define EFG_DISTRIBUTION_SETTER_H
 
-#include <distribution/modifiers/DistributionModifiable.h>
+#include <distribution/Distribution.h>
 
 namespace EFG::distribution {
     class Setter
-        : public virtual DistributionModifiable {
+        : public virtual Distribution {
     public:
-        void replaceGroup(const categoric::Group& newGroup);
+        inline void replaceGroup(const categoric::Group& newGroup) { *this->group = newGroup; };
 
         void set(const Combination& comb, const float& value);
     };

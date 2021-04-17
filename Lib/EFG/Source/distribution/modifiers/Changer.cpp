@@ -9,20 +9,13 @@
 #include <categoric/Range.h>
 
 namespace EFG::distribution {
-    void Changer::clear() {
-        this->checkModifiable();
-        this->values->clear();
-    }
-
     std::map<Combination, float>::const_iterator Changer::add(const Combination& comb, const float& value) {
-        this->checkModifiable();
         this->checkCombination(comb, value);
         auto res = this->values->emplace(comb, value);
         return res.first;
     }
 
     void Changer::setImageEntireDomain(const float& value) {
-        this->checkModifiable();
         categoric::Range range(this->getGroup());
         this->clear();
         iterator::forEach(range, [this, &value](categoric::Range& r) {
@@ -31,7 +24,6 @@ namespace EFG::distribution {
     }
 
     void Changer::emplaceEntireDomain() {
-        this->checkModifiable();
         if (this->group->size() == this->values->size()) {
             return;
         }

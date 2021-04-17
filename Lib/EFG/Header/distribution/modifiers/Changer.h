@@ -8,11 +8,11 @@
 #ifndef EFG_DISTRIBUTION_CHANGER_H
 #define EFG_DISTRIBUTION_CHANGER_H
 
-#include <distribution/modifiers/DistributionModifiable.h>
+#include <distribution/Distribution.h>
 
 namespace EFG::distribution {
     class Changer
-        : public virtual DistributionModifiable {
+        : public virtual Distribution {
     public:
         std::map<Combination, float>::const_iterator add(const Combination& comb, const float& value);
 
@@ -21,7 +21,7 @@ namespace EFG::distribution {
 
         void setImageEntireDomain(const float& value);
 
-        void clear();
+        inline void clear() { this->values->clear(); };
     };
 }
 
