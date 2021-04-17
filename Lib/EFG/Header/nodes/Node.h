@@ -19,7 +19,6 @@ namespace EFG::nodes {
         distribution::DistributionPtr factor;
         //nullptr when the message is not already available
         std::unique_ptr<distribution::Distribution> message2This;
-        Connection* twin = nullptr;
     };
 
     struct Node {

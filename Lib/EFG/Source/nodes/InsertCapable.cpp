@@ -72,14 +72,10 @@ namespace EFG::nodes {
         if (activeDisabled) {
             auto connA = nodeA->activeConnections.emplace(nodeB, factor);
             auto connB = nodeB->activeConnections.emplace(nodeA, factor);
-            connA.first->second.twin = &connB.first->second;
-            connB.first->second.twin = &connA.first->second;
         }
         else {
             auto connA = nodeA->disabledConnections.emplace(nodeB, factor);
             auto connB = nodeB->disabledConnections.emplace(nodeA, factor);
-            connA.first->second.twin = &connB.first->second;
-            connB.first->second.twin = &connA.first->second;
         }
     };
 

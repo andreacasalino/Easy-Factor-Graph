@@ -34,7 +34,13 @@ namespace EFG::nodes {
     }
 
     std::vector<float> QueryHandler::getMarginalDistribution(const std::string& var) {
-        auto itN = this->findNode(var);
+        auto varKey = categoric::makeVariable(2, var);
+        auto itEv = this->evidences.find(varKey);
+        if(itEv != this->evidences.end()) {
+            // evidence
+            return distribution::factor::cnst::IndicatorFactor(this->nodes.find(varKey)->second.variable, itEv->second).getProbabilities();
+        }
+        auto itN = this->nodes.find(varKey);
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
@@ -104,7 +110,13 @@ namespace EFG::nodes {
     }
 
     std::size_t QueryHandler::getMAP(const std::string& var) {
-        auto itN = this->findNode(var);
+        auto varKey = categoric::makeVariable(2, var);
+        auto itEv = this->evidences.find(varKey);
+        if(itEv != this->evidences.end()) {
+            // evidence
+            return itEv->second;
+        }
+        auto itN = this->nodes.find(varKey);
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }

@@ -51,16 +51,16 @@ namespace EFG::nodes {
 
     class MessageComputer {
     public:
-        MessageComputer(Node* sender, const Connection* receiver, const PropagationKind& kind)
+        MessageComputer(Node* sender, Node* receiver, const PropagationKind& kind)
             : sender(sender)
-            , receiver(receiver)
+            , recipient(&receiver->activeConnections.find(sender)->second)
             , kind(kind) {
-            this->toMerge = { receiver->factor.get() };
+            this->toMerge = { this->recipient->factor.get() };
             gatherUnaries(toMerge, *sender);
             for (auto it = sender->activeConnections.begin(); it != sender->activeConnections.end(); ++it) {
                 toMerge.emplace(it->second.message2This.get());
             }
-            toMerge.erase(toMerge.find(receiver->message2This.get()));
+            toMerge.extract(sender->activeConnections.find(receiver)->second.message2This.get());
         };
         MessageComputer(const MessageComputer& ) = default;
 
@@ -85,11 +85,11 @@ namespace EFG::nodes {
                 }
             }
             float difference = 0.f;
-            if (nullptr == receiver->twin->message2This) {
+            if (nullptr == this->recipient->message2This) {
                 difference = MAX_DIFF;
             }
             else {
-                auto itOld = receiver->twin->message2This->getIterator();
+                auto itOld = this->recipient->message2This->getIterator();
                 auto itNew = newMessage->getIterator();
                 if (itOld.getNumberOfValues() != itNew.getNumberOfValues()) {
                     difference = MAX_DIFF;
@@ -100,7 +100,7 @@ namespace EFG::nodes {
                     });
                 }
             }
-            receiver->twin->message2This = std::move(newMessage);
+            this->recipient->message2This = std::move(newMessage);
             return difference;
         };
 
@@ -108,23 +108,24 @@ namespace EFG::nodes {
 
     private:
         Node* sender;
-        const Connection* receiver;
+        Connection* recipient;
         PropagationKind kind;
         std::set<const distribution::Distribution*> toMerge;
     };
 
-    std::list<std::pair<Node*, const Connection*>> getOpenSet(const std::set<Node*>& cluster) {
-        std::list<std::pair<Node*, const Connection*>> openSet;
+    // list<sender receiver>
+    std::list<std::pair<Node*, Node*>> getOpenSet(const std::set<Node*>& cluster) {
+        std::list<std::pair<Node*, Node*>> openSet;
         std::for_each(cluster.begin(), cluster.end(), [&openSet](Node* n) {
             for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
-                openSet.emplace_back(std::make_pair(n, &itA->second));
+                openSet.emplace_back(std::make_pair(n, itA->first));
             }
         });
         return openSet;
     }
 
     bool BeliefPropagator::messagePassing(const std::set<Node*>& cluster, const PropagationKind& kind) {
-        std::list<std::pair<Node*, const Connection*>> openSet = getOpenSet(cluster);
+        auto openSet = getOpenSet(cluster);
         bool progressWasMade;
         while (!openSet.empty()) {
             progressWasMade = false;
@@ -164,7 +165,7 @@ namespace EFG::nodes {
             variationMax = 0.f;
             std::for_each(cluster.begin(), cluster.end(), [&](Node* n) {
                 for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
-                    variation = MessageComputer(itA->first, &itA->second, kind).compute();
+                    variation = MessageComputer(n, itA->first, kind).compute();
                     if (variation > variationMax) {
                         variationMax = variation;
                     }
@@ -179,7 +180,7 @@ namespace EFG::nodes {
 
 #ifdef THREAD_POOL_ENABLED
     bool BeliefPropagator::messagePassingThreadPool(const std::set<Node*>& cluster, const PropagationKind& kind) {
-        std::list<std::pair<Node*, const Connection*>> openSet = getOpenSet(cluster);
+        auto openSet = getOpenSet(cluster);
         bool progressWasMade;
         while (!openSet.empty()) {
             progressWasMade = false;
@@ -209,12 +210,12 @@ namespace EFG::nodes {
         // set to ones all messages
         setOnesMessages(cluster);
         // get complete list of messages
-        std::list<std::pair<Node*, const Connection*>> toCalibrate = getOpenSet(cluster);
+        auto toCalibrate = getOpenSet(cluster);
         // calibrate messages
         std::atomic<float> variationMax;
         for (std::size_t k = 0; k < this->maxIterationsLoopyPropagtion; ++k) {
             variationMax = 0.f;
-            std::list<std::pair<Node*, const Connection*>> openSet = toCalibrate;
+            auto openSet = toCalibrate;
             while (!openSet.empty()) {
                 std::set<const distribution::Distribution*> calibrating;
                 std::list<MessageComputer> computers;
@@ -232,7 +233,7 @@ namespace EFG::nodes {
                     }
                     if (calibrationPossible) {
                         itOp = openSet.erase(itOp);
-                        calibrating.emplace(itOp->second->twin->message2This.get());
+                        calibrating.emplace(itOp->second->activeConnections.find(itOp->first)->second.message2This.get());
                         this->threadPool->push([cmpPtr, &variationMax]() {
                             float variation = cmpPtr->compute();
                             if (variation > variationMax) {
