@@ -11,6 +11,7 @@
 #include <Presenter.h>
 #include <Frequencies.h>
 #include <print/ProbabilityDistributionPrint.h>
+#include <Error.h>
 #include <math.h>
 #include <iostream>
 using namespace std;
@@ -86,10 +87,13 @@ int main () {
 
     EFG::sample::samplePart([](){
         auto process_chain = [](const std::size_t& chain_size, const std::size_t& var_size, const float& w) {
+            if (chain_size < 2) throw Error("invalid chain size");
+            if (var_size < 2) throw Error("invalid variable size");
+
             //build the set of variables in the chain
             vector<VariablePtr> Y;
             Y.reserve(chain_size);
-            for (size_t k = 0; k < chain_size; k++) {
+            for (size_t k = 0; k < chain_size; ++k) {
                 Y.push_back(makeVariable(var_size, "Y_" + to_string(k)));
             }
             model::Graph graph;
@@ -108,7 +112,7 @@ int main () {
             cout << "chain size equal to " << k << ", marginals of Y_n:   ";
             process_chain(k, domainSize, 3.5f);
         }
-    }, "degradation with the chain size", "Belief propagation, part A");
+    }, "Belief degradation", "Belief propagation, part A");
 
     return EXIT_SUCCESS;
 }

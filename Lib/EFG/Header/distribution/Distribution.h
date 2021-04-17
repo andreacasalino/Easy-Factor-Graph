@@ -47,6 +47,11 @@ namespace EFG::distribution {
     };
 
     typedef std::shared_ptr<Distribution> DistributionPtr;
+
+    template<typename F, typename ... Args>
+    std::shared_ptr<F> makeFactor(Args ... args) {
+        return std::make_shared<F>(args...);
+    };
 }
 
 #endif
