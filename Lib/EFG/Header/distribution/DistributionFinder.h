@@ -26,7 +26,7 @@ namespace EFG::distribution {
     private:
         std::shared_ptr<std::map<Combination, float>> values;
         EvaluatorPtr evaluator;
-        std::vector<std::size_t> indices;
+        std::vector<std::size_t> indicesContainingGroup;
     };
 }
 

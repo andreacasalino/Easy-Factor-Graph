@@ -13,7 +13,7 @@ AddSample(Sample01-1-Variables)
 
 AddSample(Sample01-2-Factors)
 
-AddSample(Sample02-BeliefPropagation)
+AddSample(Sample02-BeliefPropagation-A)
 
 # option(BUILD_03 "Build Sample_03" ON)
 # if(BUILD_03)

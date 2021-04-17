@@ -26,7 +26,10 @@ namespace EFG::model {
         , public nodes::QueryHandler
         , public train::Trainable {
     public:
-        ConditionalRandomField() = default;
+        ConditionalRandomField() = delete;
+        // ConditionalRandomField(const std::string& xmlPath);
+        // template<typename Model>
+        // ConditionalRandomField(const Model& model);
 
     private:
         void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;

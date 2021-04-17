@@ -23,19 +23,19 @@ namespace EFG::nodes {
 #ifdef THREAD_POOL_ENABLED
         if (nullptr != this->threadPool) {
             std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
-                if ((!this->messagePassingThreadPool(cluster, kind)) && (!this->loopyPropagationThreadPool(cluster, kind))) {
-                    this->lastPropagation->wasTerminated = false;
+                if ((this->messagePassingThreadPool(cluster, kind)) || (this->loopyPropagationThreadPool(cluster, kind))) {
+                    this->lastPropagation->wasTerminated = true;
                 }
-                this->lastPropagation->wasTerminated = true;
+                this->lastPropagation->wasTerminated = false;
             });
         }
         else {
 #endif
             std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
-                if ((!this->messagePassing(cluster, kind)) && (!this->loopyPropagation(cluster, kind))) {
-                    this->lastPropagation->wasTerminated = false;
+                if ((this->messagePassing(cluster, kind)) || (this->loopyPropagation(cluster, kind))) {
+                    this->lastPropagation->wasTerminated = true;
                 }
-                this->lastPropagation->wasTerminated = true;
+                this->lastPropagation->wasTerminated = false;
             });
 #ifdef THREAD_POOL_ENABLED
         }
@@ -67,19 +67,21 @@ namespace EFG::nodes {
             else {
                 newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
             }
-            if (nullptr == receiver->twin->message2This) {
-                return MAX_DIFF;
-            }
             float difference = 0.f;
-            auto itOld = receiver->twin->message2This->getIterator();
-            auto itNew = newMessage->getIterator();
-            if (itOld.getNumberOfValues() != itNew.getNumberOfValues()) {
+            if (nullptr == receiver->twin->message2This) {
                 difference = MAX_DIFF;
             }
             else {
-                iterator::forEach(itOld, [&itNew, &difference](const distribution::DistributionIterator& itOld) {
-                    difference += fabsf(itNew.getImageRaw() - itOld.getImageRaw());
-                });
+                auto itOld = receiver->twin->message2This->getIterator();
+                auto itNew = newMessage->getIterator();
+                if (itOld.getNumberOfValues() != itNew.getNumberOfValues()) {
+                    difference = MAX_DIFF;
+                }
+                else {
+                    iterator::forEach(itOld, [&itNew, &difference](const distribution::DistributionIterator& itOld) {
+                        difference += fabsf(itNew.getImageRaw() - itOld.getImageRaw());
+                    });
+                }
             }
             receiver->twin->message2This = std::move(newMessage);
             return difference;
@@ -129,7 +131,7 @@ namespace EFG::nodes {
     void setOnesMessages(const std::set<Node*>& cluster) {
         std::for_each(cluster.begin(), cluster.end(), [](Node* n) {
             for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
-                auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(itA->first->variable);
+                auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(n->variable);
                 mexOnes->setImageEntireDomain(1.f);
                 itA->second.message2This = std::move(mexOnes);
             }
@@ -196,8 +198,8 @@ namespace EFG::nodes {
         for (std::size_t k = 0; k < this->maxIterationsLoopyPropagtion; ++k) {
             variationMax = 0.f;
             std::list<std::pair<Node*, const Connection*>> openSet = toCalibrate;
-            std::set<const distribution::Distribution*> calibrating;
             while (!openSet.empty()) {
+                std::set<const distribution::Distribution*> calibrating;
                 std::list<MessageComputer> computers;
                 auto itOp = openSet.begin();
                 while (itOp != openSet.end()) {

@@ -33,7 +33,7 @@ namespace EFG::distribution {
 
         DistributionFinder getFinder(const std::set<categoric::VariablePtr>& containingGroup) const;
 
-        // same order of combinations obtained with Range is returned
+        // same order of combinations obtained with Range(getGroup) is returned
         std::vector<float> getProbabilities() const;
 
     protected:

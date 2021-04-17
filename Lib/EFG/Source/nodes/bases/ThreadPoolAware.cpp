@@ -15,9 +15,8 @@ namespace EFG::nodes {
 			return;
 		}
 
-		if (this->threadPool != nullptr) {
+		if (nullptr != this->threadPool) {
 			if (this->threadPool->size() == poolSize) return;
-			this->threadPool.reset();
 		}
 		this->threadPool = std::make_unique<thpl::equi::Pool>(poolSize);
     }

@@ -23,6 +23,12 @@ namespace EFG::sample {
 
         std::unique_ptr<std::string> results;
     };
+
+    template<typename Example>
+    void samplePart(const Example& example, const std::string& name, const std::string& docSection = "", const std::string& results = "") {
+        EFG::sample::Presenter presenter(name, docSection, results);
+        example();
+    };
 }
 
 #endif
