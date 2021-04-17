@@ -11,6 +11,18 @@
 #include <vector>
 #include <ostream>
 
-std::ostream& operator<<(std::ostream& s, const std::vector<float>& distribution);
+template<typename T>
+std::ostream& operator<<(std::ostream& s, const std::vector<T>& distribution) {
+    if (distribution.empty()) {
+        return s;
+    }
+    auto it = distribution.begin();
+    s << *it;
+    ++it;
+    for (it; it != distribution.end(); ++it) {
+        s << " " << *it;
+    }
+    return s;
+}
 
 #endif

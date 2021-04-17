@@ -25,7 +25,7 @@ namespace EFG::io {
                 throw Error("the model should be evidence aware");
             }
 
-            const nodes::StructureAware* structure = dynamic_cast<const nodes::EvidenceAware*>(&model);
+            const nodes::StructureAware* structure = dynamic_cast<const nodes::StructureAware*>(&model);
             if (nullptr == structure) {
                 throw Error("the model should be at least structure aware");
             }

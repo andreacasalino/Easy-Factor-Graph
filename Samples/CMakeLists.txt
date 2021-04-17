@@ -36,6 +36,9 @@ AddSample(Sample02-BeliefPropagation-A)
 
 AddSamplePath(Sample03-BeliefPropagation-B)
 
+AddSample(Sample04-HMM-chain)
+
+AddSample(Sample05-Matricial)
 
 
 # option(BUILD_04 "Build Sample_04" ON)
