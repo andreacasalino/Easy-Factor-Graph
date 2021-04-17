@@ -14,41 +14,41 @@ using namespace std;
 using namespace EFG::categoric;
 
 int main() {
-	SAMPLE_PART("Group Variable", "", "", 
+    EFG::sample::samplePart([]() {
         //define a group variable
-        Group groupABCD(makeVariable(2 , "A") , makeVariable(2 , "B"));
-        cout << "groupABCD: " << groupABCD << endl; 
+        Group groupABCD(makeVariable(2, "A"), makeVariable(2, "B"));
+        cout << "groupABCD: " << groupABCD << endl;
 
-        groupABCD.add(makeVariable(2 , "C"));
-        groupABCD.add(makeVariable(2 , "D"));
-        cout << "groupABCD: " << groupABCD << endl; 
+        groupABCD.add(makeVariable(2, "C"));
+        groupABCD.add(makeVariable(2, "D"));
+        cout << "groupABCD: " << groupABCD << endl;
 
         // try to add an already existing variable
         try {
-            groupABCD.add(makeVariable(2 , "C"));
+            groupABCD.add(makeVariable(2, "C"));
         }
-        catch(...) {
+        catch (...) {
             cout << "insertion of C in ABCD group correctly refused" << endl;
         }
-        cout << "groupABCD: " << groupABCD << endl; 
-	)
+        cout << "groupABCD: " << groupABCD << endl;
+    }, "Group Variable");
 
-	SAMPLE_PART("Range of Group", "", "", 
+    EFG::sample::samplePart([]() {
         // build some variables
-        auto A = makeVariable(2 , "A");
-        auto B = makeVariable(4 , "B");
-        auto C = makeVariable(3 , "C");
-        
+        auto A = makeVariable(2, "A");
+        auto B = makeVariable(4, "B");
+        auto C = makeVariable(3, "C");
+
         // build and display the joint domains
         cout << "A B range:" << endl;
-        cout << Range({A, B}) << endl;
+        cout << Range({ A, B }) << endl;
 
         cout << "A C range:" << endl;
-        cout << Range({A, C}) << endl;
+        cout << Range({ A, C }) << endl;
 
         cout << "A B C range:" << endl;
-        cout << Range({A, B, C}) << endl;
-    )
+        cout << Range({ A, B, C }) << endl;
+    }, "Range of Group");
 
 	return EXIT_SUCCESS;
 }

@@ -19,8 +19,9 @@ namespace EFG::distribution::factor::modif {
     public:
         FactorExponential(const cnst::Factor& factor, float weight) : cnst::FactorExponential(factor, weight) {};
 
-        FactorExponential(const FactorExponential& o) : cnst::FactorExponential(o) {};
         FactorExponential(const cnst::FactorExponential& o) : cnst::FactorExponential(o) {};
+
+        FactorExponential(const FactorExponential& o) : FactorExponential(static_cast<const cnst::FactorExponential&>(o)) {};
 
         inline FactorExponential& operator=(const FactorExponential& o) { this->DistributionInstantiable::operator=(o); return *this; };
 

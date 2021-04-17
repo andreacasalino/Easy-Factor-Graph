@@ -15,8 +15,13 @@ namespace EFG::distribution::factor::cnst {
         if (this->group->size() != this->values->size()) {
             this->emplaceEntireDomain();
         }
+        this->evaluator = std::make_shared<EvaluatorExponential>(weight);
     }
     
+    FactorExponential::FactorExponential(const FactorExponential& o) : DistributionInstantiable(o) {
+        this->evaluator = std::make_shared<EvaluatorExponential>(o.getWeight());
+    };
+
     float FactorExponential::getWeight() const {
         return static_cast<const EvaluatorExponential*>(this->evaluator.get())->getWeight();
     }

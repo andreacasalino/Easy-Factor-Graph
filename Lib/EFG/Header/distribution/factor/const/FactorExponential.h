@@ -18,7 +18,7 @@ namespace EFG::distribution::factor::cnst {
     public:
         FactorExponential(const Factor& factor, float weight);
 
-        FactorExponential(const FactorExponential& o) : DistributionInstantiable(o) {};
+        FactorExponential(const FactorExponential& o);
 
         float getWeight() const;
     };
