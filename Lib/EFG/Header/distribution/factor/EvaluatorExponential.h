@@ -19,7 +19,7 @@ namespace EFG::distribution::factor {
         inline float getWeight() const { return this->weight; };
         void setWeight(float w) { this->weight = w; };
 
-        inline float evaluate(const float& toConvert) const { return expf(toConvert); };
+        inline float evaluate(const float& toConvert) const { return expf(this->weight * toConvert); };
         std::shared_ptr<Evaluator> copy() const override { return std::make_shared<EvaluatorExponential>(this->weight); };
 
     private:

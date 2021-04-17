@@ -25,6 +25,9 @@ namespace EFG::nodes {
             factor.setImageEntireDomain(1.f);
             return factor;
         }
+        if (1 == toMerge.size()) {
+            return distribution::factor::cnst::Factor(**toMerge.begin());
+        }
         distribution::factor::modif::Factor factor(toMerge);
         factor.emplaceEntireDomain();
         return factor;

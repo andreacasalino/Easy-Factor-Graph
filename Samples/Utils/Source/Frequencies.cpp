@@ -5,20 +5,35 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <EmpiricalFrequencies.h>
+#include <Frequencies.h>
 #include <Error.h>
 #include <algorithm>
 
 namespace EFG::sample {
-    std::size_t findPosition(const categoric::VariablePtr& var2Search, const categoric::Group& group) {
-        auto it = group.getVariables().find(var2Search);
-        if (it == group.getVariables().end()) {
-            throw Error("variable not found");
+    std::vector<float> makeDistribution(const std::vector<float>& values) {
+        if (values.size() <= 1) {
+            throw Error("this is not a distribution");
         }
-        return std::distance(group.getVariables().begin(), it);
+        auto distr = values;
+        float sum = 0.f;
+        std::for_each(values.begin(), values.end(), [&sum](const float& v) {
+            sum += v;
+        });
+        std::for_each(distr.begin(), distr.end(), [&sum](float& v) {
+            v /= sum;
+        });
+        return distr;
     }
 
-    std::vector<float> getEmpiricalMarginalFrequencies(categoric::VariablePtr var2Search, const std::vector<Combination>& samples, const categoric::Group& samplesGroup) {
+    std::size_t findPosition(const categoric::VariablePtr& var2Search, const std::set<categoric::VariablePtr>& group) {
+        auto it = group.find(var2Search);
+        if (it == group.end()) {
+            throw Error("variable not found");
+        }
+        return std::distance(group.begin(), it);
+    }
+
+    std::vector<float> getEmpiricalMarginalFrequencies(categoric::VariablePtr var2Search, const std::vector<Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
         if (samples.empty()) {
             throw Error("samples container can't be empty");
         }
@@ -34,7 +49,7 @@ namespace EFG::sample {
         return frequencies;
     }
 
-    float getEmpiricalFrequencies(const Combination& comb2Search, const categoric::Group& combGroup, const std::vector<Combination>& samples, const categoric::Group& samplesGroup) {
+    float getEmpiricalFrequencies(const Combination& comb2Search, const categoric::Group& combGroup, const std::vector<Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
         if (samples.empty()) {
             throw Error("samples container can't be empty");
         }

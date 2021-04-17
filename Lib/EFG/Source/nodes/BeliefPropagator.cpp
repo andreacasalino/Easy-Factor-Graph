@@ -20,11 +20,15 @@ namespace EFG::nodes {
     void BeliefPropagator::propagateBelief(const PropagationKind& kind) {
         this->lastPropagation = std::make_unique<PropagationResult>();
         this->lastPropagation->kindDone = kind;
+        this->lastPropagation->wasTerminated = true;
 #ifdef THREAD_POOL_ENABLED
         if (nullptr != this->threadPool) {
             std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
-                if ((this->messagePassingThreadPool(cluster, kind)) || (this->loopyPropagationThreadPool(cluster, kind))) {
-                    this->lastPropagation->wasTerminated = true;
+                if (this->messagePassingThreadPool(cluster, kind)) {
+                    return;
+                }
+                if (this->loopyPropagationThreadPool(cluster, kind)) {
+                    return;
                 }
                 this->lastPropagation->wasTerminated = false;
             });
@@ -32,8 +36,11 @@ namespace EFG::nodes {
         else {
 #endif
             std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&](const std::set<Node*>& cluster) {
-                if ((this->messagePassing(cluster, kind)) || (this->loopyPropagation(cluster, kind))) {
-                    this->lastPropagation->wasTerminated = true;
+                if (this->messagePassing(cluster, kind)) {
+                    return;
+                }
+                if (this->loopyPropagation(cluster, kind)) {
+                    return;
                 }
                 this->lastPropagation->wasTerminated = false;
             });
@@ -62,10 +69,20 @@ namespace EFG::nodes {
         float compute() {
             std::unique_ptr<distribution::Distribution> newMessage;
             if (PropagationKind::Sum == kind) {
-                newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
+                if (1 == toMerge.size()) {
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(**toMerge.begin()), categoric::Group(sender->variable));
+                }
+                else {
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
+                }
             }
             else {
-                newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
+                if (1 == toMerge.size()) {
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(**toMerge.begin()), categoric::Group(sender->variable));
+                }
+                else {
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
+                }
             }
             float difference = 0.f;
             if (nullptr == receiver->twin->message2This) {

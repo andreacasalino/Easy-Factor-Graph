@@ -3,10 +3,29 @@ add_subdirectory(Utils)
 function(AddSample NAME_)
     add_executable(${NAME_} ${NAME_}.cpp )
 
-    target_link_libraries( ${NAME_}
+    target_link_libraries(${NAME_}
 		PUBLIC
 			Sample-Utils
-    )	
+    )
+	
+	target_compile_definitions(${NAME_} 
+	PUBLIC
+		-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/"
+	)
+endfunction()
+
+function(AddSamplePath NAME_)
+    add_executable(${NAME_} ${CMAKE_CURRENT_SOURCE_DIR}/${NAME_}/${NAME_}.cpp )
+
+    target_link_libraries(${NAME_}
+		PUBLIC
+			Sample-Utils
+    )
+	
+	target_compile_definitions(${NAME_} 
+	PUBLIC
+		-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/${NAME_}/"
+	)
 endfunction()
 
 AddSample(Sample01-1-Variables)
@@ -15,22 +34,9 @@ AddSample(Sample01-2-Factors)
 
 AddSample(Sample02-BeliefPropagation-A)
 
-# option(BUILD_03 "Build Sample_03" ON)
-# if(BUILD_03)
-    # add_executable(
-        # Sample03
-        # ./Sample_03_Belief_propagation_B/Main_03.cpp
-    # )
+AddSamplePath(Sample03-BeliefPropagation-B)
 
-    # target_link_libraries( Sample03
-		# PUBLIC
-			# EFG::Easy-Factor-Graph
-    # )	
-	
-	# add_custom_command(TARGET Sample03 PRE_BUILD
-	    # COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_03_Belief_propagation_B/Sample_03_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_03_graphs
-    # )
-# endif()
+
 
 # option(BUILD_04 "Build Sample_04" ON)
 # if(BUILD_04)

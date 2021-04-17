@@ -42,5 +42,8 @@ namespace EFG::nodes {
         std::for_each(node.unaryFactors.begin(), node.unaryFactors.end(), [&result](const distribution::DistributionPtr& d) {
             result.emplace(d.get());
         });
+        for (auto it = node.disabledConnections.begin(); it != node.disabledConnections.end(); ++it) {
+            result.emplace(it->second.message2This.get());
+        }
     }
 }

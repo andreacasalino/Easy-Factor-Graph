@@ -14,7 +14,7 @@ namespace EFG::io::xml {
     class Importer : public io::Importer {
     public:
         template<typename Model>
-        static void importFromXml(const Model& model, const std::string& filePath, const std::string& fileName) {
+        static void importFromXml(Model& model, const std::string& filePath, const std::string& fileName) {
             Importer().importComponents(filePath, fileName, getComponents(model));
         };
 

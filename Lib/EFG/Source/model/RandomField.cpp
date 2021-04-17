@@ -20,6 +20,9 @@ namespace EFG::model {
     }
 
     std::vector<float> RandomField::getGradient() {
+        if (!this->evidences.empty()) {
+            this->resetEvidences({});
+        }
         std::vector<float> grad;
         grad.resize(this->handlers.size());
         std::size_t pos = 0;
