@@ -10,34 +10,42 @@
 
 namespace EFG::nodes {
     typedef std::list<std::set<Node*>>::iterator ClusterIter;
-    bool operator<(const ClusterIter& a, const ClusterIter& b) {
+    inline bool operator<(const ClusterIter& a, const ClusterIter& b) {
         return (*a->begin() < *b->begin());
-    }
+    };
 
     HiddenClusters::HiddenClusters(const std::set<Node*>& toSplit) {
         std::set<Node*> openSet = toSplit;
-        std::set<ClusterIter> connectedClusters;
         auto itOpen = openSet.begin();
         clusters.push_back({ *itOpen });
         itOpen = openSet.erase(itOpen);
         while (itOpen != openSet.end()) {
-            connectedClusters.clear();
-            std::set<Node*> newCluster = { *itOpen };
+            std::set<ClusterIter> connectedClusters;
+            std::set<Node*> connectedNodes;
             for (auto itConn = (*itOpen)->activeConnections.begin(); itConn != (*itOpen)->activeConnections.end(); ++itConn) {
                 auto clusterIt = this->find(*itConn->first);
                 if (clusterIt == clusters.end()) {
-                    newCluster.emplace(itConn->first);
-                    openSet.erase(openSet.find(itConn->first));
+                    connectedNodes.emplace(itConn->first);
+                    openSet.extract(itConn->first);
                 }
                 else {
                     connectedClusters.emplace(clusterIt);
                 }
             }
-            for (auto conn = connectedClusters.begin(); conn != connectedClusters.end(); ++conn) {
-                copyCluster(newCluster, **conn);
-                clusters.erase(*conn);
+            connectedNodes.emplace(*itOpen);
+            if(connectedClusters.empty()) {
+                this->clusters.push_back(connectedNodes);
             }
-            clusters.push_back(newCluster);
+            else {
+                auto conn = connectedClusters.begin();
+                copyCluster(**conn, connectedNodes);
+                auto connFirst = conn;
+                ++conn;
+                for (conn; conn != connectedClusters.end(); ++conn) {
+                    copyCluster(**connFirst, **conn);
+                    clusters.erase(*conn);
+                }
+            }
             itOpen = openSet.erase(itOpen);
         }
     }
