@@ -80,7 +80,7 @@ namespace EFG::io::xml {
 			if (nullptr == val) {
 				throw Error("image value not found");
 			}
-			factor->add(comb, static_cast<float>(std::atof(val->c_str())));
+			factor->add(Combination(comb), static_cast<float>(std::atof(val->c_str())));
 		}
 		return factor;
 	};

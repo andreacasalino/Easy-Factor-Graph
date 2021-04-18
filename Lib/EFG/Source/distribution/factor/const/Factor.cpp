@@ -141,7 +141,7 @@ namespace EFG::distribution::factor::cnst {
             this->values->emplace( Combination(jointDomain.get()), 1.f);
         });
         for (std::size_t s = 0; s < size; ++s) {
-            this->values->erase(comb);
+            this->values->erase(Combination(comb));
             std::for_each(comb.begin(), comb.end(), [](std::size_t& v) { v += 1; });
         }
     }

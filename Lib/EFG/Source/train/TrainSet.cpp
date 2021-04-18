@@ -46,7 +46,7 @@ namespace EFG::train {
         std::string line;
         while (!reader.eof()) {
             std::getline(reader, line);
-            values.push_back(convert(xmlPrs::Parser::sliceFragments(line)));
+            values.push_back(Combination(convert(xmlPrs::Parser::sliceFragments(line))));
         }
         return values;
     };

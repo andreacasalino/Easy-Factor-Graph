@@ -112,11 +112,13 @@ int main() {
 		xml::Importer::importFromXml(politree, SAMPLE_FOLDER, "graph_2.xml");
 		
 		//active the thread pool to fasten the computation
+#ifdef THREAD_POOL_ENABLED
 		politree.SetThreadPoolSize(3);
-		
+#endif
+
 		// set v1,v2,v3 as observations and use a Gibbs sampler 
 		// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
-		politree.resetEvidences(std::map<std::string, std::size_t>{ {"V1", 1}, {"V2", 1}, { "V3", 1 } });
+		politree.resetEvidences(std::map<std::string, std::size_t>{ {"v1", 1}, {"v2", 1}, { "v3", 1 } });
 		auto samples = politree.getHiddenSetSamples(100, 200);
 		
 		auto hidden_set = politree.getHiddenVariables();
@@ -174,7 +176,7 @@ int main() {
 		cout << "theoretical\n";
 		cout << sample::makeDistribution({ M * M_alfa + M_beta, M_alfa + M * M_beta }) << endl;
 		cout << loop.getMarginalDistribution("A") << endl << endl;
-	}, "Loopy model", "Belief propagation, part B");
+	}, "Simple Loopy model", "Belief propagation, part B");
 
 	EFG::sample::samplePart([]() {
 		model::Graph loop;
@@ -182,7 +184,9 @@ int main() {
 		xml::Importer::importFromXml(loop, SAMPLE_FOLDER, "graph_4.xml");
 		
 		//active the thread pool to fasten the computation
+#ifdef THREAD_POOL_ENABLED
 		loop.SetThreadPoolSize(3);
+#endif
 		
 		// set v1=1 as an evidence and use a Gibbs sampler 
 		// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables

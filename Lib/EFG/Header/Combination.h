@@ -13,7 +13,7 @@
 namespace EFG {
     class Combination {
     public:
-        Combination(const std::vector<std::size_t>& values);
+        explicit Combination(const std::vector<std::size_t>& values);
 
         Combination(const std::size_t* buffer, std::size_t bufferSize);
 

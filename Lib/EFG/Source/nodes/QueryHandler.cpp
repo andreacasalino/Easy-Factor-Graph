@@ -20,12 +20,6 @@ namespace EFG::nodes {
         for (auto it = node.activeConnections.begin(); it != node.activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }
-        if (toMerge.empty()) {
-            //distribution::factor::modif::Factor factor(categoric::Group(node.variable));
-            //factor.setImageEntireDomain(1.f);
-            //return factor;
-            throw 0;
-        }
         if (1 == toMerge.size()) {
             return distribution::factor::cnst::Factor(**toMerge.begin());
         }

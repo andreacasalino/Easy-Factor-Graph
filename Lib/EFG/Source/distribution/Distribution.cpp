@@ -61,7 +61,7 @@ namespace EFG::distribution {
         else {
             categoric::Range jointDomain(*this->group);
             iterator::forEach(jointDomain, [this, &probs](categoric::Range& jointDomain) {
-                auto it = this->values->find(jointDomain.get());
+                auto it = this->values->find(Combination(jointDomain.get()));
                 if (it == this->values->end()) {
                     probs.push_back(0.f);
                 }

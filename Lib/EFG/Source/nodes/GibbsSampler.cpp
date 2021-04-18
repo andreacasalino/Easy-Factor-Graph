@@ -41,10 +41,13 @@ namespace EFG::nodes {
         HiddenStructure structure;
         std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [&structure](const std::set<Node*>& s) {
             std::for_each(s.begin(), s.end(), [&structure](const Node* n) {
+                std::set<const distribution::Distribution*> toMerge;
+                gatherUnaries(toMerge, *n);
                 distribution::DistributionPtr unaryMerged;
-                if (!n->unaryFactors.empty()) {
-                    std::set<const distribution::Distribution*> toMerge;
-                    gatherUnaries(toMerge, *n);
+                if (1 == toMerge.size()) {
+                    unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(**toMerge.begin());
+                }
+                else {
                     unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(toMerge);
                 }
                 NodeHidden node{ 0, unaryMerged, {} };
@@ -66,21 +69,13 @@ namespace EFG::nodes {
         std::set<const distribution::Distribution*> toMerge;
         for (std::size_t i = 0; i < iterations; ++i) {
             for (auto it = structure.begin(); it != structure.end(); ++it) {
-                toMerge.clear();
-                if (nullptr != it->second.unaryMerged) {
-                    toMerge.emplace(it->second.unaryMerged.get());
-                }
+                toMerge = {it->second.unaryMerged.get()};
                 std::list<distribution::factor::cnst::Factor> marginalized;
                 for (auto c = it->second.connections.begin(); c != it->second.connections.end(); ++c) {
                     marginalized.emplace_back(*c->factor, Combination({ *c->neighbourSample }), categoric::Group(c->neighbourVariable));
                     toMerge.emplace(&marginalized.back());
                 }
-                if (toMerge.empty()) {
-                    distribution::factor::modif::Factor temp(categoric::Group(it->first));
-                    temp.setImageEntireDomain(1.f);
-                    it->second.sample = sampler.sampleFromDiscrete(temp.getProbabilities());
-                }
-                else if (1 == toMerge.size()) {
+                if (1 == toMerge.size()) {
                     it->second.sample = sampler.sampleFromDiscrete((*toMerge.begin())->getProbabilities());
                 }
                 else {
@@ -107,7 +102,7 @@ namespace EFG::nodes {
         evolveSamples(structure, 10 * deltaIteration, sampler);
         for (std::size_t s = 0; s < numberOfSamples; ++s) {
             evolveSamples(structure, deltaIteration, sampler);
-            samples.push_back(convert(structure));
+            samples.push_back(Combination(convert(structure)));
         }
         return samples;
     }

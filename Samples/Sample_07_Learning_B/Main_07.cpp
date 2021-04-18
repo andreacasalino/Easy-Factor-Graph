@@ -30,7 +30,9 @@ int main() {
 	model::ConditionalRandomField cond_graph_to_learn(static_cast<const node::Node::NodeFactory&>(cond_graph));
 	// set all tuanble weights equal to 1
 	cond_graph_to_learn.SetTunable(ones(cond_graph_to_learn.GetModelSize()));
+#ifdef THREAD_POOL_ENABLED
 	cond_graph_to_learn.SetThreadPoolSize(3);
+#endif
 
 	auto Set = Create_training_set(cond_graph);
 	auto Learner = train::Trainer::GetFixedStep(1.f, 0.3f); //the stochastic gradient descend version is used: at every iteration 30% of the samples in the training set are used to evaluate the gradient

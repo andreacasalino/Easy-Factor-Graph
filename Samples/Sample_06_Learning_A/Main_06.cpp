@@ -223,7 +223,9 @@ void part_03() {
 	graph_to_learn.Insert(graph_3.GetStructure(), false);
 	//set all weights equal to 1
 	set_ones_tunable(graph_to_learn);
+#ifdef THREAD_POOL_ENABLED
 	graph_to_learn.SetThreadPoolSize(3);
+#endif
 
 #ifdef USE_TEXTUAL_TRAIN_SET
 	Print_set_as_training_set(get_train_folder(), graph_3.GetHiddenSet(), samples);

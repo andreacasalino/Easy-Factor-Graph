@@ -82,7 +82,9 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 		}
 	}
 
+#ifdef THREAD_POOL_ENABLED
 	if (Size > 5) Mat->SetThreadPoolSize(3);
+#endif
 	return move(Mat);
 
 }
