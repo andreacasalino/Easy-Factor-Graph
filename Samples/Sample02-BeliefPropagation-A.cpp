@@ -26,8 +26,8 @@ int main () {
         float teta = 1.5f;
 
         factor::modif::Factor shapeTemp(Group(makeVariable(2, "A") , makeVariable(2, "B")));
-        shapeTemp.add(std::vector<std::size_t>{0,0}, 1.f);
-        shapeTemp.add(std::vector<std::size_t>{1,1}, 1.f);
+        shapeTemp.add(Combination(std::vector<std::size_t>{0,0}), 1.f);
+        shapeTemp.add(Combination(std::vector<std::size_t>{1,1}), 1.f);
         graph.Insert(factor::cnst::FactorExponential(shapeTemp, teta));
 
         //make a new belief propagation setting B=0 as observation

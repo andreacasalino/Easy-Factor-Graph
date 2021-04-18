@@ -45,7 +45,7 @@ namespace EFG::nodes {
         return mergeMessages(itN->second).getProbabilities();
     }
 
-    distribution::factor::cnst::Factor QueryHandler::getJointMarginalDistribution(const std::vector<std::string>& subgroup) {
+    distribution::factor::cnst::Factor QueryHandler::getJointMarginalDistribution(const std::set<std::string>& subgroup) {
         std::set<Node*> subGraphSet;
         std::list<distribution::factor::cnst::IndicatorFactor> indicators;
         std::for_each(subgroup.begin(), subgroup.end(), [&](const std::string& name) {

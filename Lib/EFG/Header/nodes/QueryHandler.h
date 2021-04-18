@@ -25,7 +25,7 @@ namespace EFG::nodes {
 		std::vector<float> getMarginalDistribution(const std::string& var);
 
 		// the returned shape has the variable in the same order as the ones passed
-		distribution::factor::cnst::Factor getJointMarginalDistribution(const std::vector<std::string>& subgroup);
+		distribution::factor::cnst::Factor getJointMarginalDistribution(const std::set<std::string>& subgroup);
 
 		/** \brief Returns the Maximum a Posteriori estimation of the hidden set. @latexonly\label{MAP_method}@endlatexonly
 		* \details Values are ordered as returned by Node_factory::Get_Actual_Hidden_Set.

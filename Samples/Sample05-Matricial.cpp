@@ -29,7 +29,7 @@ int main() {
 
 		auto Matrix = makeMatrix(Size, var_dom_size, weight_potential);
 		//save the file into an xml (just as an example)
-		io::xml::Exporter::exportToXml(*Matrix, "./", "Matrix.xml");
+		io::xml::Exporter::exportToXml(*Matrix, "Matrix.xml", "Matrix");
 		//set V0_0 = 0 as an edivence and compute marginals of the variables along the diagonal of the matrix
 		Matrix->resetEvidences(std::map<std::string, std::size_t>{ {"V0_0", 0} });
 

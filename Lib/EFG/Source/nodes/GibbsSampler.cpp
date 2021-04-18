@@ -47,7 +47,7 @@ namespace EFG::nodes {
                 if (1 == toMerge.size()) {
                     unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(**toMerge.begin());
                 }
-                else {
+                else if(!toMerge.empty()) {
                     unaryMerged = std::make_shared<distribution::factor::cnst::Factor>(toMerge);
                 }
                 NodeHidden node{ 0, unaryMerged, {} };
@@ -69,7 +69,10 @@ namespace EFG::nodes {
         std::set<const distribution::Distribution*> toMerge;
         for (std::size_t i = 0; i < iterations; ++i) {
             for (auto it = structure.begin(); it != structure.end(); ++it) {
-                toMerge = {it->second.unaryMerged.get()};
+                toMerge.clear();
+                if (nullptr != it->second.unaryMerged) {
+                    toMerge.emplace(it->second.unaryMerged.get());
+                }
                 std::list<distribution::factor::cnst::Factor> marginalized;
                 for (auto c = it->second.connections.begin(); c != it->second.connections.end(); ++c) {
                     marginalized.emplace_back(*c->factor, Combination({ *c->neighbourSample }), categoric::Group(c->neighbourVariable));

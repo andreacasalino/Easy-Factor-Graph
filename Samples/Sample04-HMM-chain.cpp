@@ -48,8 +48,8 @@ int main() {
 		cout << "Strong correlation among hidden variables,   MAP on Y0,1,..   " << Y_MAP << endl;
 
 		//export chains into an xml (just as an exporting example)
-		io::xml::Exporter::exportToXml(*G_XY, "./", "Graph_XY.xml");
-		io::xml::Exporter::exportToXml(*G_YY, "./", "Graph_YY.xml");
+		io::xml::Exporter::exportToXml(*G_XY, "Graph_XY.xml", "Graph_XY");
+		io::xml::Exporter::exportToXml(*G_YY, "Graph_YY.xml", "Graph_YY");
 	}, "HMM", "", "Check the content of Graph_XY.xml and Graph_YY.xml");
 
 	return EXIT_SUCCESS;
