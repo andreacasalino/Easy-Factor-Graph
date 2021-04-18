@@ -25,7 +25,7 @@ int main() {
 	EFG::sample::samplePart([]() {
 		size_t Size = 10; // A matrix of Size x Size variables will be created (see 'Sample 05: Matricial structure' of the documentation), you can change this value
 		size_t var_dom_size = 3; //you can change it
-		float weight_potential = 1.0f;
+		float weight_potential = 1.1f;
 
 		auto Matrix = makeMatrix(Size, var_dom_size, weight_potential);
 		//save the file into an xml (just as an example)
@@ -83,7 +83,9 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 	}
 
 #ifdef THREAD_POOL_ENABLED
-	if (Size > 5) Mat->SetThreadPoolSize(3);
+	if (Size > 5) {
+		Mat->SetThreadPoolSize(3);
+	}
 #endif
 	return move(Mat);
 

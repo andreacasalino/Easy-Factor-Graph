@@ -8,6 +8,7 @@
 #include <model/RandomField.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/factor/const/FactorExponential.h>
+#include <distribution/DistributionIterator.h>
 #include <io/xml/Importer.h>
 #include <Presenter.h>
 #include <Frequencies.h>
@@ -19,6 +20,8 @@ using namespace std;
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
+
+float getDomainSum(const Distribution& d);
 
 int main() {
     EFG::sample::samplePart([]() {
@@ -67,30 +70,34 @@ int main() {
             auto marginal_A12434 = graph.getJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
         	vector<Combination> comb_raw = { Combination(vector<size_t>{0, 0, 0, 0}) , Combination(vector<size_t>{1,1,0,0}) };
 
+            float distrSum = getDomainSum(marginal_A12434);
+
             cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=0,X2=0)" << endl;
             cout << "empirical" << endl;
             cout << sample::getEmpiricalFrequencies(comb_raw.front(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.front()) << endl;
+            cout << marginal_A12434.find(comb_raw.front()) / distrSum << endl;
 
             cout << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=0,X2=0)";
             cout << "empirical" << endl;
             cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.back()) << endl;
+            cout << marginal_A12434.find(comb_raw.back()) / distrSum << endl;
         }
         {
             // compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
             auto marginal_B123 = graph.getJointMarginalDistribution({ "B1" , "B2" ,"B3" });
             vector<Combination> comb_raw = { Combination(vector<size_t>{0, 0, 0}) , Combination(vector<size_t>{1,1,0}) };
 
+            float distrSum = getDomainSum(marginal_B123);
+
             cout << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0)";
             cout << "empirical" << endl;
             cout << sample::getEmpiricalFrequencies(comb_raw.front(), marginal_B123.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_B123.find(comb_raw.front()) << endl;
+            cout << marginal_B123.find(comb_raw.front()) / distrSum << endl;
 
             cout << "Prob(B1=1, B2=1, B3=0 | X1=0,X2=0)";
             cout << "empirical" << endl;
             cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_B123.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_B123.find(comb_raw.back()) << endl;
+            cout << marginal_B123.find(comb_raw.back()) / distrSum << endl;
         }
         
         // set different observation values
@@ -102,17 +109,28 @@ int main() {
             auto marginal_A12434 = graph.getJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
             vector<Combination> comb_raw = { Combination(vector<size_t>{0, 0, 0, 0}) , Combination(vector<size_t>{1,1,0,0}) };
 
+            float distrSum = getDomainSum(marginal_A12434);
+
             cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=1,X2=1)" << endl;
             cout << "empirical" << endl;
             cout << sample::getEmpiricalFrequencies(comb_raw.front(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.front()) << endl;
+            cout << marginal_A12434.find(comb_raw.front()) / distrSum << endl;
 
             cout << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=1,X2=1)";
             cout << "empirical" << endl;
             cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.back()) << endl;
+            cout << marginal_A12434.find(comb_raw.back()) / distrSum << endl;
         }
     }, "Subgraph from complex graph");
 
 	return EXIT_SUCCESS;
+}
+
+float getDomainSum(const Distribution& d) {
+    auto it = d.getIterator();
+    float sum = 0.f;
+    EFG::iterator::forEach(it, [&sum](const DistributionIterator& it) {
+        sum += it.getImage();
+    });
+    return sum;
 }
