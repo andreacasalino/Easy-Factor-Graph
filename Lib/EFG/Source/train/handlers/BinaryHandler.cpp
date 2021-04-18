@@ -26,8 +26,8 @@ namespace EFG::train::handler {
         for (auto it = this->nodeB->activeConnections.begin(); it != this->nodeB->activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }
-        toMerge.erase(toMerge.find(this->nodeA->activeConnections.find(this->nodeB)->second.message2This.get()));
-        toMerge.erase(toMerge.find(this->nodeB->activeConnections.find(this->nodeA)->second.message2This.get()));
+        toMerge.extract(this->nodeA->activeConnections.find(this->nodeB)->second.message2This.get());
+        toMerge.extract(this->nodeB->activeConnections.find(this->nodeA)->second.message2This.get());
         toMerge.emplace(this->factor.get());
         return this->dotProduct(distribution::factor::cnst::Factor(toMerge).getProbabilities());
     }

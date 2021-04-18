@@ -94,11 +94,11 @@ int main () {
 
 	EFG::sample::samplePart([]() {
 		factor::modif::Factor factor(Group({ makeVariable(3 , "A"), makeVariable(3 , "B")}));
-		factor.add(std::vector<std::size_t>{0, 0}, 1);
-		factor.add(std::vector<std::size_t>{0, 1}, 2);
-		factor.add(std::vector<std::size_t>{0, 2}, 3);
-		factor.add(std::vector<std::size_t>{1, 0}, 1);
-		factor.add(std::vector<std::size_t>{1, 1}, 2);
+		factor.add(Combination(std::vector<std::size_t>{0, 0}), 1);
+		factor.add(Combination(std::vector<std::size_t>{0, 1}), 2);
+		factor.add(Combination(std::vector<std::size_t>{0, 2}), 3);
+		factor.add(Combination(std::vector<std::size_t>{1, 0}), 1);
+		factor.add(Combination(std::vector<std::size_t>{1, 1}), 2);
 		std::cout << "distribution representing an edge" << factor << std::endl << std::endl;
 
 		std::cout << "Map message keeping A" << std::endl << std::endl;

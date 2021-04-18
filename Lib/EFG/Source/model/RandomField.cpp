@@ -23,6 +23,7 @@ namespace EFG::model {
         if (!this->evidences.empty()) {
             this->resetEvidences({});
         }
+        this->lastPropagation.reset();
         std::vector<float> grad;
         grad.resize(this->handlers.size());
         std::size_t pos = 0;
