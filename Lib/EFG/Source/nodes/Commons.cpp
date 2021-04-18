@@ -46,4 +46,10 @@ namespace EFG::nodes {
             result.emplace(it->second.message2This.get());
         }
     }
+
+    void resetMessages(Node& node) {
+        for (auto it = node.activeConnections.begin(); it != node.activeConnections.end(); ++it) {
+            it->second.message2This.reset();
+        }
+    }
 }

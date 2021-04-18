@@ -18,6 +18,13 @@ constexpr float MAX_DIFF = std::numeric_limits<float>::max();
 
 namespace EFG::nodes {
     void BeliefPropagator::propagateBelief(const PropagationKind& kind) {
+        // empty all messages
+        std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [](const std::set<Node*>& c) {
+            std::for_each(c.begin(), c.end(), [](Node* n) {
+                resetMessages(*n);
+            });
+        });
+        // do new propagation
         this->lastPropagation = std::make_unique<PropagationResult>();
         this->lastPropagation->kindDone = kind;
         this->lastPropagation->wasTerminated = true;
@@ -52,25 +59,37 @@ namespace EFG::nodes {
     class MessageComputer {
     public:
         MessageComputer(Node* sender, Node* receiver, const PropagationKind& kind)
-            : sender(sender)
-            , recipient(&receiver->activeConnections.find(sender)->second)
-            , kind(kind) {
-            this->toMerge = { this->recipient->factor.get() };
-            gatherUnaries(toMerge, *sender);
+            : kind(kind)
+            , sender(sender)
+            , recipient(&receiver->activeConnections.find(sender)->second) {
             for (auto it = sender->activeConnections.begin(); it != sender->activeConnections.end(); ++it) {
-                toMerge.emplace(it->second.message2This.get());
+                this->dependencies.emplace(&it->second);
             }
-            toMerge.extract(sender->activeConnections.find(receiver)->second.message2This.get());
+            this->dependencies.extract(&sender->activeConnections.find(receiver)->second);
         };
         MessageComputer(const MessageComputer& ) = default;
 
-        inline bool isComputationPossible() const { return (this->toMerge.find(nullptr) == this->toMerge.end()); };
+        inline bool isComputationPossible() const { 
+            for (auto it = this->dependencies.begin(); it != this->dependencies.end(); ++it) {
+                if (nullptr == (*it)->message2This) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
         // return difference
         float compute() {
             std::unique_ptr<distribution::Distribution> newMessage;
+            // gather messages
+            std::set<const distribution::Distribution*> toMerge = { this->recipient->factor.get() };
+            gatherUnaries(toMerge, *this->sender);
+            std::for_each(this->dependencies.begin(), this->dependencies.end(), [&toMerge](const Connection* c) {
+                toMerge.emplace(c->message2This.get());
+            });
             if (PropagationKind::Sum == kind) {
                 if (1 == toMerge.size()) {
-                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(**toMerge.begin()), categoric::Group(sender->variable));
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(**toMerge.begin(), categoric::Group(sender->variable));
                 }
                 else {
                     newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
@@ -78,7 +97,7 @@ namespace EFG::nodes {
             }
             else {
                 if (1 == toMerge.size()) {
-                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(**toMerge.begin()), categoric::Group(sender->variable));
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(**toMerge.begin(), categoric::Group(sender->variable));
                 }
                 else {
                     newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
@@ -97,6 +116,7 @@ namespace EFG::nodes {
                 else {
                     iterator::forEach(itOld, [&itNew, &difference](const distribution::DistributionIterator& itOld) {
                         difference += fabsf(itNew.getImageRaw() - itOld.getImageRaw());
+                        ++itNew;
                     });
                 }
             }
@@ -104,13 +124,14 @@ namespace EFG::nodes {
             return difference;
         };
 
-        inline const std::set<const distribution::Distribution*>& getDependencies() const { return this->toMerge; };
+        inline const std::set<const Connection*>& getDependencies() const { return this->dependencies; };
+        inline const Connection* getRecipient() const { return this->recipient; };
 
     private:
+        PropagationKind kind;
         Node* sender;
         Connection* recipient;
-        PropagationKind kind;
-        std::set<const distribution::Distribution*> toMerge;
+        std::set<const Connection*> dependencies;
     };
 
     // list<sender receiver>
@@ -122,6 +143,16 @@ namespace EFG::nodes {
             }
         });
         return openSet;
+    }
+
+    void setOnesMessages(const std::set<Node*>& cluster) {
+        std::for_each(cluster.begin(), cluster.end(), [](Node* n) {
+            for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
+                auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(n->variable);
+                mexOnes->setImageEntireDomain(1.f);
+                itA->second.message2This = std::move(mexOnes);
+            }
+            });
     }
 
     bool BeliefPropagator::messagePassing(const std::set<Node*>& cluster, const PropagationKind& kind) {
@@ -144,16 +175,6 @@ namespace EFG::nodes {
             }
         }
         return true;
-    }
-
-    void setOnesMessages(const std::set<Node*>& cluster) {
-        std::for_each(cluster.begin(), cluster.end(), [](Node* n) {
-            for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
-                auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(n->variable);
-                mexOnes->setImageEntireDomain(1.f);
-                itA->second.message2This = std::move(mexOnes);
-            }
-        });
     }
 
     bool BeliefPropagator::loopyPropagation(const std::set<Node*>& cluster, const PropagationKind& kind) {
@@ -196,7 +217,10 @@ namespace EFG::nodes {
                     it = openSet.erase(it);
                     progressWasMade = true;
                 }
-                else ++it;
+                else {
+                    computers.pop_back();
+                    ++it;
+                }
             }
             this->threadPool->wait();
             if (!progressWasMade) {
@@ -217,7 +241,7 @@ namespace EFG::nodes {
             variationMax = 0.f;
             auto openSet = toCalibrate;
             while (!openSet.empty()) {
-                std::set<const distribution::Distribution*> calibrating;
+                std::set<const Connection*> calibrating;
                 std::list<MessageComputer> computers;
                 auto itOp = openSet.begin();
                 while (itOp != openSet.end()) {
@@ -233,7 +257,7 @@ namespace EFG::nodes {
                     }
                     if (calibrationPossible) {
                         itOp = openSet.erase(itOp);
-                        calibrating.emplace(itOp->second->activeConnections.find(itOp->first)->second.message2This.get());
+                        calibrating.emplace(cmpPtr->getRecipient());
                         this->threadPool->push([cmpPtr, &variationMax]() {
                             float variation = cmpPtr->compute();
                             if (variation > variationMax) {

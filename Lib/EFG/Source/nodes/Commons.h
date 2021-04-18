@@ -16,6 +16,8 @@ namespace EFG::nodes {
     void reconnnect(Node& node);
 
     void gatherUnaries(std::set<const distribution::Distribution*>& result, const Node& node);
+
+    void resetMessages(Node& node);
 }
 
 #endif
