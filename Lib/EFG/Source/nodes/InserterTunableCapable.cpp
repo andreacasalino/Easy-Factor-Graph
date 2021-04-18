@@ -12,8 +12,8 @@
 namespace EFG::nodes {
     void InsertTunableCapable::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
         this->InsertCapable::Insert(toInsert);
-        this->factorsExp.erase(this->factorsExp.find(toInsert.get()));
-        this->factorsTunable.emplace(toInsert.get(), this->numberOfClusters);
+        this->factorsExp.extract(toInsert);
+        this->factorsTunable.emplace(toInsert, this->numberOfClusters);
         ++this->numberOfClusters;
     }
 
@@ -23,7 +23,7 @@ namespace EFG::nodes {
         this->Insert(distr);
     }
 
-    std::map<distribution::factor::modif::FactorExponential*, std::size_t>::const_iterator InsertTunableCapable::findSharingFactor(const categoric::Group& potentialSharingWeight) const {
+    std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t>::const_iterator InsertTunableCapable::findSharingFactor(const categoric::Group& potentialSharingWeight) const {
         for (auto it = this->factorsTunable.begin(); it != this->factorsTunable.end(); ++it) {
             if (it->first->getGroup() == potentialSharingWeight) {
                 return it;
@@ -35,7 +35,7 @@ namespace EFG::nodes {
     void InsertTunableCapable::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
         auto it = this->findSharingFactor(this->convertUsingLocals(potentialSharingWeight));
         this->InsertCapable::Insert(toInsert);
-        this->factorsExp.erase(this->factorsExp.find(toInsert.get()));
+        this->factorsExp.extract(toInsert);
         this->factorsTunable.emplace(toInsert.get(), it->second);
     }
 

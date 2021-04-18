@@ -15,7 +15,7 @@ namespace EFG::nodes {
         std::vector<std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>> result;
         result.resize(this->numberOfClusters);
         for (auto it = this->factorsTunable.begin(); it != this->factorsTunable.end(); ++it) {
-            result[it->second].push_back(convert(it->first));
+            result[it->second].push_back(it->first);
         }
         return result;
     }

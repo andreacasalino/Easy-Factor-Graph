@@ -11,12 +11,12 @@
 namespace EFG::model {
     void RandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
         this->InsertTunableCapable::Insert(toInsert);
-        this->insertHandler(toInsert.get());
+        this->insertHandler(toInsert);
     }
 
     void RandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
         this->InsertTunableCapable::Insert(toInsert, potentialSharingWeight);
-        this->insertHandler(toInsert.get());
+        this->insertHandler(toInsert);
     }
 
     std::vector<float> RandomField::getGradient() {

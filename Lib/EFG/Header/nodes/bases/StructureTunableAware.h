@@ -21,7 +21,7 @@ namespace EFG::nodes {
     protected:
         std::size_t numberOfClusters = 0;
         // factor, cluster id
-        std::map<distribution::factor::modif::FactorExponential*, std::size_t> factorsTunable;
+        std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t> factorsTunable;
 
     private:
         float findWeight(std::size_t cluster) const;

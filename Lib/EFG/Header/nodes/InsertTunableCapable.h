@@ -27,7 +27,7 @@ namespace EFG::nodes {
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight);
 
     private:
-        std::map<distribution::factor::modif::FactorExponential*, std::size_t>::const_iterator findSharingFactor(const categoric::Group& potentialSharingWeight) const;
+        std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t>::const_iterator findSharingFactor(const categoric::Group& potentialSharingWeight) const;
     };
 }
 

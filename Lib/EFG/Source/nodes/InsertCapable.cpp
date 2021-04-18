@@ -33,7 +33,7 @@ namespace EFG::nodes {
         return { &itNode->second, nullptr };
     }
 
-    void InsertCapable::Insert(distribution::DistributionPtr factor) {
+    void InsertCapable::InsertPtr(distribution::DistributionPtr factor) {
         if (3 <= factor->getGroup().getVariables().size()) {
             throw Error("Only binary or unary factors can be added");
         }
@@ -46,20 +46,6 @@ namespace EFG::nodes {
         }
 
         this->lastPropagation.reset();
-
-        distribution::factor::cnst::Factor* factorPt = dynamic_cast<distribution::factor::cnst::Factor*>(factor.get());
-        if (nullptr != factorPt) {
-            this->factors.emplace(factorPt);
-            return;
-        }
-
-        distribution::factor::cnst::FactorExponential* factorExpPt = dynamic_cast<distribution::factor::cnst::FactorExponential*>(factor.get());
-        if (nullptr != factorExpPt) {
-            this->factorsExp.emplace(factorExpPt);
-            return;
-        }
-
-        throw Error("unrecognized factor type");
     }
 
     void InsertCapable::InsertUnary(distribution::DistributionPtr factor) {
@@ -158,10 +144,20 @@ namespace EFG::nodes {
         return converted;
     }
 
-    void InsertCapable::Insert(const distribution::Distribution& factor) {
+    void InsertCapable::Insert(const std::shared_ptr<distribution::factor::cnst::Factor>& factor) {
+        this->InsertPtr(factor);
+        this->factors.emplace(factor);
+    }
+
+    void InsertCapable::Insert(const distribution::factor::cnst::Factor& factor) {
         std::shared_ptr<distribution::factor::modif::Factor> distr = std::make_shared<distribution::factor::modif::Factor>(factor);
         distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
         this->Insert(distr);
+    }
+
+    void InsertCapable::Insert(const std::shared_ptr<distribution::factor::cnst::FactorExponential>& factor) {
+        this->InsertPtr(factor);
+        this->factorsExp.emplace(factor);
     }
 
     void InsertCapable::Insert(const distribution::factor::cnst::FactorExponential& factor) {

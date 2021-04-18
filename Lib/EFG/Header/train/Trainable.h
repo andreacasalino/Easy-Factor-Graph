@@ -39,8 +39,8 @@ namespace EFG::train {
         inline TrainSetPtr getTrainSet() const { return this->set; };
 
     protected:
-        virtual TrainHandlerPtr makeHandler(distribution::factor::modif::FactorExponential* factor);
-        void insertHandler(distribution::factor::modif::FactorExponential* factor);
+        virtual TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
+        void insertHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
 
         TrainSetPtr set;
         std::list<TrainHandlerPtr> handlers;

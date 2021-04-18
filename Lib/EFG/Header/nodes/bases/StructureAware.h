@@ -14,21 +14,14 @@
 #include <distribution/factor/const/FactorExponential.h>
 
 namespace EFG::nodes {
-    template <typename F>
-    std::shared_ptr<F> convert(F* rawPtr) {
-        std::shared_ptr<F> temp;
-        temp.reset(rawPtr);
-        return temp;
-    }
-
     class StructureAware : virtual public Base {
     public:
-        std::vector<std::shared_ptr<distribution::factor::cnst::Factor>> getFactors() const;
-        std::vector<std::shared_ptr<distribution::factor::cnst::FactorExponential>> getFactorsExp() const;
+        inline const std::set<std::shared_ptr<distribution::factor::cnst::Factor>>& getFactors() const { return this->factors; };
+        inline const std::set<std::shared_ptr<distribution::factor::cnst::FactorExponential>>& getFactorsExp() const { return this->factorsExp; };
 
     protected:
-        std::set<distribution::factor::cnst::Factor*> factors;
-        std::set<distribution::factor::cnst::FactorExponential*> factorsExp;
+        std::set<std::shared_ptr<distribution::factor::cnst::Factor>> factors;
+        std::set<std::shared_ptr<distribution::factor::cnst::FactorExponential>> factorsExp;
     };
 }
 

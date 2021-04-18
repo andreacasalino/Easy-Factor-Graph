@@ -15,15 +15,15 @@
 namespace EFG::model {
     void ConditionalRandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
         this->InsertTunableCapable::Insert(toInsert);
-        this->insertHandler(toInsert.get());
+        this->insertHandler(toInsert);
     }
 
     void ConditionalRandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
         this->InsertTunableCapable::Insert(toInsert, potentialSharingWeight);
-        this->insertHandler(toInsert.get());
+        this->insertHandler(toInsert);
     }
 
-    train::TrainHandlerPtr ConditionalRandomField::makeHandler(distribution::factor::modif::FactorExponential* factor) {
+    train::TrainHandlerPtr ConditionalRandomField::makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) {
         auto handler = this->Trainable::makeHandler(factor);
         if (nullptr != dynamic_cast<train::handler::UnaryHandler*>(handler.get())) {
             if (this->evidences.find(*factor->getGroup().getVariables().begin()) != this->evidences.end()) {
@@ -37,10 +37,10 @@ namespace EFG::model {
                 throw Error("tuanble factor connectioning 2 observartions is invalid");
             }
             if (itOa != this->evidences.end()) {
-                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOb->first)->second, std::make_pair(itOa->first, &itOa->second), nodes::convert(factor));
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOb->first)->second, std::make_pair(itOa->first, &itOa->second), factor);
             }
             if (itOb != this->evidences.end()) {
-                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOa->first)->second, std::make_pair(itOb->first, &itOb->second), nodes::convert(factor));
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOa->first)->second, std::make_pair(itOb->first, &itOb->second), factor);
             }
         }
         return handler;

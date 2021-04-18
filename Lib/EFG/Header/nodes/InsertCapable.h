@@ -20,9 +20,11 @@ namespace EFG::nodes {
         , virtual public BeliefAware
         , virtual public StructureAware {
     public:
-        void Insert(distribution::DistributionPtr toInsert);
+        void Insert(const std::shared_ptr<distribution::factor::cnst::Factor>& factor);
         // here is copied using the variables stored inside this model
-        void Insert(const distribution::Distribution& factor);
+        void Insert(const distribution::factor::cnst::Factor& factor);
+
+        void Insert(const std::shared_ptr<distribution::factor::cnst::FactorExponential>& factor);
         // here is copied using the variables stored inside this model
         void Insert(const distribution::factor::cnst::FactorExponential& factor);
 
@@ -30,6 +32,7 @@ namespace EFG::nodes {
         categoric::Group convertUsingLocals(const categoric::Group& toConvert);
 
     private:
+        void InsertPtr(distribution::DistributionPtr toInsert);
         void InsertUnary(distribution::DistributionPtr factor);
         void InsertBinary(distribution::DistributionPtr factor);
 
