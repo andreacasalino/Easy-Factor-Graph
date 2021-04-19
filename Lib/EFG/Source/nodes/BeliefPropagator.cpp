@@ -63,15 +63,15 @@ namespace EFG::nodes {
             , sender(sender)
             , recipient(&receiver->activeConnections.find(sender)->second) {
             for (auto it = sender->activeConnections.begin(); it != sender->activeConnections.end(); ++it) {
-                this->dependencies.emplace(&it->second);
+                this->dependencies.push_back(&it->second);
             }
-            this->dependencies.extract(&sender->activeConnections.find(receiver)->second);
+            this->dependencies.remove(&sender->activeConnections.find(receiver)->second);
         };
         MessageComputer(const MessageComputer& ) = default;
 
         inline bool isComputationPossible() const { 
-            for (auto it = this->dependencies.begin(); it != this->dependencies.end(); ++it) {
-                if (nullptr == (*it)->message2This) {
+            for(auto it = this->dependencies.begin(); it!=this->dependencies.end(); ++it) {
+                if(nullptr == (*it)->message2This) {
                     return false;
                 }
             }
@@ -124,19 +124,20 @@ namespace EFG::nodes {
             return difference;
         };
 
-        inline const std::set<const Connection*>& getDependencies() const { return this->dependencies; };
+        inline const std::list<const Connection*>& getDependencies() const { return this->dependencies; };
         inline const Connection* getRecipient() const { return this->recipient; };
 
     private:
         PropagationKind kind;
         Node* sender;
         Connection* recipient;
-        std::set<const Connection*> dependencies;
+        std::list<const Connection*> dependencies;
     };
 
-    // list<sender receiver>
-    std::list<std::pair<Node*, Node*>> getOpenSet(const std::set<Node*>& cluster) {
-        std::list<std::pair<Node*, Node*>> openSet;
+    typedef std::pair<Node*, Node*> SenderReceiver;
+
+    std::list<SenderReceiver> getOpenSet(const std::set<Node*>& cluster) {
+        std::list<SenderReceiver> openSet;
         std::for_each(cluster.begin(), cluster.end(), [&openSet](Node* n) {
             for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
                 openSet.emplace_back(std::make_pair(n, itA->first));
@@ -233,45 +234,65 @@ namespace EFG::nodes {
     bool BeliefPropagator::loopyPropagationThreadPool(const std::set<Node*>& cluster, const PropagationKind& kind) {
         // set to ones all messages
         setOnesMessages(cluster);
-        // get complete list of messages
-        auto toCalibrate = getOpenSet(cluster);
-        // calibrate messages
-        std::atomic<float> variationMax;
-        for (std::size_t k = 0; k < this->maxIterationsLoopyPropagtion; ++k) {
-            variationMax = 0.f;
+        // determine thread safe messages computation order
+        std::list<std::list<MessageComputer>> order;
+        {
+            // get complete list of messages
+            auto toCalibrate = getOpenSet(cluster);
             auto openSet = toCalibrate;
+            bool calibrationPossible;
             while (!openSet.empty()) {
-                std::set<const Connection*> calibrating;
-                std::list<MessageComputer> computers;
+                order.push_back({});
+                std::set<const Connection*> lockedMessages;
                 auto itOp = openSet.begin();
                 while (itOp != openSet.end()) {
-                    computers.emplace_back(itOp->first, itOp->second, kind);
-                    MessageComputer* cmpPtr = &computers.back();
-                    bool calibrationPossible = true;
-                    // check that all dependencies will be not calibrated during this iteration
-                    for (auto dep = cmpPtr->getDependencies().begin(); dep != cmpPtr->getDependencies().end(); ++dep) {
-                        if (calibrating.find(*dep) != calibrating.end()) {
-                            calibrationPossible = false;
-                            break;
+                    const Connection* mex = &itOp->second->activeConnections.find(itOp->first)->second;
+                    if(lockedMessages.find(mex) == lockedMessages.end()) {
+                        order.back().emplace_back(itOp->first, itOp->second, kind);
+                        calibrationPossible = true;
+                        // check that all dependencies will be not calibrated during this iteration
+                        for (auto dep = order.back().back().getDependencies().begin(); dep != order.back().back().getDependencies().end(); ++dep) {
+                            if (lockedMessages.find(*dep) != lockedMessages.end()) {
+                                calibrationPossible = false;
+                                break;
+                            }
+                        }
+                        if(calibrationPossible) {
+                            itOp = openSet.erase(itOp);
+                            lockedMessages.emplace(order.back().back().getRecipient());
+                            for (auto dep = order.back().back().getDependencies().begin(); dep != order.back().back().getDependencies().end(); ++dep) {
+                                lockedMessages.emplace(*dep);
+                            }
+                        }
+                        else {
+                            order.back().pop_back();
+                            ++itOp;
                         }
                     }
-                    if (calibrationPossible) {
-                        itOp = openSet.erase(itOp);
-                        calibrating.emplace(cmpPtr->getRecipient());
-                        this->threadPool->push([cmpPtr, &variationMax]() {
-                            float variation = cmpPtr->compute();
-                            if (variation > variationMax) {
-                                variationMax = variation;
-                            }
-                        });
-                    }
                     else {
-                        computers.pop_back();
                         ++itOp;
                     }
                 }
-                this->threadPool->wait();
             }
+        }
+        // calibrate messages
+        float variationMax;
+        std::mutex variationMtx;
+        for (std::size_t k = 0; k < this->maxIterationsLoopyPropagtion; ++k) {
+            variationMax = 0.f;
+            std::for_each(order.begin(), order.end(), [&](std::list<MessageComputer>& manche){
+                std::for_each(manche.begin(), manche.end(), [&](MessageComputer& c){
+                    MessageComputer* cPtr = &c;
+                    this->threadPool->push([cPtr, &variationMtx, &variationMax](){
+                        float variation = cPtr->compute();
+                        std::lock_guard<std::mutex> variationLck(variationMtx);
+                        if (variation > variationMax) {
+                            variationMax = variation;
+                        }
+                    });
+                });
+                this->threadPool->wait();
+            });
             if (0.f == variationMax) {
                 return true;
             }
