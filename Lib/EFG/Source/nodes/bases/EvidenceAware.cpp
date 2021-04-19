@@ -15,38 +15,32 @@ namespace EFG::nodes {
     };
 
     HiddenClusters::HiddenClusters(const std::set<Node*>& toSplit) {
-        std::set<Node*> openSet = toSplit;
-        auto itOpen = openSet.begin();
-        clusters.push_back({ *itOpen });
-        itOpen = openSet.erase(itOpen);
-        while (itOpen != openSet.end()) {
+        auto itOpen = toSplit.begin();
+        this->clusters.push_back({ *itOpen });
+        ++itOpen;
+        for(itOpen; itOpen != toSplit.end(); ++itOpen) {
             std::set<ClusterIter> connectedClusters;
-            std::set<Node*> connectedNodes;
             for (auto itConn = (*itOpen)->activeConnections.begin(); itConn != (*itOpen)->activeConnections.end(); ++itConn) {
                 auto clusterIt = this->find(*itConn->first);
-                if (clusterIt == clusters.end()) {
-                    connectedNodes.emplace(itConn->first);
-                    openSet.extract(itConn->first);
-                }
-                else {
+                if(clusterIt != this->clusters.end()) {
                     connectedClusters.emplace(clusterIt);
                 }
             }
-            connectedNodes.emplace(*itOpen);
             if(connectedClusters.empty()) {
-                this->clusters.push_back(connectedNodes);
+                // this the root of a new cluster
+                this->clusters.push_back({ *itOpen });
             }
             else {
+                // merge all connected clusters together
                 auto conn = connectedClusters.begin();
-                copyCluster(**conn, connectedNodes);
                 auto connFirst = conn;
+                (*connFirst)->emplace(*itOpen);
                 ++conn;
                 for (conn; conn != connectedClusters.end(); ++conn) {
                     copyCluster(**connFirst, **conn);
-                    clusters.erase(*conn);
+                    this->clusters.erase(*conn);
                 }
             }
-            itOpen = openSet.erase(itOpen);
         }
     }
 
