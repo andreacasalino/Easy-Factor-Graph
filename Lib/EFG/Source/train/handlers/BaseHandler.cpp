@@ -19,8 +19,8 @@ namespace EFG::train::handler {
         distribution::DistributionFinder finder(*this->factor, modelVariables);
         this->gradientAlpha = 0.f;
         float coeff = 1.f / newSet->getSet().size();
-        std::for_each(newSet->getSet().begin(), newSet->getSet().end(), [&](const Combination& c) {
-            this->gradientAlpha += coeff * finder.findRaw(c).second;
+        std::for_each(newSet->getSet().begin(), newSet->getSet().end(), [&](const CombinationPtr& c) {
+            this->gradientAlpha += coeff * finder.findRaw(*c).second;
         });
     }
 

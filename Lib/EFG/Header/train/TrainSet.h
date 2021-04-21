@@ -13,7 +13,7 @@
 #include <memory>
 
 namespace EFG::train {
-    typedef std::shared_ptr<const Combination> CombinationPtr;
+    typedef std::shared_ptr<Combination> CombinationPtr;
 
     class TrainSet {
     public:
@@ -30,6 +30,8 @@ namespace EFG::train {
 
         const std::vector<CombinationPtr> combinations;
     };
+
+    typedef std::shared_ptr<TrainSet> TrainSetPtr;
 }
 
 #endif

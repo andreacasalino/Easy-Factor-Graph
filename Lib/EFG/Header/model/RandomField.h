@@ -31,7 +31,7 @@ namespace EFG::model {
         void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
         void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
 
-        std::vector<float> getGradient() override;
+        std::vector<float> getGradient(train::TrainSetPtr trainSet) override;
     };
 }
 

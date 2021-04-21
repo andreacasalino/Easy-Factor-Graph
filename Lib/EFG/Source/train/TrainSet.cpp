@@ -35,7 +35,7 @@ namespace EFG::train {
         std::vector<CombinationPtr> temp;
         temp.reserve(combinations.size());
         std::for_each(combinations.begin(), combinations.end(), [&temp](const Combination& c){
-            temp.emplace_back(c);
+            temp.emplace_back(std::make_shared<Combination>(c));
         });
         return temp;
     }

@@ -46,7 +46,8 @@ namespace EFG::model {
         return handler;
     }
 
-    std::vector<float> ConditionalRandomField::getGradient() {
+    std::vector<float> ConditionalRandomField::getGradient(train::TrainSetPtr trainSet) {
+        this->Trainable::setTrainSet(trainSet);
         this->lastPropagation.reset();
         std::vector<float> grad;
         grad.resize(this->handlers.size());
@@ -57,7 +58,6 @@ namespace EFG::model {
             ++pos;
         });
         // compute beta part
-        auto trainSet = this->getTrainSet();
         std::vector<std::size_t> observationPositions;
         observationPositions.reserve(this->evidences.size());
         auto vars = this->getVariables();
@@ -76,8 +76,8 @@ namespace EFG::model {
         };
 #ifdef THREAD_POOL_ENABLED
         if (nullptr != this->threadPool) {
-            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const Combination& comb) {
-                setObservations(comb);
+            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const train::CombinationPtr& comb) {
+                setObservations(*comb);
                 pos = 0;
                 std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
                     train::TrainHandler* pt = h.get();
@@ -89,8 +89,8 @@ namespace EFG::model {
         }
         else {
 #endif
-            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const Combination& comb) {
-                setObservations(comb);
+            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const train::CombinationPtr& comb) {
+                setObservations(*comb);
                 pos = 0;
                 std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
                     grad[pos] -= coeff * h->getGradientBeta();

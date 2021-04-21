@@ -11,69 +11,17 @@
 #include <train/Trainable.h>
 
 namespace EFG::train {
-    class TrainerBase {
-    protected:
-        TrainerBase() = default;
-
-        virtual std::vector<float> getGradient() = 0;
-
-        Trainable* model;
-        TrainSetPtr trainSet = nullptr;
-    };
-
-    class Advancer : public virtual TrainerBase {
-    protected:
-        Advancer(train::Trainable& model, train::TrainSetPtr trainSet) {
-            this->model = &model;
-            this->trainSet = trainSet;
-        };
-
-        virtual void advance() = 0;
-    };
-
-    // full train set
-    class BasicExtractor : public virtual TrainerBase {
-    protected:
-        std::vector<float> getGradient() final;
-    };
-
-    // stochastic extraction
-    class StochasticExtractor : public virtual TrainerBase {
-    protected:
-        std::vector<float> getGradient() final;
-    };
-
-    // todo make ancestor templates
-    template<typename AdvancerT, typename GradientExtractorT>
-    class Trainer
-        : public AdvancerT
-        , public GradientExtractorT {
+    class Trainer {
     public:
-        static void train(train::Trainable& model, train::TrainSetPtr trainSet) {
-            Trainer trainer(model, trainSet);
-            // todo train model
-        };
+        virtual void train(Trainable& model, TrainSetPtr trainSet) = 0;
+
+        std::size_t getMaxIterations() const { return this->maxIterations; };
+        void setMaxIterations(std::size_t iter);
 
     protected:
-        Trainer(train::Trainable& model, train::TrainSetPtr trainSet);
-    };
+        Trainer() = default;
 
-    
-
-
-    class GradientDescend {
-    public:
-        GradientDescend() = default;
-
-        void train(train::Trainable& model, train::TrainSetPtr trainSet) const;
-
-        void setAdvancement(float coeff) { this->advancementCoefficient = coeff; };
-        void setMaxIterations(std::size_t iterations) { this->maxIterations = iterations; };
-
-    private:
-        float advancementCoefficient = 0.05f;
-        std::size_t maxIterations = 1000;
-
+        std::size_t maxIterations = 100;
     };
 }
 

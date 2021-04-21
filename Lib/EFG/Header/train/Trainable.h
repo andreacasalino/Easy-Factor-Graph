@@ -11,13 +11,14 @@
 #include <categoric/Group.h>
 #include <train/TrainSet.h>
 #include <nodes/bases/NodesAware.h>
+#include <nodes/bases/ThreadPoolAware.h>
 #include <nodes/bases/StructureTunableAware.h>
 #include <list>
 
 namespace EFG::train {
     class TrainHandler {
     public:
-        virtual void setTrainSet(const TrainSet& newSet, const std::set<categoric::VariablePtr>& modelVariables) = 0;
+        virtual void setTrainSet(TrainSetPtr trainSet, const std::set<categoric::VariablePtr>& modelVariables) = 0;
 
         virtual float getGradientAlpha() = 0;
         virtual float getGradientBeta() = 0;
@@ -28,19 +29,24 @@ namespace EFG::train {
 
     class Trainable 
         : virtual public nodes::NodesAware
-        , virtual public nodes::StructureTunableAware {
+        , virtual public nodes::StructureTunableAware
+        , virtual public nodes::ThreadPoolAware {
     public:
         void setWeights(const std::vector<float>& w);
 
-        virtual std::vector<float> getGradient(const TrainSet& newSet) = 0;
+        virtual std::vector<float> getGradient(TrainSetPtr trainSet) = 0;
 
     protected:
-        TrainSet* lastTrainSet = nullptr;
-
         virtual TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
         void insertHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
 
         std::list<TrainHandlerPtr> handlers;
+
+        void setTrainSet(TrainSetPtr newSet);
+        inline TrainSetPtr getTrainSet() const { return this->trainSet; }
+
+    private:
+        TrainSetPtr trainSet;
     };
 }
 

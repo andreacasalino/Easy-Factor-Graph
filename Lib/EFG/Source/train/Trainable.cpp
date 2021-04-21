@@ -15,14 +15,32 @@
 
 namespace EFG::train {
     void Trainable::setTrainSet(TrainSetPtr newSet) {
-        if (newSet->getSet().begin()->size() != this->nodes.size()) {
+        if(newSet.get() != this->trainSet.get()) {
+            return;
+        }
+        if (newSet->getSet().front()->size() != this->nodes.size()) {
             throw Error("invalid train set");
         }
         auto vars = this->getVariables();
-        std::for_each(this->handlers.begin(), this->handlers.end(), [&newSet, &vars](TrainHandlerPtr& h) {
-            h->setTrainSet(newSet, vars);
-        });
-        this->set = newSet;
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::for_each(this->handlers.begin(), this->handlers.end(), [&](TrainHandlerPtr& h) {
+                TrainHandlerPtr* hPtr = &h;
+                this->threadPool->push([hPtr , &newSet, &vars](){
+                    (*hPtr)->setTrainSet(newSet, vars);
+                });
+            });
+            this->threadPool->wait();
+        }
+        else {
+#endif
+            std::for_each(this->handlers.begin(), this->handlers.end(), [&newSet, &vars](TrainHandlerPtr& h) {
+                h->setTrainSet(newSet, vars);
+            });
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
+        this->trainSet = newSet;
     }
 
     void Trainable::setWeights(const std::vector<float>& w) {

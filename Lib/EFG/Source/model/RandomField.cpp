@@ -19,7 +19,8 @@ namespace EFG::model {
         this->insertHandler(toInsert);
     }
 
-    std::vector<float> RandomField::getGradient() {
+    std::vector<float> RandomField::getGradient(train::TrainSetPtr trainSet) {
+        this->Trainable::setTrainSet(trainSet);
         if (!this->evidences.empty()) {
             this->resetEvidences({});
         }

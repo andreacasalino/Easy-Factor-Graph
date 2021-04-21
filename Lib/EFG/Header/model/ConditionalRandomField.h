@@ -37,7 +37,7 @@ namespace EFG::model {
 
         train::TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) override;
 
-        std::vector<float> getGradient() override;
+        std::vector<float> getGradient(train::TrainSetPtr trainSet) override;
     };
 }
 
