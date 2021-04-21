@@ -17,7 +17,7 @@
 namespace EFG::train {
     class TrainHandler {
     public:
-        virtual void setTrainSet(TrainSetPtr newSet, const std::set<categoric::VariablePtr>& modelVariables) = 0;
+        virtual void setTrainSet(const TrainSet& newSet, const std::set<categoric::VariablePtr>& modelVariables) = 0;
 
         virtual float getGradientAlpha() = 0;
         virtual float getGradientBeta() = 0;
@@ -30,19 +30,16 @@ namespace EFG::train {
         : virtual public nodes::NodesAware
         , virtual public nodes::StructureTunableAware {
     public:
-        void setTrainSet(TrainSetPtr newSet);
-
         void setWeights(const std::vector<float>& w);
 
-        virtual std::vector<float> getGradient() = 0;
-
-        inline TrainSetPtr getTrainSet() const { return this->set; };
+        virtual std::vector<float> getGradient(const TrainSet& newSet) = 0;
 
     protected:
+        TrainSet* lastTrainSet = nullptr;
+
         virtual TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
         void insertHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
 
-        TrainSetPtr set;
         std::list<TrainHandlerPtr> handlers;
     };
 }

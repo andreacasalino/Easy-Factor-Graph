@@ -13,19 +13,23 @@
 #include <memory>
 
 namespace EFG::train {
+    typedef std::shared_ptr<const Combination> CombinationPtr;
+
     class TrainSet {
     public:
-        TrainSet(const std::string& fileName);
         // check that all combinations have same size
         TrainSet(const std::vector<Combination>& combinations);
+        TrainSet(const std::string& fileName);
 
-        inline const std::vector<Combination>& getSet() const { return this->combinations; };
+        TrainSet getRandomSubSet(const float& percentage) const;
+
+        inline const std::vector<CombinationPtr>& getSet() const { return this->combinations; };
 
     private:
-        const std::vector<Combination> combinations;
-    };
+        TrainSet(const std::vector<CombinationPtr>& combinations);
 
-    typedef std::shared_ptr<TrainSet> TrainSetPtr;
+        const std::vector<CombinationPtr> combinations;
+    };
 }
 
 #endif
