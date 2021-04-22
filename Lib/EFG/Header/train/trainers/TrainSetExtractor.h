@@ -12,16 +12,17 @@
 
 namespace EFG::train {
     class TrainSetExtractor {
-    protected:
+    public:
         TrainSetExtractor(TrainSetPtr completeTrainSet) : completeTrainSet(completeTrainSet) {};
 
         virtual TrainSetPtr getTrainSet() = 0;
 
+    protected:
         TrainSetPtr completeTrainSet;
     };
 
     class BasicExtractor : public TrainSetExtractor {
-    protected:
+    public:
         BasicExtractor(TrainSetPtr completeTrainSet) : TrainSetExtractor(completeTrainSet) {};
 
         inline TrainSetPtr getTrainSet() override { return this->completeTrainSet; };
@@ -31,7 +32,6 @@ namespace EFG::train {
     public:
         void setPercentage(const float& percentage);
 
-    protected:
         StochasticExtractor(TrainSetPtr completeTrainSet) : TrainSetExtractor(completeTrainSet) {};
 
         inline TrainSetPtr getTrainSet() override { return std::make_shared<TrainSet>(this->completeTrainSet->getRandomSubSet(this->percentage)); };

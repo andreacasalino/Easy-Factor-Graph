@@ -36,6 +36,7 @@ namespace EFG::nodes {
         auto it = this->findSharingFactor(this->convertUsingLocals(potentialSharingWeight));
         this->InsertCapable::Insert(toInsert);
         this->factorsExp.extract(toInsert);
+        toInsert->setWeight(it->first->getWeight());
         this->factorsTunable.emplace(toInsert.get(), it->second);
     }
 
