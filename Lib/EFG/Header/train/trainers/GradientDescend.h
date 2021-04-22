@@ -18,7 +18,7 @@ namespace EFG::train {
         , public Extractor {
         static_assert(std::is_base_of<TrainSetExtractor , Extractor>::value, "Extractor should derive from TrainSetExtractor");
     public:
-        GradientDescend();
+        GradientDescend() = default;
 
         void train(Trainable& model, TrainSetPtr trainSet) override {
             throw 0; // implement termination criteria

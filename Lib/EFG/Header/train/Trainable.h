@@ -33,6 +33,7 @@ namespace EFG::train {
         , virtual public nodes::ThreadPoolAware {
     public:
         void setWeights(const std::vector<float>& w);
+        void setOnes();
 
         virtual std::vector<float> getGradient(TrainSetPtr trainSet) = 0;
 

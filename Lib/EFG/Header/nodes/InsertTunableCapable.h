@@ -22,6 +22,8 @@ namespace EFG::nodes {
         // here is copied using the variables stored inside this model
         void Insert(const distribution::factor::modif::FactorExponential& factor, const categoric::Group& potentialSharingWeight);
 
+        void absorbStructureTunable(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion = false);
+
     protected:
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert);
         virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight);

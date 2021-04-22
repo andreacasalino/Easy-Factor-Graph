@@ -144,7 +144,7 @@ namespace EFG::nodes {
         return converted;
     }
 
-    void InsertCapable::Insert(const std::shared_ptr<distribution::factor::cnst::Factor>& factor) {
+    void InsertCapable::Insert(std::shared_ptr<distribution::factor::cnst::Factor> factor) {
         this->InsertPtr(factor);
         this->factors.emplace(factor);
     }
@@ -155,7 +155,7 @@ namespace EFG::nodes {
         this->Insert(distr);
     }
 
-    void InsertCapable::Insert(const std::shared_ptr<distribution::factor::cnst::FactorExponential>& factor) {
+    void InsertCapable::Insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor) {
         this->InsertPtr(factor);
         this->factorsExp.emplace(factor);
     }
@@ -164,5 +164,28 @@ namespace EFG::nodes {
         std::shared_ptr<distribution::factor::modif::FactorExponential> distr = std::make_shared<distribution::factor::modif::FactorExponential>(factor);
         distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
         this->Insert(distr);
+    }
+
+    template<typename T>
+    void replaceWithCopies(std::set<std::shared_ptr<T>>& set) {
+        std::set<std::shared_ptr<T>> temp;
+        std::for_each(set.begin(), set.end(), [&temp](const std::shared_ptr<T>& p){
+            temp.emplace(std::make_shared<T>(*p.get()));
+        });
+        set = temp;
+    };
+    void InsertCapable::absorbStructure(const StructureAware& toAbsorb, const bool& useCopyInsertion) {        
+        auto factors = toAbsorb.getFactors();
+        auto factorsExp = toAbsorb.getFactorsExp();
+        if(useCopyInsertion) {
+            replaceWithCopies(factors);
+            replaceWithCopies(factorsExp);
+        }
+        for(auto it = factors.begin(); it!=factors.end(); ++it) {
+            this->Insert(*it);
+        }
+        for(auto it = factorsExp.begin(); it!=factorsExp.end(); ++it) {
+            this->Insert(*it);
+        }
     }
 }

@@ -44,4 +44,28 @@ namespace EFG::nodes {
         distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
         this->Insert(distr, potentialSharingWeight);
     }
+
+
+    void replaceWithCopies(std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& set) {
+        std::for_each(set.begin(), set.end(), [](std::shared_ptr<distribution::factor::modif::FactorExponential>& p){
+            p = std::make_shared<distribution::factor::modif::FactorExponential>(*p);
+        });
+    };
+    void InsertTunableCapable::absorbStructureTunable(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion) {        
+        auto clusters = toAbsorb.getFactorsTunable();
+        if(useCopyInsertion) {
+            std::for_each(clusters.begin(), clusters.end(), [](std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cl){
+                replaceWithCopies(cl);
+            });
+        }
+        for(auto it = clusters.begin(); it!=clusters.end(); ++it) {
+            auto itCl = it->begin();
+            this->Insert(*itCl);
+            const auto& group = (*itCl)->getGroup();
+            ++itCl;
+            for(itCl; itCl != it->end(); ++itCl) {
+                this->Insert(*itCl, group);
+            }
+        }
+    }
 }

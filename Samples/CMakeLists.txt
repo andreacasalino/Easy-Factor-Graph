@@ -40,6 +40,7 @@ AddSample(Sample04-HMM-chain)
 
 AddSample(Sample05-Matricial)
 
+AddSamplePath(Sample06-Learning-A)
 
 
 

@@ -54,6 +54,10 @@ namespace EFG::train {
         });
     };
 
+    void Trainable::setOnes() {
+        this->setWeights(std::vector<float>(this->handlers.size(), 1.f));
+    }
+
     TrainHandlerPtr Trainable::makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) {
         const auto& variables = factor->getGroup().getVariables();
         if (1 == variables.size()) {
