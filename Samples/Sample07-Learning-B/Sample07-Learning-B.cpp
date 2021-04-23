@@ -14,6 +14,7 @@
 #include <print/ProbabilityDistributionPrint.h>
 #include <Presenter.h>
 #include <Frequencies.h>
+#include <TrainSetCreator.h>
 #include <math.h>
 #include <iostream>
 using namespace std;
@@ -27,23 +28,25 @@ TrainSetPtr makeCondModelTrainSet(model::ConditionalRandomField& Model);
 
 int main() {
 	EFG::sample::samplePart([]() {
-		model::ConditionalRandomField graph(std::string(SAMPLE_FOLDER), std::string("cond_graph.xml"));
+		model::ConditionalRandomField graph(SAMPLE_FOLDER, "cond_graph.xml");
 
-		// use stochastic gradient descend
-		GradientDescend<StochasticExtractor> trainer;
-		trainer.setAdvancement(0.1f);
-		trainer.setPercentage(0.1f);
-
+		cout << "creating the training set, might take a while" << endl;
 		TrainSetPtr trainSet = makeCondModelTrainSet(graph);
+		cout << "training set created" << endl;
 
 		//build a second graph, with the same potentials, but all weights equal to 1. Then use the train set made by the previous samples to train 
 		//this model, for obtaining a combination of weights similar to the original one
 		model::ConditionalRandomField graph2Learn(graph);
 		graph2Learn.setOnes();
 #ifdef THREAD_POOL_ENABLED
-		graph2Learn.SetThreadPoolSize(3);
+		graph2Learn.SetThreadPoolSize(4);
 #endif
 
+		// use stochastic gradient descend
+		GradientDescend<StochasticExtractor> trainer;
+		trainer.setPercentage(0.01f);
+		trainer.setMaxIterations(10);
+		cout << "training the model" << endl;
 		trainer.train(graph2Learn, trainSet);
 
 		// compare the marginals computation of the real and the learnt models
@@ -61,7 +64,7 @@ int main() {
 		cout << graph.getWeights() << endl;
 
 		cout << "learnt weights\n";
-		cout << graph2Learn.getWeights() << endl;
+		cout << graph2Learn.getWeights() << endl << endl;
 
 		//compare the marginals distributions of the real model and the learnt one
 		cout << "P(Y4|X={0,1,0,1,...}" << endl;
@@ -78,46 +81,32 @@ int main() {
 	return EXIT_SUCCESS;
 }
 
+void append(std::vector<Combination>& recipient, const std::vector<Combination>& toAdd) {
+	for (auto it = toAdd.begin(); it != toAdd.end(); ++it) {
+		recipient.push_back(*it);
+	}
+};
 TrainSetPtr makeCondModelTrainSet(model::ConditionalRandomField& Model) {
+	std::size_t deltaSamples = 50;
+
 	auto itO = Model.getEvidences().begin();
 	categoric::Group groupObs(itO->first);
 	++itO;
 	for (itO; itO != Model.getEvidences().end(); ++itO) {
 		groupObs.add(itO->first);
 	}
-	categoric::Range jointDomainObs(groupObs);
-	std::size_t deltaSamples = 15;
-	vector<Combination> samples;
-	samples.reserve(deltaSamples * groupObs.size());
 
-	std::vector<std::size_t> posHidden, posObsv;
-	auto allVars = Model.getVariables();
+#ifdef THREAD_POOL_ENABLED
+	Model.SetThreadPoolSize(4);
+#endif
 
-	auto hiddenVars = Model.getHiddenVariables();
-	posHidden.reserve(hiddenVars.size());
-	for (auto itH = hiddenVars.begin(); itH != hiddenVars.end(); ++itH) {
-		posHidden.push_back(std::distance(allVars.begin(), allVars.find(*itH)));
-	}
+	std::vector<Combination> trainSet;
+	trainSet.reserve(groupObs.size() * deltaSamples);
 
-	posObsv.reserve(groupObs.getVariables().size());
-	for (auto itO = groupObs.getVariables().begin(); itO != groupObs.getVariables().end(); ++itO) {
-		posObsv.push_back(std::distance(allVars.begin(), allVars.find(*itO)));
-	}
-
-	EFG::iterator::forEach(jointDomainObs, [&](const categoric::Range& range) {
-		auto obs = range.get();
-		std::vector<std::size_t> combination(posHidden.size() + posObsv.size(), 0);
-		for (std::size_t k = 0; k < posObsv.size(); ++k) {
-			combination[posObsv[k]] = obs[k];
-		}
-		Model.setEvidences(obs);
-		auto samplesNew = Model.getHiddenSetSamples(deltaSamples, 100);
-		for (auto itS = samplesNew.begin(); itS != samplesNew.end(); ++itS) {
-			for (std::size_t k = 0; k < posHidden.size(); ++k) {
-				combination[posHidden[k]] = itS->data()[k];
-			}
-			samples.emplace_back(combination);
-		}
+	sample::TrainSetCreator sampler(Model);
+	categoric::Range rangeObs(groupObs);
+	EFG::iterator::forEach(rangeObs, [&](categoric::Range& range) {
+		append(trainSet, sampler.getSamples(range.get(), deltaSamples, 20));
 	});
-	return std::make_shared<TrainSet>(samples);
+	return std::make_shared<TrainSet>(trainSet);
 }

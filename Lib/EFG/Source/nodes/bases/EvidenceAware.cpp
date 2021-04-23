@@ -75,4 +75,12 @@ namespace EFG::nodes {
         });
         return hiddens;
     }
+
+    std::set<categoric::VariablePtr> EvidenceAware::getObservedVariables() const {
+        std::set<categoric::VariablePtr> observed;
+        for (auto it = this->evidences.begin(); it != this->evidences.end(); ++it) {
+            observed.emplace(it->first);
+        }
+        return observed;
+    }
 }

@@ -20,7 +20,7 @@ namespace EFG::nodes {
 
         std::size_t sampleFromDiscrete(const std::vector<float>& distribution) const;
 
-        void resetSeed(const std::size_t& newSeed) { this->generator.seed(newSeed); }
+        void resetSeed(const std::size_t& newSeed) { this->generator.seed( static_cast<unsigned int>(newSeed)); }
 
     private:
         mutable std::default_random_engine generator;

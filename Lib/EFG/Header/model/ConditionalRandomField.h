@@ -57,7 +57,7 @@ namespace EFG::model {
             if (ev.empty()) {
                 throw Error("the passed model should have at least 1 evidence");
             }
-            this->absorb(o, true);
+            this->absorbModel(o, true);
             std::map<std::string, std::size_t> ev2;
             for (auto it = ev.begin(); it != ev.end(); ++it) {
                 ev2.emplace(it->first->name(), it->second);

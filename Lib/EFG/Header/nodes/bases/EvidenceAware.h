@@ -25,6 +25,7 @@ namespace EFG::nodes {
     class EvidenceAware : virtual public Base {
     public:
         std::set<categoric::VariablePtr> getHiddenVariables() const;
+        std::set<categoric::VariablePtr> getObservedVariables() const;
         inline const std::map<categoric::VariablePtr, const std::size_t>& getEvidences() const { return this->evidences; };
 
     protected:
