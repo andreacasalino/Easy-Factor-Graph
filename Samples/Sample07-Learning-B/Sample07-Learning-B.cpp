@@ -29,9 +29,10 @@ int main() {
 	EFG::sample::samplePart([]() {
 		model::ConditionalRandomField graph(std::string(SAMPLE_FOLDER), std::string("cond_graph.xml"));
 
+		// use stochastic gradient descend
 		GradientDescend<StochasticExtractor> trainer;
 		trainer.setAdvancement(0.1f);
-		//trainer.setPercentage(0.1f);
+		trainer.setPercentage(0.1f);
 
 		TrainSetPtr trainSet = makeCondModelTrainSet(graph);
 
