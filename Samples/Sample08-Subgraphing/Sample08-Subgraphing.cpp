@@ -32,9 +32,9 @@ int main() {
         float alfa = 0.5f, beta = 1.5f;        
         //build the chain
         model::RandomField graph;
-        graph.Insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(A, B), true), alfa));
-        graph.Insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(B, C), true), beta));
-        graph.Insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(C, D), true), 1.f));
+        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(A, B), true), alfa));
+        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(B, C), true), beta));
+        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(C, D), true), 1.f));
         
         // get the join marginal probabilities of group ABC
         cout << "P(A,B,C)" << endl;

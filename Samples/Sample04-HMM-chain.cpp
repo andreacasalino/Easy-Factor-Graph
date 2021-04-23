@@ -71,14 +71,14 @@ unique_ptr<model::Graph> makeChain(const std::size_t& Chain_size, const std::siz
 	for (size_t k = 0; k < Chain_size; k++) {
 		factor::modif::FactorExponential temp_XY(P_XY);
 		temp_XY.replaceGroup(categoric::Group(makeVariable(var_size, "X_" + to_string(k)) , makeVariable(var_size, "Y_" + to_string(k))));
-		G->Insert(temp_XY);
+		G->insertCopy(temp_XY);
 		if (k == 0) {
-			G->Insert(factor::cnst::IndicatorFactor(makeVariable(var_size, "Y_" + to_string(k)), 0));
+			G->insertCopy(factor::cnst::IndicatorFactor(makeVariable(var_size, "Y_" + to_string(k)), 0));
 		}
 		else {
 			factor::modif::FactorExponential temp_YY(P_YY);
 			temp_YY.replaceGroup(categoric::Group(makeVariable(var_size, "Y_" + to_string(k - 1)), makeVariable(var_size, "Y_" + to_string(k))));
-			G->Insert(temp_YY);
+			G->insertCopy(temp_YY);
 		}
 
 		if (o == 0) o = 1;

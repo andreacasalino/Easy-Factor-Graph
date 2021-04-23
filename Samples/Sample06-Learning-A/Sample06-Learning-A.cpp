@@ -39,9 +39,9 @@ int main() {
 		float alfa = 1.f, beta = 3.f, gamma = 0.1f;
 
 		model::RandomField graph;
-		graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(A, B), true) , alfa)); // the weight of this potential will be kept constant
-		graph.InsertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(A, C), true), beta));
-		graph.InsertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(B, C), true) , gamma));
+		graph.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(A, B), true) , alfa)); // the weight of this potential will be kept constant
+		graph.insertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(A, C), true), beta));
+		graph.insertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(B, C), true) , gamma));
 
 		//extract some samples form the joint distributions of the variable in the graph, using a Gibbs sampling method
 		auto samples = graph.getHiddenSetSamples(500, 500);
@@ -81,12 +81,12 @@ int main() {
 		float alfa = 0.4f, beta = 1.f, gamma = 0.3f, delta = 1.5f;
 
 		model::RandomField graph;
-		graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(A, B), true) , alfa)); // the weight of this potential will be kept constant
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(A, C), true) , beta));
-		graph.Insert(factor::cnst::Factor(categoric::Group(B, C), true));
-		graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(B, E), true) , gamma)); // the weight of this potential will be kept constant
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(B, D), true) , delta));
-		graph.Insert(factor::cnst::Factor(categoric::Group(D, E), true));
+		graph.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(A, B), true) , alfa)); // the weight of this potential will be kept constant
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(A, C), true) , beta));
+		graph.insertCopy(factor::cnst::Factor(categoric::Group(B, C), true));
+		graph.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(B, E), true) , gamma)); // the weight of this potential will be kept constant
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(B, D), true) , delta));
+		graph.insertCopy(factor::cnst::Factor(categoric::Group(D, E), true));
 
 		GradientDescend trainer;
 		trainer.setAdvancement(0.1f);
@@ -114,12 +114,12 @@ int main() {
 		float beta = 1.f;
 
 		model::RandomField graph;
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, X1), true) , beta));
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X2), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y3, X3), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, X1), true) , beta));
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X2), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y3, X3), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
 
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, Y2), true) , alfa));
-		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X3), true) , 1.f), Group(Y1,Y2));  // the same weight of Y1-Y2 is assumed
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, Y2), true) , alfa));
+		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X3), true) , 1.f), Group(Y1,Y2));  // the same weight of Y1-Y2 is assumed
 
 		GradientDescend trainer;
 		trainer.setMaxIterations(50);
@@ -137,8 +137,7 @@ void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer&
 	//build a second graph, with the same potentials, but all weights equal to 1. Then use the train set made by the previous samples to train 
 	//this model, for obtaining a combination of weights similar to the original one
 	model::RandomField graph2Learn;
-	graph2Learn.absorbStructure(static_cast<const nodes::StructureAware&>(graph), true);
-	graph2Learn.absorbStructureTunable(static_cast<const nodes::StructureTunableAware&>(graph), true);
+	graph2Learn.absorbModel(graph, true);
 	graph2Learn.setOnes();
 #ifdef THREAD_POOL_ENABLED
 	if (threads > 1) {

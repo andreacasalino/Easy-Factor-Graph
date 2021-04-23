@@ -67,7 +67,7 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 			}
 			factor::modif::FactorExponential temp(P_ab);
 			temp.replaceGroup(categoric::Group(Vprev, Vatt));
-			Mat->Insert(temp);
+			Mat->insertCopy(temp);
 		}
 
 		if (r > 0) {
@@ -77,7 +77,7 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 				VariablePtr Vb = makeMatrixVariable(r-1, c);
 				factor::modif::FactorExponential temp(P_ab);
 				temp.replaceGroup(categoric::Group(Va, Vb));
-				Mat->Insert(temp);
+				Mat->insertCopy(temp);
 			}
 		}
 	}

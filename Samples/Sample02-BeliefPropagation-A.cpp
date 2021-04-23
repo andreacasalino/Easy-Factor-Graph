@@ -28,7 +28,7 @@ int main () {
         factor::modif::Factor shapeTemp(Group(makeVariable(2, "A") , makeVariable(2, "B")));
         shapeTemp.add(Combination(std::vector<std::size_t>{0,0}), 1.f);
         shapeTemp.add(Combination(std::vector<std::size_t>{1,1}), 1.f);
-        graph.Insert(factor::cnst::FactorExponential(shapeTemp, teta));
+        graph.insertCopy(factor::cnst::FactorExponential(shapeTemp, teta));
 
         //make a new belief propagation setting B=0 as observation
         graph.resetEvidences(std::map<std::string, std::size_t>{{"B", 0}});
@@ -53,8 +53,8 @@ int main () {
         model::Graph graph;
         float alfa = 0.5f, beta = 1.f;
 
-        graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor({makeVariable(2, "B"), makeVariable(2, "C")} , true) , alfa));
-        graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor({makeVariable(2, "A"), makeVariable(2, "B")} , true) , beta));
+        graph.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor({makeVariable(2, "B"), makeVariable(2, "C")} , true) , alfa));
+        graph.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor({makeVariable(2, "A"), makeVariable(2, "B")} , true) , beta));
 
         //make a new belief propagation setting C=1 as observation
         graph.resetEvidences(std::map<std::string, std::size_t>{{"C", 1}});
@@ -99,7 +99,7 @@ int main () {
             model::Graph graph;
             //build the correlating potentials and add it to the chain
             for (size_t k = 1; k < chain_size; ++k) {
-                graph.Insert(std::make_shared<factor::cnst::FactorExponential>(factor::cnst::Factor(categoric::Group(Y[k - 1], Y[k]), true), w));
+                graph.insert(std::make_shared<factor::cnst::FactorExponential>(factor::cnst::Factor(categoric::Group(Y[k - 1], Y[k]), true), w));
             }
             //set Y_0 as an observations and compute the marginals of the last variable in the chain
             graph.resetEvidences(std::map<std::string, std::size_t>{{Y.front()->name(), 0}});

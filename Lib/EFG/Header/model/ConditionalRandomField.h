@@ -22,7 +22,7 @@ namespace EFG::model {
         , private nodes::EvidencesChanger
         , public nodes::EvidencesSetter
         , public nodes::GibbsSampler
-        , private nodes::InsertTunableCapable
+        , public nodes::InsertTunableCapable
         , public nodes::QueryHandler
         , public train::Trainable {
     public:
@@ -31,10 +31,10 @@ namespace EFG::model {
         // template<typename Model>
         // ConditionalRandomField(const Model& model);
 
-    private:
-        void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
-        void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
 
+    private:
         train::TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) override;
 
         std::vector<float> getGradient(train::TrainSetPtr trainSet) override;

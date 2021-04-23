@@ -12,6 +12,7 @@
 #include <nodes/bases/EvidenceAware.h>
 #include <nodes/bases/BeliefAware.h>
 #include <nodes/bases/StructureAware.h>
+#include <nodes/bases/StructureTunableAware.h>
 
 namespace EFG::nodes {
     class InsertCapable
@@ -20,23 +21,37 @@ namespace EFG::nodes {
         , virtual public BeliefAware
         , virtual public StructureAware {
     public:
-        void Insert(std::shared_ptr<distribution::factor::cnst::Factor> factor);
+        void insert(std::shared_ptr<distribution::factor::cnst::Factor> factor);
         // here is copied using the variables stored inside this model
-        void Insert(const distribution::factor::cnst::Factor& factor);
+        void insertCopy(const distribution::factor::cnst::Factor& factor);
 
-        void Insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor);
+        void insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor);
         // here is copied using the variables stored inside this model
-        void Insert(const distribution::factor::cnst::FactorExponential& factor);
+        void insertCopy(const distribution::factor::cnst::FactorExponential& factor);
 
-        void absorbStructure(const StructureAware& toAbsorb, const bool& useCopyInsertion = false);
+        template<typename Model>
+        void absorbModel(const Model& model, const bool& useCopyInsertion = false) {
+            const StructureAware* strct = dynamic_cast<const StructureAware*>(&model);
+            if (nullptr == strct) {
+                throw Error("the model to absorb should be at least StructureAware");
+            }
+            this->absorb(*strct, useCopyInsertion);
+            const StructureTunableAware* strctTunab = dynamic_cast<const StructureTunableAware*>(&model);
+            if (nullptr != strctTunab) {
+                this->absorb(*strctTunab, useCopyInsertion);
+            }
+        };
 
     protected:
         categoric::Group convertUsingLocals(const categoric::Group& toConvert);
 
+        void absorb(const StructureAware& toAbsorb, const bool& useCopyInsertion);
+        virtual void absorb(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion);
+
     private:
-        void InsertPtr(distribution::DistributionPtr toInsert);
-        void InsertUnary(distribution::DistributionPtr factor);
-        void InsertBinary(distribution::DistributionPtr factor);
+        void insertPtr(distribution::DistributionPtr toInsert);
+        void insertUnary(distribution::DistributionPtr factor);
+        void insertBinary(distribution::DistributionPtr factor);
 
         struct FindOrInsertionResult {
             Node* nodePtr;

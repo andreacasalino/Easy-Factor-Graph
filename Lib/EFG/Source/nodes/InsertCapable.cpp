@@ -33,22 +33,22 @@ namespace EFG::nodes {
         return { &itNode->second, nullptr };
     }
 
-    void InsertCapable::InsertPtr(distribution::DistributionPtr factor) {
+    void InsertCapable::insertPtr(distribution::DistributionPtr factor) {
         if (3 <= factor->getGroup().getVariables().size()) {
             throw Error("Only binary or unary factors can be added");
         }
 
         if (factor->getGroup().getVariables().size() == 1) {
-            this->InsertUnary(factor);
+            this->insertUnary(factor);
         }
         else {
-            this->InsertBinary(factor);
+            this->insertBinary(factor);
         }
 
         this->lastPropagation.reset();
     }
 
-    void InsertCapable::InsertUnary(distribution::DistributionPtr factor) {
+    void InsertCapable::insertUnary(distribution::DistributionPtr factor) {
         auto nodeInfo = this->findOrInsertNode(*factor->getGroup().getVariables().begin());
         nodeInfo.nodePtr->unaryFactors.emplace_back(factor);
     }
@@ -94,7 +94,7 @@ namespace EFG::nodes {
         hidden->disabledConnections.find(observed)->second.factor = std::make_unique<distribution::factor::cnst::Factor>(*factor, Combination({ observation }), categoric::Group(observed->variable));
     };
 
-    void InsertCapable::InsertBinary(distribution::DistributionPtr factor) {
+    void InsertCapable::insertBinary(distribution::DistributionPtr factor) {
         auto nodeAInfo = this->findOrInsertNode(*factor->getGroup().getVariables().begin());
         auto nodeBInfo = this->findOrInsertNode(*factor->getGroup().getVariables().rbegin());
 
@@ -144,26 +144,26 @@ namespace EFG::nodes {
         return converted;
     }
 
-    void InsertCapable::Insert(std::shared_ptr<distribution::factor::cnst::Factor> factor) {
-        this->InsertPtr(factor);
+    void InsertCapable::insert(std::shared_ptr<distribution::factor::cnst::Factor> factor) {
+        this->insertPtr(factor);
         this->factors.emplace(factor);
     }
 
-    void InsertCapable::Insert(const distribution::factor::cnst::Factor& factor) {
+    void InsertCapable::insertCopy(const distribution::factor::cnst::Factor& factor) {
         std::shared_ptr<distribution::factor::modif::Factor> distr = std::make_shared<distribution::factor::modif::Factor>(factor);
         distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
-        this->Insert(distr);
+        this->insert(distr);
     }
 
-    void InsertCapable::Insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor) {
-        this->InsertPtr(factor);
+    void InsertCapable::insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor) {
+        this->insertPtr(factor);
         this->factorsExp.emplace(factor);
     }
 
-    void InsertCapable::Insert(const distribution::factor::cnst::FactorExponential& factor) {
+    void InsertCapable::insertCopy(const distribution::factor::cnst::FactorExponential& factor) {
         std::shared_ptr<distribution::factor::modif::FactorExponential> distr = std::make_shared<distribution::factor::modif::FactorExponential>(factor);
         distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
-        this->Insert(distr);
+        this->insert(distr);
     }
 
     template<typename T>
@@ -174,7 +174,7 @@ namespace EFG::nodes {
         });
         set = temp;
     };
-    void InsertCapable::absorbStructure(const StructureAware& toAbsorb, const bool& useCopyInsertion) {        
+    void InsertCapable::absorb(const StructureAware& toAbsorb, const bool& useCopyInsertion) {        
         auto factors = toAbsorb.getFactors();
         auto factorsExp = toAbsorb.getFactorsExp();
         if(useCopyInsertion) {
@@ -182,10 +182,26 @@ namespace EFG::nodes {
             replaceWithCopies(factorsExp);
         }
         for(auto it = factors.begin(); it!=factors.end(); ++it) {
-            this->Insert(*it);
+            this->insert(*it);
         }
         for(auto it = factorsExp.begin(); it!=factorsExp.end(); ++it) {
-            this->Insert(*it);
+            this->insert(*it);
+        }
+    }
+
+    void InsertCapable::absorb(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion) {
+        auto clusters = toAbsorb.getFactorsTunable();
+        std::set<std::shared_ptr<distribution::factor::cnst::FactorExponential>> factors;
+        std::for_each(clusters.begin(), clusters.end(), [&factors](const std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cl) {
+            std::for_each(cl.begin(), cl.end(), [&factors](const std::shared_ptr<distribution::factor::modif::FactorExponential>& f) {
+                factors.emplace(f);
+            });
+        });
+        if (useCopyInsertion) {
+            replaceWithCopies(factors);
+        }
+        for (auto it = factors.begin(); it != factors.end(); ++it) {
+            this->insert(*it);
         }
     }
 }

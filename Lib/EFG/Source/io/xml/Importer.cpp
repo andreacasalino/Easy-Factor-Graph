@@ -131,16 +131,16 @@ namespace EFG::io::xml {
 			distribution::factor::modif::FactorExponential* expPtr = dynamic_cast<distribution::factor::modif::FactorExponential*>(distribution.get());
 			if ((nullptr == expPtr) || (nullptr == std::get<1>(components)))  {
 				// import as non tunable factor
-				std::get<0>(components)->Insert(*distribution);
+				std::get<0>(components)->insertCopy(*distribution);
 			}
 			else {
 				// tunable factor
 				auto shareTag = itP->second->getNested("Share");
 				if (shareTag.begin() == shareTag.end()) {
-					std::get<1>(components)->InsertTunableCp(*expPtr);
+					std::get<1>(components)->insertTunableCopy(*expPtr);
 				}
 				else {
-					std::get<1>(components)->InsertTunableCp(*expPtr, importGroup(*shareTag.begin()->second, variables));
+					std::get<1>(components)->insertTunableCopy(*expPtr, importGroup(*shareTag.begin()->second, variables));
 				}
 			}
 		}

@@ -28,8 +28,8 @@ namespace EFG::model {
     public:
         RandomField() = default;
 
-        void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
-        void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
 
         std::vector<float> getGradient(train::TrainSetPtr trainSet) override;
     };
