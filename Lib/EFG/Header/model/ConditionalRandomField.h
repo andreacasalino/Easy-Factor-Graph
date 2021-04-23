@@ -27,7 +27,7 @@ namespace EFG::model {
         , public train::Trainable {
     public:
         ConditionalRandomField() = delete;
-        // ConditionalRandomField(const std::string& xmlPath);
+        ConditionalRandomField(const std::string& xmlPath);
         // template<typename Model>
         // ConditionalRandomField(const Model& model);
 

@@ -42,6 +42,6 @@ AddSample(Sample05-Matricial)
 
 AddSamplePath(Sample06-Learning-A)
 
-
+AddSamplePath(Sample07-Learning-B)
 
 AddSamplePath(Sample08-Subgraphing)
