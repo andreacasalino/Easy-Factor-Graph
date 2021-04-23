@@ -19,8 +19,8 @@
 namespace EFG::model {
     class ConditionalRandomField
         : public nodes::BeliefPropagator
-        , public nodes::EvidencesChanger
-        , private nodes::EvidencesSetter
+        , private nodes::EvidencesChanger
+        , public nodes::EvidencesSetter
         , public nodes::GibbsSampler
         , private nodes::InsertTunableCapable
         , public nodes::QueryHandler
@@ -32,8 +32,8 @@ namespace EFG::model {
         // ConditionalRandomField(const Model& model);
 
     private:
-        void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
-        void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
+        void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
+        void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
 
         train::TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) override;
 

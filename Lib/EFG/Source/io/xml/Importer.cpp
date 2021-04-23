@@ -137,10 +137,10 @@ namespace EFG::io::xml {
 				// tunable factor
 				auto shareTag = itP->second->getNested("Share");
 				if (shareTag.begin() == shareTag.end()) {
-					std::get<1>(components)->Insert(*expPtr);
+					std::get<1>(components)->InsertTunableCp(*expPtr);
 				}
 				else {
-					std::get<1>(components)->Insert(*expPtr, importGroup(*shareTag.begin()->second, variables));
+					std::get<1>(components)->InsertTunableCp(*expPtr, importGroup(*shareTag.begin()->second, variables));
 				}
 			}
 		}

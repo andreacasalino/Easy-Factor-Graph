@@ -13,13 +13,13 @@
 #include <algorithm>
 
 namespace EFG::model {
-    void ConditionalRandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
-        this->InsertTunableCapable::Insert(toInsert);
+    void ConditionalRandomField::InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
+        this->InsertTunableCapable::InsertTunable(toInsert);
         this->insertHandler(toInsert);
     }
 
-    void ConditionalRandomField::Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
-        this->InsertTunableCapable::Insert(toInsert, potentialSharingWeight);
+    void ConditionalRandomField::InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
+        this->InsertTunableCapable::InsertTunable(toInsert, potentialSharingWeight);
         this->insertHandler(toInsert);
     }
 

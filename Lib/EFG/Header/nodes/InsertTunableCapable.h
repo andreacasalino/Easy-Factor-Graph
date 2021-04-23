@@ -18,15 +18,15 @@ namespace EFG::nodes {
         , virtual public StructureTunableAware {
     public:
         // here is copied using the variables stored inside this model
-        void Insert(const distribution::factor::modif::FactorExponential& factor);
+        void InsertTunableCp(const distribution::factor::modif::FactorExponential& factor);
         // here is copied using the variables stored inside this model
-        void Insert(const distribution::factor::modif::FactorExponential& factor, const categoric::Group& potentialSharingWeight);
+        void InsertTunableCp(const distribution::factor::modif::FactorExponential& factor, const categoric::Group& potentialSharingWeight);
 
         void absorbStructureTunable(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion = false);
 
     protected:
-        virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert);
-        virtual void Insert(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight);
+        virtual void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert);
+        virtual void InsertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight);
 
     private:
         std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t>::const_iterator findSharingFactor(const categoric::Group& potentialSharingWeight) const;

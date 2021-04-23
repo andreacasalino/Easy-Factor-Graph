@@ -30,7 +30,7 @@ namespace EFG::train {
 
     class StochasticExtractor : public TrainSetExtractor {
     public:
-        void setPercentage(const float& percentage);
+        void setPercentage(const float& percentage) { this->percentage = percentage; };
 
         StochasticExtractor(TrainSetPtr completeTrainSet) : TrainSetExtractor(completeTrainSet) {};
 

@@ -15,8 +15,8 @@ namespace EFG::train {
     public:
         virtual void train(Trainable& model, TrainSetPtr trainSet) = 0;
 
-        std::size_t getMaxIterations() const { return this->maxIterations; };
-        void setMaxIterations(std::size_t iter);
+        inline std::size_t getMaxIterations() const { return this->maxIterations; };
+        inline void setMaxIterations(std::size_t iter) { this->maxIterations = iter; };
 
     protected:
         Trainer() = default;

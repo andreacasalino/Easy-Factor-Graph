@@ -23,7 +23,11 @@ using namespace EFG::distribution;
 using namespace EFG::io;
 using namespace EFG::train;
 
-void trainModel(model::RandomField& graph, TrainSetPtr trainSet, const std::pair<string, size_t>& checkObservation, const string& checkVariable);
+void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable, 
+#ifdef THREAD_POOL_ENABLED
+	const std::size_t& threads = 1
+#endif
+);
 
 int main() {
 	EFG::sample::samplePart([]() {
@@ -36,21 +40,34 @@ int main() {
 
 		model::RandomField graph;
 		graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(A, B), true) , alfa)); // the weight of this potential will be kept constant
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(A, C), true) , beta));
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(B, C), true) , gamma));
+		graph.InsertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(A, C), true), beta));
+		graph.InsertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(B, C), true) , gamma));
 
 		//extract some samples form the joint distributions of the variable in the graph, using a Gibbs sampling method
 		auto samples = graph.getHiddenSetSamples(500, 500);
 
 		float Z = 2.f*(expf(alfa) + expf(beta) + expf(gamma) + expf(alfa)*expf(beta)*expf(gamma));
 		auto hidden_set = graph.getHiddenVariables();
-		cout << "Gibbs sampler results\n";
-		cout << "freq <0,0,0> " << sample::getEmpiricalFrequencies(Combination({0,0,0}), Group(A, B, C), samples, Group(A, B, C).getVariables()) << expf(alfa)*expf(beta)*expf(gamma) / Z << endl;
-		cout << "freq <1,0,0> " << sample::getEmpiricalFrequencies(Combination({0,0,0}), Group(A, B, C), samples, Group(A, B, C).getVariables()) << expf(gamma) / Z << endl;
-		cout << "freq <0,1,0> " << sample::getEmpiricalFrequencies(Combination({0,0,0}), Group(A, B, C), samples, Group(A, B, C).getVariables()) << expf(beta) / Z << endl;
-		cout << "freq <1,1,0> " << sample::getEmpiricalFrequencies(Combination({0,0,0}), Group(A, B, C), samples, Group(A, B, C).getVariables()) << expf(alfa) / Z << endl;
 
-		trainModel(graph, std::make_shared<TrainSet>(samples), std::make_pair("C" , 0), "A");
+		cout << "freq <0,0,0> " << endl;
+		cout << "theoretical " << expf(alfa) * expf(beta) * expf(gamma) / Z << endl;
+		cout << "Gibbs sampler results " << sample::getEmpiricalFrequencies(Combination({ 0,0,0 }), Group(A, B, C), samples, Group(A, B, C).getVariables()) << endl << endl;
+
+		cout << "freq <1,0,0> " << endl;
+		cout << "theoretical " << expf(gamma) / Z << endl;
+		cout << "Gibbs sampler results " << sample::getEmpiricalFrequencies(Combination({ 1,0,0 }), Group(A, B, C), samples, Group(A, B, C).getVariables()) << endl << endl;
+
+		cout << "freq <0,1,0> " << endl;
+		cout << "theoretical " << expf(beta) / Z << endl;
+		cout << "Gibbs sampler results " << sample::getEmpiricalFrequencies(Combination({ 0,1,0 }), Group(A, B, C), samples, Group(A, B, C).getVariables()) << endl << endl;
+
+		cout << "freq <1,1,0> " << endl;
+		cout << "theoretical " << expf(alfa) / Z << endl;
+		cout << "Gibbs sampler results " << sample::getEmpiricalFrequencies(Combination({ 1,1,0 }), Group(A, B, C), samples, Group(A, B, C).getVariables()) << endl << endl;
+
+		GradientDescend trainer;
+		trainer.setMaxIterations(50);
+		trainModel(graph, std::make_shared<TrainSet>(samples), trainer, std::make_pair("C" , 0), "A");
 	}, "Simple tunable model");
 
 	EFG::sample::samplePart([]() {
@@ -65,20 +82,24 @@ int main() {
 
 		model::RandomField graph;
 		graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(A, B), true) , alfa)); // the weight of this potential will be kept constant
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(A, C), true) , beta));
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(A, C), true) , beta));
 		graph.Insert(factor::cnst::Factor(categoric::Group(B, C), true));
 		graph.Insert(factor::cnst::FactorExponential(factor::cnst::Factor(categoric::Group(B, E), true) , gamma)); // the weight of this potential will be kept constant
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(B, D), true) , delta));
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(B, D), true) , delta));
 		graph.Insert(factor::cnst::Factor(categoric::Group(D, E), true));
 
-		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(1000, 500)), std::make_pair("D" , 0), "A");
+		GradientDescend trainer;
+		trainer.setAdvancement(0.1f);
+		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(1000, 500)), trainer, std::make_pair("D" , 0), "A");
 	}, "Medium size tunable and non tunable factors model");
 
 	EFG::sample::samplePart([]() {
 		model::RandomField graph;
 		xml::Importer::importFromXml(graph, SAMPLE_FOLDER , "graph_3.xml");
 
-		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(500, 500)), std::make_pair("v5" , 0), "v1");
+		GradientDescend trainer;
+		trainer.setAdvancement(0.1f);
+		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(500, 500)), trainer, std::make_pair("v5" , 0), "v1", 3);
 	}, "Complex tunable model");
 
 	EFG::sample::samplePart([]() {
@@ -93,39 +114,48 @@ int main() {
 		float beta = 1.f;
 
 		model::RandomField graph;
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, X1), true) , beta));
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X2), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y3, X3), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, X1), true) , beta));
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X2), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y3, X3), true) , 1.f), Group(Y1,X1));  // the same weight of X1-Y1 is assumed
 
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, Y2), true) , alfa));
-		graph.Insert(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X3), true) , 1.f), Group(Y1,Y2));  // the same weight of Y1-Y2 is assumed
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y1, Y2), true) , alfa));
+		graph.InsertTunableCp(factor::modif::FactorExponential(factor::cnst::Factor(categoric::Group(Y2, X3), true) , 1.f), Group(Y1,Y2));  // the same weight of Y1-Y2 is assumed
 
-		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(1000, 500)), std::make_pair("X1" , 0), "Y2");
-		
+		GradientDescend trainer;
+		trainer.setMaxIterations(50);
+		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(1000, 500)), trainer, std::make_pair("X1" , 0), "Y2");		
 	}, "Model with shared weights");
 
 	return EXIT_SUCCESS;
 }
 
-void trainModel(model::RandomField& graph, TrainSetPtr trainSet, const std::pair<string, size_t>& checkObservation, const string& checkVariable) {
+void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable,
+#ifdef THREAD_POOL_ENABLED
+	const std::size_t& threads
+#endif
+) {
 	//build a second graph, with the same potentials, but all weights equal to 1. Then use the train set made by the previous samples to train 
 	//this model, for obtaining a combination of weights similar to the original one
 	model::RandomField graph2Learn;
 	graph2Learn.absorbStructure(static_cast<const nodes::StructureAware&>(graph), true);
 	graph2Learn.absorbStructureTunable(static_cast<const nodes::StructureTunableAware&>(graph), true);
 	graph2Learn.setOnes();
+#ifdef THREAD_POOL_ENABLED
+	if (threads > 1) {
+		graph2Learn.SetThreadPoolSize(threads);
+	}
+#endif
 
-	GradientDescend trainer;
-	trainer.setAdvancement(0.2f);
+	trainer.train(graph2Learn, trainSet);
 
-	cout << "\n\n\n real weights of the model\n";
+	cout << "\n real weights of the model\n";
 	cout << graph.getWeights() << endl;
 
-	cout << "\n\n\n learnt weights\n";
+	cout << "learnt weights\n";
 	cout << graph2Learn.getWeights() << endl;
 
 	//compare the marginals distributions of the real model and the learnt one
-	cout << "P(" << checkVariable << "|" << checkObservation.first << "=" << checkObservation.second << ")\n";
+	cout << "P(" << checkVariable << '|' << checkObservation.first << '=' << checkObservation.second << ")\n";
 
 	cout << "real model " << endl;
 	graph.resetEvidences(map<string, size_t>{ {checkObservation.first, checkObservation.second}});

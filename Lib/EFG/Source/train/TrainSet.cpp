@@ -79,4 +79,24 @@ namespace EFG::train {
         }
         return TrainSet(randomCombinations);
     }
+
+    void printTrainSet(const TrainSet& trainSet, const std::string& fileName) {
+        std::ofstream f(fileName);
+        if (!f.is_open()) {
+            throw Error("invalid file");
+        }
+        auto printLine = [&f](const CombinationPtr& c) {
+            f << c->data()[0];
+            for (std::size_t k = 1; k < c->size(); ++k) {
+                f << ' ' << c->data()[k];
+            }
+        };
+        auto it = trainSet.getSet().begin();
+        printLine(*it);
+        ++it;
+        std::for_each(it, trainSet.getSet().end(), [&](const CombinationPtr& c) {
+            f << std::endl;
+            printLine(c);
+        });
+    }
 }

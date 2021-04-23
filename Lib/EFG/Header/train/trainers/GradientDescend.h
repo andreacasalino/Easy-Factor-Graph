@@ -18,11 +18,11 @@ namespace EFG::train {
         GradientDescend() = default;
 
         void train(Trainable& model, TrainSetPtr trainSet) override {
-            throw 0; // implement termination criteria
             this->extractor = std::make_unique<Extractor>(trainSet);
             std::vector<float> wGrad, w;
             for(std::size_t k=0; k<this->maxIterations; ++k) {
                 wGrad = model.getGradient(this->extractor->getTrainSet());
+                w = model.getWeights();
                 for(std::size_t j = 0; j<w.size(); ++j) {
                     w[j] += this->advancement * wGrad[j];
                 }
@@ -34,7 +34,7 @@ namespace EFG::train {
         void setAdvancement(float adv) { this->advancement = adv; };
 
     private:
-        float advancement = 0.1f;
+        float advancement = 1.f;
         std::unique_ptr<Extractor> extractor;
     };
 }

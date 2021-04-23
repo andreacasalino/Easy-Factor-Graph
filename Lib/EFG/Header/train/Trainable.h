@@ -18,6 +18,7 @@
 namespace EFG::train {
     class TrainHandler {
     public:
+        // recompute alfa part and return it when call getGradientAlpha
         virtual void setTrainSet(TrainSetPtr trainSet, const std::set<categoric::VariablePtr>& modelVariables) = 0;
 
         virtual float getGradientAlpha() = 0;
@@ -44,10 +45,10 @@ namespace EFG::train {
         std::list<TrainHandlerPtr> handlers;
 
         void setTrainSet(TrainSetPtr newSet);
-        inline TrainSetPtr getTrainSet() const { return this->trainSet; }
+        inline TrainSetPtr getLastTrainSet() const { return this->lastTrainSet; }
 
     private:
-        TrainSetPtr trainSet;
+        TrainSetPtr lastTrainSet;
     };
 }
 

@@ -32,6 +32,8 @@ namespace EFG::train {
     };
 
     typedef std::shared_ptr<TrainSet> TrainSetPtr;
+
+    void printTrainSet(const TrainSet& trainSet, const std::string& fileName);
 }
 
 #endif

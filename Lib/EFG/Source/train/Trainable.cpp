@@ -15,7 +15,7 @@
 
 namespace EFG::train {
     void Trainable::setTrainSet(TrainSetPtr newSet) {
-        if(newSet.get() != this->trainSet.get()) {
+        if(newSet.get() == this->lastTrainSet.get()) {
             return;
         }
         if (newSet->getSet().front()->size() != this->nodes.size()) {
@@ -40,7 +40,7 @@ namespace EFG::train {
 #ifdef THREAD_POOL_ENABLED
         }
 #endif
-        this->trainSet = newSet;
+        this->lastTrainSet = newSet;
     }
 
     void Trainable::setWeights(const std::vector<float>& w) {
