@@ -13,6 +13,7 @@
 #include <nodes/bases/BeliefAware.h>
 #include <nodes/bases/StructureAware.h>
 #include <nodes/bases/StructureTunableAware.h>
+#include <Error.h>
 
 namespace EFG::nodes {
     class InsertCapable

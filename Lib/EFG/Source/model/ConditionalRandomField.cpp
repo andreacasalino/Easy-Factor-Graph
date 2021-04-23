@@ -8,11 +8,20 @@
 #include <model/ConditionalRandomField.h>
 #include <train/handlers/BinaryHandler.h>
 #include <train/handlers/UnaryHandler.h>
+#include <io/xml/Importer.h>
 #include "HiddenObservedHandler.h"
 #include <Error.h>
 #include <algorithm>
 
 namespace EFG::model {
+    ConditionalRandomField::ConditionalRandomField(const std::string& filePath, const std::string& fileName) {
+        auto ev = io::xml::Importer::importFromXml(*this, filePath, fileName);
+        if (ev.empty()) {
+            throw Error("A conditional random field should have at least 1 evidence");
+        }
+        this->resetEvidences(ev);
+    }
+
     void ConditionalRandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
         this->InsertTunableCapable::insertTunable(toInsert);
         this->insertHandler(toInsert);

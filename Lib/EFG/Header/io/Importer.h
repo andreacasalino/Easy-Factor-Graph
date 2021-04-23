@@ -26,7 +26,7 @@ namespace EFG::io {
             return std::make_pair(structure, dynamic_cast<nodes::InsertTunableCapable*>(&model));
         };
 
-        virtual void importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) = 0;
+        virtual std::map<std::string, std::size_t> importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) = 0;
     };
 }
 

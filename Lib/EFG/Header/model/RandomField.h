@@ -28,6 +28,15 @@ namespace EFG::model {
     public:
         RandomField() = default;
 
+        template<typename Model>
+        RandomField(const Model& o) {
+            this->absorbModel(o);
+        };
+
+        RandomField(const RandomField& o) {
+            this->absorbModel(o, true);
+        };
+
         void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
         void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
 

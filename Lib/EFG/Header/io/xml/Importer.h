@@ -14,12 +14,12 @@ namespace EFG::io::xml {
     class Importer : public io::Importer {
     public:
         template<typename Model>
-        static void importFromXml(Model& model, const std::string& filePath, const std::string& fileName) {
-            Importer().importComponents(filePath, fileName, getComponents(model));
+        static std::map<std::string, std::size_t> importFromXml(Model& model, const std::string& filePath, const std::string& fileName) {
+            return Importer().importComponents(filePath, fileName, getComponents(model));
         };
 
     private:
-        void importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) final;
+        std::map<std::string, std::size_t> importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) final;
     };
 }
 

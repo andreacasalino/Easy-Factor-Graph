@@ -25,6 +25,15 @@ namespace EFG::model {
         , public nodes::QueryHandler {
     public:
         Graph() = default;
+
+        template<typename Model>
+        Graph(const Model& o) {
+            this->absorbModel(o);
+        };
+
+        Graph(const Graph& o) {
+            this->absorbModel(o, true);
+        };
     };
 }
 

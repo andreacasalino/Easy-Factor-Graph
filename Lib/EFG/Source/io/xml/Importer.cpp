@@ -99,7 +99,7 @@ namespace EFG::io::xml {
 		return std::make_shared<distribution::factor::modif::FactorExponential>(*shape, static_cast<float>(std::atof(w->c_str())));
 	};
 
-	void Importer::importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) {
+	std::map<std::string, std::size_t> Importer::importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) {
 		xmlPrs::Parser parser(filePath + "/" + fileName);
 		// import variables
 		std::set<categoric::VariablePtr> variables;
@@ -143,6 +143,7 @@ namespace EFG::io::xml {
 					std::get<1>(components)->insertTunableCopy(*expPtr, importGroup(*shareTag.begin()->second, variables));
 				}
 			}
-		}
+		}		
+		return evidence;
 	}
 }
