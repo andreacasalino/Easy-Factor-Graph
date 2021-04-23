@@ -23,6 +23,8 @@ using namespace EFG::distribution;
 using namespace EFG::io;
 using namespace EFG::train;
 
+std::vector<Combination> getGibbsSamples(model::RandomField& graph, std::size_t numberOfSamples, std::size_t deltaIteration);
+
 void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable, 
 #ifdef THREAD_POOL_ENABLED
 	const std::size_t& threads = 1
@@ -44,7 +46,7 @@ int main() {
 		graph.insertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(categoric::Group(B, C), true) , gamma));
 
 		//extract some samples form the joint distributions of the variable in the graph, using a Gibbs sampling method
-		auto samples = graph.getHiddenSetSamples(500, 500);
+		auto samples = getGibbsSamples(graph, 500, 100);
 
 		float Z = 2.f*(expf(alfa) + expf(beta) + expf(gamma) + expf(alfa)*expf(beta)*expf(gamma));
 		auto hidden_set = graph.getHiddenVariables();
@@ -90,7 +92,7 @@ int main() {
 
 		GradientDescend trainer;
 		trainer.setAdvancement(0.1f);
-		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(1000, 500)), trainer, std::make_pair("D" , 0), "A");
+		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)), trainer, std::make_pair("D" , 0), "A");
 	}, "Medium size tunable and non tunable factors model");
 
 	EFG::sample::samplePart([]() {
@@ -99,7 +101,7 @@ int main() {
 
 		GradientDescend trainer;
 		trainer.setAdvancement(0.1f);
-		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(500, 500)), trainer, std::make_pair("v5" , 0), "v1", 3);
+		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1500, 100)), trainer, std::make_pair("v5" , 0), "v1", 3);
 	}, "Complex tunable model");
 
 	EFG::sample::samplePart([]() {
@@ -123,10 +125,21 @@ int main() {
 
 		GradientDescend trainer;
 		trainer.setMaxIterations(50);
-		trainModel(graph, std::make_shared<TrainSet>(graph.getHiddenSetSamples(1000, 500)), trainer, std::make_pair("X1" , 0), "Y2");		
+		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)), trainer, std::make_pair("X1" , 0), "Y2");
 	}, "Model with shared weights");
 
 	return EXIT_SUCCESS;
+}
+
+std::vector<Combination> getGibbsSamples(model::RandomField& graph, std::size_t numberOfSamples, std::size_t deltaIteration) {
+#ifdef THREAD_POOL_ENABLED
+	graph.SetThreadPoolSize(4);
+#endif
+	auto samples = graph.getHiddenSetSamples(numberOfSamples, deltaIteration);
+#ifdef THREAD_POOL_ENABLED
+	graph.SetThreadPoolSize(0);
+#endif
+	return samples;
 }
 
 void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable,

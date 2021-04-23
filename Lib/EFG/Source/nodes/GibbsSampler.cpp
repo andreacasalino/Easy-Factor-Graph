@@ -20,6 +20,8 @@ namespace EFG::nodes {
 
         std::size_t sampleFromDiscrete(const std::vector<float>& distribution) const;
 
+        void resetSeed(const std::size_t& newSeed) { this->generator.seed(newSeed); }
+
     private:
         mutable std::default_random_engine generator;
         mutable std::uniform_real_distribution<float> distribution;
@@ -102,11 +104,60 @@ namespace EFG::nodes {
         auto structure = this->getHiddenStructure();
         std::vector<Combination> samples;
         samples.reserve(numberOfSamples);
+        // burn out
         evolveSamples(structure, 10 * deltaIteration, sampler);
-        for (std::size_t s = 0; s < numberOfSamples; ++s) {
-            evolveSamples(structure, deltaIteration, sampler);
-            samples.push_back(Combination(convert(structure)));
+        // compute samples
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::vector<std::vector<std::vector<std::size_t>>> samplesBatteries;
+            std::list<HiddenStructure> structures;
+            std::list<UniformSampler> samplers;
+            samplesBatteries.resize(this->threadPool->size());
+            std::size_t samplesCounter = 0, samplesCounterDelta = numberOfSamples / this->threadPool->size();
+            for (std::size_t t = 0; t < this->threadPool->size(); ++t) {
+                HiddenStructure* strPtr = &structure;
+                UniformSampler* samplerPtr = &sampler;
+                std::vector<std::vector<std::size_t>>* samplesContainer = &samplesBatteries[t];
+
+                std::size_t threadIterations = std::min(numberOfSamples - samplesCounter, samplesCounterDelta);
+                samplesContainer->reserve(threadIterations);
+                if (0 < t) {
+                    structures.push_back(this->getHiddenStructure());
+                    strPtr = &structures.back();
+                    // assume the same sample values
+                    auto itSource = structure.cbegin();
+                    for (auto itCopy = strPtr->begin(); itCopy != strPtr->end(); ++itCopy) {
+                        itCopy->second.sample = itSource->second.sample;
+                        ++itSource;
+                    }
+                    samplers.emplace_back();
+                    samplerPtr = &samplers.back();
+                    samplerPtr->resetSeed(t * 100);
+                }
+                this->threadPool->push([strPtr, samplesContainer, threadIterations, samplerPtr, &deltaIteration]() {
+                    for (std::size_t s = 0; s < threadIterations; ++s) {
+                        evolveSamples(*strPtr, deltaIteration, *samplerPtr);
+                        samplesContainer->emplace_back(convert(*strPtr));
+                    }
+                });
+                samplesCounter += threadIterations;
+            }
+            this->threadPool->wait();
+            std::for_each(samplesBatteries.begin(), samplesBatteries.end(), [&samples](const std::vector<std::vector<std::size_t>>& b) {
+                std::for_each(b.begin(), b.end(), [&samples](const std::vector<std::size_t>& c) {
+                    samples.emplace_back(c);
+                });
+            });
         }
+        else {
+#endif
+            for (std::size_t s = 0; s < numberOfSamples; ++s) {
+                evolveSamples(structure, deltaIteration, sampler);
+                samples.emplace_back(convert(structure));
+            }
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
         return samples;
     }
 }

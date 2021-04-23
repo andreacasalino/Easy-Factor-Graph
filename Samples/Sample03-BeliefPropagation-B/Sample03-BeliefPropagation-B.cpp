@@ -119,7 +119,7 @@ int main() {
 		// set v1,v2,v3 as observations and use a Gibbs sampler 
 		// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
 		politree.resetEvidences(std::map<std::string, std::size_t>{ {"v1", 1}, {"v2", 1}, { "v3", 1 } });
-		auto samples = politree.getHiddenSetSamples(100, 200);
+		auto samples = politree.getHiddenSetSamples(500, 100);
 		
 		auto hidden_set = politree.getHiddenVariables();
 		
@@ -192,7 +192,7 @@ int main() {
 		// to produce samples for the joint conditioned (to the observations) distribution of the hidden variables
 		loop.resetEvidences(std::map<std::string, std::size_t>{ {"v1", 1} });
 		
-		auto samples = loop.getHiddenSetSamples(200, 50);
+		auto samples = loop.getHiddenSetSamples(500, 100);
 		
 		auto hidden_set = loop.getHiddenVariables();
 		

@@ -9,9 +9,15 @@
 #define EFG_NODES_GIBBS_SAMPLER_H
 
 #include <nodes/bases/EvidenceAware.h>
+#include <nodes/bases/ThreadPoolAware.h>
 
 namespace EFG::nodes {
-    class GibbsSampler : virtual public EvidenceAware {
+    class GibbsSampler 
+        : virtual public EvidenceAware
+#ifdef THREAD_POOL_ENABLED
+        , virtual public ThreadPoolAware
+#endif
+    {
     public:
         std::vector<Combination> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
 

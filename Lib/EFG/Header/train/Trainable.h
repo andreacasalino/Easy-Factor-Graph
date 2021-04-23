@@ -31,7 +31,10 @@ namespace EFG::train {
     class Trainable 
         : virtual public nodes::NodesAware
         , virtual public nodes::StructureTunableAware
-        , virtual public nodes::ThreadPoolAware {
+#ifdef THREAD_POOL_ENABLED
+        , virtual public nodes::ThreadPoolAware
+#endif
+    {
     public:
         void setWeights(const std::vector<float>& w);
         void setOnes();
