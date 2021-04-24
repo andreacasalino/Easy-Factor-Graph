@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="164.15546mm"
+   height="114.54557mm"
+   viewBox="0 0 164.15546 114.54557"
+   version="1.1"
+   id="svg5221"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="graph_legend.svg">
+  <defs
+     id="defs5215" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="635.01792"
+     inkscape:cy="61.607234"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1360"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5218">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Livello 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-11.182715,-12.765469)">
+    <ellipse
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.09725165;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4485-9-9"
+       cx="27.619059"
+       cy="28.094986"
+       rx="15.387718"
+       ry="14.280891" />
+    <g
+       style="display:inline"
+       inkscape:label="Livello 1"
+       id="layer1-8-6-0"
+       transform="matrix(0.18723159,0,0,0.21801296,8.1720465,38.205778)">
+      <rect
+         style="fill:#121213;fill-opacity:1;stroke:#000000;stroke-width:1.83151484;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+         id="rect5052-9-5"
+         width="82.384499"
+         height="78.108185"
+         x="61.792385"
+         y="71.610207"
+         ry="2.1984103" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="58.816147"
+       y="28.740629"
+       id="text4560-3-3-1"><tspan
+         sodipodi:role="line"
+         id="tspan4558-2-3-4"
+         x="58.816147"
+         y="28.740629"
+         style="stroke-width:0.26458332">Categoric Variable</tspan></text>
+    <g
+       style="display:inline"
+       transform="matrix(0.21720292,0,0,0.22070774,5.1854599,64.885533)"
+       id="layer1-4-9-6"
+       inkscape:label="Livello 1">
+      <rect
+         ry="2.1552138"
+         y="72.69886"
+         x="63.107822"
+         height="76.573441"
+         width="80.093803"
+         id="rect5052-6-7-4"
+         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:6.83385181;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <rect
+         ry="0.8575573"
+         y="95.169029"
+         x="86.512009"
+         height="30.468493"
+         width="31.832348"
+         id="rect5052-9-2-8-1"
+         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2.71760798;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <g
+       style="display:inline"
+       transform="matrix(0.19072126,0,0,0.22607754,8.0142044,92.791438)"
+       id="layer1-7"
+       inkscape:label="Livello 1">
+      <g
+         id="g4525">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:6.83385181;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect5052-7"
+           width="80.093803"
+           height="76.573441"
+           x="63.107815"
+           y="72.698845"
+           ry="2.1552138" />
+        <path
+           style="fill:none;stroke:#000000;stroke-width:10;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+           d="M 65.266678,148.34894 143.20161,72.698845"
+           id="path4521"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="58.882008"
+       y="64.187996"
+       id="text4560-3-3-1-0"><tspan
+         sodipodi:role="line"
+         id="tspan4558-2-3-4-5"
+         x="58.882008"
+         y="64.187996"
+         style="stroke-width:0.26458332">Simple shape $\Phi_i$</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:8.39739418px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20993486"
+       x="74.448639"
+       y="72.868286"
+       id="text4560-3-3-1-0-4"
+       transform="scale(0.79345461,1.2603115)"><tspan
+         sodipodi:role="line"
+         id="tspan4558-2-3-4-5-4"
+         x="74.448639"
+         y="72.868286"
+         style="stroke-width:0.20993486">Tunable Exponential shape $\Psi_i$</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:7.04481936px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.17612049"
+       x="89.05999"
+       y="79.989647"
+       id="text4560-3-3-1-0-4-6"
+       transform="scale(0.66565226,1.5022859)"><tspan
+         sodipodi:role="line"
+         id="tspan4558-2-3-4-5-4-2"
+         x="89.05999"
+         y="79.989647"
+         style="stroke-width:0.17612049">Constant Exponential shape $\overline{\Psi}_i$</tspan></text>
+  </g>
+</svg>

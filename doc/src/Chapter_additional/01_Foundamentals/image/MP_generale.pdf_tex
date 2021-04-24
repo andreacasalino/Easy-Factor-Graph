@@ -1,0 +1,84 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'MP_generale.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1607.804714bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.77253935)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{MP_generale.pdf}}%
+    \put(0.51240667,0.10255889){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow A}(a)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{MP_generale.pdf}}%
+    \put(0.41543838,0.58144107){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{MP_generale.pdf}}%
+    \put(0.57618721,0.54251868){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{MP_generale.pdf}}%
+    \put(0.49587978,0.59265371){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{AB}$}}}%
+    \put(0.45900901,0.48338917){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow A}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{MP_generale.pdf}}%
+    \put(0.62167534,0.4598471){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{AV1}$}}}%
+    \put(0.6162136,0.39595411){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$V_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{MP_generale.pdf}}%
+    \put(0.67358588,0.53045863){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{AV2}$}}}%
+    \put(0.75074529,0.46996453){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$V_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{MP_generale.pdf}}%
+    \put(0.75268168,0.56564524){\color[rgb]{0,0,0}\rotatebox{9.6036267}{\makebox(0,0)[lb]{\smash{$\vdots$}}}}%
+    \put(0.61501017,0.63512101){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{AVm}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{MP_generale.pdf}}%
+    \put(0.69509201,0.68759488){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{Vm \rightarrow B}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{MP_generale.pdf}}%
+    \put(0.77039795,0.52694851){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{V2 \rightarrow B}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{MP_generale.pdf}}%
+    \put(0.4556831,0.41396082){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{V1 \rightarrow B}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{MP_generale.pdf}}%
+    \put(0.00642801,0.7583629){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Remaining structure of the graph}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{MP_generale.pdf}}%
+    \put(-0.00183128,0.26919106){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Remaining structure of the graph}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{MP_generale.pdf}}%
+    \put(0.40672081,0.09408593){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0.72525761,0.64050771){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$V_m$}}}%
+  \end{picture}%
+\endgroup%

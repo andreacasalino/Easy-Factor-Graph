@@ -1,0 +1,68 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_3.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{718.51522667bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.5124479)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_3.pdf}}%
+    \put(0.06522735,0.39114641){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0.24712797,0.48072558){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(\alpha \Phi)$}}}%
+    \put(-0.00187117,0.1441224){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(\beta \Phi)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_3.pdf}}%
+    \put(0.6754205,0.47605958){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(\gamma \Phi)$}}}%
+    \put(0.63749754,0.29947187){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(\delta \Phi)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_3.pdf}}%
+    \put(0.48138091,0.39091689){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_3.pdf}}%
+    \put(0.28234075,0.05893472){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_3.pdf}}%
+    \put(0.71063332,0.05426867){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$D$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_3.pdf}}%
+    \put(0.90967344,0.38625089){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$E$}}}%
+  \end{picture}%
+\endgroup%

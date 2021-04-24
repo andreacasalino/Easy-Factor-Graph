@@ -1,0 +1,100 @@
+
+\section{Sample 06: Learning, part A}
+
+The aim of this series of examples is to show how to perform the learning of factor graphs.
+In all the examples contained in this Section, learning is done with the following methodology.
+A Gibbs sampler is used to take samples from the joint distribution correlating all the variables in a model A. Model A is actually the model to learn. The training set obtained from model A, is used to train a model B. Model B has the same variables and factors of model A, but with different values for the free parameters $w_{1,2,\cdots}$ (Section \ref{sec:00:LEARN}). In this way, after having performed the learning, the value of the free parameters in model B will assume similar values to the ones in model A, showing the effectiveness of the functionalities contained in EFG. Clearly, this is not the approach followed in real applications, were the real coefficient of the model are unknown and only a training set of examples are available.
+
+\subsection{part 01}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.3 \textwidth}
+\import{../Chapter_additional/04_Samples/image_06_07/}{graph_2.pdf_tex} 
+\caption{The graph considered by part 01.}
+\label{fig:sample_06:0}
+\end{figure}
+
+Part 01 considers the loopy graph reported in Figure \ref{fig:sample_06:0}. $A$, $B$ and $C$ are all binary variables, while $\Psi_{AB}$, $\Psi_{AC}$ and $\Psi_{BC}$ are simple correlating exponential distributions having as weights, respectively, $\alpha$, $\beta$ and $\gamma$. 
+\\
+In the initial part of this example, a Gibbs sampler draw samples from the joint distribution of $A,B$ and $C$, with the aim of validating the Gibbs sampler. Indeed, some empirical frequencies of some specific combinations are compared with the theoretical probabilities. The theoretical results are computed considering the energy function $E(A,B,C)$ of the graph, reported in table \ref{tab:06:t1} (for instance $\mathbb{P}(A=0, B=0, C=1) = \frac{E(0,0,1)}{Z}$).
+\\
+At a second stage, the samples obtained by the Gibbs sampler are exploited for performing learning on model B (see the initial part of this Section).
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|l|l|l|l|l|l|}
+$A$ & $B$ & $C$ & $\Psi_{AB}$ & $\Psi_{BC}$ & $\Psi_{AC}$ & $E(A,B,C) =\Psi_{AB} \cdot \Psi_{BC} \cdot \Psi_{AC} $ \\
+\hline
+$0$ & $0$ & $0$ & $exp(\alpha)$ & $exp(\gamma)$ & $exp(\beta)$ & $exp(\alpha)exp(\beta)exp(\gamma)$ \\
+\hline
+$1$ & $0$ & $0$ & $1$ & $exp(\gamma)$ & $1$ & $exp(\gamma)$ \\
+\hline
+$0$ & $1$ & $0$ & $1$ & $1$ & $exp(\beta)$ & $exp(\beta)$ \\
+\hline
+$1$ & $1$ & $0$ & $exp(\alpha)$ & $1$ & $1$ & $exp(\alpha)$ \\
+\hline
+$0$ & $0$ & $1$ & $exp(\alpha)$ & $1$ & $1$ & $exp(\alpha)$ \\
+\hline
+$1$ & $0$ & $1$ & $1$ & $1$ & $exp(\beta)$ & $exp(\beta)$ \\
+\hline
+$0$ & $1$ & $1$ & $1$ & $exp(\gamma)$ & $1$ & $exp(\gamma)$ \\
+\hline
+$1$ & $1$ & $1$ & $exp(\alpha)$ & $exp(\gamma)$ & $exp(\beta)$ & $exp(\alpha)exp(\beta)exp(\gamma)$ \\
+\hline 
+\end{tabular}
+\caption{Factors involved in the graph of Figure \ref{fig:00:MAP_sample}. Summing all the possible values of $E$, the ripartition function results equal to $Z = \sum E(A,B,C) = 2 \bigg( exp(\alpha) +  exp(\beta) + exp(\gamma) + exp(\alpha)exp(\beta)exp(\gamma) \bigg)$.} 
+\label{tab:06:t1}
+\end{table} 
+
+\subsection{part 02}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.5 \textwidth}
+\import{../Chapter_additional/04_Samples/image_06_07/}{graph_3.pdf_tex} 
+\caption{The graph considered by part 02.}
+\label{fig:sample_06:1}
+\end{figure}
+
+Part 02 considers a structure made of both tunable and non-tunable factors. The considered structure is reported in Figure \ref{fig:sample_06:1}.
+Weights $\beta$ and $\gamma$ must be tuned through learning, while $\alpha$ and $\gamma$ are constant and known (refer also to the formalism described in Figure \ref{fig:00:example}).
+
+\subsection{part 03}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.75 \textwidth}
+\import{../Chapter_additional/04_Samples/image_06_07/}{graph_4.pdf_tex} 
+\caption{The graph considered by part 03.}
+\label{fig:sample_06:2}
+\end{figure}
+
+Part 03 considers the loopy structure reported in Section \ref{sec:Sample_03_part_04}. However, here instead of having constant exponential shapes, all the factors are made of tunable exponentials. The value assumed by the weight of model A (see the introduction of this Section) are showed in Figure \ref{fig:sample_06:2}.
+
+\subsection{part 04}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.45 \textwidth}
+\import{../Chapter_additional/04_Samples/image_06_07/}{graph_5.pdf_tex} 
+\caption{The graph considered by part 04.}
+\label{fig:sample_06:3}
+\end{figure}
+
+Part 04 considers the structure reported in Figure \ref{fig:sample_06:3}, for which all the potentials connecting pairs $Y_{i-1}, Y_i$ share the same weight $\alpha$, while the factors connecting pairs $X_i,Y_i$ share the weight $\beta$. The approach described in Section \ref{sec:00:MODULE_LEARN} is internally followed by EFG to learn such a structure.
+
+\section{Sample 07: Learning, part B}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.6 \textwidth}
+\import{../Chapter_additional/04_Samples/image_06_07/}{graph_6.pdf_tex} 
+\caption{The conditional random field considered in Sample 07.}
+\label{fig:sample_07:0}
+\end{figure}
+
+The aim of this example is to show how the learning process can be done when dealing with Conditional random fields. In particular, the structure  reported in Figure \ref{fig:sample_07:0} is considered (values of the free parameters are not indicated, since the reader may refer to the sources provided).
+\\
+The approach adopted is similar to the one followed in the previous series of example, considering a couple of model A and B (see the initial part of the previous Section). However, in this case we cannot simply draw samples from the joint distribution correlating the variables in the model, since such a distribution does not exists. Indeed, the conditional random field of Figure \ref{fig:sample_07:0}, models the conditional distribution of variables $Y_{1,2,\cdots}$ w.r.t the evidences $X_{1,2,\cdots}$. For this reason, all the possible combination of evidences are determined, considering all $x \in \lbrace Dom(X_1) \cup Dom(X_2) \cup \cdots \rbrace$. For each $x$, samples from the conditioned distribution $\mathbb{P}(Y_{1,2,\cdots} | x)$ are taken with a Gibbs sampler. The entire population of samples determined is actually the training set adopted fro training the conditional random field in Figure \ref{fig:sample_07:0}.
+ 

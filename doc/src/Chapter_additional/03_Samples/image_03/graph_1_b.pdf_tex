@@ -1,0 +1,83 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_1_b.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1041.31572894bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.81938106)%
+    \put(-0.00066753,0.63647975){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$D=1$ is observed}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_1_b.pdf}}%
+    \put(0.78630282,0.7325005){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_E(E) = M _{D \rightarrow E}(E) = \begin{pmatrix} 1 \\ exp(\varepsilon) \end{pmatrix} $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_1_b.pdf}}%
+    \put(0.14310457,0.73072179){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_1_b.pdf}}%
+    \put(0.14310458,0.54519525){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_1_b.pdf}}%
+    \put(0.40682145,0.64416945){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_1_b.pdf}}%
+    \put(0.64199289,0.57852281){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$D=1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_1_b.pdf}}%
+    \put(0.32956398,0.39070204){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow A}(A) = \begin{pmatrix} exp(\alpha) + exp(\gamma) \\ 1 + exp(\alpha)exp(\gamma) \end{pmatrix} $ }}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graph_1_b.pdf}}%
+    \put(0.91522463,0.64911212){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$E$}}}%
+    \put(0.37737311,0.79749244){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_B(B) = M _{D \rightarrow B}(B) = \begin{pmatrix} 1 \\ exp(\gamma) \end{pmatrix}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graph_1_b.pdf}}%
+    \put(0.72349494,0.32138587){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_E(E)  = \begin{pmatrix} 1 \\ exp(\varepsilon) \end{pmatrix} $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graph_1_b.pdf}}%
+    \put(0.14703376,0.30621863){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{graph_1_b.pdf}}%
+    \put(0.1470338,0.12069216){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{graph_1_b.pdf}}%
+    \put(0.41075063,0.21966632){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{graph_1_b.pdf}}%
+    \put(0.91915379,0.22460898){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$E$}}}%
+    \put(0.50613307,0.15404182){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_B(B)  = \begin{pmatrix} 1 \\ exp(\gamma) \end{pmatrix}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{graph_1_b.pdf}}%
+    \put(0.24485646,0.00679448){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow C}(C) = \begin{pmatrix} exp(\beta) + exp(\gamma) \\ 1 + exp(\beta)exp(\gamma) \end{pmatrix}$ }}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{graph_1_b.pdf}}%
+  \end{picture}%
+\endgroup%

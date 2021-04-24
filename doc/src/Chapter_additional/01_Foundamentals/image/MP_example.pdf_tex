@@ -1,0 +1,101 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'MP_example.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1130.89308648bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,1.00751645)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{MP_example.pdf}}%
+    \put(0.03033359,0.77185322){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{MP_example.pdf}}%
+    \put(0.16847511,0.9551036){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{MP_example.pdf}}%
+    \put(0.2588722,0.71651678){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_4$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{MP_example.pdf}}%
+    \put(0.50250352,0.7191965){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{MP_example.pdf}}%
+    \put(0.26159514,0.86681484){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{24}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{MP_example.pdf}}%
+    \put(0.13806621,0.78646799){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{34}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{MP_example.pdf}}%
+    \put(0.59298899,0.9659925){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_5$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{MP_example.pdf}}%
+    \put(0.59767876,0.8348285){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{15}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{MP_example.pdf}}%
+    \put(0.24202503,0.54396606){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{4}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{MP_example.pdf}}%
+    \put(0.48092484,0.54462399){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{1}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{MP_example.pdf}}%
+    \put(0.03790187,0.2341435){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{MP_example.pdf}}%
+    \put(0.17604342,0.41739384){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{MP_example.pdf}}%
+    \put(0.26644048,0.17880706){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_4$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{MP_example.pdf}}%
+    \put(0.5100718,0.18148673){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{MP_example.pdf}}%
+    \put(0.26916345,0.32910513){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{24}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{MP_example.pdf}}%
+    \put(0.14563446,0.24875821){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{34}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{MP_example.pdf}}%
+    \put(0.6005573,0.42828272){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_5$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{MP_example.pdf}}%
+    \put(0.60524707,0.29711871){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{15}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{MP_example.pdf}}%
+    \put(0.24959331,0.00625629){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{4}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{MP_example.pdf}}%
+    \put(0.48849315,0.00691421){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_{1}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{MP_example.pdf}}%
+    \put(0.09450731,0.0935396){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{3 \rightarrow 4}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=22]{MP_example.pdf}}%
+    \put(0.32825523,0.40557609){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{2 \rightarrow 4}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=23]{MP_example.pdf}}%
+    \put(0.69300139,0.3581154){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{5 \rightarrow 1}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=24]{MP_example.pdf}}%
+    \put(0.38452903,0.07999221){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{4 \rightarrow 1}$}}}%
+  \end{picture}%
+\endgroup%

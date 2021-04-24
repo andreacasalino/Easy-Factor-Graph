@@ -1,0 +1,85 @@
+
+\section{Sample 03: Belief propagation, part B}
+
+The aim of this series of examples is to show how to perform probabilistic queries on articulated complex graphs.
+
+\subsection{part 01}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.5 \textwidth}
+\import{../Chapter_additional/04_Samples/image_03/}{graph_1.pdf_tex} 
+\caption{The factor graph considered by part 01.}
+\label{fig:sample_03:0}
+\end{figure}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.6 \textwidth}
+\import{../Chapter_additional/04_Samples/image_03/}{graph_1_a.pdf_tex} 
+\caption{Belief propagation steps when $E$ is assumed as evidence.}
+\label{fig:sample_03:1}
+\end{figure}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.6 \textwidth}
+\import{../Chapter_additional/04_Samples/image_03/}{graph_1_b.pdf_tex} 
+\caption{Belief propagation steps when $D$ is assumed as evidence.}
+\label{fig:sample_03:2}
+\end{figure}
+
+Part 01 considers a graph made of 5 variables with a $Dom$ size equal to 2 and some simple exponential correlating factors, having different weights.
+The graph is reported in Figure \ref{fig:sample_03:0}, together with the weights of factor $\alpha, \beta, \gamma, \varepsilon$.
+\\
+At first stage, the evidence $E=1$ is assumed and the marginal probabilities of the other variables are computed with the message passing, whose steps are summarized in Figure \ref{fig:sample_03:1}. After the convergence of the message passing, the marginals of the variables are computed as similarly done for the previous examples.
+In a second phase, the evidence  $E=0$ is assumed. The computation of the marginals is omitted since it is specular to the previous case. 
+\\
+Finally, $D=1$ is assumed and a new belief propagation is done, whose computations are reported in Figure \ref{fig:sample_03:2}.
+
+\subsection{part 02}
+\label{sec:sample_03_part_02}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.5 \textwidth}
+\import{../Chapter_additional/04_Samples/image_03/}{graph_2.pdf_tex} 
+\caption{The factor graph considered by part 02.}
+\label{fig:sample_03:3}
+\end{figure}
+
+Part 02 considers the graph reported in Figure \ref{fig:sample_03:3}. All the variables in Figure \ref{fig:sample_03:3} have a domain size equal to 2, and all the factors are simply correlating exponential shape, having a unitary weight. Variables $v_1$, $v_2$ and $v_3$ are treated as evidences and the belief is propagated across the other ones, leading to the computation of the individual marginal probabilities. Since, the addressed structure is a politree (refer to Figure \ref{fig:00:politree_MP}), the message passing algorithm converges within a finite number of steps.
+\\
+In principle, the same approach followed in the previous examples can be followed to compute some theoretical results, with the aim of performing the comparisons. Anyway, for this kind of graph such an approach would be too complex. For this reason, results are compared with a Gibbs sampling approach: a series of samples $\mathcal{T} = \lbrace T_1, \cdots , T_N \rbrace$ are taken from the joint conditioned distribution $\mathbb{P}(T = v_{4,5,6,7,8,9,10,11,12,13} | v_{1,2,3}) $. Then, to evaluate the marginal probability $\mathbb{P}( v_i | v_{1,2,3})$ of a generic hidden variable $v_i$, the following empirical frequency is computed:
+\begin{eqnarray}
+\mathbb{P}( v_i = v | v_{1,2,3}) = \frac{\sum _{T_j \in \mathcal{T}} L_{Ti}(T_j, v)}{N}
+\end{eqnarray}
+where $L_{Ti}(T_j, v)$ is an indicator function equal to $1$ only for those samples for which $v_i$ assumed a value equal to $v$. 
+
+\subsection{part 03}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.55 \textwidth}
+\import{../Chapter_additional/04_Samples/image_03/}{graph_3.pdf_tex} 
+\caption{The factor graph considered by part 03.}
+\label{fig:sample_03:4}
+\end{figure}
+
+Part 03 considers the graph reported in Figure \ref{fig:sample_03:4}. As for the example in the previous part, all variables are binary, and the potentials are simply exponential correlating with a unitary weight. However, this structure is loopy. $E$ is treated as an evidence and the belief propagation is performed considering the loopy version of the message passing discussed in Section \ref{sec:00:MP}. 
+
+\subsection{part 04}
+\label{sec:Sample_03_part_04}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.6 \textwidth}
+\import{../Chapter_additional/04_Samples/image_03/}{graph_4.pdf_tex} 
+\caption{The factor graph considered by part 04.}
+\label{fig:sample_03:5}
+\end{figure}
+
+The last example in this series, considers a complex loopy graph, represented in Figure \ref{fig:sample_03:5}. As for other examples, all the variables are binary and the factors are exponential simply correlating with unitary weights. $v_1$ is assumed as evidence and the belief is propagated with the loopy version of message passing. Results are compared to the empirical frequencies obtained with a Gibbs sampler, as similarly done for the example of part 02.
+
+
+

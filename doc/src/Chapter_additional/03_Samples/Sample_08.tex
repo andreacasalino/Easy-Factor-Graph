@@ -1,0 +1,83 @@
+
+\section{Sample 08: Sub-graphing}
+
+\subsection{part 01}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.5 \textwidth}
+\import{../Chapter_additional/04_Samples/image_08/}{graph_0.pdf_tex} 
+\caption{The chain considered in the example. All the underlying simple shapes are simple correlating. }
+\label{fig:sample_08:00}
+\end{figure}
+
+The chain structure described in Figure \ref{fig:sample_08:00} is addressed in this example.
+The sub-graphs containing variables $A,B,C$ and $A,B$ are built, in order to compute the joint marginal probability distributions of that two groups of variables.
+\\
+The values are compared to the real ones, obtained by considering the joint distribution \footnote{Which is significantly time consuming to compute. For this reason, the SubGraph class is able to compute the marginals without explicitly compute the entire joint distribution of the variables in the model. Here we want just to compare the theoretical result with the one obtained by the SubGraph class.} of all the variables in the chain, which can be obtained by computing the energy function $E$, equation (\ref{eq:00:energy}) (computations are here omitted for brevity).
+Knowing the joint distribution of a group of variables, the marginal distribution of a sub-group can be obtained by marginalization, equation (\ref{eq:00:marginalization}):
+\begin{eqnarray}
+\mathbb{P}(A=a, B=b, C=c) = \sum_{\tilde{d} \in Dom(D)} \mathbb{P}( A =a, B=b, C = c,D= \tilde{d} ) \nonumber\\
+\mathbb{P}(A=a, B=b) = \sum_{\tilde{c} \in Dom(C), \tilde{d} \in Dom(D)} \mathbb{P}( A =a, B=b, C = \tilde{c},D= \tilde{d} )
+\end{eqnarray}
+Applying the above rules to the chain of Figure \ref{fig:sample_08:00} leads to obtain the theoretical marginal distributions indicated in Figure \ref{tab:sample_08:marg}.
+
+\begin{figure}
+\begin{tabular}{cc}
+\begin{minipage}[t]{0.45 \columnwidth}
+\begin{tabular}{|l|l|l|}
+$A$ & $B$ & $\mathbb{P}(A,B)$ \\
+\hline
+0 & 0 & $\frac{exp(\alpha)}{1+exp(\alpha)}$ \\
+\hline
+0 & 1 & $\frac{1}{1+exp(\alpha)}$ \\
+\hline
+1 & 0 & $\frac{1}{1+exp(\alpha)}$ \\
+\hline
+1 & 1 & $\frac{exp(\alpha)}{1+exp(\alpha)}$ \\
+\hline
+\end{tabular}
+\end{minipage} 
+ & 
+\begin{minipage}[t]{0.45 \columnwidth}
+\begin{tabular}{|l|l|l|l|}
+$A$ & $B$ & $C$ & $\mathbb{P}(A,B,C)$ \\
+\hline
+0 & 0 & 0 & $\frac{1}{Z_{ABC}} \cdot exp(\alpha)exp(\beta)$ \\
+\hline
+0 & 1 & 0 & $\frac{1}{Z_{ABC}}$ \\
+\hline
+1 & 0 & 0 & $\frac{1}{Z_{ABC}} \cdot exp(\beta)$ \\
+\hline
+1 & 1 & 0 & $\frac{1}{Z_{ABC}} \cdot exp(\alpha)$ \\
+\hline
+0 & 0 & 1 & $\frac{1}{Z_{ABC}} \cdot exp(\alpha)$ \\
+\hline
+0 & 1 & 1 & $\frac{1}{Z_{ABC}} \cdot exp(\beta)$ \\
+\hline
+1 & 0 & 1 & $\frac{1}{Z_{ABC}}$ \\
+\hline
+1 & 1 & 1 & $\frac{1}{Z_{ABC}} \cdot exp(\alpha)exp(\beta)$ \\
+\hline
+\end{tabular}
+\end{minipage} 
+\end{tabular}
+\caption{Marginal probabilities of the sub-groups $\lbrace A,B,C \rbrace$ and $\lbrace A,B \rbrace$. The normalization coefficient $Z_{ABC}$ is equal to $Z_{ABC}=2 \bigg( 1 + exp(\alpha)+ exp(\beta) + exp(\alpha)exp(\beta) \bigg)$. }
+\label{tab:sample_08:marg}
+\end{figure}
+
+\subsection{part 02}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.85 \textwidth}
+\import{../Chapter_additional/04_Samples/image_08/}{graph_1.pdf_tex} 
+\caption{On the top, the graph considered by Sample 08, while on the bottom the sub-structures of the two groups $A_{1,2,3,4}$ ad $B_{1,2,3}$. }
+\label{fig:sample_08:0}
+\end{figure}
+
+The aim of this example is to show how sub-graphs (see Section \ref{sec:00:SUB_GRAPH}) can be computed using SubGraph.
+The example starts building the structure described in Figure \ref{fig:sample_08:0} (refer to the sources for the details regarding the variables and factors involved in the structure) and assumes the following evidences: $X_1 = 0$ and $X_2 = 0$.
+Then, the two sub-graphs considering the sub-group of variables $A_{1,2,3,4}$ and $B_{1,2,3}$ are computed, refer to Figure \ref{fig:sample_08:0}. The marginal probabilities of some combinations for $A_{1,2,3,4}$ conditioned to the evidences $X_{1,2}$ are computed and compared with the empirical frequencies computed considering a samples set produced by a Gibb sampler on the entire graph: samples for $t = A_{1,2,3,4}, B_{1,23}$ are drawn and the empirical frequencies of specific combinations of $A_{1,2,3,4}$ are computed as similarly done in \ref{sec:sample_03_part_02}. The same thing is done for the sub-graph $B_{1,2,3}$.
+\\
+At a second stage, the evidences $X_{1,2}$ are changed and the sub-graphs, as well as the marginal probabilities, are consequently recomputed.
