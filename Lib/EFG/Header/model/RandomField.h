@@ -29,7 +29,7 @@ namespace EFG::model {
         RandomField() = default;
 
         template<typename Model>
-        RandomField(const Model& o) {
+        explicit RandomField(const Model& o) {
             this->absorbModel(o);
         };
 

@@ -32,7 +32,7 @@ namespace EFG::model {
          * @throw in case no evidences are present in the passed model
          */
         template<typename Model>
-        ConditionalRandomField(const Model& o) {
+        explicit ConditionalRandomField(const Model& o) {
             this->absorbOther(o);
         };
 

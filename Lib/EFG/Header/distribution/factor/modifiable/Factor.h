@@ -23,7 +23,7 @@ namespace EFG::distribution::factor::modif {
             : cnst::Factor(std::forward<Args>(args)...) {
         };
 
-        Factor(const categoric::Group& group)
+        explicit Factor(const std::set<categoric::VariablePtr>& group)
             : cnst::Factor(group) {
         };
 

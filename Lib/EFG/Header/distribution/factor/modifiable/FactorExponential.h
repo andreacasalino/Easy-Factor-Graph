@@ -19,7 +19,7 @@ namespace EFG::distribution::factor::modif {
     public:
         FactorExponential(const cnst::Factor& factor, float weight) : cnst::FactorExponential(factor, weight) {};
 
-        FactorExponential(const cnst::FactorExponential& o) : cnst::FactorExponential(o) {};
+        explicit FactorExponential(const cnst::FactorExponential& o) : cnst::FactorExponential(o) {};
 
         FactorExponential(const FactorExponential& o) : FactorExponential(static_cast<const cnst::FactorExponential&>(o)) {};
 

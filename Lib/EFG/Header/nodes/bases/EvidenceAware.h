@@ -13,7 +13,7 @@
 
 namespace EFG::nodes {
     struct HiddenClusters {
-        HiddenClusters(const std::set<Node*>& toSplit);
+        explicit HiddenClusters(const std::set<Node*>& toSplit);
         HiddenClusters() = default;
         void add(const std::list<std::set<Node*>>& toAdd);
         std::list<std::set<Node*>>::iterator find(Node& node);

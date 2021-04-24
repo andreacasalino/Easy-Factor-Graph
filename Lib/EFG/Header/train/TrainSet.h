@@ -21,12 +21,12 @@ namespace EFG::train {
          * @param the set of combinations that will be part of the train set.
          * @throw if the combinations don't have all the same size
          */
-        TrainSet(const std::vector<Combination>& combinations);
+        explicit TrainSet(const std::vector<Combination>& combinations);
 
         /**
          * @param import the combinations from a textual file where each row represent a combination
          */
-        TrainSet(const std::string& fileName);
+        explicit TrainSet(const std::string& fileName);
 
         /**
          * @return a TrainSet containg some of the combinations stored in this one. The combinations

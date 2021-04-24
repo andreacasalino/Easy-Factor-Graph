@@ -30,7 +30,7 @@ namespace EFG::model {
         Graph() = default;
 
         template<typename Model>
-        Graph(const Model& o) {
+        explicit Graph(const Model& o) {
             this->absorbModel(o);
         };
 

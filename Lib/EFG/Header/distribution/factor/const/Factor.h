@@ -25,7 +25,7 @@ namespace EFG::distribution::factor::cnst {
          *  - false, a simple anticorrelating potential is built. Such a distribution
          *    has the images equal to 0 for those combinations for which the variables have all the same values (<1,1,1>, <2,2,2>, <0,0>, etc...) and 1 for all the others 
          */
-        Factor(const categoric::Group& group, bool corrOrAnti);
+        Factor(const std::set<categoric::VariablePtr>& group, bool corrOrAnti);
 
         Factor(const Factor& o) : DistributionInstantiable(o) {};
         Factor(Factor&& o) : DistributionInstantiable(std::move(o)) {};
@@ -33,7 +33,7 @@ namespace EFG::distribution::factor::cnst {
         /**
          * @brief Copies all the images (not row) of the passed distribution in order to build a generic Factor
          */
-        Factor(const Distribution& o);
+        explicit Factor(const Distribution& o);
 
         /**
          * @brief Merges all the passed distribution into a single Factor.
@@ -50,7 +50,7 @@ namespace EFG::distribution::factor::cnst {
          * The domain of the Factor is obtained merging the domains of the distributions,
          * while the image are obtained multiplying the images of the passed distribution.
          */
-        Factor(const std::set<const Distribution*>& distr);
+        explicit Factor(const std::set<const Distribution*>& distr);
 
         /**
          * @brief Builds the factor by taking all the combinations of the passed distribution matching with
@@ -67,10 +67,10 @@ namespace EFG::distribution::factor::cnst {
          * @param the location of a file storing the combinations and the row images in a matrix of numbers:
          * each row has the combination value and at the end the row image
          */
-        Factor(const categoric::Group& group, const std::string& fileName);
+        Factor(const std::set<categoric::VariablePtr>& group, const std::string& fileName);
 
     protected:
-        Factor(const categoric::Group& group);
+        Factor(const std::set<categoric::VariablePtr>& group);
 
         template<typename ... Distributions>
         static std::set<const Distribution*> pack(const Distribution* first, const Distribution* second, Distributions ... distr) {

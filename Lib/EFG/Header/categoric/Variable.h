@@ -32,7 +32,6 @@ namespace EFG::categoric {
         inline const std::string& name() const { return this->Name; };
         
     protected:
-    // data
         const size_t	  Size; /** domain size */
         const std::string Name; /** name associated to the variable */
     };

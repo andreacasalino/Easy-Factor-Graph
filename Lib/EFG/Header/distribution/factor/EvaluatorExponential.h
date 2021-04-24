@@ -18,7 +18,7 @@ namespace EFG::distribution::factor {
      */
     class EvaluatorExponential : public Evaluator {
     public:
-        EvaluatorExponential(const float& weight) : weight(weight) {};
+        explicit EvaluatorExponential(const float& weight) : weight(weight) {};
 
         inline float getWeight() const { return this->weight; };
         void setWeight(float w) { this->weight = w; };

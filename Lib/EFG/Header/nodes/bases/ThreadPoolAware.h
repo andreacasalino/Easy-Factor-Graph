@@ -20,7 +20,7 @@ namespace EFG::nodes {
          * When passing <= 1 the actual pool is destroyed. When building the object, a default 0 size value is assumed,
          * i.e. no thread pool is activated.
          */
-        void SetThreadPoolSize(const std::size_t& poolSize);
+        void setThreadPoolSize(const std::size_t& poolSize);
 
     protected:
         /**

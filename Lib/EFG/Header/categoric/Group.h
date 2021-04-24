@@ -54,7 +54,7 @@ namespace EFG::categoric {
             this->add(varB, vars...);
         }
 
-        explicit Group(const Group& ) = default;
+        Group(const Group& ) = default;
 
         /**
          * @throw In case of size mismatch with the previous variables set:

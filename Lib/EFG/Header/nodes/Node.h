@@ -22,7 +22,7 @@ namespace EFG::nodes {
     };
 
     struct Node {
-        Node(categoric::VariablePtr var);
+        explicit Node(categoric::VariablePtr var);
 
         categoric::VariablePtr variable;
         std::list<distribution::DistributionPtr> unaryFactors;
