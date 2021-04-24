@@ -9,9 +9,9 @@
 #include <Error.h>
 
 namespace EFG::categoric {
-    Range::Range(const Group& group) {
-        this->sizes.reserve(group.getVariables().size());
-        for(auto it = group.getVariables().begin(); it!=group.getVariables().end(); ++it) {
+    Range::Range(const std::set<VariablePtr>& group) {
+        this->sizes.reserve(group.size());
+        for(auto it = group.begin(); it!=group.end(); ++it) {
             this->sizes.push_back((*it)->size());
         }
         this->combination = std::vector<std::size_t>(this->sizes.size() , 0);

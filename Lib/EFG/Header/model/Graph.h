@@ -16,6 +16,9 @@
 #include <nodes/QueryHandler.h>
 
 namespace EFG::model {
+    /**
+     * @brief A simple graph object, that can't store tunable factors.
+     */
     class Graph
         : public nodes::BeliefPropagator
         , public nodes::EvidencesChanger

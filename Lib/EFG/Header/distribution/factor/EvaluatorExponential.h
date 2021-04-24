@@ -12,6 +12,10 @@
 #include <math.h>
 
 namespace EFG::distribution::factor {
+    /**
+     * @brief An exponential function with weight w is used to obtain the image,
+     * i.e. image = exp(w * rowImage)
+     */
     class EvaluatorExponential : public Evaluator {
     public:
         EvaluatorExponential(const float& weight) : weight(weight) {};

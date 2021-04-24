@@ -13,6 +13,11 @@
 namespace EFG::distribution {
     class Evaluator {
     public:
+        /**
+         * @brief applies a specific function to obtain the image from a row value
+         * @param the row image value to convert
+         * @return the converted image value
+         */
         virtual float evaluate(const float& toConvert) const = 0;
 
         virtual std::shared_ptr<Evaluator> copy() const = 0;

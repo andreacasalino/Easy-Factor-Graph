@@ -22,14 +22,29 @@ namespace EFG::nodes {
         , virtual public BeliefAware
         , virtual public StructureAware {
     public:
+        /**
+         * @brief insert the passed factor. 
+         */
         void insert(std::shared_ptr<distribution::factor::cnst::Factor> factor);
-        // here is copied using the variables stored inside this model
+        /**
+         * @brief insert a copy of the passed factor.
+         */
         void insertCopy(const distribution::factor::cnst::Factor& factor);
 
+        /**
+         * @brief insert the passed epxonential factor.
+         */
         void insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor);
-        // here is copied using the variables stored inside this model
+        /**
+         * @brief insert a copy of the passed exponential factor.
+         */
         void insertCopy(const distribution::factor::cnst::FactorExponential& factor);
 
+        /**
+         * @brief insert all the factors contained in the passed model
+         * @param the model to absorb
+         * @param when passing true the factors from the passed model are copied, otherwise the shared pointers are copied
+         */
         template<typename Model>
         void absorbModel(const Model& model, const bool& useCopyInsertion = false) {
             const StructureAware* strct = dynamic_cast<const StructureAware*>(&model);

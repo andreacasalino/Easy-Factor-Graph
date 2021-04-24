@@ -16,19 +16,26 @@ namespace EFG::nodes {
         : public InsertCapable
         , virtual public StructureTunableAware {
     public:
-        // here is copied using the variables stored inside this model
+        /**
+         * @brief insert a copy of the passed tunable factor.
+         * A new tunable cluster is created containing only the passed factor.
+         */
         void insertTunableCopy(const distribution::factor::modif::FactorExponential& factor);
-        // here is copied using the variables stored inside this model
-        void insertTunableCopy(const distribution::factor::modif::FactorExponential& factor, const categoric::Group& potentialSharingWeight);
+        /**
+         * @brief insert a copy of the passed tunable factor, sharing the weight with an already inserted one.
+         * @param the factor to insert
+         * @param the set of variables identifying the potential whose weight is to share
+         */
+        void insertTunableCopy(const distribution::factor::modif::FactorExponential& factor, const std::set<categoric::VariablePtr>& potentialSharingWeight);
 
     protected:
         virtual void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert);
-        virtual void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight);
+        virtual void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight);
 
         void absorb(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion) override;
 
     private:
-        std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t>::const_iterator findSharingFactor(const categoric::Group& potentialSharingWeight) const;
+        std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t>::const_iterator findSharingFactor(const std::set<categoric::VariablePtr>& potentialSharingWeight) const;
     };
 }
 

@@ -11,6 +11,8 @@
 #include <iterator/Forward.h>
 
 namespace EFG::iterator {
+    /** @brief A Bidirectional iterable object, both incrementable and decrementable
+     */
     class Bidirectional : public Forward{
     public:
         virtual void operator--() = 0;

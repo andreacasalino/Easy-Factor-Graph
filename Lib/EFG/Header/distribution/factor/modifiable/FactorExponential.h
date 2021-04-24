@@ -25,6 +25,9 @@ namespace EFG::distribution::factor::modif {
 
         inline FactorExponential& operator=(const FactorExponential& o) { this->DistributionInstantiable::operator=(o); return *this; };
 
+        /**
+         * @brief sets the weight used by teh exponential function
+         */
         void setWeight(float w);
     };
 }

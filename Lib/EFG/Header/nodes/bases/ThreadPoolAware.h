@@ -15,14 +15,17 @@
 namespace EFG::nodes {
     class ThreadPoolAware : virtual public Base {
     public: 
-        /** \brief Enable the thread pool. Use for big graphs.
-         * IMPORTANT!!! If the compile flag THREAD_POOL_ENABLED was not defined, calling this function will have no effect.
-         * When passing <= 1 the actual pool is destroyed. When building the object, a defualt 0 size value is assumed
-         * @return true in case the pool was successfully set.
+        /** 
+         * @brief Enable the thread pool. Use it only for medium-big sized graphs.
+         * When passing <= 1 the actual pool is destroyed. When building the object, a default 0 size value is assumed,
+         * i.e. no thread pool is activated.
          */
         void SetThreadPoolSize(const std::size_t& poolSize);
 
     protected:
+        /**
+         * @brief a thread pool that might be used in many ways to fasten some computations
+         */
         std::unique_ptr<thpl::equi::Pool> threadPool;
     };
 }

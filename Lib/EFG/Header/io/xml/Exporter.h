@@ -13,6 +13,12 @@
 namespace EFG::io::xml {
     class Exporter : public io::Exporter {
     public:
+        /**
+         * @brief exports the model (variables and factors) into an xml file
+         * @param the model to export
+         * @param the folder that will store the xml
+         * @param the xml file name
+         */
         template<typename Model>
         static void exportToXml(const Model& model, const std::string& filePath, const std::string& modelName = "") {
             Exporter().exportComponents(filePath, modelName, getComponents(model));

@@ -14,13 +14,26 @@ namespace EFG::distribution {
     class Changer
         : public virtual Distribution {
     public:
+        /** 
+         * @param the combiantion to add
+         * @param row image value to consider
+         * @return an iterator pointing to the newly added combination
+         */
         std::map<Combination, float>::const_iterator add(const Combination& comb, const float& value);
 
-        // put 0 for all not added combinations
+        /**
+         * @brief fill all not explicitly stated combinations with zeros
+         */
         void emplaceEntireDomain();
 
+        /**
+         * @brief sets the raw images of all the combinations equal to the passed value
+         */
         void setImageEntireDomain(const float& value);
 
+        /**
+         * @brief remove all the combinations from the distribution
+         */
         inline void clear() { this->values->clear(); };
     };
 }

@@ -12,14 +12,24 @@
 #include <distribution/modifiers/Changer.h>
 
 namespace EFG::distribution::factor::cnst {
+    /**
+     * @brief A factor using the EvaluatorExponential object to convert the row images into images
+     */
     class FactorExponential 
         : public DistributionInstantiable
         , protected Changer {
     public:
+        /**
+         * @param the factor whose raw images are copied
+         * @param the weight to pass to the EvaluatorExponential
+         */
         FactorExponential(const Factor& factor, float weight);
 
         FactorExponential(const FactorExponential& o);
 
+        /**
+         * @return the weight of the EvaluatorExponential
+         */
         float getWeight() const;
     };
 }

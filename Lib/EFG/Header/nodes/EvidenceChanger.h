@@ -18,9 +18,17 @@ namespace EFG::nodes {
         , virtual public EvidenceAware
         , virtual public BeliefAware {
     public:
+        /**
+         * @brief add a new evidence to the model
+         * @param the name of the variable observed
+         * @param the value of the evidence
+         */
         void addEvidence(const std::string& name, std::size_t value);
 
-        // previous evidences are deleted
+        /**
+         * @brief reset the evidences, deleting the previous ones.
+         * @param the new evidences to set: <variable name, evidence>
+         */
         void resetEvidences(const std::map<std::string, std::size_t>& evidences);
     };
 }

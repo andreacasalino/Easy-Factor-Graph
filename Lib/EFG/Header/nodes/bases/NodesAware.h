@@ -14,6 +14,9 @@
 namespace EFG::nodes {
     class NodesAware : virtual public Base {
     public:
+        /**
+         * @return all the variables (hidden or observed) in the model
+         */
         std::set<categoric::VariablePtr> getVariables() const;
 
         categoric::VariablePtr findVariable(const std::string& name) const;
@@ -22,6 +25,9 @@ namespace EFG::nodes {
         inline std::map<categoric::VariablePtr, Node>::const_iterator findNodeConst(const std::string& name) const { return this->nodes.find(categoric::makeVariable(2, name)); };
         inline std::map<categoric::VariablePtr, Node>::iterator findNode(const std::string& name) { return this->nodes.find(categoric::makeVariable(2, name)); };
 
+        /**
+         * @brief The set of variables part of the model, with the connectivity information
+         */
         std::map<categoric::VariablePtr, Node> nodes;
     };
 }

@@ -29,6 +29,10 @@ namespace EFG::nodes {
         inline const std::map<categoric::VariablePtr, const std::size_t>& getEvidences() const { return this->evidences; };
 
     protected:
+        /**
+         * @brief Clusters of hidden node. Each cluster is a group of connected hidden nodes.
+         * Nodes in different clusters are not currently connected (due to the model structure or the kind of evidences currently set)
+         */
         HiddenClusters hidden;
         std::map<categoric::VariablePtr, const std::size_t> evidences;
     };

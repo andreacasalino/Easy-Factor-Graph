@@ -11,8 +11,16 @@
 #include <distribution/factor/const/Factor.h>
 
 namespace EFG::distribution::factor::cnst {
+    /**
+     * @brief An indicator distirbution having only one combination explicitly stated,
+     * whose image is equal to 1
+     */
     class IndicatorFactor : public distribution::factor::cnst::Factor {
     public:
+        /**
+         * @param the variable this indicator function must refer to
+         * @param the only combination to consider for the indicator distribution
+         */
         IndicatorFactor(categoric::VariablePtr var, std::size_t evidence);
     };
 }

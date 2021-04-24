@@ -26,12 +26,18 @@ namespace EFG::nodes {
         void setPropagationMaxIterationsLoopyPropagation(std::size_t iterations) { this->maxIterationsLoopyPropagtion = iterations; };
         inline std::size_t getPropagationMaxIterationsLoopyPropagation() const { return this->maxIterationsLoopyPropagtion; }
 
-        inline const PropagationResult* getLastPropagationResult() const {return this->lastPropagation.get(); };
+        inline PropagationResult getLastPropagationResult() const {return *this->lastPropagation.get(); };
 
     protected:
         virtual void propagateBelief(const PropagationKind& kind) = 0;
 
+        /** 
+         * @brief maximum number of iterations considered when doing loopy propagation
+         */
         std::size_t maxIterationsLoopyPropagtion = 1000;
+        /**
+         * @brief results about the last belief propagation done. It is a nullptr until the first propagation is triggered
+         */
         std::unique_ptr<PropagationResult> lastPropagation;
     };
 }

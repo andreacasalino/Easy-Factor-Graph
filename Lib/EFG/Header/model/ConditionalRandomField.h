@@ -28,6 +28,9 @@ namespace EFG::model {
     public:
         ConditionalRandomField() = delete;
 
+        /**
+         * @throw in case no evidences are present in the passed model
+         */
         template<typename Model>
         ConditionalRandomField(const Model& o) {
             this->absorbOther(o);
@@ -37,10 +40,22 @@ namespace EFG::model {
             this->absorbOther(o);
         };
 
+        /**
+         * @brief import the model from an xml file
+         * @throw in case no evidences are set in the file
+         */
         ConditionalRandomField(const std::string& filePath, const std::string& fileName);
 
+        /**
+         * @brief insert the passed tunable factor.
+         */
         void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
-        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
+        /**
+         * @brief insert the passed tunable factor, sharing the weight with an already inserted one.
+         * @param the factor to insert
+         * @param the set of variables identifying the potential whose weight is to share
+         */
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) override;
 
     private:
         train::TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) override;

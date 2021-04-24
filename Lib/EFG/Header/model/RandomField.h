@@ -37,8 +37,16 @@ namespace EFG::model {
             this->absorbModel(o, true);
         };
 
+        /**
+         * @brief insert the passed tunable factor.
+         */
         void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
-        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) override;
+        /**
+         * @brief insert the passed tunable factor, sharing the weight with an already inserted one.
+         * @param the factor to insert
+         * @param the set of variables identifying the potential whose weight is to share
+         */
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) override;
 
         std::vector<float> getGradient(train::TrainSetPtr trainSet) override;
     };

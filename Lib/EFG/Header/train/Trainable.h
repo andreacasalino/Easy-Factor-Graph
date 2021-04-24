@@ -36,9 +36,19 @@ namespace EFG::train {
 #endif
     {
     public:
+        /**
+         * @param the new set of weights to assume for the tunable clusters
+         */
         void setWeights(const std::vector<float>& w);
+
+        /**
+         * @param sets equal to 1 the weight of all the tunable clusters
+         */
         void setOnes();
 
+        /**
+         * @return the gradient of the weights of the tunable clusters w.r.t. the passed training set
+         */
         virtual std::vector<float> getGradient(TrainSetPtr trainSet) = 0;
 
     protected:

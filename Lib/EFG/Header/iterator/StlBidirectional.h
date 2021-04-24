@@ -11,8 +11,9 @@
 #include <iterator/Bidirectional.h>
 
 namespace EFG::iterator {
+    /** @brief A bidirectional iterator built on top of an std iterator type
+     */
     template<typename IteratorStl>
-    // check inherits from std::Iterator
     class StlBidirectional : public Bidirectional {
     public:
         StlBidirectional(const IteratorStl& begin, const IteratorStl& end) 

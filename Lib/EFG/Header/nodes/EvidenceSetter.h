@@ -18,6 +18,10 @@ namespace EFG::nodes {
         , virtual public EvidenceAware
         , virtual public BeliefAware {
     public:
+        /**
+         * @brief reset evidence values.
+         * The group of observed variables is left unchanged, but the evidence values are updated.
+         */
         void setEvidences(const std::vector<std::size_t>& observations);
     };
 }

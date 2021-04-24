@@ -19,6 +19,11 @@ namespace EFG::nodes {
 #endif
     {
     public:
+        /**
+         * @brief Use Gibbs sampling to draw samples for the hidden variables, assumgin the current evidences.
+         * @param number of samples to draw
+         * @param number of iterations used to evolve the model between the drawing of one sample and another
+         */
         std::vector<Combination> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
 
     private:

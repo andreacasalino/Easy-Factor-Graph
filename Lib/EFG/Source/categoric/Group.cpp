@@ -10,12 +10,16 @@
 #include <Error.h>
 
 namespace EFG::categoric {
-    Group::Group(VariablePtr var) {
-        this->add(var);
+    Group::Group(const std::set<VariablePtr>& group)
+        : group(group) {
     }
 
-    Group::Group(VariablePtr varA, VariablePtr varB) {
-        this->add(varA);
+    Group::Group(VariablePtr var)
+        : group({var}) {
+    }
+
+    Group::Group(VariablePtr varA, VariablePtr varB)
+        : Group(varA) {
         this->add(varB);
     }
 
@@ -42,31 +46,25 @@ namespace EFG::categoric {
     }
 
     std::size_t Group::size() const {
-        std::size_t S = 0;
+        std::size_t S = 1;
         std::for_each(this->group.begin(), this->group.end(), [&S](const VariablePtr& v){
-            S += v->size();
+            S *= v->size();
         });
         return S;
     }
 
-    categoric::Group getComplementary(const categoric::Group& set, const categoric::Group& subset) {
-        auto varsComplement = set.getVariables();
-        std::for_each(subset.getVariables().begin(), subset.getVariables().end(), [&varsComplement](const categoric::VariablePtr& v) {
-            auto itV = varsComplement.find(v);
-            if (itV == varsComplement.end()) {
-                throw Error("non existing evidence");
+    std::set<VariablePtr> getComplementary(const std::set<VariablePtr>& set, const std::set<VariablePtr>& subset) {
+        auto complementary = set;
+        std::for_each(subset.begin(), subset.end(), [&complementary](const categoric::VariablePtr& v) {
+            auto itV = complementary.find(v);
+            if (itV == complementary.end()) {
+                throw Error("variable in subset non existing in set");
             }
-            varsComplement.erase(itV);
+            complementary.erase(itV);
         });
-        if (varsComplement.empty()) {
+        if (complementary.empty()) {
             throw Error("at least 1 variable should remain");
         }
-        auto itV = varsComplement.begin();
-        categoric::Group groupComplement(*itV);
-        ++itV;
-        std::for_each(itV, varsComplement.end(), [&groupComplement](const categoric::VariablePtr& v) {
-            groupComplement.add(v);
-            });
-        return groupComplement;
+        return complementary;
     };
 }

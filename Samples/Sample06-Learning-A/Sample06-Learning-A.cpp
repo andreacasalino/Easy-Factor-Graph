@@ -25,11 +25,7 @@ using namespace EFG::train;
 
 std::vector<Combination> getGibbsSamples(model::RandomField& graph, std::size_t numberOfSamples, std::size_t deltaIteration);
 
-void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable, 
-#ifdef THREAD_POOL_ENABLED
-	const std::size_t& threads = 1
-#endif
-);
+void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable , const std::size_t& threads = 1);
 
 int main() {
 	EFG::sample::samplePart([]() {
@@ -142,11 +138,7 @@ std::vector<Combination> getGibbsSamples(model::RandomField& graph, std::size_t 
 	return samples;
 }
 
-void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable,
-#ifdef THREAD_POOL_ENABLED
-	const std::size_t& threads
-#endif
-) {
+void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable, const std::size_t& threads) {
 	//build a second graph, with the same potentials, but all weights equal to 1. Then use the train set made by the previous samples to train 
 	//this model, for obtaining a combination of weights similar to the original one
 	model::RandomField graph2Learn;

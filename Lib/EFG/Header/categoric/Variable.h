@@ -12,11 +12,14 @@
 #include <memory>
 
 namespace EFG::categoric {
+    /**
+     * @brief An object representing an immutable categoric variable.
+     */
     class Variable {
     public:
-        /** \brief domain is assumed to be {0,1,2,3,...,size}
-        * @param[in] size domain size of this variable
-        * @param[in] name name to attach to this variable. It cannot be an empty string ""
+       /** @param domain size of this variable
+        *  @param name used to label this varaible. 
+        *  @throw passing an empty string 
         */
         Variable(const std::size_t& size, const std::string& name);
 

@@ -13,6 +13,12 @@
 namespace EFG::io::json {
     class Exporter : public io::Exporter {
     public:
+        /**
+         * @brief exports the model (variables and factors) into a json file
+         * @param the model to export
+         * @param the folder that will store the json
+         * @param the json file name
+         */
         template<typename Model>
         static void exportToJson(const Model& model, const std::string& filePath, const std::string& modelName = "") {
             Exporter().exportComponents(filePath, modelName, getComponents(model));

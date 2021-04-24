@@ -11,6 +11,9 @@
 #include <distribution/Evaluator.h>
 
 namespace EFG::distribution::factor {
+    /**
+     * @brief image = exp(w * rowImage)
+     */
     class EvaluatorBasic : public Evaluator {
     public:
         inline float evaluate(const float& toConvert) const override { return toConvert; };

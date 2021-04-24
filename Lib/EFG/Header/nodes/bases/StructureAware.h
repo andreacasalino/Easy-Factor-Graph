@@ -20,7 +20,13 @@ namespace EFG::nodes {
         inline const std::set<std::shared_ptr<distribution::factor::cnst::FactorExponential>>& getFactorsExp() const { return this->factorsExp; };
 
     protected:
+        /**
+         * @return the constant factors stored in the model
+         */
         std::set<std::shared_ptr<distribution::factor::cnst::Factor>> factors;
+        /**
+         * @return the constant exponential factors stored in the model
+         */
         std::set<std::shared_ptr<distribution::factor::cnst::FactorExponential>> factorsExp;
     };
 }

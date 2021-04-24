@@ -17,10 +17,22 @@ namespace EFG::train {
 
     class TrainSet {
     public:
-        // check that all combinations have same size
+        /**
+         * @param the set of combinations that will be part of the train set.
+         * @throw if the combinations don't have all the same size
+         */
         TrainSet(const std::vector<Combination>& combinations);
+
+        /**
+         * @param import the combinations from a textual file where each row represent a combination
+         */
         TrainSet(const std::string& fileName);
 
+        /**
+         * @return a TrainSet containg some of the combinations stored in this one. The combinations
+         * passed in the built object are a subset of the ones stored in this TrainSet.
+         * @param the percentage of combinations to randomically extract.
+         */
         TrainSet getRandomSubSet(const float& percentage) const;
 
         inline const std::vector<CombinationPtr>& getSet() const { return this->combinations; };
