@@ -42,8 +42,8 @@ namespace EFG::distribution::factor::cnst {
                 if (itM == merged.end()) {
                     merged.emplace(*itV);
                 }
-                else if(itM->get() != itV->get()) {
-                    throw Error("varaibles with same names shoudl refer to same objects");
+                else if((*itM)->size() != (*itV)->size()) {
+                    throw Error("varaibles with same names should have also the same size");
                 }
             }
         });

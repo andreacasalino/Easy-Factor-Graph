@@ -15,7 +15,7 @@ namespace EFG::categoric {
         if (0 == this->bufferSize) {
             throw Error("size should be at least 1");
         }
-        this->buffer = static_cast<std::size_t*>(malloc(sizeof(std::size_t) * bufferSize));
+        this->buffer = (std::size_t*)(malloc(sizeof(std::size_t) * bufferSize));
         for (std::size_t k = 0; k < this->bufferSize; ++k) {
             this->buffer[k] = 0;
         }
@@ -23,8 +23,10 @@ namespace EFG::categoric {
 
     Combination::Combination(const std::size_t* buffer, std::size_t bufferSize)
         : bufferSize(bufferSize) {
-        this->buffer = static_cast<std::size_t*>(malloc(sizeof(std::size_t) * bufferSize));
-        std::memcpy(this->buffer, buffer, bufferSize);
+        this->buffer = (std::size_t*)(malloc(sizeof(std::size_t) * bufferSize));
+        for (std::size_t k = 0; k < this->bufferSize; ++k) {
+            this->buffer[k] = buffer[k];
+        }
     }
 
     Combination::Combination(const Combination& o)

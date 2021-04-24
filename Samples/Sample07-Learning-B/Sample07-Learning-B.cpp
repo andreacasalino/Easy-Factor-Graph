@@ -107,7 +107,7 @@ TrainSetPtr makeCondModelTrainSet(model::ConditionalRandomField& Model) {
 		std::vector<std::size_t> temp;
 		temp.reserve(comb.size());
 		for (std::size_t k = 0; k < comb.size(); ++k) {
-			temp[k] = comb.data()[k];
+			temp.push_back(comb.data()[k]);
 		}
 		return temp;
 	};
