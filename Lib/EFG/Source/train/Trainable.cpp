@@ -47,6 +47,7 @@ namespace EFG::train {
         if (w.size() != this->handlers.size()) {
             throw Error("invalid weigths size");
         }
+        this->lastPropagation.reset();
         auto itW = w.begin();
         std::for_each(this->handlers.begin(), this->handlers.end(), [&itW](TrainHandlerPtr& h) {
             h->setWeight(*itW);

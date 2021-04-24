@@ -11,6 +11,7 @@
 #include <categoric/Group.h>
 #include <train/TrainSet.h>
 #include <nodes/bases/NodesAware.h>
+#include <nodes/bases/BeliefAware.h>
 #include <nodes/bases/ThreadPoolAware.h>
 #include <nodes/bases/StructureTunableAware.h>
 #include <list>
@@ -30,6 +31,7 @@ namespace EFG::train {
 
     class Trainable 
         : virtual public nodes::NodesAware
+        , virtual public nodes::BeliefAware
         , virtual public nodes::StructureTunableAware
 #ifdef THREAD_POOL_ENABLED
         , virtual public nodes::ThreadPoolAware

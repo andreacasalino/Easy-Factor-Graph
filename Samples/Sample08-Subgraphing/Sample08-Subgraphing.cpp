@@ -13,6 +13,7 @@
 #include <Presenter.h>
 #include <Frequencies.h>
 #include <print/ProbabilityDistributionPrint.h>
+#include <CombinationMaker.h>
 #include <Error.h>
 #include <math.h>
 #include <iostream>
@@ -32,9 +33,9 @@ int main() {
         float alfa = 0.5f, beta = 1.5f;        
         //build the chain
         model::RandomField graph;
-        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(A, B), true), alfa));
-        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(B, C), true), beta));
-        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(Group(C, D), true), 1.f));
+        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ A, B }, true), alfa));
+        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ B, C }, true), beta));
+        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ C, D }, true), 1.f));
         
         // get the join marginal probabilities of group ABC
         cout << "P(A,B,C)" << endl;
@@ -68,7 +69,7 @@ int main() {
         {
         	// compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
             auto marginal_A12434 = graph.getJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
-        	vector<Combination> comb_raw = { Combination(vector<size_t>{0, 0, 0, 0}) , Combination(vector<size_t>{1,1,0,0}) };
+        	vector<Combination> comb_raw = { sample::makeCombination(vector<size_t>{0, 0, 0, 0}) , sample::makeCombination(vector<size_t>{1,1,0,0}) };
 
             float distrSum = getDomainSum(marginal_A12434);
 
@@ -85,7 +86,7 @@ int main() {
         {
             // compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
             auto marginal_B123 = graph.getJointMarginalDistribution({ "B1" , "B2" ,"B3" });
-            vector<Combination> comb_raw = { Combination(vector<size_t>{0, 0, 0}) , Combination(vector<size_t>{1,1,0}) };
+            vector<Combination> comb_raw = { sample::makeCombination(vector<size_t>{0, 0, 0}) , sample::makeCombination(vector<size_t>{1,1,0}) };
 
             float distrSum = getDomainSum(marginal_B123);
 
@@ -107,7 +108,7 @@ int main() {
         {
             // compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
             auto marginal_A12434 = graph.getJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
-            vector<Combination> comb_raw = { Combination(vector<size_t>{0, 0, 0, 0}) , Combination(vector<size_t>{1,1,0,0}) };
+            vector<Combination> comb_raw = { sample::makeCombination(vector<size_t>{0, 0, 0, 0}) , sample::makeCombination(vector<size_t>{1,1,0,0}) };
 
             float distrSum = getDomainSum(marginal_A12434);
 

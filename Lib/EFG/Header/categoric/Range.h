@@ -10,6 +10,7 @@
 
 #include <categoric/Group.h>
 #include <iterator/Forward.h>
+#include <categoric/Combination.h>
 #include <vector>
 
 namespace EFG::categoric {
@@ -43,7 +44,7 @@ namespace EFG::categoric {
 
         /** @param the group of variables whose joint domain must be iterated.
          */
-        inline const std::vector<std::size_t>& get() const { return this->combination; };
+        inline const Combination& get() const { return this->combination; };
 
         /** @brief Make the object to point to the next element in the joint domain.
          *  @throw if the current pointed element is the last one.
@@ -55,11 +56,11 @@ namespace EFG::categoric {
         /** @brief Make the object to point to the first element of the joint domain, i.e.
          * reset the status as the initial one after construction.
          */
-        inline void reset() { this->combination = std::vector<std::size_t>(this->sizes.size(), 0); this->isAtEnd = false; };
+        void reset();
 
     private:
         std::vector<size_t>		sizes;
-        std::vector<size_t>		combination;
+        Combination             combination;
         bool                    isAtEnd = false;
     };
 }

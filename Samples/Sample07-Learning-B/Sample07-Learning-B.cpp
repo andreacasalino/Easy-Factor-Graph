@@ -39,7 +39,7 @@ int main() {
 		model::ConditionalRandomField graph2Learn(graph);
 		graph2Learn.setOnes();
 #ifdef THREAD_POOL_ENABLED
-		graph2Learn.SetThreadPoolSize(4);
+		graph2Learn.setThreadPoolSize(4);
 #endif
 
 		// use stochastic gradient descend
@@ -90,23 +90,32 @@ TrainSetPtr makeCondModelTrainSet(model::ConditionalRandomField& Model) {
 	std::size_t deltaSamples = 50;
 
 	auto itO = Model.getEvidences().begin();
-	categoric::Group groupObs(itO->first);
+	std::set<categoric::VariablePtr> groupObs = { itO->first };
 	++itO;
 	for (itO; itO != Model.getEvidences().end(); ++itO) {
-		groupObs.add(itO->first);
+		groupObs.emplace(itO->first);
 	}
 
 #ifdef THREAD_POOL_ENABLED
-	Model.SetThreadPoolSize(4);
+	Model.setThreadPoolSize(4);
 #endif
 
 	std::vector<Combination> trainSet;
 	trainSet.reserve(groupObs.size() * deltaSamples);
 
+	auto comb2Vector = [](const categoric::Combination& comb) {
+		std::vector<std::size_t> temp;
+		temp.reserve(comb.size());
+		for (std::size_t k = 0; k < comb.size(); ++k) {
+			temp[k] = comb.data()[k];
+		}
+		return temp;
+	};
+
 	sample::TrainSetCreator sampler(Model);
 	categoric::Range rangeObs(groupObs);
 	EFG::iterator::forEach(rangeObs, [&](categoric::Range& range) {
-		append(trainSet, sampler.getSamples(range.get(), deltaSamples, 20));
+		append(trainSet, sampler.getSamples(comb2Vector(range.get()), deltaSamples, 20));
 	});
 	return std::make_shared<TrainSet>(trainSet);
 }

@@ -39,9 +39,7 @@ namespace EFG::nodes {
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
-        if (nullptr == this->lastPropagation) {
-            this->propagateBelief(PropagationKind::Sum);
-        }
+        this->propagateBelief(PropagationKind::Sum);
         return mergeMessages(itN->second).getProbabilities();
     }
 
@@ -49,7 +47,7 @@ namespace EFG::nodes {
         std::set<Node*> subGraphSet;
         std::list<distribution::factor::cnst::IndicatorFactor> indicators;
         std::for_each(subgroup.begin(), subgroup.end(), [&](const std::string& name) {
-            auto itN = this->findNode(name);
+            auto itN = this->nodes.find(categoric::makeVariable(2, name));
             if (itN == this->nodes.end()) {
                 throw Error("non existent variable");
             }
@@ -63,9 +61,7 @@ namespace EFG::nodes {
             }
         });
 
-        if (nullptr == this->lastPropagation) {
-            this->propagateBelief(PropagationKind::Sum);
-        }
+        this->propagateBelief(PropagationKind::Sum);
 
         std::set<const distribution::Distribution*> toMerge;
         std::for_each(indicators.begin(), indicators.end(), [&toMerge](const distribution::factor::cnst::IndicatorFactor& i) {
@@ -115,16 +111,12 @@ namespace EFG::nodes {
         if (itN == this->nodes.end()) {
             throw Error("non existent variable");
         }
-        if (nullptr == this->lastPropagation) {
-            this->propagateBelief(PropagationKind::MAP);
-        }
+        this->propagateBelief(PropagationKind::MAP);
         return getMAPnode(itN->second);
     }
 
     std::vector<size_t> QueryHandler::getHiddenSetMAP() {
-        if (nullptr == this->lastPropagation) {
-            this->propagateBelief(PropagationKind::MAP);
-        }
+        this->propagateBelief(PropagationKind::MAP);
         auto hiddenVars = this->getHiddenVariables();
         std::vector<size_t> MAP;
         MAP.reserve(hiddenVars.size());

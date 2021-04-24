@@ -12,7 +12,7 @@ namespace EFG::categoric {
     Variable::Variable(const std::size_t& size, const std::string& name)
         : Size(size)
         , Name(name) {
-        if (name.size() == 0)  throw Error("Variable", "empty name forbidden");
-        if (size == 0) throw Error("Variable", "null size forbidden");
+        if (name.size() == 0)  throw Error("empty name forbidden");
+        if (size == 0) throw Error("null size forbidden");
     }
 }

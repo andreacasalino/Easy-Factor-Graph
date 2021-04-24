@@ -14,7 +14,7 @@ namespace EFG::model {
         this->insertHandler(toInsert);
     }
 
-    void RandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
+    void RandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) {
         this->InsertTunableCapable::insertTunable(toInsert, potentialSharingWeight);
         this->insertHandler(toInsert);
     }

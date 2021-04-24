@@ -29,7 +29,7 @@ namespace EFG::nodes {
         /**
          * @brief insert a copy of the passed factor.
          */
-        void insertCopy(const distribution::factor::cnst::Factor& factor);
+        void insertCopy(const distribution::Distribution& factor);
 
         /**
          * @brief insert the passed epxonential factor.
@@ -59,7 +59,7 @@ namespace EFG::nodes {
         };
 
     protected:
-        categoric::Group convertUsingLocals(const categoric::Group& toConvert);
+        std::set<categoric::VariablePtr> convertUsingLocals(const std::set<categoric::VariablePtr>& toConvert);
 
         void absorb(const StructureAware& toAbsorb, const bool& useCopyInsertion);
         virtual void absorb(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion);

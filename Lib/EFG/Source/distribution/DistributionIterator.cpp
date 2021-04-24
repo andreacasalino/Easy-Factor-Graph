@@ -9,7 +9,7 @@
 
 namespace EFG::distribution {
     DistributionIterator::DistributionIterator(const Distribution& distribution)
-        : iterator::StlBidirectional<std::map<Combination, float>::const_iterator>(
+        : iterator::StlBidirectional<std::map<categoric::Combination, float>::const_iterator>(
             distribution.values->begin(),
             distribution.values->end()
         )

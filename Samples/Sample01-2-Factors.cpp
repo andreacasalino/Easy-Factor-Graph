@@ -7,10 +7,10 @@
 
 #include <Presenter.h>
 #include <print/DistributionPrint.h>
+#include <CombinationMaker.h>
 #include <print/ProbabilityDistributionPrint.h>
 #include <print/GroupPrint.h>
 #include <distribution/factor/modifiable/Factor.h>
-#include <distribution/factor/const/Message.h>
 #include <distribution/DistributionFinder.h>
 #include <distribution/factor/const/FactorExponential.h>
 #include <iostream>
@@ -21,7 +21,7 @@ using namespace EFG::distribution;
 
 int main () {
 	// define a group and a distribution
-	factor::modif::Factor distr(Group({ makeVariable(2 , "A"), makeVariable(3 , "B"), makeVariable(2 , "C"), makeVariable(3 , "D") }));
+	factor::modif::Factor distr(std::set<categoric::VariablePtr>({ makeVariable(2 , "A"), makeVariable(3 , "B"), makeVariable(2 , "C"), makeVariable(3 , "D") }));
 
 	EFG::sample::samplePart([&distr]() {
 		cout << "emplacing all domain with 3" << endl;
@@ -39,29 +39,29 @@ int main () {
 
 	EFG::sample::samplePart([&distr]() {
 		cout << "marginalize considering A=1 and C=1" << endl;
-		cout << factor::cnst::Factor(distr, Combination({ 1,1 }), { makeVariable(2 , "A"), makeVariable(3 , "C") }) << endl << endl;
+		cout << factor::cnst::Factor(distr, sample::makeCombination({ 1,1 }), { makeVariable(2 , "A"), makeVariable(3 , "C") }) << endl << endl;
 	}, "Marginalization");
 
 	EFG::sample::samplePart([&distr]() {
 		distr.clear();
-		distr.add(EFG::Combination({ 0,0,0,0 }), 1.f);
-		distr.add(EFG::Combination({ 0,0,1,0 }), 2.f);
-		distr.add(EFG::Combination({ 1,0,1,1 }), 3.f);
+		distr.add(sample::makeCombination({ 0,0,0,0 }), 1.f);
+		distr.add(sample::makeCombination({ 0,0,1,0 }), 2.f);
+		distr.add(sample::makeCombination({ 1,0,1,1 }), 3.f);
 		cout << "current content of the distribution" << endl;
 		cout << distr << endl << endl;
 
-		cout << "value found for <0,0,1,0>  ->  " << distr.find(EFG::Combination({ 0,0,1,0 })) << endl;
+		cout << "value found for <0,0,1,0>  ->  " << distr.find(sample::makeCombination({ 0,0,1,0 })) << endl;
 
 		auto groupBigger = distr.getGroup();
 		groupBigger.add(makeVariable(2, "E"));
 		DistributionFinder finder(distr, groupBigger.getVariables());
-		cout << "value found for <1,0,1,1,0> from group " << groupBigger << "  ->  " << finder.find(EFG::Combination({ 1,0,1,1,0 })).second << endl;
+		cout << "value found for <1,0,1,1,0> from group " << groupBigger << "  ->  " << finder.find(sample::makeCombination({ 1,0,1,1,0 })).second << endl;
 	}, "Find combination");
 
 	EFG::sample::samplePart([]() {
-		 	factor::modif::Factor distrAC(Group({makeVariable(2 , "A"), makeVariable(2 , "C")}));
+		 	factor::modif::Factor distrAC(std::set<categoric::VariablePtr>({makeVariable(2 , "A"), makeVariable(2 , "C")}));
 		 	distrAC.setImageEntireDomain(2.f);
-		 	factor::modif::Factor distrBC(Group({makeVariable(2 , "B"), makeVariable(2 , "C")}));
+		 	factor::modif::Factor distrBC(std::set<categoric::VariablePtr>({makeVariable(2 , "B"), makeVariable(2 , "C")}));
 		 	distrBC.setImageEntireDomain(0.5f);
 
 		 	std::cout << "distributions to merge" << std::endl;
@@ -73,7 +73,7 @@ int main () {
 	}, "Merge distributions");
 
 	EFG::sample::samplePart([]() {
-		factor::modif::Factor simpleCorrelation(Group({ makeVariable(3 , "A"), makeVariable(3 , "B"), makeVariable(3 , "C") }), true);
+		factor::modif::Factor simpleCorrelation(std::set<categoric::VariablePtr>({ makeVariable(3 , "A"), makeVariable(3 , "B"), makeVariable(3 , "C") }), true);
 		simpleCorrelation.emplaceEntireDomain();
 		std::cout << "simple correlating factor" << std::endl;
 		cout << simpleCorrelation << endl << endl;
@@ -86,27 +86,11 @@ int main () {
 		std::cout << "probability distribution" << std::endl;
 		cout << simpleExpCorrelating.getProbabilities() << endl << endl;
 
-		factor::modif::Factor antiCorrelation(Group({ makeVariable(3 , "A"), makeVariable(3 , "B"), makeVariable(3 , "C") }), false);
+		factor::modif::Factor antiCorrelation(std::set<categoric::VariablePtr>({ makeVariable(3 , "A"), makeVariable(3 , "B"), makeVariable(3 , "C") }), false);
 		antiCorrelation.emplaceEntireDomain();
 		std::cout << "anti correlating factor" << std::endl;
 		cout << antiCorrelation << endl << endl;
 	}, "Simple correlations");
-
-	EFG::sample::samplePart([]() {
-		factor::modif::Factor factor(Group({ makeVariable(3 , "A"), makeVariable(3 , "B")}));
-		factor.add(Combination(std::vector<std::size_t>{0, 0}), 1);
-		factor.add(Combination(std::vector<std::size_t>{0, 1}), 2);
-		factor.add(Combination(std::vector<std::size_t>{0, 2}), 3);
-		factor.add(Combination(std::vector<std::size_t>{1, 0}), 1);
-		factor.add(Combination(std::vector<std::size_t>{1, 1}), 2);
-		std::cout << "distribution representing an edge" << factor << std::endl << std::endl;
-
-		std::cout << "Map message keeping A" << std::endl << std::endl;
-		std::cout << factor::cnst::MessageMAP(factor, Group(makeVariable(3, "B"))) << std::endl;
-
-		std::cout << "Sum message keeping A" << std::endl << std::endl;
-		std::cout << factor::cnst::MessageSum(factor, Group(makeVariable(3, "B"))) << std::endl;
-	}, "Message computation");
 
 	return EXIT_SUCCESS;
 }

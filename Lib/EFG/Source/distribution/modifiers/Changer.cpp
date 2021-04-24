@@ -9,17 +9,17 @@
 #include <categoric/Range.h>
 
 namespace EFG::distribution {
-    std::map<Combination, float>::const_iterator Changer::add(const Combination& comb, const float& value) {
+    std::map<categoric::Combination, float>::const_iterator Changer::add(const categoric::Combination& comb, const float& value) {
         this->checkCombination(comb, value);
         auto res = this->values->emplace(comb, value);
         return res.first;
     }
 
     void Changer::setImageEntireDomain(const float& value) {
-        categoric::Range range(this->getGroup());
+        categoric::Range range(this->getGroup().getVariables());
         this->clear();
         iterator::forEach(range, [this, &value](categoric::Range& r) {
-            this->values->emplace(Combination(r.get()), value);
+            this->values->emplace(r.get(), value);
         });
     }
 
@@ -27,12 +27,11 @@ namespace EFG::distribution {
         if (this->group->size() == this->values->size()) {
             return;
         }
-        categoric::Range range(this->getGroup());
+        categoric::Range range(this->getGroup().getVariables());
         iterator::forEach(range, [this](categoric::Range& r) {
-            Combination comb(r.get());
-            auto it = this->values->find(comb);
+            auto it = this->values->find(r.get());
             if (it == this->values->end()) {
-                this->values->emplace(comb, 0.f);
+                this->values->emplace(r.get(), 0.f);
             }
         });
     }

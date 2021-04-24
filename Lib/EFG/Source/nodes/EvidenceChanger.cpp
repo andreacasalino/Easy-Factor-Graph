@@ -11,7 +11,7 @@
 
 namespace EFG::nodes {
     void EvidencesChanger::addEvidence(const std::string& name, std::size_t value) {
-        auto itN = this->findNode(name);
+        auto itN = this->nodes.find(categoric::makeVariable(2, name));
         if (itN == this->nodes.end()) {
             throw Error("Inexistent variable");
         }
@@ -40,7 +40,7 @@ namespace EFG::nodes {
         std::map<Node*, const std::size_t> obs;
         // check values
         for (auto it = evidences.begin(); it != evidences.end(); ++it) {
-            auto itN = this->findNode(it->first);
+            auto itN = this->nodes.find(categoric::makeVariable(2, it->first));
             if (itN == this->nodes.end()) {
                 throw Error("inexistent variable");
             }

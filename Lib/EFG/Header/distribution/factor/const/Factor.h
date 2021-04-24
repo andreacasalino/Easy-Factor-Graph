@@ -59,7 +59,7 @@ namespace EFG::distribution::factor::cnst {
          * evidences is <B,C>. The built factor will have a domain of varaibles equal to <A,D>, with the combinations-images
          * of toMarginalize (taking only the part referring to A,D) that have B=0 and C=1.
          */
-        Factor(const Distribution& toMarginalize, const Combination& comb, const categoric::Group& evidences);
+        Factor(const Distribution& toMarginalize, const categoric::Combination& comb, const std::set<categoric::VariablePtr>& evidences);
 
         /**
          * @brief Build the Factor by importing the information from the file

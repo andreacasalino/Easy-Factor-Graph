@@ -16,7 +16,7 @@ namespace EFG::nodes {
             distribution::DistributionPtr factor = it->second.factor;
 
             neighbour->activeConnections.erase(neighbour->activeConnections.find(&node));
-            Connection newConnection(factor, std::make_unique<distribution::factor::cnst::Factor>(*factor, Combination({ value }), categoric::Group(node.variable)));
+            Connection newConnection(factor, std::make_unique<distribution::factor::cnst::Factor>(*factor, categoric::Combination(&value, 1), std::set<categoric::VariablePtr>{node.variable}));
             neighbour->disabledConnections.emplace(&node, std::move(newConnection));
 
             node.disabledConnections.emplace(neighbour, factor);

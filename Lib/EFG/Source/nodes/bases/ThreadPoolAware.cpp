@@ -9,7 +9,7 @@
 #include <nodes/bases/ThreadPoolAware.h>
 
 namespace EFG::nodes {
-    void ThreadPoolAware::SetThreadPoolSize(const std::size_t& poolSize) {
+    void ThreadPoolAware::setThreadPoolSize(const std::size_t& poolSize) {
 		if (poolSize <= 1) {
 			this->threadPool.reset();
 			return;

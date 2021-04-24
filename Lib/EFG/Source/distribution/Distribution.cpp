@@ -13,7 +13,7 @@
 #include <algorithm>
 
 namespace EFG::distribution {
-    void Distribution::checkCombination(const Combination& comb, const float& value) const {
+    void Distribution::checkCombination(const categoric::Combination& comb, const float& value) const {
         if (value < 0.f) {
             throw Error("negative value is invalid");
         }
@@ -21,22 +21,20 @@ namespace EFG::distribution {
             throw Error("invalid combination size");
         }
         std::size_t k = 0;
-        std::for_each(this->getGroup().getVariables().begin(), this->getGroup().getVariables().end(), [&k, &comb](const categoric::VariablePtr& v) {
-            if (comb.data()[k] >= v->size()) {
+        const auto* dataPtr = comb.data();
+        std::for_each(this->getGroup().getVariables().begin(), this->getGroup().getVariables().end(), [&](const categoric::VariablePtr& v) {
+            if (dataPtr[k] >= v->size()) {
                 throw Error("combination value exceed variable domain size");
             }
             ++k;
-            });
+        });
     }
 
-    float Distribution::find(const Combination& comb) const {
+    float Distribution::find(const categoric::Combination& comb) const {
         return this->evaluator->evaluate(this->findRaw(comb));
     }
 
-    float Distribution::findRaw(const Combination& comb) const {
-        if (comb.size() != this->getGroup().getVariables().size()) {
-            throw Error("invalid combination");
-        }
+    float Distribution::findRaw(const categoric::Combination& comb) const {
         auto it = this->values->find(comb);
         if (it == this->values->end()) return 0.f;
         return it->second;
@@ -52,16 +50,17 @@ namespace EFG::distribution {
 
     std::vector<float> Distribution::getProbabilities() const {
         std::vector<float> probs;
-        probs.reserve(this->group->size());
-        if (this->group->size() == this->values->size()) {
+        const std::size_t jointSize = this->group->size();
+        probs.reserve(jointSize);
+        if (jointSize == this->values->size()) {
             for (auto it = this->values->begin(); it != this->values->end(); ++it) {
                 probs.push_back(this->evaluator->evaluate(it->second));
             }
         }
         else {
-            categoric::Range jointDomain(*this->group);
+            categoric::Range jointDomain(this->group->getVariables());
             iterator::forEach(jointDomain, [this, &probs](categoric::Range& jointDomain) {
-                auto it = this->values->find(Combination(jointDomain.get()));
+                auto it = this->values->find(jointDomain.get());
                 if (it == this->values->end()) {
                     probs.push_back(0.f);
                 }

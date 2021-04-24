@@ -50,20 +50,20 @@ namespace EFG::io::xml {
 		const auto* corr = findAttribute(tag, "Correlation");
 		if (nullptr != corr) {
 			if (0 == corr->compare("T")) {
-				return std::make_shared<distribution::factor::cnst::Factor>(group, true);
+				return std::make_shared<distribution::factor::cnst::Factor>(group.getVariables(), true);
 			}
 			if (0 == corr->compare("F")) {
-				return std::make_shared<distribution::factor::cnst::Factor>(group, false);
+				return std::make_shared<distribution::factor::cnst::Factor>(group.getVariables(), false);
 			}
 			throw Error("invalid option for Correlation");
 		}
 
 		const auto* source = findAttribute(tag, "Source");
 		if (nullptr != source) {
-			return std::make_shared<distribution::factor::cnst::Factor>(group, prefix + "/" + *source);
+			return std::make_shared<distribution::factor::cnst::Factor>(group.getVariables(), prefix + "/" + *source);
 		}
 
-		std::shared_ptr<distribution::factor::modif::Factor> factor = std::make_shared<distribution::factor::modif::Factor>(group);
+		std::shared_ptr<distribution::factor::modif::Factor> factor = std::make_shared<distribution::factor::modif::Factor>(group.getVariables());
 		auto itDistr = tag.getNested("Distr_val");
 		std::vector<std::size_t> comb;
 		for (auto it = itDistr.begin(); it != itDistr.end(); ++it) {
@@ -80,7 +80,7 @@ namespace EFG::io::xml {
 			if (nullptr == val) {
 				throw Error("image value not found");
 			}
-			factor->add(Combination(comb), static_cast<float>(std::atof(val->c_str())));
+			factor->add(categoric::Combination(comb.data(), comb.size()), static_cast<float>(std::atof(val->c_str())));
 		}
 		return factor;
 	};
@@ -140,7 +140,7 @@ namespace EFG::io::xml {
 					std::get<1>(components)->insertTunableCopy(*expPtr);
 				}
 				else {
-					std::get<1>(components)->insertTunableCopy(*expPtr, importGroup(*shareTag.begin()->second, variables));
+					std::get<1>(components)->insertTunableCopy(*expPtr, importGroup(*shareTag.begin()->second, variables).getVariables());
 				}
 			}
 		}		

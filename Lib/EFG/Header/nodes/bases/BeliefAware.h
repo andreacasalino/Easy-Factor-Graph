@@ -23,8 +23,8 @@ namespace EFG::nodes {
 
     class BeliefAware : virtual public Base {
     public:
-        void setPropagationMaxIterationsLoopyPropagation(std::size_t iterations) { this->maxIterationsLoopyPropagtion = iterations; };
-        inline std::size_t getPropagationMaxIterationsLoopyPropagation() const { return this->maxIterationsLoopyPropagtion; }
+        void setMaxIterationsLoopyPropagation(std::size_t iterations) { this->maxIterationsLoopyPropagtion = iterations; };
+        inline std::size_t getMaxIterationsLoopyPropagation() const { return this->maxIterationsLoopyPropagtion; }
 
         inline PropagationResult getLastPropagationResult() const {return *this->lastPropagation.get(); };
 
@@ -34,7 +34,7 @@ namespace EFG::nodes {
         /** 
          * @brief maximum number of iterations considered when doing loopy propagation
          */
-        std::size_t maxIterationsLoopyPropagtion = 1000;
+        std::size_t maxIterationsLoopyPropagtion = 100;
         /**
          * @brief results about the last belief propagation done. It is a nullptr until the first propagation is triggered
          */

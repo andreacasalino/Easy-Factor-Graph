@@ -61,8 +61,8 @@ unique_ptr<model::Graph> makeChain(const std::size_t& Chain_size, const std::siz
 
 	unique_ptr<model::Graph> G = make_unique<model::Graph>();
 	//build the chain structure described in 'Sample 04: Hidden Markov model like structure'
-	factor::cnst::FactorExponential P_XY(factor::cnst::Factor(categoric::Group(makeVariable(var_size, "X_fake"), makeVariable(var_size, "Y_fake")), true), w_XY);
-	factor::cnst::FactorExponential P_YY(factor::cnst::Factor(categoric::Group(makeVariable(var_size, "Y_fake"), makeVariable(var_size, "Y2_fake")), true), w_YY);
+	factor::cnst::FactorExponential P_XY(factor::cnst::Factor(std::set<categoric::VariablePtr>{makeVariable(var_size, "X_fake"), makeVariable(var_size, "Y_fake")}, true), w_XY);
+	factor::cnst::FactorExponential P_YY(factor::cnst::Factor(std::set<categoric::VariablePtr>{makeVariable(var_size, "Y_fake"), makeVariable(var_size, "Y2_fake")}, true), w_YY);
 
 	//build the chain and set the value of the evidences equal to:
 	//X_0 = 0, X_1=var_size-1, X_2= 0, X_3 = var_size-1, etc.. 

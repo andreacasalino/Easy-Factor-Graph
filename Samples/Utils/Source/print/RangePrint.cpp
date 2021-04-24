@@ -12,9 +12,9 @@ std::ostream& operator<<(std::ostream& s, const EFG::categoric::Range& range) {
     local.reset();
 
     EFG::iterator::forEach(local, [&s](EFG::categoric::Range& local){
-        s << local.get()[0];
+        s << local.get().data()[0];
         for (std::size_t k=1; k<local.get().size(); ++k) {
-            s << ' ' << local.get()[k];
+            s << ' ' << local.get().data()[k];
         }
         s << std::endl;
     });

@@ -23,19 +23,19 @@ namespace EFG::distribution {
         });
     }
 
-    std::pair<const Combination*, float> DistributionFinder::find(const Combination& comb) const {
+    std::pair<const categoric::Combination*, float> DistributionFinder::find(const categoric::Combination& comb) const {
         auto temp = this->findRaw(comb);
         return std::make_pair(temp.first, this->evaluator->evaluate(temp.second));
     }
 
-    std::pair<const Combination*, float> DistributionFinder::findRaw(const Combination& comb) const {
+    std::pair<const categoric::Combination*, float> DistributionFinder::findRaw(const categoric::Combination& comb) const {
         std::vector<std::size_t> combOrdered;
         combOrdered.resize(this->indicesContainingGroup.size());
         for (std::size_t k = 0; k < this->indicesContainingGroup.size(); ++k) {
             combOrdered[k] = comb.data()[this->indicesContainingGroup[k]];
         }
 
-        auto it = this->values->find(Combination(combOrdered));
+        auto it = this->values->find(categoric::Combination(combOrdered.data(), combOrdered.size()));
         if (it == this->values->end()) return std::make_pair(nullptr, 0.f);
         return std::make_pair(&it->first, it->second);
     }

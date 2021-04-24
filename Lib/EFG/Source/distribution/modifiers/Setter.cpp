@@ -8,7 +8,7 @@
 #include <distribution/modifiers/Setter.h>
 
 namespace EFG::distribution {
-    void Setter::set(const Combination& comb, const float& value) {
+    void Setter::set(const categoric::Combination& comb, const float& value) {
         this->checkCombination(comb, value);
         auto it = this->values->find(comb);
         if (it == this->values->end()) {

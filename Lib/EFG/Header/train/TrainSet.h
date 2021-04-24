@@ -8,12 +8,12 @@
 #ifndef EFG_TRAIN_TRAINSET_H
 #define EFG_TRAIN_TRAINSET_H
 
-#include <Combination.h>
+#include <categoric/Combination.h>
 #include <string>
 #include <memory>
 
 namespace EFG::train {
-    typedef std::shared_ptr<Combination> CombinationPtr;
+    typedef std::shared_ptr<categoric::Combination> CombinationPtr;
 
     class TrainSet {
     public:
@@ -21,7 +21,7 @@ namespace EFG::train {
          * @param the set of combinations that will be part of the train set.
          * @throw if the combinations don't have all the same size
          */
-        explicit TrainSet(const std::vector<Combination>& combinations);
+        explicit TrainSet(const std::vector<categoric::Combination>& combinations);
 
         /**
          * @param import the combinations from a textual file where each row represent a combination

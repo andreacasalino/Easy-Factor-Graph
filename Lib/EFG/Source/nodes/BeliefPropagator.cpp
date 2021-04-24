@@ -6,10 +6,10 @@
  **/
 
 #include <nodes/BeliefPropagator.h>
-#include <distribution/factor/const/Message.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/DistributionIterator.h>
 #include "Commons.h"
+#include "Message.h"
 #include <limits>
 #include <algorithm>
 #include <math.h>
@@ -18,6 +18,10 @@ constexpr float MAX_DIFF = std::numeric_limits<float>::max();
 
 namespace EFG::nodes {
     void BeliefPropagator::propagateBelief(const PropagationKind& kind) {
+        if ((nullptr != this->lastPropagation) &&
+            (kind == this->lastPropagation->kindDone)) {
+            return;
+        }
         // empty all messages
         std::for_each(this->hidden.clusters.begin(), this->hidden.clusters.end(), [](const std::set<Node*>& c) {
             std::for_each(c.begin(), c.end(), [](Node* n) {
@@ -89,18 +93,18 @@ namespace EFG::nodes {
             });
             if (PropagationKind::Sum == kind) {
                 if (1 == toMerge.size()) {
-                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(**toMerge.begin(), categoric::Group(sender->variable));
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(**toMerge.begin(), std::set<categoric::VariablePtr>{ sender->variable });
                 }
                 else {
-                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageSum>(distribution::factor::cnst::Factor(toMerge), std::set<categoric::VariablePtr>{ sender->variable });
                 }
             }
             else {
                 if (1 == toMerge.size()) {
-                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(**toMerge.begin(), categoric::Group(sender->variable));
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(**toMerge.begin(), std::set<categoric::VariablePtr>{ sender->variable });
                 }
                 else {
-                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(toMerge), categoric::Group(sender->variable));
+                    newMessage = std::make_unique<distribution::factor::cnst::MessageMAP>(distribution::factor::cnst::Factor(toMerge), std::set<categoric::VariablePtr>{ sender->variable });
                 }
             }
             float difference = 0.f;
@@ -149,11 +153,11 @@ namespace EFG::nodes {
     void setOnesMessages(const std::set<Node*>& cluster) {
         std::for_each(cluster.begin(), cluster.end(), [](Node* n) {
             for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
-                auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(n->variable);
+                auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(std::set<categoric::VariablePtr>{n->variable});
                 mexOnes->setImageEntireDomain(1.f);
                 itA->second.message2This = std::move(mexOnes);
             }
-            });
+        });
     }
 
     bool BeliefPropagator::messagePassing(const std::set<Node*>& cluster, const PropagationKind& kind) {

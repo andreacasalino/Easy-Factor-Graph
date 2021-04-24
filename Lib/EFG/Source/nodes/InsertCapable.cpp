@@ -91,7 +91,7 @@ namespace EFG::nodes {
 
     void InsertCapable::connectHiddenObserved(Node* hidden, Node* observed, distribution::DistributionPtr factor, std::size_t observation) {
         createConnections(hidden, observed, factor, false);
-        hidden->disabledConnections.find(observed)->second.factor = std::make_unique<distribution::factor::cnst::Factor>(*factor, Combination({ observation }), categoric::Group(observed->variable));
+        hidden->disabledConnections.find(observed)->second.factor = std::make_unique<distribution::factor::cnst::Factor>(*factor, categoric::Combination(&observation, 1), std::set<categoric::VariablePtr>{observed->variable});
     };
 
     void InsertCapable::insertBinary(distribution::DistributionPtr factor) {
@@ -123,7 +123,7 @@ namespace EFG::nodes {
         this->connectHiddenObserved(nodeBInfo.nodePtr, nodeAInfo.nodePtr, factor, *nodeAInfo.evidence);
     }
 
-    categoric::Group InsertCapable::convertUsingLocals(const categoric::Group& toConvert) {
+    std::set<categoric::VariablePtr> InsertCapable::convertUsingLocals(const std::set<categoric::VariablePtr>& toConvert) {
         auto findAndCheck = [this](const categoric::VariablePtr& var) {
             auto itVar = this->nodes.find(var);
             if (itVar == this->nodes.end()) {
@@ -135,12 +135,12 @@ namespace EFG::nodes {
             return itVar->first;
         };
 
-        auto itV = toConvert.getVariables().begin();
-        categoric::Group converted(findAndCheck(*itV));
+        auto itV = toConvert.begin();
+        std::set<categoric::VariablePtr> converted = { findAndCheck(*itV) };
         ++itV;
-        std::for_each(itV, toConvert.getVariables().end(), [&converted, &findAndCheck](const categoric::VariablePtr& var) {
-            converted.add(findAndCheck(var));
-            });
+        std::for_each(itV, toConvert.end(), [&converted, &findAndCheck](const categoric::VariablePtr& var) {
+            converted.emplace(findAndCheck(var));
+        });
         return converted;
     }
 
@@ -149,9 +149,9 @@ namespace EFG::nodes {
         this->factors.emplace(factor);
     }
 
-    void InsertCapable::insertCopy(const distribution::factor::cnst::Factor& factor) {
+    void InsertCapable::insertCopy(const distribution::Distribution& factor) {
         std::shared_ptr<distribution::factor::modif::Factor> distr = std::make_shared<distribution::factor::modif::Factor>(factor);
-        distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
+        distr->replaceGroup(categoric::Group(this->convertUsingLocals(factor.getGroup().getVariables())));
         this->insert(distr);
     }
 
@@ -162,7 +162,7 @@ namespace EFG::nodes {
 
     void InsertCapable::insertCopy(const distribution::factor::cnst::FactorExponential& factor) {
         std::shared_ptr<distribution::factor::modif::FactorExponential> distr = std::make_shared<distribution::factor::modif::FactorExponential>(factor);
-        distr->replaceGroup(this->convertUsingLocals(factor.getGroup()));
+        distr->replaceGroup(categoric::Group(this->convertUsingLocals(factor.getGroup().getVariables())));
         this->insert(distr);
     }
 

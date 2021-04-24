@@ -52,7 +52,7 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 	};
 
 	//Create a correlating potential to replicate
-	factor::cnst::FactorExponential P_ab(factor::cnst::Factor(categoric::Group(makeVariable(var_size, "Va"), makeVariable(var_size, "Vb")), true), w_pot);
+	factor::cnst::FactorExponential P_ab(factor::cnst::Factor(std::set<categoric::VariablePtr>{makeVariable(var_size, "Va"), makeVariable(var_size, "Vb")}, true), w_pot);
 	size_t c;
 	for (size_t r = 0; r < Size; r++) {
 		//create a new row of variables
@@ -84,7 +84,7 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 
 #ifdef THREAD_POOL_ENABLED
 	if (Size > 5) {
-		Mat->SetThreadPoolSize(3);
+		Mat->setThreadPoolSize(3);
 	}
 #endif
 	return move(Mat);

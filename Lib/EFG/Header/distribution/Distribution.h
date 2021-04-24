@@ -10,7 +10,7 @@
 
 #include <categoric/Group.h>
 #include <distribution/Evaluator.h>
-#include <Combination.h>
+#include <categoric/Combination.h>
 #include <map>
 
 namespace EFG::distribution {
@@ -43,13 +43,13 @@ namespace EFG::distribution {
          * @brief searches for the image associated to an element in the domain
          * @return the value of the image. 
          */
-        float find(const Combination& comb) const;
+        float find(const categoric::Combination& comb) const;
 
         /**
          * @brief searches for the image associated to an element in the domain
          * @return the value of the image.
          */
-        float findRaw(const Combination& comb) const;
+        float findRaw(const categoric::Combination& comb) const;
 
         /**
          * @return a DistributionFinder referring to thís object
@@ -66,13 +66,13 @@ namespace EFG::distribution {
     protected:
         Distribution() = default;
 
-        void checkCombination(const Combination& comb, const float& value) const;
+        void checkCombination(const categoric::Combination& comb, const float& value) const;
 
         std::unique_ptr<categoric::Group> group;
         /**
          * @brief the ordered pairs of <combination , row image>
          */
-        std::shared_ptr<std::map<Combination, float>> values;
+        std::shared_ptr<std::map<categoric::Combination, float>> values;
         /**
          * @brief the function used to convert row images to images
          */

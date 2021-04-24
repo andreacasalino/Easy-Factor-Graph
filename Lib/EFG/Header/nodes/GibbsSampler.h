@@ -24,7 +24,7 @@ namespace EFG::nodes {
          * @param number of samples to draw
          * @param number of iterations used to evolve the model between the drawing of one sample and another
          */
-        std::vector<Combination> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
+        std::vector<categoric::Combination> getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration = 100) const;
 
     private:
         struct NodeHidden;
@@ -45,7 +45,7 @@ namespace EFG::nodes {
         class UniformSampler;
         static void evolveSamples(HiddenStructure& structure, std::size_t iterations, UniformSampler& sampler);
 
-        static std::vector<std::size_t> convert(const HiddenStructure& structure);
+        static void convert(std::size_t* comb, const HiddenStructure& structure);
     };
 }
 

@@ -31,15 +31,15 @@ namespace EFG::train {
         });
     };
 
-    std::vector<CombinationPtr> import(const std::vector<Combination>& combinations) {
+    std::vector<CombinationPtr> import(const std::vector<categoric::Combination>& combinations) {
         std::vector<CombinationPtr> temp;
         temp.reserve(combinations.size());
-        std::for_each(combinations.begin(), combinations.end(), [&temp](const Combination& c){
-            temp.emplace_back(std::make_shared<Combination>(c));
+        std::for_each(combinations.begin(), combinations.end(), [&temp](const categoric::Combination& c){
+            temp.emplace_back(std::make_shared<categoric::Combination>(c));
         });
         return temp;
     }
-    TrainSet::TrainSet(const std::vector<Combination>& combinations) 
+    TrainSet::TrainSet(const std::vector<categoric::Combination>& combinations)
         : TrainSet(import(combinations)) {
     }
 
@@ -49,18 +49,20 @@ namespace EFG::train {
             throw Error("invalid file");
         }
         auto convert = [](const std::list<std::string>& slices) {
-            std::vector<std::size_t> vals;
-            vals.reserve(slices.size());
-            std::for_each(slices.begin(), slices.end(), [&vals](const std::string& v) {
-                vals.emplace_back(std::atoi(v.c_str()));
+            categoric::Combination comb(slices.size());
+            std::size_t k = 0;
+            auto* combData = comb.data();
+            std::for_each(slices.begin(), slices.end(), [&](const std::string& v) {
+                combData[k] = static_cast<std::size_t>(std::atoi(v.c_str()));
+                ++k;
             });
-            return vals;
+            return comb;
         };
         std::vector<CombinationPtr> values;
         std::string line;
         while (!reader.eof()) {
             std::getline(reader, line);
-            values.push_back(std::make_shared<Combination>(convert(xmlPrs::Parser::sliceFragments(line))));
+            values.push_back(std::make_shared<categoric::Combination>(convert(xmlPrs::Parser::sliceFragments(line))));
         }
         return values;
     };

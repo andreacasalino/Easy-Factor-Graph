@@ -27,7 +27,7 @@ namespace EFG::model {
         this->insertHandler(toInsert);
     }
 
-    void ConditionalRandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const categoric::Group& potentialSharingWeight) {
+    void ConditionalRandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) {
         this->InsertTunableCapable::insertTunable(toInsert, potentialSharingWeight);
         this->insertHandler(toInsert);
     }
@@ -76,7 +76,7 @@ namespace EFG::model {
         std::vector<std::size_t> observations;
         observations.resize(observationPositions.size());
         float coeff = 1.f / static_cast<float>(trainSet->getSet().size());
-        auto setObservations = [&](const Combination& comb){
+        auto setObservations = [&](const categoric::Combination& comb){
             for (std::size_t k = 0; k < observationPositions.size(); ++k) {
                 observations[k] = comb.data()[observationPositions[k]];
             }

@@ -19,7 +19,7 @@ namespace EFG::distribution {
          * @param row image value to consider
          * @return an iterator pointing to the newly added combination
          */
-        std::map<Combination, float>::const_iterator add(const Combination& comb, const float& value);
+        std::map<categoric::Combination, float>::const_iterator add(const categoric::Combination& comb, const float& value);
 
         /**
          * @brief fill all not explicitly stated combinations with zeros

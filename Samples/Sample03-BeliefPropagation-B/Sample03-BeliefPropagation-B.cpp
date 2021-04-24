@@ -113,7 +113,7 @@ int main() {
 		
 		//active the thread pool to fasten the computation
 #ifdef THREAD_POOL_ENABLED
-		politree.SetThreadPoolSize(3);
+		politree.setThreadPoolSize(3);
 #endif
 
 		// set v1,v2,v3 as observations and use a Gibbs sampler 
@@ -185,7 +185,7 @@ int main() {
 		
 		//active the thread pool to fasten the computation
 #ifdef THREAD_POOL_ENABLED
-		loop.SetThreadPoolSize(3);
+		loop.setThreadPoolSize(3);
 #endif
 		
 		// set v1=1 as an evidence and use a Gibbs sampler 

@@ -15,7 +15,7 @@ namespace EFG::sample {
     public:
         TrainSetCreator(model::ConditionalRandomField& model);
 
-        std::vector<Combination> getSamples(const std::vector<std::size_t>& evidences, std::size_t numberOfSamples, std::size_t deltaIteration);
+        std::vector<categoric::Combination> getSamples(const std::vector<std::size_t>& evidences, std::size_t numberOfSamples, std::size_t deltaIteration);
 
     private:
         const std::vector<std::size_t> posObs;

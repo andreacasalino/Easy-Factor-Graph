@@ -5,8 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_DISTRIBUTION_FACTOR_CONST_MESSAGE_H
-#define EFG_DISTRIBUTION_FACTOR_CONST_MESSAGE_H
+#ifndef EFG_DISTRIBUTION_MESSAGE_H
+#define EFG_DISTRIBUTION_MESSAGE_H
 
 #include <distribution/factor/const/Factor.h>
 

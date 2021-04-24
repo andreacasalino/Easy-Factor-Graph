@@ -13,10 +13,10 @@
 
 namespace EFG::distribution::factor::cnst {
     IndicatorFactor::IndicatorFactor(categoric::VariablePtr var, std::size_t evidence)
-        : Factor(categoric::Group(var)) {
+        : Factor({ var }) {
         if(evidence >= var->size()) {
             throw Error("invalid evidence");
         }
-        this->values->emplace(Combination({ evidence }), 1.f);
+        this->values->emplace(categoric::Combination(&evidence, 1), 1.f);
     };
 }

@@ -8,6 +8,7 @@
 #include <model/Graph.h>
 #include <distribution/factor/modifiable/Factor.h>
 #include <distribution/factor/const/FactorExponential.h>
+#include <CombinationMaker.h>
 #include <Presenter.h>
 #include <Frequencies.h>
 #include <print/ProbabilityDistributionPrint.h>
@@ -25,9 +26,9 @@ int main () {
         model::Graph graph;
         float teta = 1.5f;
 
-        factor::modif::Factor shapeTemp(Group(makeVariable(2, "A") , makeVariable(2, "B")));
-        shapeTemp.add(Combination(std::vector<std::size_t>{0,0}), 1.f);
-        shapeTemp.add(Combination(std::vector<std::size_t>{1,1}), 1.f);
+        factor::modif::Factor shapeTemp(std::set<categoric::VariablePtr>{ makeVariable(2, "A") , makeVariable(2, "B") });
+        shapeTemp.add(sample::makeCombination(std::vector<std::size_t>{0,0}), 1.f);
+        shapeTemp.add(sample::makeCombination(std::vector<std::size_t>{1,1}), 1.f);
         graph.insertCopy(factor::cnst::FactorExponential(shapeTemp, teta));
 
         //make a new belief propagation setting B=0 as observation
@@ -99,7 +100,7 @@ int main () {
             model::Graph graph;
             //build the correlating potentials and add it to the chain
             for (size_t k = 1; k < chain_size; ++k) {
-                graph.insert(std::make_shared<factor::cnst::FactorExponential>(factor::cnst::Factor(categoric::Group(Y[k - 1], Y[k]), true), w));
+                graph.insert(std::make_shared<factor::cnst::FactorExponential>(factor::cnst::Factor({ Y[k - 1], Y[k] }, true), w));
             }
             //set Y_0 as an observations and compute the marginals of the last variable in the chain
             graph.resetEvidences(std::map<std::string, std::size_t>{{Y.front()->name(), 0}});

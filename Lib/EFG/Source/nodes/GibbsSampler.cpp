@@ -77,7 +77,7 @@ namespace EFG::nodes {
                 }
                 std::list<distribution::factor::cnst::Factor> marginalized;
                 for (auto c = it->second.connections.begin(); c != it->second.connections.end(); ++c) {
-                    marginalized.emplace_back(*c->factor, Combination({ *c->neighbourSample }), categoric::Group(c->neighbourVariable));
+                    marginalized.emplace_back(*c->factor, categoric::Combination(c->neighbourSample, 1), std::set<categoric::VariablePtr>{c->neighbourVariable});
                     toMerge.emplace(&marginalized.back());
                 }
                 if (1 == toMerge.size()) {
@@ -90,19 +90,18 @@ namespace EFG::nodes {
         }
     }
 
-    std::vector<std::size_t> GibbsSampler::convert(const HiddenStructure& structure) {
-        std::vector<std::size_t> converted;
-        converted.reserve(structure.size());
+    void GibbsSampler::convert(std::size_t* combData, const HiddenStructure& structure) {
+        std::size_t k = 0;
         for (auto it = structure.begin(); it != structure.end(); ++it) {
-            converted.push_back(it->second.sample);
+            combData[k] = it->second.sample;
+            ++k;
         }
-        return converted;
-    }
+    };
 
-    std::vector<Combination> GibbsSampler::getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration) const {
+    std::vector<categoric::Combination> GibbsSampler::getHiddenSetSamples(std::size_t numberOfSamples, std::size_t deltaIteration) const {
         UniformSampler sampler;
         auto structure = this->getHiddenStructure();
-        std::vector<Combination> samples;
+        std::vector<categoric::Combination> samples;
         samples.reserve(numberOfSamples);
         // burn out
         evolveSamples(structure, 10 * deltaIteration, sampler);
@@ -137,7 +136,8 @@ namespace EFG::nodes {
                 this->threadPool->push([strPtr, samplesContainer, threadIterations, samplerPtr, &deltaIteration]() {
                     for (std::size_t s = 0; s < threadIterations; ++s) {
                         evolveSamples(*strPtr, deltaIteration, *samplerPtr);
-                        samplesContainer->emplace_back(convert(*strPtr));
+                        samplesContainer->emplace_back(strPtr->size());
+                        convert(samplesContainer->back().data(), *strPtr);
                     }
                 });
                 samplesCounter += threadIterations;
@@ -145,7 +145,7 @@ namespace EFG::nodes {
             this->threadPool->wait();
             std::for_each(samplesBatteries.begin(), samplesBatteries.end(), [&samples](const std::vector<std::vector<std::size_t>>& b) {
                 std::for_each(b.begin(), b.end(), [&samples](const std::vector<std::size_t>& c) {
-                    samples.emplace_back(c);
+                    samples.emplace_back(c.data(), c.size());
                 });
             });
         }
@@ -153,7 +153,8 @@ namespace EFG::nodes {
 #endif
             for (std::size_t s = 0; s < numberOfSamples; ++s) {
                 evolveSamples(structure, deltaIteration, sampler);
-                samples.emplace_back(convert(structure));
+                samples.emplace_back(structure.size());
+                convert(samples.back().data() , structure);
             }
 #ifdef THREAD_POOL_ENABLED
         }

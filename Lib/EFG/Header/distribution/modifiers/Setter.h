@@ -23,7 +23,7 @@ namespace EFG::distribution {
          * @param the combination whose image must be set
          * @param the image value to assume
          */
-        void set(const Combination& comb, const float& value);
+        void set(const categoric::Combination& comb, const float& value);
     };
 }
 

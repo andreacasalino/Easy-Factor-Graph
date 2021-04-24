@@ -9,25 +9,34 @@
 #include <Error.h>
 
 namespace EFG::categoric {
-    Range::Range(const std::set<VariablePtr>& group) {
+    Range::Range(const std::set<VariablePtr>& group)
+        : combination(group.size()) {
         this->sizes.reserve(group.size());
         for(auto it = group.begin(); it!=group.end(); ++it) {
             this->sizes.push_back((*it)->size());
         }
-        this->combination = std::vector<std::size_t>(this->sizes.size() , 0);
     }
 
+    void Range::reset() {
+        std::size_t* data = this->combination.data();
+        for (std::size_t k = 0; k < this->sizes.size(); ++k) {
+            data[k] = 0;
+        }
+        this->isAtEnd = false; 
+    };
+
     void Range::operator++() {
+        std::size_t* data = this->combination.data();
         std::size_t k = this->combination.size() - 1;
 		while (true) {
-			++this->combination[k];
-			if (this->combination[k] == this->sizes[k]) {
+			++data[k];
+			if (data[k] == this->sizes[k]) {
 				if (k == 0) {
 					this->isAtEnd = true;
 					break;
 				}
 				else {
-					this->combination[k] = 0;
+                    data[k] = 0;
 					--k;
 				}
 			}

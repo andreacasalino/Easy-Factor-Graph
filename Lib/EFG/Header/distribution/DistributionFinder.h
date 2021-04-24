@@ -33,15 +33,15 @@ namespace EFG::distribution {
          * @param the combination to search, referring to the set of variables passed when building this object.
          * @return the pair <combination,image> of the the combination matching. <nullptr,0> is returned in case such a combination was not explicitly put in the distribution
          */
-        std::pair<const Combination*, float> find(const Combination& comb) const;
+        std::pair<const categoric::Combination*, float> find(const categoric::Combination& comb) const;
 
         /**
          * @brief similar to DistributionFinder::find(...), but returning the row image value.
          */
-        std::pair<const Combination*, float> findRaw(const Combination& comb) const;
+        std::pair<const categoric::Combination*, float> findRaw(const categoric::Combination& comb) const;
 
     private:
-        std::shared_ptr<std::map<Combination, float>> values;
+        std::shared_ptr<std::map<categoric::Combination, float>> values;
         EvaluatorPtr evaluator;
         std::vector<std::size_t> indicesContainingGroup;
     };

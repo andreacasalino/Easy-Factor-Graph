@@ -25,7 +25,7 @@ namespace EFG::categoric {
 
     void Group::add(VariablePtr var) {
         if(this->group.end() != this->group.find(var)) {
-            throw Error("Group", "A variable with the same name is already part of the group");
+            throw Error("A variable with the same name is already part of the group");
         }
         this->group.emplace(var);
     }

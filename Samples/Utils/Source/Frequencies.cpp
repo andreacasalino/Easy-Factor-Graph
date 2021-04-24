@@ -33,14 +33,14 @@ namespace EFG::sample {
         return std::distance(group.begin(), it);
     }
 
-    std::vector<float> getEmpiricalMarginalFrequencies(categoric::VariablePtr var2Search, const std::vector<Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
+    std::vector<float> getEmpiricalMarginalFrequencies(categoric::VariablePtr var2Search, const std::vector<categoric::Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
         if (samples.empty()) {
             throw Error("samples container can't be empty");
         }
         std::size_t pos = findPosition(var2Search, samplesGroup);
 
         std::vector<float> frequencies(var2Search->size(), 0.f);
-        std::for_each(samples.begin(), samples.end(), [&frequencies, &pos](const Combination& c) {
+        std::for_each(samples.begin(), samples.end(), [&frequencies, &pos](const categoric::Combination& c) {
             ++frequencies[c.data()[pos]];
         });
         for (std::size_t k = 0; k < frequencies.size(); ++k) {
@@ -49,7 +49,7 @@ namespace EFG::sample {
         return frequencies;
     }
 
-    float getEmpiricalFrequencies(const Combination& comb2Search, const categoric::Group& combGroup, const std::vector<Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
+    float getEmpiricalFrequencies(const categoric::Combination& comb2Search, const categoric::Group& combGroup, const std::vector<categoric::Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
         if (samples.empty()) {
             throw Error("samples container can't be empty");
         }
@@ -60,7 +60,7 @@ namespace EFG::sample {
         });
 
         float freq = 0.f;
-        std::for_each(samples.begin(), samples.end(), [&](const Combination& c) {
+        std::for_each(samples.begin(), samples.end(), [&](const categoric::Combination& c) {
             for (std::size_t k = 0; k < posInSamples.size(); ++k) {
                 if (c.data()[posInSamples[k]] != comb2Search.data()[k]) {
                     return;

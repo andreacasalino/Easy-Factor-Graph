@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <distribution/factor/const/Message.h>
+#include "Message.h"
 #include <distribution/DistributionIterator.h>
 #include <categoric/Range.h>
 #include <Error.h>
@@ -23,16 +23,16 @@ namespace EFG::distribution::factor::cnst {
     }
 
     template <typename ValueComputer>
-    void messageBuilder(std::map<Combination, float>& recipient, const distribution::Distribution& factor, const categoric::Group& remaining, ValueComputer computer) {
+    void messageBuilder(std::map<categoric::Combination, float>& recipient, const distribution::Distribution& factor, const categoric::Group& remaining, ValueComputer computer) {
         auto index = getSubsetIndices(factor.getGroup(), remaining);
         std::list<float> values;
-        categoric::Range range(remaining);
+        categoric::Range range(remaining.getVariables());
         iterator::forEach(range, [&](const categoric::Range& r) {
             values.clear();
             auto iter = factor.getIterator();
             iterator::forEach(iter, [&](const distribution::DistributionIterator& iter) {
                 for (std::size_t k = 0; k < r.get().size(); ++k) {
-                    if (r.get()[k] != iter.getCombination().data()[index[k]]) {
+                    if (r.get().data()[k] != iter.getCombination().data()[index[k]]) {
                         return;
                     }
                     values.push_back(iter.getImage());
@@ -42,7 +42,7 @@ namespace EFG::distribution::factor::cnst {
         });
     };
 
-    void normalize(std::map<Combination, float>& recipient) {
+    void normalize(std::map<categoric::Combination, float>& recipient) {
         // get max value
         auto it = recipient.begin();
         float coeff = it->second;
@@ -59,8 +59,8 @@ namespace EFG::distribution::factor::cnst {
         }
     };
 
-    MessageSum::MessageSum(const distribution::Distribution& factor, const categoric::Group& toMarginalize)
-        : Factor(categoric::getComplementary(factor.getGroup(), toMarginalize)) {
+    MessageSum::MessageSum(const distribution::Distribution& factor, const std::set<categoric::VariablePtr>& toMarginalize)
+        : Factor(categoric::getComplementary(factor.getGroup().getVariables(), toMarginalize)) {
         messageBuilder(*this->values, factor, *this->group, [](const std::list<float>& values) {
             float val = 0.f;
             std::for_each(values.begin(), values.end(), [&val](float v) { val += v; });
@@ -69,8 +69,8 @@ namespace EFG::distribution::factor::cnst {
         normalize(*this->values);
     }
 
-    MessageMAP::MessageMAP(const distribution::Distribution& factor, const categoric::Group& toMarginalize)
-        : Factor(categoric::getComplementary(factor.getGroup(), toMarginalize)) {
+    MessageMAP::MessageMAP(const distribution::Distribution& factor, const std::set<categoric::VariablePtr>& toMarginalize)
+        : Factor(categoric::getComplementary(factor.getGroup().getVariables(), toMarginalize)) {
         messageBuilder(*this->values, factor, *this->group, [](const std::list<float>& values) {
             float val = 0.f;
             std::for_each(values.begin(), values.end(), [&val](float v) { if(v > val) val = v; });

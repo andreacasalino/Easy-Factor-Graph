@@ -16,7 +16,7 @@ namespace EFG::distribution {
      * @brief An object able to iterate the domain of a distribution
      */
     class DistributionIterator 
-        : public iterator::StlBidirectional<std::map<Combination, float>::const_iterator> {
+        : public iterator::StlBidirectional<std::map<categoric::Combination, float>::const_iterator> {
     public:
         /**
          * @param the distribution to iterate
@@ -29,7 +29,7 @@ namespace EFG::distribution {
         /**
          * @return the combination currently pointed by the iterator
          */
-        inline const Combination& getCombination() const { return this->cursor->first; }
+        inline const categoric::Combination& getCombination() const { return this->cursor->first; }
 
         /**
          * @return the image of the combination currently pointed by the iterator
@@ -47,7 +47,7 @@ namespace EFG::distribution {
         inline std::size_t getNumberOfValues() const { return this->values->size(); }
 
     private:
-        std::shared_ptr<std::map<Combination, float>> values;
+        std::shared_ptr<std::map<categoric::Combination, float>> values;
         EvaluatorPtr evaluator;
     };
 }
