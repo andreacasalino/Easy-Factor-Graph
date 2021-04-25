@@ -80,7 +80,11 @@ namespace EFG::model {
                 ev2.emplace(it->first->name(), it->second);
             }
             this->resetEvidences(ev2);
+            this->regenerateHandlers();
         };
+
+        // regenerate after knowing the eveidence set
+        void regenerateHandlers();
     };
 }
 

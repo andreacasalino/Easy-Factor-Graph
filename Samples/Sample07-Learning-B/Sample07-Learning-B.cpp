@@ -44,7 +44,7 @@ int main() {
 
 		// use stochastic gradient descend
 		GradientDescend<StochasticExtractor> trainer;
-		trainer.setPercentage(0.01f);
+		trainer.setPercentage(0.05f);
 		trainer.setMaxIterations(10);
 		cout << "training the model" << endl;
 		trainer.train(graph2Learn, trainSet);

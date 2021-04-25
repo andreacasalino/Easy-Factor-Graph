@@ -9,6 +9,7 @@
 #include <train/handlers/BinaryHandler.h>
 #include <train/handlers/UnaryHandler.h>
 #include <io/xml/Importer.h>
+#include <train/handlers/CompositeHandler.h>
 #include "HiddenObservedHandler.h"
 #include <Error.h>
 #include <algorithm>
@@ -20,6 +21,7 @@ namespace EFG::model {
             throw Error("A conditional random field should have at least 1 evidence");
         }
         this->resetEvidences(ev);
+        this->regenerateHandlers();
     }
 
     void ConditionalRandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
@@ -36,20 +38,23 @@ namespace EFG::model {
         auto handler = this->Trainable::makeHandler(factor);
         if (nullptr != dynamic_cast<train::handler::UnaryHandler*>(handler.get())) {
             if (this->evidences.find(*factor->getGroup().getVariables().begin()) != this->evidences.end()) {
-                throw Error("tuanble factor attached to node observed is invalid");
+                throw Error("tunable factor attached to node observed is invalid");
+            }
+            if (this->evidences.find(*factor->getGroup().getVariables().rbegin()) != this->evidences.end()) {
+                throw Error("tunable factor attached to node observed is invalid");
             }
         }
         if (nullptr != dynamic_cast<train::handler::BinaryHandler*>(handler.get())) {
             auto itOa = this->evidences.find(*factor->getGroup().getVariables().begin());
             auto itOb = this->evidences.find(*factor->getGroup().getVariables().rbegin());
             if ((itOa != this->evidences.end()) && (itOb != this->evidences.end())) {
-                throw Error("tuanble factor connectioning 2 observartions is invalid");
+                throw Error("tunable factor connectioning 2 observartions is invalid");
             }
             if (itOa != this->evidences.end()) {
-                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOb->first)->second, std::make_pair(itOa->first, &itOa->second), factor);
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(*factor->getGroup().getVariables().rbegin())->second, std::make_pair(itOa->first, &itOa->second), factor);
             }
             if (itOb != this->evidences.end()) {
-                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(itOa->first)->second, std::make_pair(itOb->first, &itOb->second), factor);
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(*factor->getGroup().getVariables().begin())->second, std::make_pair(itOb->first, &itOb->second), factor);
             }
         }
         return handler;
@@ -110,5 +115,22 @@ namespace EFG::model {
         }
 #endif
         return grad;
+    }
+
+    void ConditionalRandomField::regenerateHandlers() {
+        auto clusters = this->getFactorsTunable();
+        this->handlers.clear();
+        std::for_each(clusters.begin(), clusters.end(), [this](const std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cl) {
+            if (1 == cl.size()) {
+                this->handlers.emplace_back(this->makeHandler(cl.front()));
+            }
+            else {
+                std::unique_ptr<train::handler::CompositeHandler> hndl = std::make_unique<train::handler::CompositeHandler>(this->makeHandler(cl[0]), this->makeHandler(cl[1]));
+                for (std::size_t k = 2; k < cl.size(); ++k) {
+                    hndl->addElement(this->makeHandler(cl[k]));
+                }
+                this->handlers.emplace_back(std::move(hndl));
+            }
+        });
     }
 }
