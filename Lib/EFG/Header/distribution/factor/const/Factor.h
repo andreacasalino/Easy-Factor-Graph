@@ -24,6 +24,8 @@ namespace EFG::distribution::factor::cnst {
          *    has the images equal to 1 only for those combinations for which the variables have all the same values (<1,1,1>, <2,2,2>, <0,0>, etc...) and 0 for all the others
          *  - false, a simple anticorrelating potential is built. Such a distribution
          *    has the images equal to 0 for those combinations for which the variables have all the same values (<1,1,1>, <2,2,2>, <0,0>, etc...) and 1 for all the others 
+         * @throw when the passed group is made by less than 2 elements
+         * @throw when not all the elements in the passed group have the same sizes
          */
         Factor(const std::set<categoric::VariablePtr>& group, bool corrOrAnti);
 
@@ -49,6 +51,8 @@ namespace EFG::distribution::factor::cnst {
          * @brief Merges all the passed distribution into a single Factor.
          * The domain of the Factor is obtained merging the domains of the distributions,
          * while the image are obtained multiplying the images of the passed distributions.
+         * @throw when the set contains less than 2 elements
+         * @throw when the some of the distr groups contain common variable names, but with different sizes
          */
         explicit Factor(const std::set<const Distribution*>& distr);
 
@@ -66,6 +70,7 @@ namespace EFG::distribution::factor::cnst {
          * @param the group of variables describing the domain
          * @param the location of a file storing the combinations and the raw images in a matrix of numbers:
          * each row has the combination values and at the end the raw image
+         * @throw when a row in the file contains an inconsistent number of elements
          */
         Factor(const std::set<categoric::VariablePtr>& group, const std::string& fileName);
 

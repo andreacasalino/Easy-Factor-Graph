@@ -18,6 +18,7 @@ namespace EFG::categoric {
     public:
         /**
          * @brief A buffer of zeros with the passed size is created
+         * @throw if bufferSize is 0
          */
         Combination(std::size_t bufferSize);
 
@@ -29,6 +30,10 @@ namespace EFG::categoric {
         Combination(const std::size_t* buffer, std::size_t bufferSize);
 
         Combination(const Combination& o);
+
+        /**
+         * @throw when o has a different size
+         */
         Combination& operator=(const Combination& o);
 
         ~Combination();
@@ -38,7 +43,7 @@ namespace EFG::categoric {
          * Examples of ordering:
          * <0,0,0> < <0,1,0>
          * <0,1> < <1,0>
-         * @throw if the 2 combinations don't have the same number of values
+         * @throw when o has a different size
          */
         bool operator<(const Combination& o) const;
 

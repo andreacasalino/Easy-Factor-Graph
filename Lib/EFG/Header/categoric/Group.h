@@ -108,6 +108,8 @@ namespace EFG::categoric {
     /** 
      * @brief get the complementary group of the subset w.r.t a certain set.
      * For instance the complementary of <A,C> w.r.t. <A,B,C,D,E> is <B,D,E>
+     * @throw when not all variables in subset are present in set
+     * @throw when the complementary is an empty set
      */
     std::set<VariablePtr> getComplementary(const std::set<VariablePtr>& set, const std::set<VariablePtr>& subset);
 }

@@ -20,6 +20,7 @@ namespace EFG::distribution {
          * @param the reference distribution
          * @param the variables referring to the combinations to search. This kind of set should contain the subset of variables
          * describing the domain of distribution
+         * @throw if some of the variables describing the distribution domain are not contained in containingGroup
          */
         DistributionFinder(const Distribution& distribution, const std::set<categoric::VariablePtr>& containingGroup);
 

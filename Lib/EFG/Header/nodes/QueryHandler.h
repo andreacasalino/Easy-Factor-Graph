@@ -22,17 +22,20 @@ namespace EFG::nodes {
 		/** 
 		 * @return the marginal probabilty of the passed variable, i.e. P(var|model, observations),
 		 * conditioned to the last set evidences.
+		 * @throw when the passed variable name is not found
 		 */
 		std::vector<float> getMarginalDistribution(const std::string& var);
 
 		/**
 		 * @return a factor representing the joint distribution of the subgraph described by the passed variables.
+		 * @throw when some of the passed variable names is not found
 		 */
 		distribution::factor::cnst::Factor getJointMarginalDistribution(const std::set<std::string>& subgroup);
 
 		/** 
 		 * @return the Maximum a Posteriori estimation of a specific variable in the model, 
 		 * conditioned to the last set evidences.
+		 * @throw when the passed variable name is not found
 		 */
 		std::size_t getMAP(const std::string& var);
 

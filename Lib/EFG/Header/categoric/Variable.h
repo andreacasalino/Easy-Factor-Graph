@@ -20,7 +20,8 @@ namespace EFG::categoric {
        /** 
         * @param domain size of this variable
         * @param name used to label this varaible. 
-        * @throw passing an empty string 
+        * @throw passing 0 as size
+        * @throw passing an empty string as name 
         */
         Variable(const std::size_t& size, const std::string& name);
 

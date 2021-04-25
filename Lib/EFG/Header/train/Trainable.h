@@ -43,6 +43,7 @@ namespace EFG::train {
     public:
         /**
          * @param the new set of weights to assume for the tunable clusters
+         * @throw when the number of passed weights is inconsistent
          */
         void setWeights(const std::vector<float>& w);
 
@@ -53,6 +54,7 @@ namespace EFG::train {
 
         /**
          * @return the gradient of the weights of the tunable clusters w.r.t. the passed training set
+         * @throw when the trainSet is inconsistent because have a wrong combinations size
          */
         virtual std::vector<float> getGradient(TrainSetPtr trainSet) = 0;
 

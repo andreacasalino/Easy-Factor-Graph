@@ -20,11 +20,15 @@ namespace EFG::train {
         /**
          * @param the set of combinations that will be part of the train set.
          * @throw if the combinations don't have all the same size
+         * @throw if the combinations container is empty
          */
         explicit TrainSet(const std::vector<categoric::Combination>& combinations);
 
         /**
          * @param import the combinations from a textual file where each row represent a combination
+         * @throw if the file is not readable
+         * @throw if the parsed combinations don't have all the same size
+         * @throw if the file is empty
          */
         explicit TrainSet(const std::string& fileName);
 

@@ -19,12 +19,21 @@ namespace EFG::nodes {
         /**
          * @brief insert a copy of the passed tunable factor.
          * A new tunable cluster is created containing only the passed factor.
+         * @throw if the factor is neither unary or binary
+         * @throw in case the factor is binary and connects some already connected variables
+         * @throw when there is already a variable in the model with the same name of a one into
+         * the factor domain, but not represented by the same object
          */
         void insertTunableCopy(const distribution::factor::modif::FactorExponential& factor);
         /**
          * @brief insert a copy of the passed tunable factor, sharing the weight with an already inserted one.
          * @param the factor to insert
          * @param the set of variables identifying the potential whose weight is to share
+         * @throw when the potential whose weight must be shared is not found
+         * @throw if the factor is neither unary or binary
+         * @throw in case the factor is binary and connects some already connected variables
+         * @throw when there is already a variable in the model with the same name of a one into
+         * the factor domain, but with a different size
          */
         void insertTunableCopy(const distribution::factor::modif::FactorExponential& factor, const std::set<categoric::VariablePtr>& potentialSharingWeight);
 

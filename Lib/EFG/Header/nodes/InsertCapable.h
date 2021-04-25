@@ -24,19 +24,35 @@ namespace EFG::nodes {
     public:
         /**
          * @brief insert the passed factor. 
+         * @throw if the factor is neither unary or binary
+         * @throw in case the factor is binary and connects some already connected variables
+         * @throw when there is already a variable in the model with the same name of a one into
+         * the factor domain, but not represented by the same object
          */
         void insert(std::shared_ptr<distribution::factor::cnst::Factor> factor);
         /**
          * @brief insert a copy of the passed factor.
+         * @throw if the factor is neither unary or binary
+         * @throw in case the factor is binary and connects some already connected variables
+         * @throw when there is already a variable in the model with the same name of a one into
+         * the factor domain, but with a different size
          */
         void insertCopy(const distribution::Distribution& factor);
 
         /**
          * @brief insert the passed epxonential factor.
+         * @throw if the factor is neither unary or binary
+         * @throw in case the factor is binary and connects some already connected variables
+         * @throw when there is already a variable in the model with the same name of a one into
+         * the factor domain, but not represented by the same object
          */
         void insert(std::shared_ptr<distribution::factor::cnst::FactorExponential> factor);
         /**
          * @brief insert a copy of the passed exponential factor.
+         * @throw if the factor is neither unary or binary
+         * @throw in case the factor is binary and connects some already connected variables
+         * @throw when there is already a variable in the model with the same name of a one into
+         * the factor domain, but with a different size
          */
         void insertCopy(const distribution::factor::cnst::FactorExponential& factor);
 
@@ -44,6 +60,7 @@ namespace EFG::nodes {
          * @brief insert all the factors contained in the passed model
          * @param the model to absorb
          * @param when passing true the factors from the passed model are copied, otherwise the shared pointers are copied
+         * @throw if the passed model does not expose a StructureAware interface
          */
         template<typename Model>
         void absorbModel(const Model& model, const bool& useCopyInsertion = false) {

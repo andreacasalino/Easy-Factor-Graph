@@ -20,6 +20,7 @@ namespace EFG::distribution::factor::cnst {
         /**
          * @param the variable this indicator function must refer to
          * @param the only combination to consider for the indicator distribution
+         * @throw when evidence is inconsistent for the passed variable
          */
         IndicatorFactor(categoric::VariablePtr var, std::size_t evidence);
     };

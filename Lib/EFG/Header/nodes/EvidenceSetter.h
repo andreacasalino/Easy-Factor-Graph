@@ -21,6 +21,8 @@ namespace EFG::nodes {
         /**
          * @brief reset evidence values.
          * The group of observed variables is left unchanged, but the evidence values are updated.
+         * @throw when the number of evidences is incosistent
+         * @throw when one of the evidence value is incosistent
          */
         void setEvidences(const std::vector<std::size_t>& observations);
     };

@@ -23,6 +23,7 @@ namespace EFG::distribution {
          * In case the combination is currently not part of the distribution, it is added with the passe raw image value.
          * @param the combination whose raw image must be set
          * @param the raw image value to assume
+         * @throw passing a negative number for value
          */
         void setImageRaw(const categoric::Combination& comb, const float& value);
 
@@ -33,6 +34,7 @@ namespace EFG::distribution {
 
         /**
          * @brief sets the raw images of all the combinations equal to the passed value
+         * @throw passing a negative number for value
          */
         void setAllImagesRaw(const float& value);
     };
