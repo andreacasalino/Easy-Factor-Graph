@@ -17,7 +17,7 @@ namespace EFG::iterator {
     public:
         virtual void operator++() = 0;
 
-        /** @return true when the íterator is at the end, i.e. can't be incremented further.
+        /** @return true when the iterator is at the end, i.e. can't be incremented further.
          */
         virtual bool operator==(std::nullptr_t) const = 0;
 

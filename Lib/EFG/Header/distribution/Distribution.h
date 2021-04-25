@@ -35,7 +35,7 @@ namespace EFG::distribution {
         inline const categoric::Group& getGroup() const { return *this->group; };
 
         /**
-         * @return a DistributionIterator referring to thís object
+         * @return a DistributionIterator referring to this object
          */
         DistributionIterator getIterator() const;
 
@@ -52,7 +52,7 @@ namespace EFG::distribution {
         float findRaw(const categoric::Combination& comb) const;
 
         /**
-         * @return a DistributionFinder referring to thís object
+         * @return a DistributionFinder referring to this object
          */
         DistributionFinder getFinder(const std::set<categoric::VariablePtr>& containingGroup) const;
 
