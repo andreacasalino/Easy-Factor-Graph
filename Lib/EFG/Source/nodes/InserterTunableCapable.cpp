@@ -48,7 +48,7 @@ namespace EFG::nodes {
 
     void replaceWithCopies(std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& set) {
         std::for_each(set.begin(), set.end(), [](std::shared_ptr<distribution::factor::modif::FactorExponential>& p){
-            p = std::make_shared<distribution::factor::modif::FactorExponential>(*p);
+            p = std::make_shared<distribution::factor::modif::FactorExponential>(*p.get());
         });
     };
     void InsertTunableCapable::absorb(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion) {        
@@ -61,10 +61,10 @@ namespace EFG::nodes {
         for(auto it = clusters.begin(); it!=clusters.end(); ++it) {
             auto itCl = it->begin();
             this->insertTunable(*itCl);
-            const auto& group = (*itCl)->getGroup();
+            const auto& group = (*itCl)->getGroup().getVariables();
             ++itCl;
             for(itCl; itCl != it->end(); ++itCl) {
-                this->insertTunable(*itCl, group.getVariables());
+                this->insertTunable(*itCl, group);
             }
         }
     }

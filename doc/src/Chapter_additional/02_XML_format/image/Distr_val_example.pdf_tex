@@ -1,4 +1,4 @@
-%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% Creator: Inkscape inkscape 0.92.4, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'Distr_val_example.pdf' (pdf, eps, ps)
 %%
@@ -35,8 +35,10 @@
     \renewcommand\transparent[1]{}%
   }%
   \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{592.92567506bp}%
+    \setlength{\unitlength}{592.92568417bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,14 +50,16 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.48964102)%
+  \begin{picture}(1,0.59986923)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{Distr_val_example.pdf}}%
-    \put(0.01264914,0.3234566){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{<Potential $\cdots$>}}}%
-    \put(0.00760924,0.01160268){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{</Potential>}}}%
-    \put(0.09543039,0.26422407){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{<Distr$\_$val "v"=0 "v"=0 "D"=1>}}}%
-    \put(0.09367,0.2144301){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{<Distr$\_$val "v"=0 "v"=1 "D"=4>}}}%
-    \put(0.0945502,0.16343223){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{<Distr$\_$val "v"=1 "v"=1 "D"=1>}}}%
-    \put(0.0927898,0.11363828){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{<Distr$\_$val "v"=2 "v"=2 "D"=5>}}}%
-    \put(0.09186299,0.06264042){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{<Distr$\_$val "v"=2 "v"=4 "D"=1>}}}%
+    \put(0.01264914,0.43368482){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}<Potential $\cdots$>\end{tabular}}}}%
+    \put(0.00760924,0.1218309){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}</Potential>\end{tabular}}}}%
+    \put(0.09543039,0.37445229){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}<Distr$\_$val "v"=0 "v"=0 "D"=1>\end{tabular}}}}%
+    \put(0.09367,0.32465832){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}<Distr$\_$val "v"=0 "v"=1 "D"=4>\end{tabular}}}}%
+    \put(0.0945502,0.27366045){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}<Distr$\_$val "v"=1 "v"=1 "D"=1>\end{tabular}}}}%
+    \put(0.0927898,0.2238665){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}<Distr$\_$val "v"=2 "v"=2 "D"=5>\end{tabular}}}}%
+    \put(0.09186299,0.17286864){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}<Distr$\_$val "v"=2 "v"=4 "D"=1>\end{tabular}}}}%
   \end{picture}%
 \endgroup%

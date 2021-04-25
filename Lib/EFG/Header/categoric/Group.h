@@ -46,7 +46,7 @@ namespace EFG::categoric {
         /**
          * @param the first initial variable to put in the group
          * @param the second initial variable to put in the group
-         * @param all the other initial varaibles
+         * @param all the other initial variables
          */
         template<typename ... Vars>
         Group(VariablePtr varA, VariablePtr varB, Vars ... vars) {

@@ -1,4 +1,4 @@
-%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% Creator: Inkscape inkscape 0.92.4, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'XML_structure.pdf' (pdf, eps, ps)
 %%
@@ -35,8 +35,10 @@
     \renewcommand\transparent[1]{}%
   }%
   \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{883.18548188bp}%
+    \setlength{\unitlength}{883.18546806bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,100 +50,102 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.81437005)%
+  \begin{picture}(1,0.81437008)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{XML_structure.pdf}}%
-    \put(0.45684604,0.78745301){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{root}}}%
+    \put(0.45684605,0.78745304){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}root\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{XML_structure.pdf}}%
-    \put(0.31800344,0.64034817){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{name : 'varM'}}}%
-    \put(0.31887104,0.6188458){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Size : 6}}}%
+    \put(0.31800345,0.6403482){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}name : 'varM'\end{tabular}}}}%
+    \put(0.31887105,0.61884583){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Size : 6\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=3]{XML_structure.pdf}}%
-    \put(0.33985114,0.67409052){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Variable}}}%
+    \put(0.33985115,0.67409055){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Variable\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=4]{XML_structure.pdf}}%
-    \put(0.26556073,0.66420219){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.26556073,0.66420222){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}...\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=5]{XML_structure.pdf}}%
-    \put(0.52399945,0.6406749){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varA'}}}%
-    \put(0.52345172,0.62058787){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{weight : 3}}}%
+    \put(0.52399946,0.64067493){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varA'\end{tabular}}}}%
+    \put(0.52345173,0.6205879){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}weight : 3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=6]{XML_structure.pdf}}%
-    \put(0.54584717,0.67441725){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Potential}}}%
-    \put(0.52316409,0.60094582){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Source : 'filename'}}}%
+    \put(0.54584718,0.67441728){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Potential\end{tabular}}}}%
+    \put(0.5231641,0.60094585){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Source : 'filename'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=7]{XML_structure.pdf}}%
-    \put(0.76926122,0.64129075){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varG'}}}%
+    \put(0.76926123,0.64129078){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varG'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=8]{XML_structure.pdf}}%
-    \put(0.79110894,0.6750331){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Potential}}}%
+    \put(0.79110895,0.67503313){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Potential\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=9]{XML_structure.pdf}}%
-    \put(0.89422433,0.49279176){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{v : 5}}}%
+    \put(0.89422434,0.49279179){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}v : 5\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=10]{XML_structure.pdf}}%
-    \put(0.89059598,0.52653413){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Distr$\_$val}}}%
-    \put(0.89078799,0.47589619){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{D : 0.2}}}%
-    \put(0.72316702,0.64829355){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
-    \put(0.85307422,0.50120022){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.890596,0.52653416){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Distr$\_$val\end{tabular}}}}%
+    \put(0.89078801,0.47589622){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}D : 0.2\end{tabular}}}}%
+    \put(0.72316703,0.64829358){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}...\end{tabular}}}}%
+    \put(0.85307424,0.50120025){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}...\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=11]{XML_structure.pdf}}%
-    \put(0.45135851,0.3385719){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varA'}}}%
+    \put(0.45135852,0.33857193){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varA'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=12]{XML_structure.pdf}}%
-    \put(0.47320623,0.37231425){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Potential}}}%
-    \put(0.45052319,0.29742751){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Source : 'filename'}}}%
+    \put(0.47320624,0.37231428){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Potential\end{tabular}}}}%
+    \put(0.4505232,0.29742753){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Source : 'filename'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=13]{XML_structure.pdf}}%
-    \put(0.69662032,0.33918779){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varG'}}}%
+    \put(0.69662034,0.33918781){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varG'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=14]{XML_structure.pdf}}%
-    \put(0.71846796,0.37293014){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Potential}}}%
+    \put(0.71846797,0.37293017){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Potential\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=15]{XML_structure.pdf}}%
-    \put(0.68641018,0.15011421){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{v : 0}}}%
+    \put(0.68641019,0.15011423){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}v : 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=16]{XML_structure.pdf}}%
-    \put(0.68278184,0.18385656){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Distr$\_$val}}}%
-    \put(0.68297385,0.11623482){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{D : 0.1}}}%
-    \put(0.68642694,0.13405869){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{v : 0}}}%
-    \put(0.65052611,0.34619054){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
-    \put(0.78043331,0.15805303){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.68278185,0.18385659){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Distr$\_$val\end{tabular}}}}%
+    \put(0.68297386,0.11623484){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}D : 0.1\end{tabular}}}}%
+    \put(0.68642696,0.13405871){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}v : 0\end{tabular}}}}%
+    \put(0.65052612,0.34619056){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}...\end{tabular}}}}%
+    \put(0.78043332,0.15805305){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}...\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=17]{XML_structure.pdf}}%
-    \put(0.75905112,0.49326182){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{v : 0}}}%
+    \put(0.75905113,0.49326185){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}v : 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=18]{XML_structure.pdf}}%
-    \put(0.75542278,0.52700419){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Distr$\_$val}}}%
-    \put(0.75561479,0.47636625){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{D : 0.4}}}%
-    \put(0.45129128,0.31892505){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varB'}}}%
+    \put(0.75542279,0.52700422){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Distr$\_$val\end{tabular}}}}%
+    \put(0.7556148,0.47636628){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}D : 0.4\end{tabular}}}}%
+    \put(0.45129129,0.31892507){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varB'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=19]{XML_structure.pdf}}%
-    \put(0.8287148,0.14959855){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{v : 0}}}%
+    \put(0.82871481,0.14959857){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}v : 0\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=20]{XML_structure.pdf}}%
-    \put(0.82508645,0.1833409){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Distr$\_$val}}}%
-    \put(0.82527846,0.11571915){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{D : 1.3}}}%
-    \put(0.82873156,0.13354303){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{v : 0}}}%
-    \put(0.69753208,0.31627038){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varL'}}}%
-    \put(0.69806881,0.29651945){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{weight : 1.2}}}%
-    \put(0.403089,0.34157574){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{...}}}%
+    \put(0.82508647,0.18334092){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Distr$\_$val\end{tabular}}}}%
+    \put(0.82527848,0.11571918){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}D : 1.3\end{tabular}}}}%
+    \put(0.82873157,0.13354305){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}v : 0\end{tabular}}}}%
+    \put(0.69753209,0.3162704){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varL'\end{tabular}}}}%
+    \put(0.69806882,0.29651947){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}weight : 1.2\end{tabular}}}}%
+    \put(0.40308901,0.34157577){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}...\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=21]{XML_structure.pdf}}%
-    \put(0.20028695,0.33950119){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varC'}}}%
+    \put(0.20028696,0.33950121){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varC'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=22]{XML_structure.pdf}}%
-    \put(0.22213467,0.37324354){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Potential}}}%
-    \put(0.19945164,0.29835679){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{weight : 0.2}}}%
-    \put(0.20021973,0.31985433){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varM'}}}%
-    \put(0.19987838,0.28013491){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Correlation : T}}}%
-    \put(0.19987838,0.26040502){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{tunability : N}}}%
+    \put(0.22213468,0.37324357){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Potential\end{tabular}}}}%
+    \put(0.19945164,0.29835682){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}weight : 0.2\end{tabular}}}}%
+    \put(0.20021973,0.31985436){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varM'\end{tabular}}}}%
+    \put(0.19987838,0.28013494){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Correlation : T\end{tabular}}}}%
+    \put(0.19987838,0.26040504){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}tunability : N\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=23]{XML_structure.pdf}}%
-    \put(0.04182981,0.09616635){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Unary potentials}}}%
+    \put(0.04182982,0.09616637){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Unary potentials\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=24]{XML_structure.pdf}}%
-    \put(0.04152905,0.05342596){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Variables}}}%
+    \put(0.04152905,0.05342598){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Variables\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=25]{XML_structure.pdf}}%
-    \put(0.04213564,0.13895278){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Binary potentials}}}%
+    \put(0.04213564,0.1389528){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Binary potentials\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=26]{XML_structure.pdf}}%
-    \put(0.12849722,0.50014996){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{name : 'varB'}}}%
-    \put(0.12936482,0.47864759){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Size : 3}}}%
+    \put(0.12849722,0.50014999){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}name : 'varB'\end{tabular}}}}%
+    \put(0.12936482,0.47864762){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Size : 3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=27]{XML_structure.pdf}}%
-    \put(0.15034492,0.53389231){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Variable}}}%
-    \put(0.12905123,0.45992296){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{flag : O}}}%
+    \put(0.15034492,0.53389234){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Variable\end{tabular}}}}%
+    \put(0.12905123,0.45992299){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}flag : O\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=28]{XML_structure.pdf}}%
-    \put(0.10882902,0.63963332){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{name : 'varA'}}}%
-    \put(0.10969662,0.61813095){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Size : 3}}}%
+    \put(0.10882903,0.63963335){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}name : 'varA'\end{tabular}}}}%
+    \put(0.10969663,0.61813098){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Size : 3\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=29]{XML_structure.pdf}}%
-    \put(0.13067672,0.67337567){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Variable}}}%
+    \put(0.13067672,0.6733757){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Variable\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=30]{XML_structure.pdf}}%
-    \put(0.38469925,0.1815431){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varB'}}}%
+    \put(0.38469926,0.18154312){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varB'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=31]{XML_structure.pdf}}%
-    \put(0.40654682,0.21528545){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Potential}}}%
+    \put(0.40654683,0.21528547){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Potential\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=32]{XML_structure.pdf}}%
-    \put(0.41283539,0.06078644){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Share}}}%
-    \put(0.38561107,0.15862572){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varC'}}}%
-    \put(0.38614774,0.13887484){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{weight : 0}}}%
-    \put(0.41451521,0.03131108){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varC'}}}%
-    \put(0.41542696,0.00839371){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{var : 'varM'}}}%
+    \put(0.4128354,0.06078646){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Share\end{tabular}}}}%
+    \put(0.38561108,0.15862575){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varC'\end{tabular}}}}%
+    \put(0.38614774,0.13887486){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}weight : 0\end{tabular}}}}%
+    \put(0.41451522,0.0313111){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varC'\end{tabular}}}}%
+    \put(0.41542697,0.00839373){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}var : 'varM'\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=33]{XML_structure.pdf}}%
   \end{picture}%
 \endgroup%
