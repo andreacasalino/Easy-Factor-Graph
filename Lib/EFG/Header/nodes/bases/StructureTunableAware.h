@@ -16,12 +16,12 @@ namespace EFG::nodes {
     public:
         /**
          * @return the clusters of tunable exponential factors.
-         * Each element in the returned vector, is a cluster of exponential factors sharing the same value weight.
+         * Each element in the returned vector, is a cluster of exponential factors sharing the same weight value.
          */
         std::vector<std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>> getFactorsTunable() const;
 
         /**
-         * @return the weights of the tuanble clusters. For each cluster only 1 value is returned, since it is shared among the elements in the cluster.
+         * @return the weights of the tuanble clusters. For each cluster only 1 value is returned, since it is shared among the elements in the same cluster.
          */
         std::vector<float> getWeights() const;
 

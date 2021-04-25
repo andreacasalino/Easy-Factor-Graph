@@ -25,7 +25,7 @@ int main () {
 
 	EFG::sample::samplePart([&distr]() {
 		cout << "emplacing all domain with 3" << endl;
-		distr.setImageEntireDomain(3.f);
+		distr.setAllImagesRaw(3.f);
 		cout << distr << endl << endl;
 
 		cout << "clear" << endl;
@@ -33,7 +33,7 @@ int main () {
 		cout << distr << endl << endl;
 
 		cout << "emplace missing values" << endl;
-		distr.emplaceEntireDomain();
+		distr.fillDomain();
 		cout << distr << endl << endl;
 	}, "Distribution manipulation");
 
@@ -44,9 +44,9 @@ int main () {
 
 	EFG::sample::samplePart([&distr]() {
 		distr.clear();
-		distr.add(sample::makeCombination({ 0,0,0,0 }), 1.f);
-		distr.add(sample::makeCombination({ 0,0,1,0 }), 2.f);
-		distr.add(sample::makeCombination({ 1,0,1,1 }), 3.f);
+		distr.setImageRaw(sample::makeCombination({ 0,0,0,0 }), 1.f);
+		distr.setImageRaw(sample::makeCombination({ 0,0,1,0 }), 2.f);
+		distr.setImageRaw(sample::makeCombination({ 1,0,1,1 }), 3.f);
 		cout << "current content of the distribution" << endl;
 		cout << distr << endl << endl;
 
@@ -60,9 +60,9 @@ int main () {
 
 	EFG::sample::samplePart([]() {
 		 	factor::modif::Factor distrAC(std::set<categoric::VariablePtr>({makeVariable(2 , "A"), makeVariable(2 , "C")}));
-		 	distrAC.setImageEntireDomain(2.f);
+		 	distrAC.setAllImagesRaw(2.f);
 		 	factor::modif::Factor distrBC(std::set<categoric::VariablePtr>({makeVariable(2 , "B"), makeVariable(2 , "C")}));
-		 	distrBC.setImageEntireDomain(0.5f);
+		 	distrBC.setAllImagesRaw(0.5f);
 
 		 	std::cout << "distributions to merge" << std::endl;
 		 	cout << distrAC << endl << endl;
@@ -74,7 +74,7 @@ int main () {
 
 	EFG::sample::samplePart([]() {
 		factor::modif::Factor simpleCorrelation(std::set<categoric::VariablePtr>({ makeVariable(3 , "A"), makeVariable(3 , "B"), makeVariable(3 , "C") }), true);
-		simpleCorrelation.emplaceEntireDomain();
+		simpleCorrelation.fillDomain();
 		std::cout << "simple correlating factor" << std::endl;
 		cout << simpleCorrelation << endl << endl;
 		std::cout << "probability distribution" << std::endl;
@@ -87,7 +87,7 @@ int main () {
 		cout << simpleExpCorrelating.getProbabilities() << endl << endl;
 
 		factor::modif::Factor antiCorrelation(std::set<categoric::VariablePtr>({ makeVariable(3 , "A"), makeVariable(3 , "B"), makeVariable(3 , "C") }), false);
-		antiCorrelation.emplaceEntireDomain();
+		antiCorrelation.fillDomain();
 		std::cout << "anti correlating factor" << std::endl;
 		cout << antiCorrelation << endl << endl;
 	}, "Simple correlations");

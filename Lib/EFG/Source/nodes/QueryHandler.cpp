@@ -24,7 +24,7 @@ namespace EFG::nodes {
             return distribution::factor::cnst::Factor(**toMerge.begin());
         }
         distribution::factor::modif::Factor factor(toMerge);
-        factor.emplaceEntireDomain();
+        factor.fillDomain();
         return factor;
     }
 

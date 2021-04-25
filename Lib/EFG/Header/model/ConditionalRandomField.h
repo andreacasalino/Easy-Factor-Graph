@@ -42,6 +42,8 @@ namespace EFG::model {
 
         /**
          * @brief import the model from an xml file
+         * @param the folder storing the xml to read
+         * @param the name of the xml to read
          * @throw in case no evidences are set in the file
          */
         ConditionalRandomField(const std::string& filePath, const std::string& fileName);

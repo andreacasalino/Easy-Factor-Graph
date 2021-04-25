@@ -9,14 +9,12 @@
 #define EFG_DISTRIBUTION_FACTOR_MODIFIABLE_FACTOR_H
 
 #include <distribution/factor/const/Factor.h>
-#include <distribution/modifiers/Changer.h>
-#include <distribution/modifiers/Setter.h>
+#include <distribution/DistributionSetter.h>
 
 namespace EFG::distribution::factor::modif {
     class Factor 
         : public cnst::Factor
-        , public Changer
-        , public Setter {
+        , public DistributionSetter {
     public:
         template<typename ... Args>
         Factor(Args&&... args)
@@ -32,6 +30,11 @@ namespace EFG::distribution::factor::modif {
 
         inline Factor& operator=(const Factor& o) { this->DistributionInstantiable::operator=(o); return *this; };
         inline Factor& operator=(Factor&& o) { this->DistributionInstantiable::operator=(std::move(o)); return *this; };
+
+        /**
+         * @brief sets all raw images equal to 0 and deallocate all combinations
+         */
+        inline void clear() { this->values->clear(); };
     };
 }
 

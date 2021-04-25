@@ -29,9 +29,9 @@ namespace EFG::train {
         explicit TrainSet(const std::string& fileName);
 
         /**
-         * @return a TrainSet containg some of the combinations stored in this one. The combinations
-         * passed in the built object are a subset of the ones stored in this TrainSet.
-         * @param the percentage of combinations to randomically extract.
+         * @return a TrainSet containg some of the combinations stored into this object. 
+         * The combination to take are randomly decided.
+         * @param the percentage of combinations to extract from this object.
          */
         TrainSet getRandomSubSet(const float& percentage) const;
 

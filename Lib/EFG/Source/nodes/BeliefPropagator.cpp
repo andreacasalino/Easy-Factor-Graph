@@ -154,7 +154,7 @@ namespace EFG::nodes {
         std::for_each(cluster.begin(), cluster.end(), [](Node* n) {
             for (auto itA = n->activeConnections.begin(); itA != n->activeConnections.end(); ++itA) {
                 auto mexOnes = std::make_unique<distribution::factor::modif::Factor>(std::set<categoric::VariablePtr>{n->variable});
-                mexOnes->setImageEntireDomain(1.f);
+                mexOnes->setAllImagesRaw(1.f);
                 itA->second.message2This = std::move(mexOnes);
             }
         });

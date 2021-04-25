@@ -9,13 +9,11 @@
 #define EFG_DISTRIBUTION_FACTOR_MODIFIABLE_FACTOR_EXP_H
 
 #include <distribution/factor/const/FactorExponential.h>
-#include <distribution/modifiers/Changer.h>
-#include <distribution/modifiers/Setter.h>
 
 namespace EFG::distribution::factor::modif {
     class FactorExponential
         : public cnst::FactorExponential
-        , public Setter {
+        , virtual public DistributionSetter {
     public:
         FactorExponential(const cnst::Factor& factor, float weight) : cnst::FactorExponential(factor, weight) {};
 
@@ -26,7 +24,7 @@ namespace EFG::distribution::factor::modif {
         inline FactorExponential& operator=(const FactorExponential& o) { this->DistributionInstantiable::operator=(o); return *this; };
 
         /**
-         * @brief sets the weight used by teh exponential function
+         * @brief sets the weight used by teh exponential function converting the raw images
          */
         void setWeight(float w);
     };

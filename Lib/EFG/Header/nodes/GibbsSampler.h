@@ -20,7 +20,7 @@ namespace EFG::nodes {
     {
     public:
         /**
-         * @brief Use Gibbs sampling to draw samples for the hidden variables, assumgin the current evidences.
+         * @brief Use Gibbs sampling to draw samples for the hidden variables, conditioned to the current evidences.
          * @param number of samples to draw
          * @param number of iterations used to evolve the model between the drawing of one sample and another
          */

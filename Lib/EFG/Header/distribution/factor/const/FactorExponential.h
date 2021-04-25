@@ -9,15 +9,15 @@
 #define EFG_DISTRIBUTION_FACTOR_CONST_FACTOR_EXP_H
 
 #include <distribution/factor/const/Factor.h>
-#include <distribution/modifiers/Changer.h>
+#include <distribution/DistributionSetter.h>
 
 namespace EFG::distribution::factor::cnst {
     /**
-     * @brief A factor using the EvaluatorExponential object to convert the row images into images
+     * @brief A factor using the EvaluatorExponential object to convert the raw images into images
      */
-    class FactorExponential 
+    class FactorExponential
         : public DistributionInstantiable
-        , protected Changer {
+        , virtual protected DistributionSetter {
     public:
         /**
          * @param the factor whose raw images are copied

@@ -20,11 +20,10 @@ namespace EFG::distribution {
     /** 
      * @brief Base object for any kind of categoric distribution.
      * Any kind of categoric distribution has:
-     *  - A domain of combinations, represented by the joint domain of a categoric Group
-     *  - An set of row image values associated to each element in the domain of the distribution
-     *  - An set of iamges associated to each element in the domain, obtained by applying a certain operation to the row images
-     * In order to save memory, it is possible that not all the image values are explicitly saved 
-     * and for the corresponding combinations the images are assumed equal to 0.
+     *  - A domain, represented by the combinations in the joint domain of the Group associated to this distribution
+     *  - Raw images set, which are positive values associated to each element in the domain
+     *  - Images set, which are the image values associated to each element in the domain. They can be obtained by applying a certain function f(x) to the raw images
+     * In order to save memory, the combinations having an image equal to 0 are not explicitly saved even if they are accounted for the opreations involving this distribution.
      */
     class Distribution {
     friend class DistributionIterator;
@@ -46,8 +45,8 @@ namespace EFG::distribution {
         float find(const categoric::Combination& comb) const;
 
         /**
-         * @brief searches for the image associated to an element in the domain
-         * @return the value of the image.
+         * @brief searches for the raw image associated to an element in the domain
+         * @return the value of the raw image.
          */
         float findRaw(const categoric::Combination& comb) const;
 
@@ -57,9 +56,9 @@ namespace EFG::distribution {
         DistributionFinder getFinder(const std::set<categoric::VariablePtr>& containingGroup) const;
 
         /**
-         * @return the probabilities associated to each combination (also the ones for which the image is not explicitly reported) 
-         * in the domain of this potential, when assuming only the existance of this distribution. Such probabilities are the normalized images.
-         * The order of the corresponding combinations can be also accessed using a Range object built with the variables in the group of this distribution
+         * @return the probabilities associated to each combination in the domain, when assuming only the existance of this distribution. 
+         * Such probabilities are the normalized images.
+         * The order of returned values, refer to the combination order obtained by iterating with the categoric::Range object.
          */
         std::vector<float> getProbabilities() const;
 
@@ -70,11 +69,11 @@ namespace EFG::distribution {
 
         std::unique_ptr<categoric::Group> group;
         /**
-         * @brief the ordered pairs of <combination , row image>
+         * @brief the ordered pairs of <domain combination, raw image value>
          */
         std::shared_ptr<std::map<categoric::Combination, float>> values;
         /**
-         * @brief the function used to convert row images to images
+         * @brief the function used to convert raw images into images
          */
         EvaluatorPtr evaluator;
     };

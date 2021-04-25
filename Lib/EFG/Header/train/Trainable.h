@@ -29,6 +29,9 @@ namespace EFG::train {
     };
     typedef std::unique_ptr<TrainHandler> TrainHandlerPtr;
 
+    /**
+     * @brief An object storing tunable factors, whose weights can be tuned with training
+     */
     class Trainable 
         : virtual public nodes::NodesAware
         , virtual public nodes::BeliefAware

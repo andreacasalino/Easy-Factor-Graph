@@ -37,8 +37,10 @@ namespace EFG::iterator {
     };
 
     /** @brief similar to forEach(...), but in this case the action should be a predicate, taking 
-     * as input the iterator, but returning true when the loop should be terminated before reaching
-     * the end of the iterator
+     * as input the iterator and returning true when the loop should be terminated before reaching
+     * the end of the iterator.
+     *  @param the iterator to increment
+     *  @param an action taking as input the iterator for every iteration and returning true when the loop should break
      */
     template<typename Iter, typename ActionCondition>
     void forEachConditioned(Iter& iter, ActionCondition action) {

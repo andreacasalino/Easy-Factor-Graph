@@ -27,7 +27,7 @@ namespace EFG::nodes {
 
         /**
          * @brief reset the evidences, deleting the previous ones.
-         * @param the new evidences to set: <variable name, evidence>
+         * @param the new evidences to assume: <variable name, evidence value>
          */
         void resetEvidences(const std::map<std::string, std::size_t>& evidences);
     };

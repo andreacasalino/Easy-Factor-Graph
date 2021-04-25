@@ -12,13 +12,13 @@
 
 namespace EFG::distribution {
     /**
-     * @brief An object used to search for specific combinations-images inside a Distribution
+     * @brief An object used to search for big combinations inside a Distribution
      */
     class DistributionFinder {
     public:
         /**
-         * @param the considered distribution
-         * @param the variables referring to the combinations to search. It should be set containg the subset of variables
+         * @param the reference distribution
+         * @param the variables referring to the combinations to search. This kind of set should contain the subset of variables
          * describing the domain of distribution
          */
         DistributionFinder(const Distribution& distribution, const std::set<categoric::VariablePtr>& containingGroup);
@@ -27,16 +27,16 @@ namespace EFG::distribution {
         DistributionFinder& operator=(const DistributionFinder&) = default;
 
         /**
-         * @brief searches for matches. For example assume containingGroup equal to <A,B,C,D> and the variables in the domain 
-         * of the referring distribution equal to <B,D>. When passing <0,1,2,0>, it searches for the image referring to the combination
-         * <A,C> = <0,2>.
+         * @brief searches for matches. For example assume having built this object with a containingGroup equal to <A,B,C,D> and the variables describing the domain
+         * of the reference distribution equal to <B,D>. When passing comb ad <0,1,2,0>, it searches for the <combination,image> pretaining to this combination combination
+         * <B,D> = <1,0>.
          * @param the combination to search, referring to the set of variables passed when building this object.
-         * @return the pair <combination,image> of the the combination matching. <nullptr,0> is returned in case such a combination was not explicitly put in the distribution
+         * @return the pair <combination,image> of the the matching combination. <nullptr,0> is returned in case such a combination was not explicitly put in the distribution.
          */
         std::pair<const categoric::Combination*, float> find(const categoric::Combination& comb) const;
 
         /**
-         * @brief similar to DistributionFinder::find(...), but returning the row image value.
+         * @brief similar to DistributionFinder::find(...), but returning the raw image value.
          */
         std::pair<const categoric::Combination*, float> findRaw(const categoric::Combination& comb) const;
 

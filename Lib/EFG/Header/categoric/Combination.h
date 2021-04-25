@@ -22,6 +22,7 @@ namespace EFG::categoric {
         Combination(std::size_t bufferSize);
 
         /**
+         * @brief The passed buffer is copied to create this one
          * @param the buffer to clone
          * @param the buffer size
          */

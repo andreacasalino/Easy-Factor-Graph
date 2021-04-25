@@ -14,9 +14,9 @@ namespace EFG::distribution {
     class Evaluator {
     public:
         /**
-         * @brief applies a specific function to obtain the image from a row value
-         * @param the row image value to convert
-         * @return the converted image value
+         * @brief applies a specific function to obtain the image from a the raw image value
+         * @param the raw value to convert
+         * @return the converted image
          */
         virtual float evaluate(const float& toConvert) const = 0;
 

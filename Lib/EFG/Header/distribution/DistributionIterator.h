@@ -13,7 +13,7 @@
 
 namespace EFG::distribution {
     /**
-     * @brief An object able to iterate the domain of a distribution
+     * @brief An object able to iterate the domain/images of a distribution
      */
     class DistributionIterator 
         : public iterator::StlBidirectional<std::map<categoric::Combination, float>::const_iterator> {
@@ -37,12 +37,12 @@ namespace EFG::distribution {
         inline float getImage() const { return this->evaluator->evaluate(this->cursor->second); }
 
         /**
-         * @return the row image of the combination currently pointed by the iterator
+         * @return the raw image of the combination currently pointed by the iterator
          */
         inline float getImageRaw() const { return this->cursor->second; }
 
         /**
-         * @return the number of explicitly combinations placed inside the distribution this iterator was built from
+         * @return the number of combinations having a non 0 image value.
          */
         inline std::size_t getNumberOfValues() const { return this->values->size(); }
 

@@ -27,8 +27,8 @@ int main () {
         float teta = 1.5f;
 
         factor::modif::Factor shapeTemp(std::set<categoric::VariablePtr>{ makeVariable(2, "A") , makeVariable(2, "B") });
-        shapeTemp.add(sample::makeCombination(std::vector<std::size_t>{0,0}), 1.f);
-        shapeTemp.add(sample::makeCombination(std::vector<std::size_t>{1,1}), 1.f);
+        shapeTemp.setImageRaw(sample::makeCombination(std::vector<std::size_t>{0,0}), 1.f);
+        shapeTemp.setImageRaw(sample::makeCombination(std::vector<std::size_t>{1,1}), 1.f);
         graph.insertCopy(factor::cnst::FactorExponential(shapeTemp, teta));
 
         //make a new belief propagation setting B=0 as observation

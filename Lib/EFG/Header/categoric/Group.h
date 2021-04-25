@@ -59,23 +59,20 @@ namespace EFG::categoric {
         /**
          * @throw In case of size mismatch with the previous variables set:
          * the sizes of the 2 groups should be the same and the elements in
-         * the same positions must have the same domain size
+         * the same positions must have the same domain size.
          */
         Group& operator=(const Group& o);
 
-        /**
-         * @brief the addresses of the wrapped VariablePtr pointers are compared
-         */
         inline bool operator==(const Group& o) const { return (this->group == o.group); };
 
         /**
-         * @param the variable to add to the group
+         * @param the variable to add in the group
          * @throw in case a variable with the same name is already part of the group
          */
         void add(VariablePtr var);
 
         /**
-         * @brief sets the new group of variables this group refers to.
+         * @brief replaces the group of variables.
          * @throw In case of size mismatch with the previous variables set:
          * the sizes of the 2 groups should be the same and the elements in 
          * the same positions must have the same domain size
@@ -83,7 +80,7 @@ namespace EFG::categoric {
         void replace(const std::set<VariablePtr>& newGroup) { *this = Group(newGroup); };
 
         /**
-         * @brief sets the new group of variables this group refers to.
+         * @brief replaces the group of variables.
          * @throw In case of size mismatch with the previous variables set:
          * the sizes of the 2 groups should be the same and the elements in
          * the same positions must have the same domain size
@@ -92,7 +89,7 @@ namespace EFG::categoric {
         void replace(VariablePtr varA, VariablePtr varB, Vars ... vars) { *this = Group(varA, varB, vars...); };
 
         /** @return the size of the joint domain of the group.
-         * For example the group <A,B,C> with sizes <2,4,3> will have a joint domain of size 2X4X3 = 24
+         * For example the group <A,B,C> with sizes <2,4,3> will have a joint domain of size 2x4x3 = 24
          */
         std::size_t size() const;
 
@@ -108,8 +105,9 @@ namespace EFG::categoric {
         std::set<VariablePtr> group;
     };
 
-    /** @brief get the complementary group of the subset, w.r.t a certain set.
-     * For instance the complementary of subset <A,C> w.r.t. <A,B,C,D,E> is <B,D,E>
+    /** 
+     * @brief get the complementary group of the subset w.r.t a certain set.
+     * For instance the complementary of <A,C> w.r.t. <A,B,C,D,E> is <B,D,E>
      */
     std::set<VariablePtr> getComplementary(const std::set<VariablePtr>& set, const std::set<VariablePtr>& subset);
 }

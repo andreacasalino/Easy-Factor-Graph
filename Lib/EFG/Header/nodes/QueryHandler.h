@@ -20,8 +20,8 @@ namespace EFG::nodes {
 		, virtual public BeliefAware {
     public:
 		/** 
-		 * @return the marginal probabilty of the variable passed P(var|model, observations),
-		 * on the basis of the last set evidences.
+		 * @return the marginal probabilty of the passed variable, i.e. P(var|model, observations),
+		 * conditioned to the last set evidences.
 		 */
 		std::vector<float> getMarginalDistribution(const std::string& var);
 
@@ -32,13 +32,13 @@ namespace EFG::nodes {
 
 		/** 
 		 * @return the Maximum a Posteriori estimation of a specific variable in the model, 
-		 * on the basis of the last set evidences.
+		 * conditioned to the last set evidences.
 		 */
 		std::size_t getMAP(const std::string& var);
 
 		/**
-		 * @return the Maximum a Posteriori estimation of the hidden variables, on the basis of the last set evidences.
-		 * values are ordered in the same way the varaibles in the hiddden set can be ordered (alfabetic order)
+		 * @return the Maximum a Posteriori estimation of the hidden variables, conditioned to the last set evidences.
+		 * values are ordered in the same way the variables in the hiddden set can be ordered (alfabetic order)
 		 */
 		std::vector<size_t> getHiddenSetMAP();
     };

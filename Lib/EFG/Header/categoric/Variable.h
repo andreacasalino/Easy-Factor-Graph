@@ -17,9 +17,10 @@ namespace EFG::categoric {
      */
     class Variable {
     public:
-       /** @param domain size of this variable
-        *  @param name used to label this varaible. 
-        *  @throw passing an empty string 
+       /** 
+        * @param domain size of this variable
+        * @param name used to label this varaible. 
+        * @throw passing an empty string 
         */
         Variable(const std::size_t& size, const std::string& name);
 
@@ -32,8 +33,8 @@ namespace EFG::categoric {
         inline const std::string& name() const { return this->Name; };
         
     protected:
-        const size_t	  Size; /** domain size */
-        const std::string Name; /** name associated to the variable */
+        const size_t	  Size;
+        const std::string Name;
     };
 
     typedef std::shared_ptr<Variable> VariablePtr;
