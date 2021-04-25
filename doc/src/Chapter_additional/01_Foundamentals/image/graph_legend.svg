@@ -14,7 +14,7 @@
    viewBox="0 0 164.15546 114.54557"
    version="1.1"
    id="svg5221"
-   inkscape:version="0.92.1 r15371"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="graph_legend.svg">
   <defs
      id="defs5215" />
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.35"
-     inkscape:cx="635.01792"
-     inkscape:cy="61.607234"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="587.70033"
+     inkscape:cy="165.71754"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -35,8 +35,8 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1360"
-     inkscape:window-height="705"
+     inkscape:window-width="1920"
+     inkscape:window-height="1137"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1" />
@@ -143,19 +143,19 @@
          id="tspan4558-2-3-4-5"
          x="58.882008"
          y="64.187996"
-         style="stroke-width:0.26458332">Simple shape $\Phi_i$</tspan></text>
+         style="stroke-width:0.26458332">Factor $\Phi_i$</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:8.39739418px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20993486"
-       x="74.448639"
-       y="72.868286"
+       style="font-style:normal;font-weight:normal;font-size:8.22578144px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.20564455"
+       x="76.001846"
+       y="71.37912"
        id="text4560-3-3-1-0-4"
-       transform="scale(0.79345461,1.2603115)"><tspan
+       transform="scale(0.77723925,1.2866051)"><tspan
          sodipodi:role="line"
          id="tspan4558-2-3-4-5-4"
-         x="74.448639"
-         y="72.868286"
-         style="stroke-width:0.20993486">Tunable Exponential shape $\Psi_i$</tspan></text>
+         x="76.001846"
+         y="71.37912"
+         style="stroke-width:0.20564455">Tunable Exponential Factor $\Psi_i$</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:7.04481936px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.17612049"
@@ -167,6 +167,6 @@
          id="tspan4558-2-3-4-5-4-2"
          x="89.05999"
          y="79.989647"
-         style="stroke-width:0.17612049">Constant Exponential shape $\overline{\Psi}_i$</tspan></text>
+         style="stroke-width:0.17612049">Constant Exponential Factor $\overline{\Psi}_i$</tspan></text>
   </g>
 </svg>

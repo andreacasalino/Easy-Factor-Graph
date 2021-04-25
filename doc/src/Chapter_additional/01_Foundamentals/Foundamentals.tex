@@ -5,10 +5,9 @@ Easy Factor Graph (EFG), is a simple and efficient C++ library for managing undi
 EFG allows you to build step by step a graphical model made of unary or binary potentials, i.e. factors involving one or two variables.
 It contains several tools for exporting and importing graphs from textual file. EFG allows you to perform all the probabilistic queries described in Chapter \ref{chap:theory}, from
 marginal probabilities computation to learning the tunable parameters of a graph.
-All the work is internally done by EFG: you just have to focus on what you need to compute.
+All the theoretical computations described in the initial Sections of this guide are already implemented inside the library. However, you are strongly encouraged to read this guide to understand how to use such functionalities.
 \\
-A nice Graphic User Interface application, described in \ref{chap:GUI}, can be exploited to handle small and medium size structure.
-\\
+%A nice Graphic User Interface application, described in \ref{chap:GUI}, can be exploited to handle small and medium size structure.
 The rest of this guide is structured as follows. Chapter \ref{chap:theory} will introduce the main theoretical concepts about factor graphs, with the aim of explaining the capabilities of 
 EFG. Chapter \ref{00_XML_format} will explain the format of the xml files adopted to represent factor graphs, exploited when importing or exporting the models to or from
 textual files. Chapter \ref{chap:Samples} will present the examples adopted for showing how EFG works. All the remaining Chapters, will describe the structure of the classes constituting EFG 
@@ -18,8 +17,8 @@ textual files. Chapter \ref{chap:Samples} will present the examples adopted for 
 \chapter{Theoretical background on factor graphs}
 \label{chap:theory}
 
-This Section will provide a background about the basic concepts in probabilistic graphical models.
-Moreover, a precise notation will be introduced and used for the rest of this guide. 
+This Section will provide the basic concepts about probabilistic models.
+Moreover, a precise notation will be introduced and used for the rest of this document. 
 
 \section{Preliminaries}
 \label{sec:00:PREL}
@@ -97,7 +96,11 @@ $x_{11} = \lbrace v_{11}, v_{22}, v_{31}  \rbrace$ \\ \hline
 \label{tab:00:t0_2}
 \end{table}
 
-Knowing the joint probability of $V_{1,\cdots,m}$, the probability distribution of a subset $S \subset \lbrace V_1,\cdots,V_m \rbrace$ can be in general (not only for graphical models) obtained through \underline{marginalization}. Assume $C$ is the complement of $S$: $C \cup S = \bigcup_{i=1}^{m} V_i$ and $C \cap S = \emptyset$, then:
+Knowing the joint probability of $V_{1,\cdots,m}$, the probability distribution of a subset $S \subset \lbrace V_1,\cdots,V_m \rbrace$ can be in general (not only for graphical models) obtained through \underline{marginalization}. Assume $C$ is the complement of $S$:
+\begin{eqnarray}
+C \cup S = \bigcup_{i=1}^{m} V_i
+\end{eqnarray}
+with $C \cap S = \emptyset$, then:
 \begin{eqnarray}
 \mathbb{P}(S=s) = \sum _{ \forall \hat{c} \in  Dom(C)} \mathbb{P}(S=s, C=\hat{c})
 \label{eq:00:marginalization}
@@ -110,8 +113,8 @@ A \underline{factor}, sometimes also called a \underline{potential}, is a positi
 \Phi _i(D^i) = 
 \Phi _i(X,Y,Z) : \textsc{Domain}({X}) \times \textsc{Domain}({Y}) \times \textsc{Domain}({Z})  \longrightarrow \mathbb{R}^{+}
 \end{eqnarray}
-The aim of $\Phi _i$ is to assume 'high' values for those combinations $d^i = \lbrace x , y, z \rbrace$ that are probable and low values (at least a null) for those being improbable.
-The entire population of factors $\lbrace \Phi _1, \cdots \Phi _p \rbrace$ is considered for computing $\mathbb{P}({V}_{1,\cdots,m})$, i.e. the joint probability distribution of all the variables in the model. The \underline{energy function} $E$ of a graph is defined as the product of the factors:
+The aim of $\Phi _i$ is to assume 'high' values for those combinations $d^i = \lbrace x , y, z \rbrace$ that are probable to appear together and low values (at least a zero) for those being improbable.
+The entire population of factors $\lbrace \Phi _1, \cdots \Phi _p \rbrace$ correlating the variables of a model, is considered for computing $\mathbb{P}({V}_{1,\cdots,m})$, i.e. the joint probability distribution of all the variables in the model. The \underline{energy function} $E$ of a graph is defined as the product of the factors:
 \begin{eqnarray}
 E({V}_{1,\cdots,m}) = \Phi _1 ( D^1 ) \cdot \cdots \cdot  \Phi _p ( D^p )=  \prod_{i = 1} ^{p} \Phi _i ( D^i ) 
 \label{eq:00:energy}
@@ -180,14 +183,14 @@ since $\mathcal{Z}$ is equal to:
 \\
 Both Unary and Binary potentials, can be of two possible classes:
 \begin{itemize}
-\item \underline{Simple shape}. The potential is simply described by a set of values characterizing the image of the factor. $\Phi _b(A,B)$ and $\Phi _u(A)$ of the previous example are both Simple shapes. Class Potential$\_$Shape handles this kind of factors.
-\item \underline{Exponential shape}. They are indicated with $\Psi_i$ and their image set is defined as follows:
+\item \underline{Factors}. The potential is simply described by a set of values characterizing the image of the factor. $\Phi _b(A,B)$ and $\Phi _u(A)$ of the previous example are both Simple shapes. Classes EFG::distribution::factor::cnst::Factor and EFG::distribution::factor::modif::Factor handles this kind of potentials.
+\item \underline{Exponential Factors}. They are indicated with $\Psi_i$ and their image set is defined as follows:
 \begin{eqnarray}
 \Psi _i(X) = exp(w \cdot \Phi_i(X) ) 
 \label{eq:00:exp_w}
 \end{eqnarray}
-where $\Phi_i$ is a Simple shape. Class Potential$\_$Exp$\_$Shape handles this kind of factors.
-The weight $w$, can be tunable or not. In the first case, $w$ is a free parameter whose value is decided after training the model (see Section \ref{sec:00:LEARN}), otherwise is a constant . Exponential shapes with fixed weight will be denoted with $\overline{\Psi}_i$. 
+where $\Phi_i$ is a Simple shape. Classes EFG::distribution::factor::cnst::FactorExponential and EFG::distribution::factor::modif::FactorExponential handles this kind of potentials.
+The weight $w$, can be tunable or not. In the first case, $w$ is a free parameter whose value is decided after training the model (see Section \ref{sec:00:LEARN}), otherwise is a constant . Exponential factors with fixed weights will be denoted with $\overline{\Psi}_i$. 
 \end{itemize}
 
 Figure \ref{fig:00:factor_kind} resumes all the possible categories of factors that can be present in the models handled by this library.
@@ -252,8 +255,8 @@ Formally $\mathbb{P}(H_i = h_i | O = 0)$ is defined as follows:
 The above marginal distribution is essentially the conditional distribution of $H_i$ w.r.t. $O$, no matter the other variables in $\mathcal{H}$. 
 \\
 \\
-A generic Random Field is a graphical model for which set $\mathcal{O}$ (and consequently $\mathcal{H}$) is dynamical: the set of observations as well the values assumed by the evidences may change during time. Random field are handled by class Random$\_$Field.
-Conditional Random Field are Random Field for which set $\mathcal{O}$ must be decided once and cannot change after. Only the values of the evidences during time may change. Class Conditional$\_$Random$\_$Field is in charge of handling Conditional Random Field. 
+A generic Random Field is a graphical model for which set $\mathcal{O}$ (and consequently $\mathcal{H}$) is dynamical: the set of observations as well the values assumed by the evidences may change during time. Random field are handled by class RandomField.
+Conditional Random Field are Random Field for which set $\mathcal{O}$ must be decided once and cannot change after. Only the values of the evidences during time may change. Class ConditionalRandomField is in charge of handling Conditional Random Field. 
 Both Random Fields and Conditional Random Fields can be learnt knowing a training set, see Section \ref{sec:00:LEARN}. On the opposite, class Graph  handles constant graphs: they are conceptually similar to Random Fields but learning is not possible. Indeed, all the Exponential Shape involved must be constant.
 \\
 \\
@@ -264,7 +267,7 @@ The rest of this Chapter is structured as follows. Section \ref{sec:00:MP} will 
 
 Message passing is a powerful but conceptually simple algorithm adopted for propagating the belief across a net. Such a propagation is the starting point for performing many important operations, like computing the marginal distributions of single variables or obtaining sub graphs.
 Before detailing the steps involved in the message passing algorithm, let's start from an example of belief propagation.
-Without loss of generality we assume all the factors as Simple shapes.
+Without loss of generality we assume all the factors as simple Factors.
 
 \subsection{Belief propagation}
 
@@ -360,10 +363,10 @@ M _{Vm \rightarrow B}(\tilde{b}) \nonumber\\
 	\label{fig:00:general_MP}
 \end{figure} 
 
-Essentially, it's like having simplified the graph: we can append to $A$ the message $M _{B \rightarrow A}(a)$ as it's a Simple shape, deleting factor $\Psi _{AB}$ and all the other portions of the graph, see Figure \ref{fig:00:general_MP}.
+Essentially, it's like having simplified the graph: we can append to $A$ the message $M _{B \rightarrow A}(a)$ as it's a Factor, deleting factor $\Psi _{AB}$ and all the other portions of the graph, see Figure \ref{fig:00:general_MP}.
 In turn, $M _{B \rightarrow A}(a)$ will be adopted for computing the message outgoing from $A$.
 \\
-The above elimination is not actually done: all messages incoming to all nodes of a graph are computed by a derivation of the interface class I$\_$belief$\_$propagation$\_$strategy and are stored to be used for subsequent queries. This is partially not true when considering the evidences. Indeed, when the values of the evidences are retrieved, variables in $\mathcal{O}$ are temporary deleted and replaced with messages, see Figure \ref{fig:00:evidence_split}. Suppose variable $C$ is connected to a variable $A$ through a binary potential $\Phi _{AC}(A,C)$ and to variable $B$ through $\Phi _{B,C}$. Suppose also that variable $C$ is an evidence assuming a value equal to $\hat{c}$, then the messages sent to $A$ and $B$ can be computed independently as follows:
+The above elimination is not actually done: all messages incoming to all nodes of a graph are computed and stored for using them in subsequent queries. This is partially not true when considering the evidences. Indeed, when the values of the evidences are retrieved, variables in $\mathcal{O}$ are temporary deleted and replaced with messages, see Figure \ref{fig:00:evidence_split}. Suppose variable $C$ is connected to a variable $A$ through a binary potential $\Phi _{AC}(A,C)$ and to variable $B$ through $\Phi _{B,C}$. Suppose also that variable $C$ is an evidence assuming a value equal to $\hat{c}$, then the messages sent to $A$ and $B$ can be computed independently as follows:
 \begin{eqnarray}
 M _{C \rightarrow A}(a) = \Phi _{AC}(a, \hat{c}) \nonumber\\
 M _{C \rightarrow B}(b) = \Phi _{BC}(b, \hat{c})
@@ -382,8 +385,7 @@ All the above considerations are valid when considering politree, i.e. graph wit
 The same is not true when having loopy graphs (see Figure \ref{fig:00:loopy_MP}), since deadlocking situations arise: no further messages can be computed since for every nodes some incoming ones are missing.
 In such cases a variant of the message passing called loopy belief propagation can be adopted. Loopy belief propagation initializes all the messages to basic shapes having the values of the image all equal to 1 and then recomputes all the messages of all the variables till convergence.
 \\
-You don't have to handle the latter aspect: when a belief propagation is performed, the library automatically chooses to deploy class 
-Messagge$\_$Passing or Loopy$\_$belief$\_$propagation , according to the structure of the graph for which the propagation is asked.
+You don't have to handle the latter aspect: the belief propagation mechanism is automatically handled by the library, according to the connectivity of the model for which a query is asked.
 
 \begin{figure*}
 	\centering
@@ -435,8 +437,6 @@ Suppose discovering that $X=0$ and $Y=1$. Then, performing the standard message 
 \end{eqnarray}
 Therefore, all the combinations $\lbrace A=0, B=0 \rbrace$, $\lbrace A=0, B=1 \rbrace$, $\lbrace A=1, B=0 \rbrace$, $\lbrace A=1, B=1 \rbrace$ maximise $\mathbb{P}(A,B | O)$. However, it easy to prove that $E(A,B,X,Y)$ assumes the values reported in table \ref{tab:00:t4}.
 Therefore, the combinations actually maximising the joint distribution $\mathbb{P}(A,B | O)$ are $\lbrace A=0, B=0 \rbrace$ and $\lbrace A=1, B=1 \rbrace$, leading to a different result.
-\\
-Maximum a posteriori estimation can be performing invoking MAP$\_$on$\_$Hidden$\_$set \ref{MAP_method} on a particular derivation of class Node$\_$factory. 
 
 \begin{table}[]
 \centering
@@ -509,7 +509,6 @@ x^{j+1} _k \sim \mathbb{P}(x _{k} | x^j_{\lbrace 1, \cdots , m \rbrace \setminus
 After an initial transient, the samples cumulated during the iterations can be considered as drawn from the joint distribution involving group $X_{1,\cdots,m}$. 
 \\ 
 This algorithm can be easily applied to graphical model. Indeed the methodologies exposed in Section \ref{sec:00:MP} can be applied for determining the conditional distribution of a single variable $H_i \in \mathcal{H}$ w.r.t all the others (as well the evidences in $\mathcal{O}$), assuming all variables in $\mathcal{H} \setminus H_i$ as additional observations and computing the marginal probability of $H_i$.
-Gibbs$\_$Sampling$\_$on$\_$Hidden$\_$set \ref{Gibbs_method} is in charge of performing Gibbs sampling on a generic graph.
 
 \section{Sub graphs}
 \label{sec:00:SUB_GRAPH}
@@ -538,8 +537,6 @@ Also Gibbs sampling can be applied to a reduced graph, producing samples drawn f
 \\
 The reduction described so far is always possible when considering a subset of variables forming a connected subportion of the original graph, i.e. after reduction there must be a unique sub structure. For instance, variables $X$ and $Y$ of the graph in Figure \ref{fig:00:subgraph_impossible} do not respect the latter specification, meaning that it is not possible to build a sub graph involving $X$ and $Y$.
 
-The class in charge of handling graph reduction is Node$\_$factory::$\_$SubGraph.
-
 \begin{figure}
 	\centering
 \def\svgwidth{0.7 \textwidth}
@@ -562,15 +559,14 @@ The class in charge of handling graph reduction is Node$\_$factory::$\_$SubGraph
 The aim of learning is to determine the optimal values for the $w$ (equation (\ref{eq:00:exp_w}) ) of all the tunable potentials (see Section \ref{sec:00:PREL}) $\Psi$.
 To this aim two cases must be distinguished:
 \begin{itemize}
-\item Learning must be performed for a Graph or a Random$\_$Field: see Section \ref{sec:00:UNC_LEARN}
-\item Learning must be performed for a Conditional$\_$Random$\_$Field: see Section \ref{sec:00:CON_LEARN} 
+\item Learning must be performed for a RandomField: see Section \ref{sec:00:UNC_LEARN}
+\item Learning must be performed for a ConditionalRandomField: see Section \ref{sec:00:CON_LEARN} 
 \end{itemize}
-No matter the case, the population of tunable weights will be indicated with $W$:
+No matter the case, the population of tunable weights, i.e. the weights of the tunable Exponential Factors of the model, will be indicated with $W$:
 \begin{eqnarray}
 W = \lbrace w_1,\cdots , w_D \rbrace
 \end{eqnarray}
 $w_i$ will refer to the $i^{th}$ free parameter of the model.
-Learning is internally handled by EFG, exploiting class I$\_$Trainer.
 
 \subsection{Learning of unconditioned model}
 \label{sec:00:UNC_LEARN}
@@ -580,7 +576,7 @@ As exposed in Section \ref{sec:00:PREL}, if $W$ is known, the probability of a c
 \begin{eqnarray}
 \mathbb{P}(t_j) = \frac{E(t_j, W)}{\mathcal{Z}(W)}
 \end{eqnarray}
-At this point we can observe that the energy function is the product of two main factors: one depending from $t_j$ and $W$  and the other depending only upon $t_j$ representing the contribution of all the non tunable potentials (Simple shapes and fixed Exponential shapes, see Section \ref{sec:00:PREL}):
+At this point we can observe that the energy function is the product of two main factors: one depending from $t_j$ and $W$  and the other depending only upon $t_j$ representing the contribution of all the non tunable potentials (Factors and Exponential Factors, see Section \ref{sec:00:PREL}):
 \begin{eqnarray}
 E(t_j, W) &=&  exp \big( w_1 \Phi _1(t_j) \big) \cdot \cdots \cdot exp \big( w_D \Phi _D(t_j) \big) \cdot E_0(t_j) \nonumber\\
 		  &=& exp \big( \sum _{i=1} ^{D} w_i \Phi _i(t_j) \big) \cdot E_0(t_j)

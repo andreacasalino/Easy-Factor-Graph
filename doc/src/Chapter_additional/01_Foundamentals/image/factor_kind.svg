@@ -14,7 +14,7 @@
    viewBox="0 0 372.30362 239.12397"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.1 r15371"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="factor_kind.svg">
   <defs
      id="defs2">
@@ -176,14 +176,14 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.24748737"
-     inkscape:cx="634.97106"
-     inkscape:cy="555.72297"
+     inkscape:zoom="0.69999999"
+     inkscape:cx="701.9501"
+     inkscape:cy="574.61859"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
-     inkscape:window-width="1366"
-     inkscape:window-height="705"
+     inkscape:window-width="1920"
+     inkscape:window-height="1137"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -220,7 +220,7 @@
            y="1.1562363"
            x="63.813911"
            id="tspan4489"
-           sodipodi:role="line">Factor</tspan></text>
+           sodipodi:role="line">Potential</tspan></text>
       <rect
          transform="rotate(45)"
          y="-53.196392"
@@ -233,14 +233,14 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-25.060715"
-       y="34.639172"
+       x="3.6654761"
+       y="33.505241"
        id="text4491-8"><tspan
          sodipodi:role="line"
-         x="-25.060715"
-         y="34.639172"
+         x="3.6654761"
+         y="33.505241"
          style="stroke-width:0.26458332"
-         id="tspan5081">Simple shape</tspan></text>
+         id="tspan5081">Factors</tspan></text>
     <rect
        style="fill:#5c616c;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:2.36818743;stroke-opacity:1"
        id="rect4565-2"
@@ -392,14 +392,14 @@
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Lend-3-7)" />
     <text
        id="text4491-8-6-4"
-       y="168.26653"
-       x="121.35173"
+       y="172.42427"
+       x="85.443993"
        style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          id="tspan6716"
          style="stroke-width:0.26458332"
-         y="168.26653"
-         x="121.35173"
+         y="172.42427"
+         x="85.443993"
          sodipodi:role="line">tunable weight</tspan></text>
     <rect
        transform="matrix(-0.70710678,0.70710678,0.70710678,0.70710678,0,0)"
@@ -535,6 +535,6 @@
          x="102.78996"
          y="34.01347"
          style="stroke-width:0.26458332"
-         id="tspan5081-1">Exponential shape</tspan></text>
+         id="tspan5081-1">Exponential Factors</tspan></text>
   </g>
 </svg>

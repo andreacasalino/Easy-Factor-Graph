@@ -1,4 +1,4 @@
-%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% Creator: Inkscape inkscape 0.92.4, www.inkscape.org
 %% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
 %% Accompanies image file 'graph_legend.pdf' (pdf, eps, ps)
 %%
@@ -35,8 +35,10 @@
     \renewcommand\transparent[1]{}%
   }%
   \providecommand\rotatebox[2]{#2}%
+  \newcommand*\fsize{\dimexpr\f@size pt\relax}%
+  \newcommand*\lineheight[1]{\fontsize{\fsize}{#1\fsize}\selectfont}%
   \ifx\svgwidth\undefined%
-    \setlength{\unitlength}{465.32253502bp}%
+    \setlength{\unitlength}{465.32255398bp}%
     \ifx\svgscale\undefined%
       \relax%
     \else%
@@ -48,12 +50,14 @@
   \global\let\svgwidth\undefined%
   \global\let\svgscale\undefined%
   \makeatother%
-  \begin{picture}(1,0.69778719)%
+  \begin{picture}(1,0.69778716)%
+    \lineheight{1}%
+    \setlength\tabcolsep{0pt}%
     \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_legend.pdf}}%
-    \put(0.29017271,0.60046992){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Categoric Variable}}}%
+    \put(0.2901727,0.6004699){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Categoric Variable\end{tabular}}}}%
     \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_legend.pdf}}%
-    \put(0.29057392,0.38453212){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Simple shape $\Phi_i$}}}%
-    \put(0.29172898,0.21610187){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Tunable Exponential shape $\Psi_i$}}}%
-    \put(0.29301658,0.04351802){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Constant Exponential shape $\overline{\Psi}_i$}}}%
+    \put(0.29057391,0.38453211){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Factor $\Phi_i$\end{tabular}}}}%
+    \put(0.29172897,0.21610186){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Tunable Exponential Factor $\Psi_i$\end{tabular}}}}%
+    \put(0.29301657,0.04351802){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\lineheight{1.25}\smash{\begin{tabular}[t]{l}Constant Exponential Factor $\overline{\Psi}_i$\end{tabular}}}}%
   \end{picture}%
 \endgroup%
