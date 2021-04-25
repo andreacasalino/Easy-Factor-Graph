@@ -28,7 +28,7 @@ std::vector<Combination> getGibbsSamples(model::RandomField& graph, std::size_t 
 
 void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer& trainer, const std::pair<string, size_t>& checkObservation, const string& checkVariable , const std::size_t& threads = 1);
 
-int main() {
+int main() {	
 	EFG::sample::samplePart([]() {
 		//build the structure explained in 'Sample 06: Learning, part A / part 01'
 		VariablePtr A = makeVariable(2, "A");
@@ -100,7 +100,7 @@ int main() {
 		trainer.setAdvancement(0.1f);
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1500, 100)), trainer, std::make_pair("v5" , 0), "v1", 3);
 	}, "Complex tunable model");
-
+	
 	EFG::sample::samplePart([]() {
 		VariablePtr X1 = makeVariable(2, "X1");
 		VariablePtr X2 = makeVariable(2, "X2");

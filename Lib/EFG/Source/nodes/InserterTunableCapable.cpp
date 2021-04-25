@@ -37,7 +37,7 @@ namespace EFG::nodes {
         this->InsertCapable::insert(toInsert);
         this->factorsExp.extract(toInsert);
         toInsert->setWeight(it->first->getWeight());
-        this->factorsTunable.emplace(toInsert.get(), it->second);
+        this->factorsTunable.emplace(toInsert, it->second);
     }
 
     void InsertTunableCapable::insertTunableCopy(const distribution::factor::modif::FactorExponential& factor, const std::set<categoric::VariablePtr>& potentialSharingWeight) {
