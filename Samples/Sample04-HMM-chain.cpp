@@ -7,6 +7,7 @@
 
 #include <model/Graph.h>
 #include <io/xml/Exporter.h>
+#include <io/json/Exporter.h>
 #include <distribution/factor/const/Indicator.h>
 #include <print/ProbabilityDistributionPrint.h>
 #include <Presenter.h>
@@ -48,7 +49,11 @@ int main() {
 		//export chains into an xml (just as an exporting example)
 		io::xml::Exporter::exportToXml(*G_XY, "Graph_XY.xml", "Graph_XY");
 		io::xml::Exporter::exportToXml(*G_YY, "Graph_YY.xml", "Graph_YY");
-	}, "Simple chain of hidden and observed variables", "refer to Section 4.4 of the documentation", "Check the content of the created Graph_XY.xml and Graph_YY.xml");
+
+		//export chains into a json (just as an exporting example)
+		io::json::Exporter::exportToJson(*G_XY, "Graph_XY.json", "Graph_XY");
+		io::json::Exporter::exportToJson(*G_YY, "Graph_YY.json", "Graph_YY");
+	}, "Simple chain of hidden and observed variables", "refer to Section 4.4 of the documentation", "Check the content of the created Graph_XY.xml, Graph_YY.xml Graph_XY.json and Graph_YY.json");
 
 	return EXIT_SUCCESS;
 }

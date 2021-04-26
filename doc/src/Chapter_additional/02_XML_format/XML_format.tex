@@ -1,10 +1,9 @@
 \newpage
-\chapter{Files representing factor graphs}
+\chapter{Import models from xml files}
 \label{00_XML_format}
 
 The aim of this Section is to expose how to build graphical models from XML files describing their structures.
 In particular, the syntax of such an XML will be clarified.
-XMl files can be passed as input for the constructor of Graph \ref{Graph_XML}, Random$\_$Field \ref{RF_XML} and  Conditional$\_$Random$\_$Field \ref{CRF_XML}.
 Figure \ref{fig:00:XML_struct} visually explains the structure of a valid XML.
 \\
 Essentially two kind of tags must be incorporated:
@@ -20,24 +19,24 @@ Fields description:
 \begin{itemize}
 \item var: the name of the first variable involved.
 \item var[optional]: the name of the second variable involved. Is omitted when considering unary potentials, while is mandatory when a binary potentials is described by this tag.
-\item weight[optional]: when specifying an Exponential shape (Section \ref{sec:00:PREL}) it must be present for indicating the value of the weight $w$ (equation (\ref{eq:00:exp_w})). When omitting, the potential is assumed as a Simple shape one.
-\item tunability[optional]: it is a flag for specifying whether the weight of this Exponential shape is tunable or not (see Section \ref{sec:00:PREL}). Is ignored in case weight is omitted. It can assumes two possible values, 'Y' or 'N' according to the fact that the weight involved is tunable or not respectively. When weight is specified and tunability is omitted, a value equal to 'Y' is assumed.
+\item weight[optional]: when specifying an Exponential Factors (Section \ref{sec:00:PREL}) it must be present for indicating the value of the weight $w$ (equation (\ref{eq:00:exp_w})). When omitting, the potential is assumed to be a simple Factor.
+\item tunability[optional]: it is a flag for specifying whether the weight of this Exponential Factor is tunable or not (see Section \ref{sec:00:PREL}). Is ignored in case weight is omitted. It can assumes two possible values, 'Y' or 'N' according to the fact that the weight involved is tunable or not respectively. When weight is specified and tunability is omitted, a value equal to 'Y' is assumed.
 \end{itemize}
-\item Share[optional]: you must specify this sub tag when the containing Exponential shape shares its weight with another potential in the model. 
+\item Share[optional]: you must specify this sub tag when the containing Exponential Factor shares its weight with another potential in the model. 
 Sub fields var are exploited for specifying the variables involved by the potential whose weight is to share. If weight is omitted in the containing Potential tag, this sub tag is ignored, even though the value assigned to weight is ignored since it is shared with another potential.
 The potential sharing its weight must be clearly an Exponential shape, otherwise the sharing directive is ignored.
 \\
 \\
 The following components are exclusive: only one of them can be specified in a Potential tag and at the same time at least one must be present.
 \begin{itemize}
-\item Correlation: it can assume two possible values, 'T' or 'F'. When 'T' is passed, this potential is assumed to be a simple shape correlating shape (see \ref{corr_anti_corr_Pot_constructor}), otherwise when passing 'F' a simple anti correlating shape is assumed (see \ref{corr_anti_corr_Pot_constructor}).
+\item Correlation: it can assume two possible values, 'T' or 'F'. When 'T' is passed, this potential is assumed to be a correlating potential (see sample \ref{samples:01:corr_anti}), otherwise when passing 'F' a simple anti correlating factor is assumed.
 It is invalid in case this Potential is a unary one.
-In case weight was specified, an Exponential shape is built, wrapping a simple correlating or anti-correlating shape.
+In case weight was specified, an Exponential Factor is built, passing as input the correlating or anti-correlating Factor described by this tag.
 \item Source: it is the location of a textual file describing the values of the distribution characterizing this potential.
 Rows of this file contain the values charactering the image of the potential. 
 Combinations not specified are assumed to have an image value equal to 0.
 Clearly the number of values charactering the distribution must be consistent with the number of specified var fields.
-In case weight was specified, an Exponential shape is built, wrapping the Simple shape whose values are specified in the aforementioned file.
+In case weight was specified, an Exponential Factor is built, starting from the Factor described by the values specified in the aforementioned file.
 For instance, the potential $\Phi _b$ of Section \ref{sec:00:PREL} would have been described by a file containing the following rows:
 \begin{eqnarray}
 0 \,\,\, 0 \,\,\, 1 \nonumber\\
@@ -50,7 +49,7 @@ For instance, the potential $\Phi _b$ of Section \ref{sec:00:PREL} would have be
 \item Set of sub tags Distr$\_$val: is a set of nested tags describing the distribution of the this potential.
 Similarly to Source, every element use fields v for describing the combination, while D is used for specifying the value assumed by the distribution.
 For example the potential $\Phi _b$ of Section \ref{sec:00:PREL} would have been described by the syntax reported in Figure \ref{fig:00:XML_struct:Distr_val}.
-In case weight was specified, an Exponential shape is built, wrapping the Simple shape whose distribution is specified by the aforementioned sub tags.
+In case weight was specified, an Exponential Factor is built, starting from the Factor whose distribution is specified by the aforementioned sub tags.
 \end{itemize}
 \end{itemize}
 

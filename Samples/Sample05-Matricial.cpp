@@ -7,6 +7,7 @@
 
 #include <model/Graph.h>
 #include <io/xml/Exporter.h>
+#include <io/json/Exporter.h>
 #include <print/ProbabilityDistributionPrint.h>
 #include <Presenter.h>
 #include <math.h>
@@ -26,15 +27,18 @@ int main() {
 		float weight_potential = 1.1f;
 
 		auto Matrix = makeMatrix(Size, var_dom_size, weight_potential);
-		//save the file into an xml (just as an example)
-		io::xml::Exporter::exportToXml(*Matrix, "Matrix.xml", "Matrix");
 		//set V0_0 = 0 as an edivence and compute marginals of the variables along the diagonal of the matrix
 		Matrix->resetEvidences(std::map<std::string, std::size_t>{ {"V0_0", 0} });
 
 		for (size_t k = 1; k < Size; k++) {
 			cout << Matrix->getMarginalDistribution("V" + to_string(k) + "_" + to_string(k)) << endl;
 		}
-	}, "Matricial structure", "refer to Section 4.5 of the documentation", "Check the content of the created Matrix.xml");
+
+		//save the file into an xml (just as an example)
+		io::xml::Exporter::exportToXml(*Matrix, "Matrix.xml", "Matrix");
+		//save the file into an xml (just as an example)
+		io::json::Exporter::exportToJson(*Matrix, "Matrix.json", "Matrix");
+	}, "Matricial structure", "refer to Section 4.5 of the documentation", "Check the content of the created Matrix.xml and  Matrix.json");
 	
 	return EXIT_SUCCESS;
 }

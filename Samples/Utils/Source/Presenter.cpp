@@ -29,7 +29,7 @@ namespace EFG::sample {
 
     Presenter::~Presenter() {
         if(nullptr != this->results) {
-            std::cout << *this->results << std::endl;
+            std::cout << std::endl << *this->results << std::endl;
         }
         std::cout << std::endl;
     }
