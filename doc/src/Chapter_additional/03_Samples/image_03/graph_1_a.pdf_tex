@@ -1,0 +1,97 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_1_a.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1028.94508313bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,1.23226456)%
+    \put(-0.00067555,1.01040811){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$E=1$ is observed}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_1_a.pdf}}%
+    \put(0.83025406,1.02134774){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_D(D) = M _{E \rightarrow D}(D) = \begin{pmatrix} 1 \\ exp(\varepsilon) \end{pmatrix} $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_1_a.pdf}}%
+    \put(0.11684559,1.10389198){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_1_a.pdf}}%
+    \put(0.1168456,0.91613492){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_1_a.pdf}}%
+    \put(0.38373304,1.01629905){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_1_a.pdf}}%
+    \put(0.63006199,1.01692212){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$D$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_1_a.pdf}}%
+    \put(0.2627612,1.21011277){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{A \rightarrow B}(B) = \begin{pmatrix} 1 + exp(\alpha) \\ 1 + exp(\alpha) \end{pmatrix}  = \begin{pmatrix} 1 \\ 1 \end{pmatrix} \Rightarrow$ Irrelevant }}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graph_1_a.pdf}}%
+    \put(0.3317217,0.85354665){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{C \rightarrow B}(B) = \begin{pmatrix} 1 + exp(\beta) \\ 1 + exp(\beta) \end{pmatrix}  = \begin{pmatrix} 1 \\ 1 \end{pmatrix} \Rightarrow$ Irrelevant }}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graph_1_a.pdf}}%
+    \put(0.59456864,1.13196452){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow D}(D)  = \begin{pmatrix} 1 \\ 1 \end{pmatrix} \Rightarrow$ Irrelevant }}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graph_1_a.pdf}}%
+    \put(0.83498059,0.60374029){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_D(D) = \begin{pmatrix} 1 \\ exp(\varepsilon) \end{pmatrix} $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{graph_1_a.pdf}}%
+    \put(0.11684557,0.69147306){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{graph_1_a.pdf}}%
+    \put(0.11684557,0.50371606){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{graph_1_a.pdf}}%
+    \put(0.38373302,0.60388015){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{graph_1_a.pdf}}%
+    \put(0.6300619,0.60450322){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$D$}}}%
+    \put(0.47599878,0.72554753){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{D \rightarrow B}(D) = \begin{pmatrix} \Psi_{Bd}(0,0) + \Psi_{Bd}(0,1)exp(\varepsilon)\\ \Psi_{Bd}(1,0) + \Psi_{Bd}(1,1)exp(\varepsilon) \end{pmatrix} = \begin{pmatrix} exp(\gamma) + exp(\varepsilon) \\ 1 + exp(\gamma) \cdot exp(\varepsilon)  \end{pmatrix}  $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{graph_1_a.pdf}}%
+    \put(0.83718948,0.16547154){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Phi_D(D) = \begin{pmatrix} 1 \\ exp(\varepsilon) \end{pmatrix} $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{graph_1_a.pdf}}%
+    \put(0.11684555,0.2937009){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{graph_1_a.pdf}}%
+    \put(0.11684555,0.1059439){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{graph_1_a.pdf}}%
+    \put(0.38373302,0.206108){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{graph_1_a.pdf}}%
+    \put(0.6300619,0.20673106){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$D$}}}%
+    \put(0.63030966,0.28874205){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{D \rightarrow B}(D) = \begin{pmatrix} exp(\gamma) + exp(\varepsilon) \\ 1 + exp(\gamma) \cdot exp(\varepsilon)  \end{pmatrix}  $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{graph_1_a.pdf}}%
+    \put(0.21288931,0.40328997){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow A}(A) = \begin{pmatrix} exp(\alpha)\bigg( exp(\gamma) + exp(\varepsilon) \bigg) +1 +exp(\gamma)exp(\varepsilon) \\  exp(\gamma) + exp(\varepsilon) + exp(\alpha) + exp(\alpha)exp(\gamma)exp(\varepsilon)  \end{pmatrix}  $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{graph_1_a.pdf}}%
+    \put(0.28791038,0.00687616){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow C}(C) = \begin{pmatrix} exp(\beta)\bigg( exp(\gamma) + exp(\varepsilon) \bigg) +1 +exp(\gamma)exp(\varepsilon) \\  exp(\gamma) + exp(\varepsilon) + exp(\beta) + exp(\beta)exp(\gamma)exp(\varepsilon)  \end{pmatrix}    $}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{graph_1_a.pdf}}%
+  \end{picture}%
+\endgroup%

@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 option(LIB_OPT "Compile shared libraries (ON) or static (OFF)" OFF)
 option(BUILD_SAMPLES "Build the samples showing how to use EFG" ON)
 
-project(Easy-Factor-Graph-Prj)
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -17,8 +15,12 @@ set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
 
+
+project(EFG-Core)
 option(THREAD_POOL_OPT "thread pool enabled (ON) or disabled (OFF)" ON)
 add_subdirectory(Lib)
+
+project(EFG-Samples)
 if(BUILD_SAMPLES)
     add_subdirectory(Samples)
 endif()

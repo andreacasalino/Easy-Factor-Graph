@@ -1,0 +1,82 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_2.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{777.32289989bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,1.02579728)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_2.pdf}}%
+    \put(0.08153086,0.85296451){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_2.pdf}}%
+    \put(0.16656099,0.99647489){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Variables assumed as evidences}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_2.pdf}}%
+    \put(0.4143496,0.85158616){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_2.pdf}}%
+    \put(0.72961835,0.8543429){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_2.pdf}}%
+    \put(0.56045551,0.59107668){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_5$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_2.pdf}}%
+    \put(0.26273033,0.58831994){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_4$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graph_2.pdf}}%
+    \put(0.7267271,0.37260359){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_8$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graph_2.pdf}}%
+    \put(0.41145835,0.36984685){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_7$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graph_2.pdf}}%
+    \put(0.07863963,0.37122521){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_6$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{graph_2.pdf}}%
+    \put(0.0252688,0.05601097){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_9$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{graph_2.pdf}}%
+    \put(0.24680928,0.05325426){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_{10}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{graph_2.pdf}}%
+    \put(0.59210403,0.05291973){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_{12}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{graph_2.pdf}}%
+    \put(0.8136445,0.05016302){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_{13}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{graph_2.pdf}}%
+    \put(0.42217633,0.05349075){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_{11}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{graph_2.pdf}}%
+  \end{picture}%
+\endgroup%

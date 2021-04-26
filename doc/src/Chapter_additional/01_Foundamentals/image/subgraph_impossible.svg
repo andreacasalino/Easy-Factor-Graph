@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5275"
+   inkscape:version="0.92.1 r15371"
+   sodipodi:docname="subgraph_impossible.svg">
+  <defs
+     id="defs5269" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.35"
+     inkscape:cx="622.33889"
+     inkscape:cy="685.02688"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1366"
+     inkscape:window-height="705"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5272">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Livello 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 54.114408,74.475554 0.19062,75.173186"
+       id="path4556-4-1-3-6-0"
+       inkscape:connector-curvature="0" />
+    <ellipse
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.09725165;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4485-9-9-0"
+       cx="53.941891"
+       cy="159.93631"
+       rx="15.387718"
+       ry="14.280891" />
+    <g
+       style="display:inline"
+       transform="matrix(0.18723159,0,0,0.21801296,34.643452,81.814151)"
+       id="layer1-8-6-8-0-7-1-4"
+       inkscape:label="Livello 1">
+      <rect
+         ry="2.1984103"
+         y="71.610207"
+         x="61.792385"
+         height="78.108185"
+         width="82.384499"
+         id="rect5052-9-0-6-6-3-9"
+         style="fill:#121213;fill-opacity:1;stroke:#000000;stroke-width:1.83151484;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="49.93346"
+       y="162.48027"
+       id="text4764-5"><tspan
+         sodipodi:role="line"
+         id="tspan4762-2"
+         x="49.93346"
+         y="162.48027"
+         style="stroke-width:0.26458332">$X$</tspan></text>
+    <ellipse
+       style="display:inline;fill:#ffffff;fill-opacity:0;stroke:#000000;stroke-width:1.67112005;stroke-linecap:butt;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:6.68448053, 1.67112013;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4940"
+       cx="94.780922"
+       cy="159.87729"
+       rx="68.936035"
+       ry="29.626514" />
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 136.21511,74.998823 0.19062,75.173187"
+       id="path4556-4-1-3-6-0-1"
+       inkscape:connector-curvature="0" />
+    <ellipse
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.09725165;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4485-9-9-0-3"
+       cx="136.04259"
+       cy="160.45956"
+       rx="15.387718"
+       ry="14.280891" />
+    <g
+       style="display:inline"
+       transform="matrix(0.18723159,0,0,0.21801296,116.74415,82.337413)"
+       id="layer1-8-6-8-0-7-1-4-6"
+       inkscape:label="Livello 1">
+      <rect
+         ry="2.1984103"
+         y="71.610207"
+         x="61.792385"
+         height="78.108185"
+         width="82.384499"
+         id="rect5052-9-0-6-6-3-9-8"
+         style="fill:#121213;fill-opacity:1;stroke:#000000;stroke-width:1.83151484;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:10.58333302px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="132.03416"
+       y="163.00352"
+       id="text4764-5-0"><tspan
+         sodipodi:role="line"
+         id="tspan4762-2-3"
+         x="132.03416"
+         y="163.00352"
+         style="stroke-width:0.26458332">$Y$</tspan></text>
+    <path
+       style="display:inline;fill:none;stroke:#000000;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 61.04217,74.729913 75.17294,0.26891"
+       id="path4556-4-1-3-6-0-1-6"
+       inkscape:connector-curvature="0" />
+    <ellipse
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.09725165;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4485-9-9-0-4-1-3"
+       cx="54.471622"
+       cy="73.774666"
+       rx="15.387718"
+       ry="14.280891" />
+    <ellipse
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:2.09725165;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       id="path4485-9-9-0-4-1-3-2"
+       cx="136.57231"
+       cy="74.297943"
+       rx="15.387718"
+       ry="14.280891" />
+    <g
+       style="display:inline"
+       transform="matrix(0.18723159,0,0,0.21801296,75.331437,50.505505)"
+       id="layer1-8-6-8-0-7-1-4-6-5"
+       inkscape:label="Livello 1">
+      <rect
+         ry="2.1984103"
+         y="71.610207"
+         x="61.792385"
+         height="78.108185"
+         width="82.384499"
+         id="rect5052-9-0-6-6-3-9-8-6"
+         style="fill:#121213;fill-opacity:1;stroke:#000000;stroke-width:1.83151484;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+    </g>
+  </g>
+</svg>

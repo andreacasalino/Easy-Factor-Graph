@@ -1,71 +1,91 @@
 /**
  * Author:    Andrea Casalino
- * Created:   05.03.2019
-*
-* report any bug to andrecasa91@gmail.com.
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
  **/
 
-#pragma once
-#ifndef __EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H__
-#define __EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H__
+#ifndef EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H
+#define EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H
 
-#include <model/Learnable.h>
+#include <nodes/BeliefPropagator.h>
+#include <nodes/EvidenceChanger.h>
+#include <nodes/EvidenceSetter.h>
+#include <nodes/GibbsSampler.h>
+#include <nodes/InsertTunableCapable.h>
+#include <nodes/QueryHandler.h>
+#include <train/Trainable.h>
 
 namespace EFG::model {
+    class ConditionalRandomField
+        : public nodes::BeliefPropagator
+        , private nodes::EvidencesChanger
+        , public nodes::EvidencesSetter
+        , public nodes::GibbsSampler
+        , public nodes::InsertTunableCapable
+        , public nodes::QueryHandler
+        , public train::Trainable {
+    public:
+        ConditionalRandomField() = delete;
 
-	/*!
-	 * \brief This class describes Conditional Random fields
-	 * \details Set_Observation_Set_var is depracated: the observed set of variables cannot be changed after construction.
-	 */
-	class ConditionalRandomField : public GraphLearnable {
-	public:
-		/** \brief The model is built considering the information contained in an xml configuration file.  @latexonly\label{CRF_XML}@endlatexonly
-		* \details @latexonly  See Section \ref{00_XML_format} of the documentation for the syntax to adopt. @endlatexonly
-		* @param[in] configuration the file to import (can be simply a file name, a relative path or an absolute path)
-		*/
-		ConditionalRandomField(const std::string& config_xml_file);
+        /**
+         * @throw in case no evidences are present in the passed model
+         */
+        template<typename Model>
+        explicit ConditionalRandomField(const Model& o) {
+            this->absorbOther(o);
+        };
 
-		/** \brief Copy constructor.
-		\details The same evidence set is assumed, considering as initial observations a set of null values.
-		* @param[in] o the Conditional_Random_Field to copy
-		*/
-		ConditionalRandomField(const NodeFactory& o);
+        ConditionalRandomField(const ConditionalRandomField& o) {
+            this->absorbOther(o);
+        };
 
-		/** \brief This constructor initializes the graph with the specified potentials passed as input
-		, setting the variables passed as the one observed
-		*
-		* @param[in] shapes the initial set of potentials to insert (can be empty)
-		* @param[in] constant_exp the initial set of constant (non tunable weights) exponential potentials to insert (can be empty)
-		* @param[in] learnable_exp the clusters of initial tunable potentials to insert (can be empty). Each cluster is a collection
-		of tunable exponential potentials sharing the same weight. A single cluster can have a single element, representing a normal tunable
-		exponential potential to insert in the graph, which does not share the weight with anyone.
-		* @param[in] use_cloning_Insert when is true, every time an Insert of a novel potential is called (this includes the passed potentials),
-		* a copy of that potential is actually inserted.
-		* Otherwise, the passed potential is inserted as is: this can be dangerous, cause that potential cna be externally modified, but the construction of
-		* a novel graph is faster.
-		* @param[in] observed_var the name of the variables to assume as evidences. It cannot be empty
-		*/
-		ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert = true);
+        /**
+         * @brief import the model from an xml file
+         * @param the folder storing the xml to read
+         * @param the name of the xml to read
+         * @throw in case no evidences are set in the file
+         */
+        ConditionalRandomField(const std::string& filePath, const std::string& fileName);
 
-		~ConditionalRandomField() { delete[] this->posObservationsTrainingSet; };
+        /**
+         * @brief insert the passed tunable factor.
+         */
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) override;
+        /**
+         * @brief insert the passed tunable factor, sharing the weight with an already inserted one.
+         * @param the factor to insert
+         * @param the set of variables identifying the potential whose weight is to share
+         */
+        void insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) override;
 
-		/*!
-		 * \brief see Node::Node_factory::Set_Evidences( const std::list<size_t>& new_observed_vals)
-		 */
-		inline void					  SetEvidences(const std::vector<size_t>& new_observed_vals) { this->NodeFactory::_SetEvidences(new_observed_vals); };
-	private:
-		class BinaryHandlerWithObservation;
+    private:
+        train::TrainHandlerPtr makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) override;
 
-		void 				 				 _Import(const Structure& strct, const bool& use_move, const std::vector<std::string>& evidences);
+        std::vector<float> getGradient(train::TrainSetPtr trainSet) override;
 
-		std::vector<float>   				_GetBetaPart(const distr::Combinations& training_set) override;
+        template<typename Model>
+        void absorbOther(const Model& o) {
+            const nodes::EvidenceAware* evPtr = dynamic_cast<const nodes::EvidenceAware*>(&o);
+            if (nullptr == evPtr) {
+                throw Error("the passed model is not evidence aware");
+            }
+            const auto& ev = evPtr->getEvidences();
+            if (ev.empty()) {
+                throw Error("the passed model should have at least 1 evidence");
+            }
+            this->absorbModel(o, true);
+            std::map<std::string, std::size_t> ev2;
+            for (auto it = ev.begin(); it != ev.end(); ++it) {
+                ev2.emplace(it->first->name(), it->second);
+            }
+            this->resetEvidences(ev2);
+            this->regenerateHandlers();
+        };
 
-		// cache for setting observations from training set
-		const std::vector<CategoricVariable*>*			OrderTrainingSet;
-		size_t*											posObservationsTrainingSet;
-		size_t											posObservationsSize;
-	};
-
+        // regenerate after knowing the eveidence set
+        void regenerateHandlers();
+    };
 }
 
 #endif

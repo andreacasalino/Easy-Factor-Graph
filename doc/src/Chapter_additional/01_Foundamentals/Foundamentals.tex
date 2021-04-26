@@ -1,0 +1,807 @@
+\chapter{What is EFG}
+
+Easy Factor Graph (EFG), is a simple and efficient C++ library for managing undirected graphical models. 
+\\
+EFG allows you to build step by step a graphical model made of unary or binary potentials, i.e. factors involving one or two variables.
+It contains several tools for exporting and importing graphs from textual file. EFG allows you to perform all the probabilistic queries described in Chapter \ref{chap:theory}, from
+marginal probabilities computation to learning the tunable parameters of a graph.
+All the theoretical computations described in the initial Sections of this guide are already implemented inside the library. However, you are strongly encouraged to read this guide to understand how to use such functionalities.
+\\
+%A nice Graphic User Interface application, described in \ref{chap:GUI}, can be exploited to handle small and medium size structure.
+The rest of this guide is structured as follows. Chapter \ref{chap:theory} will introduce the main theoretical concepts about factor graphs, with the aim of explaining the capabilities of 
+EFG. Chapter \ref{00_XML_format} will explain the format of the xml files adopted to represent factor graphs, exploited when importing or exporting the models to or from
+textual files. Chapter \ref{chap:Samples} will present the examples adopted for showing how EFG works. All the remaining Chapters, will describe the structure of the classes constituting EFG 
+\footnote{A similar guide, but in a html format, is also available at \url{http://www.andreacasalino.altervista.org/__EFG_doxy_guide/index.html}.}.
+
+\newpage
+\chapter{Theoretical background on factor graphs}
+\label{chap:theory}
+
+This Section will provide the basic concepts about probabilistic models.
+Moreover, a precise notation will be introduced and used for the rest of this document. 
+
+\section{Preliminaries}
+\label{sec:00:PREL}
+
+This library is intended for managing network of \underline{categorical variables}. Formally, the generic categorical variable $V$ has a discrete domain $Dom$: 
+\begin{eqnarray}
+Dom(V) = \lbrace v_0, \cdots , v_n \rbrace
+\end{eqnarray}
+Essentially, $Dom(V)$ contains all the possible realizations of $V$. The above notation will be adopted for the rest of the guide: capital letters will refer to variable names, while non capital refer to their realizations.
+Group of categorical variables can be considered categorical variables too, having a domain that is the Cartesian product of the domains of the variables constituting the group. Suppose $X$ is obtained as the union of variables $V_{1,2,3,4}$, i.e. $X = \bigcup_{i=1}^{4}V_i$, then:
+\begin{eqnarray}
+  Dom(X)=Dom(V_1) \times Dom(V_2) \times Dom(V_3) \times Dom(V_4)
+  \label{eq:00:dom_V}
+\end{eqnarray}  
+The generic realization $x$ of $X$ is a set of realizations of the variables $V_{1,2,3,4}$, i.e. $x=\lbrace v_1, v_2, v_3, v_4 \rbrace$. 
+Suppose $V_{1,2,3}$ have the domains reported in the tables \ref{tab:00:t0_1}. The union $X = \bigcup_{i=1}^{3}V_i$ is a categoric variable whose domain is made by the combinations reported in table \ref{tab:00:t0_2}.
+\\
+\\
+The entire population of variables contained in a model is  a set denoted as $\mathcal{V} = \lbrace {V}_1, \cdots, {V}_m \rbrace$.
+As will be exposed in the following, the probability of $\bigcup_{V_i \in \mathcal{V}} V_i$ \footnote{Which is the joint probability distribution of all the variables in a model} is computed as the product of a certain number of components called factors.
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|}
+      $Dom(V_1)$  \\
+      \hline
+$v_{10}$ \\
+\hline
+$v_{11}$ \\
+\hline 
+\end{tabular}
+\quad
+\begin{tabular}{|l|}
+      $Dom(V_2)$  \\
+      \hline
+$v_{20}$ \\
+\hline
+$v_{21}$ \\
+\hline 
+$v_{22}$ \\
+\hline 
+\end{tabular}
+\quad
+\begin{tabular}{|l|}
+      $Dom(V_3)$  \\
+      \hline
+$v_{30}$ \\
+\hline
+$v_{31}$ \\
+\hline 
+\end{tabular}
+\caption{Example of domains for the group of variables $V_{1,2,3}$.} 
+\label{tab:00:t0_1}
+\end{table}
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|}
+      $Dom(X) = Dom(V_1 \cup V_2 \cup V_3 )$  \\
+      \hline
+$x_0 = \lbrace v_{10}, v_{20}, v_{30}  \rbrace$ \\ \hline
+$x_1 = \lbrace v_{10}, v_{20}, v_{31}  \rbrace$ \\ \hline
+$x_2 = \lbrace v_{11}, v_{20}, v_{30}  \rbrace$ \\ \hline
+$x_3 = \lbrace v_{11}, v_{20}, v_{31}  \rbrace$ \\ \hline
+$x_4 = \lbrace v_{10}, v_{21}, v_{30}  \rbrace$ \\ \hline
+$x_5 = \lbrace v_{10}, v_{21}, v_{31}  \rbrace$ \\ \hline
+$x_6 = \lbrace v_{11}, v_{21}, v_{30}  \rbrace$ \\ \hline
+$x_7 = \lbrace v_{11}, v_{21}, v_{31}  \rbrace$ \\ \hline
+$x_8 = \lbrace v_{10}, v_{22}, v_{30}  \rbrace$ \\ \hline
+$x_9 = \lbrace v_{10}, v_{22}, v_{31}  \rbrace$ \\ \hline
+$x_{10} = \lbrace v_{11}, v_{22}, v_{30}  \rbrace$ \\ \hline
+$x_{11} = \lbrace v_{11}, v_{22}, v_{31}  \rbrace$ \\ \hline
+\end{tabular}
+\caption{Example of domains for the group of variables $V_{1,2,3}$.} 
+\label{tab:00:t0_2}
+\end{table}
+
+Knowing the joint probability of $V_{1,\cdots,m}$, the probability distribution of a subset $S \subset \lbrace V_1,\cdots,V_m \rbrace$ can be in general (not only for graphical models) obtained through \underline{marginalization}. Assume $C$ is the complement of $S$:
+\begin{eqnarray}
+C \cup S = \bigcup_{i=1}^{m} V_i
+\end{eqnarray}
+with $C \cap S = \emptyset$, then:
+\begin{eqnarray}
+\mathbb{P}(S=s) = \sum _{ \forall \hat{c} \in  Dom(C)} \mathbb{P}(S=s, C=\hat{c})
+\label{eq:00:marginalization}
+\end{eqnarray}
+In the above computation, variables in $C$ were marginalized. Indeed they were in a certain sense eliminated, since the probability of the sub set $S$ was of interest, no matter the realizations of all the variables in $C$.
+\\
+\\
+A \underline{factor}, sometimes also called a \underline{potential}, is a positive real function describing the correlation existing among a subset of variables $D^i \subset \mathcal{V}$. Suppose factor $\Phi _i$ involves $\lbrace {X}, {Y}, {Z} \rbrace$, i.e. $D^i = \lbrace {X}, {Y}, {Z} \rbrace$. Then, $\Phi _i({X}, {Y}, {Z})$ is a function defined over $Dom(D^i)$. More formally:
+\begin{eqnarray}
+\Phi _i(D^i) = 
+\Phi _i(X,Y,Z) : \textsc{Domain}({X}) \times \textsc{Domain}({Y}) \times \textsc{Domain}({Z})  \longrightarrow \mathbb{R}^{+}
+\end{eqnarray}
+The aim of $\Phi _i$ is to assume 'high' values for those combinations $d^i = \lbrace x , y, z \rbrace$ that are probable to appear together and low values (at least a zero) for those being improbable.
+The entire population of factors $\lbrace \Phi _1, \cdots \Phi _p \rbrace$ correlating the variables of a model, is considered for computing $\mathbb{P}({V}_{1,\cdots,m})$, i.e. the joint probability distribution of all the variables in the model. The \underline{energy function} $E$ of a graph is defined as the product of the factors:
+\begin{eqnarray}
+E({V}_{1,\cdots,m}) = \Phi _1 ( D^1 ) \cdot \cdots \cdot  \Phi _p ( D^p )=  \prod_{i = 1} ^{p} \Phi _i ( D^i ) 
+\label{eq:00:energy}
+\end{eqnarray}
+$E$ is addressed for computing the joint probability distribution of the variables in $\mathcal{V}$:
+\begin{eqnarray}
+\mathbb{P}({V}_{1,\cdots,m}) =  \frac{ E({V}_{1,\cdots,m}) }{\mathcal{Z}}
+\label{eq:00::joint_prob}
+\end{eqnarray} 
+where $\mathcal{Z}$ is a normalization coefficient defined as follows:
+\begin{eqnarray}
+\mathcal{Z} = \sum _{\forall \tilde{V}_{1,\cdots,m} \in 
+Dom(\bigcup_{i=1,\cdots,m} V_i))} E( \tilde{V}_{1,\cdots,m} )
+\end{eqnarray}
+
+Although the general theory behind graphical models supports the existance of generic multivaried factors, this library will address only two possible types:
+\begin{itemize}
+\item \underline{Binary potentials}: they involve a pair of variables.
+\item \underline{Unary potentials}: they involve a single variable.
+\end{itemize}
+
+We can store the values in the image of a Binary potential in a two dimensional table. For instance, suppose $\Phi _b$ involves variables $A$ and $B$, whose domains contains 3 and 5 possible values respectively:
+\begin{eqnarray}
+\textsc{Dom}(A) &= \lbrace a_1, a_2, a_3 \rbrace \nonumber\\
+\textsc{Dom}(B) &= \lbrace b_1, b_2, b_3, b_4, b_5 \rbrace
+ \end{eqnarray} 
+The values assumed by $\Phi _b(A,B)$ are described by table \ref{tab:00:t1}.
+\begin{table}[]
+\centering
+\begin{tabular}{l|l|l|l|l|l|}
+      & $b_0$ & $b_1$ & $b_2$ & $b_3$ & $b_4$ \\
+      \hline
+$a_0$ & 1     & 4     & 0     & 0     & 0     \\
+\hline
+$a_1$ & 0     & 1     & 0     & 0     & 0     \\
+\hline
+$a_2$ & 0     & 0     & 5     & 0     & 1   \\
+\hline 
+\end{tabular}
+\caption{The values in the image of $\Phi _b(A,B)$.} 
+\label{tab:00:t1}
+\end{table}
+Essentially,  $\Phi _b(A,B)$ tells us that the combinations $\lbrace a_0, b_1 \rbrace$, $\lbrace a_2, b_2 \rbrace$ are highly probable; while $\lbrace a_0, b_0 \rbrace$ , $\lbrace a_1, b_1 \rbrace$ and $\lbrace a_2, b_4 \rbrace$ are moderately probable.
+Let be $\Phi _u(A)$ a Unary potential involving variable $A$. The values characterizing $\Phi _u$ can be stored in a simple vector, see table \ref{tab:00:t2}.
+\begin{table}[]
+\centering
+\begin{tabular}{l|l|l|l|l|l}
+ $a_0$ & $a_1$ & $a_2$  \\
+ \hline
+ 0     & 2     & 0.5  \\
+\hline
+\end{tabular}
+\caption{The values in the image of $\Phi _u(A)$.} 
+\label{tab:00:t2}
+\end{table}
+If $\Phi _b(A,B)$ would be the only potential in the model, the joint probability density of $A$ and $B$ will assume the following values \footnote{combinations having a null probability were omitted}:
+\begin{eqnarray}
+\mathbb{P}(a_0 , b_1) &=& \frac{ \Phi_b(a_0 , b_1) }{\mathcal{Z}} = \frac{ 4 }{\mathcal{Z}} = 0.3333 \label{eq:00:ex_prob_cmpt_1} \\
+\mathbb{P}(a_2 , b_2) &=& \frac{ \Phi_b(a_2 , b_2) }{\mathcal{Z}} = \frac{ 5 }{\mathcal{Z}} = 0.4167 \label{eq:00:ex_prob_cmpt_2} \\
+\mathbb{P}(a_0 , b_0) &=& \frac{ \Phi_b(a_0 , b_0) }{\mathcal{Z}} = \mathbb{P}(a_1 , b_1)=\mathbb{P}(a_2 , b_4)= \frac{ 1 }{\mathcal{Z}} = 0.0833 \label{eq:00:ex_prob_cmpt_3}
+\end{eqnarray}
+since $\mathcal{Z}$ is equal to:
+\begin{eqnarray}
+\mathcal{Z} = \sum _{ \forall i=\lbrace 0,1,2 \rbrace , \forall j= \lbrace 0,1,2,3,4 \rbrace } \Phi _b(A = a_i,B = b_j) = 12
+\end{eqnarray}
+\\
+Both Unary and Binary potentials, can be of two possible classes:
+\begin{itemize}
+\item \underline{Factors}. The potential is simply described by a set of values characterizing the image of the factor. $\Phi _b(A,B)$ and $\Phi _u(A)$ of the previous example are both Simple shapes. Classes EFG::distribution::factor::cnst::Factor and EFG::distribution::factor::modif::Factor handles this kind of potentials.
+\item \underline{Exponential Factors}. They are indicated with $\Psi_i$ and their image set is defined as follows:
+\begin{eqnarray}
+\Psi _i(X) = exp(w \cdot \Phi_i(X) ) 
+\label{eq:00:exp_w}
+\end{eqnarray}
+where $\Phi_i$ is a Simple shape. Classes EFG::distribution::factor::cnst::FactorExponential and EFG::distribution::factor::modif::FactorExponential handles this kind of potentials.
+The weight $w$, can be tunable or not. In the first case, $w$ is a free parameter whose value is decided after training the model (see Section \ref{sec:00:LEARN}), otherwise is a constant . Exponential factors with fixed weights will be denoted with $\overline{\Psi}_i$. 
+\end{itemize}
+
+Figure \ref{fig:00:factor_kind} resumes all the possible categories of factors that can be present in the models handled by this library.
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.95 \columnwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{factor_kind.pdf_tex} 
+	\caption{All the possible categories of factors, with the corresponding notation.}
+	\label{fig:00:factor_kind}
+\end{figure} 
+
+Figure \ref{fig:00:example} reports an example of undirected graph. Set $\mathcal{V}$ is made of 4 variables: $A,B,C,D$. There are 5 Binary potentials and 2 Unary ones.
+The graphical notation adopted for Fig. \ref{fig:00:example} will be adopted for the rest of this guide.
+Weights $\alpha, \beta, \gamma$ and $\delta$ are assumed for respectively $\Psi _{AC}, \Psi _{AB}, \Psi _{CD}, \Psi _{B}$.
+For the sake of clarity, the joint probability of the variables in Fig. \ref{fig:00:example} is computable as follows:
+\begin{eqnarray}
+\mathbb{P}(A,B,C,D) &=& \frac{E(A,B,C,D)}{\mathcal{Z}(\alpha, \beta, \gamma, \delta)} = 
+\frac{E(A,B,CD)}{\sum_{\tilde{A}, \tilde{B}, \tilde{C}, \tilde{D}} E(\tilde{A}, \tilde{B}, \tilde{C}, \tilde{D})} \nonumber\\
+E(A,B,C,D) &=& \Phi _{A}(A) \cdot exp(\alpha \Phi _{AC}(A,C))   \cdot exp(\beta \Phi _{AB}(A,B)) \cdots \nonumber\\
+& \cdots &
+\Phi _{BC}(B,C)  \cdot exp(\gamma \Phi _{CD}(C,D)) \cdot \Phi _{BD}(B,D)  \cdot exp(\delta \Phi _{B}(B))
+\nonumber\\
+\end{eqnarray}
+
+
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.4 \columnwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{graph_example.pdf_tex} 
+\quad
+\def\svgwidth{0.3 \columnwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{graph_legend.pdf_tex} 
+	\caption{Example of graph: the legend of the right applies.}
+	\label{fig:00:example}
+\end{figure} 
+
+
+Graphical models are mainly used for performing belief propagation. Subset $\mathcal{O}=\lbrace O_1 , \cdots, O_f \rbrace \subset \mathcal{V}$ is adopted for denoting the set of evidences: those variables in the net whose value become known. $\mathcal{O}$  can be dynamical or not. The hidden variables are contained in the complementary set $\mathcal{H}=\lbrace H_1 , \cdots, H_t \rbrace$. Clearly $\mathcal{O} \cup \mathcal{H} = \mathcal{V}$ and $ \mathcal{O} \cap \mathcal{H} = \emptyset$.  
+$H$ will be used for referring to the union of all the variables in the hidden set:
+\begin{eqnarray}
+H = \bigcup_{i=1}^{t} H_i
+\end{eqnarray}
+while $O$ is used for indicating the evidences:
+\begin{eqnarray}
+O = \bigcup_{i=1}^{f} O_i
+\end{eqnarray}
+Knowing the joint probability distribution of variables in $\mathcal{V}$ (equation (\ref{eq:00::joint_prob})) the conditional distribution of $H$ w.r.t. 
+$O$ can be determined as follows:
+\begin{eqnarray}
+\mathbb{P}(H=h | O=o) &=& \frac{ \mathbb{P}(H=h , O=o) }{  \sum _{\forall \hat{h} \in Dom(H) } \mathbb{P}(H=\hat{h} , O=o)} \nonumber\\
+					  &=& \frac{ E(h,o) }{ \sum _{\forall \hat{h} \in Dom(H)} E(\hat{h}, o) } = \frac{ E(h,o)}{ \mathcal{Z}(o)}
+					  \label{eq:00:cond_prob}
+\end{eqnarray}
+The above computations are not actually done, since the number of combinations in the domain of  $\mathcal{H}$ is huge also when considering a low-medium size graph.
+On the opposite, the marginal probability $\mathbb{P}(H_i = h_i | O = 0)$ of a single variable in $H_i \in \mathcal{H}$ is computationally tractable.
+Formally $\mathbb{P}(H_i = h_i | O = 0)$ is defined as follows:
+\begin{eqnarray}
+\mathbb{P}(H_i = h_i | O = o) = \sum _{\forall \tilde{h} \in \lbrace \mathcal{H} \setminus H_i \rbrace} \mathbb{P}(H_i = h_i, \tilde{h} | O = o )
+\end{eqnarray}
+The above marginal distribution is essentially the conditional distribution of $H_i$ w.r.t. $O$, no matter the other variables in $\mathcal{H}$. 
+\\
+\\
+A generic Random Field is a graphical model for which set $\mathcal{O}$ (and consequently $\mathcal{H}$) is dynamical: the set of observations as well the values assumed by the evidences may change during time. Random field are handled by class RandomField.
+Conditional Random Field are Random Field for which set $\mathcal{O}$ must be decided once and cannot change after. Only the values of the evidences during time may change. Class ConditionalRandomField is in charge of handling Conditional Random Field. 
+Both Random Fields and Conditional Random Fields can be learnt knowing a training set, see Section \ref{sec:00:LEARN}. On the opposite, class Graph  handles constant graphs: they are conceptually similar to Random Fields but learning is not possible. Indeed, all the Exponential Shape involved must be constant.
+\\
+\\
+The rest of this Chapter is structured as follows. Section \ref{sec:00:MP} will introduce the message passing algorithm, which is the pillar for performing belief propagation. Section \ref{sec:00:MAP} will expose the concept of maximum a posteriori estimation, useful when querying a graph, while Section \ref{sec:00:GIBBS} will address Gibbs sampling for producing a training set of a known model. Section \ref{sec:00:SUB_GRAPH} will present the concept of subgraph which is a useful way for computing the marginal probabilities of a sub group of variables in $\mathcal{H}$. Finally, \ref{sec:00:LEARN} will discuss how the learning of a graphical model is done, with the aim of computing the weights of the Exponential shapes that are tunable.
+
+\section{Message Passing}
+\label{sec:00:MP}
+
+Message passing is a powerful but conceptually simple algorithm adopted for propagating the belief across a net. Such a propagation is the starting point for performing many important operations, like computing the marginal distributions of single variables or obtaining sub graphs.
+Before detailing the steps involved in the message passing algorithm, let's start from an example of belief propagation.
+Without loss of generality we assume all the factors as simple Factors.
+
+\subsection{Belief propagation}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.7 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{MP_example.pdf_tex} 
+	\caption{Example of graph adopted for explaining the message passing algorithm. Below are reported the messages to compute for obtaining the marginal probability of variable $x_1$}
+	\label{fig:00:example_MP}
+\end{figure} 
+
+Consider the graph reported in Figure \ref{fig:00:example_MP}. Supposing for the sake of simplicity that no evidences are available (i.e. $\mathcal{O} = \emptyset$). We are interested in computing $\mathbb{P}(X_1)$, i.e. the marginal probability of $X_1$. Recalling the definition introduced in the previous Section, the marginal probability is obtained by the following computation:
+\begin{eqnarray}
+\mathbb{P}(x_1) = \sum _{\forall \tilde{x}_{2,3,4,5} \in \cup_{i=2}^5 X_i } \mathbb{P}(x_1, \tilde{x}_{2,3,4,5})
+\end{eqnarray}
+Simplifying the notation and getting rid of the normalization coefficient $\mathcal{Z}$ we can state the following:
+\begin{eqnarray}
+\mathbb{P}(x_1) \propto \sum _{\tilde{x}_{2,3,4,5} } E(x_1, \tilde{x}_{2,3,4,5})
+\end{eqnarray}
+Adopting the algebraic properties of the sums-products we can distribute the computations as follows:
+\begin{eqnarray}
+\mathbb{P}(x_1) \propto 
+\Phi _{1}(x_1) 
+\sum _{\tilde{x}_5} \Phi _{15}(x_1, \tilde{x}_5) 
+\sum _{\tilde{x}_4} \Phi _{14}(x_1, \tilde{x}_4) \Phi _{4}(\tilde{x}_4)
+\sum _{\tilde{x}_2} \Phi _{24}(\tilde{x}_{2,4}) 
+\sum _{\tilde{x}_3} \Phi _{34}(\tilde{x}_{3,4})
+\label{eq:00:MP1}
+\end{eqnarray}
+The first variable to marginalize can be $\tilde{x}_2$ or $\tilde{x}_3$, since they are involved in the last terms of the sums products. The 'messages' $M _{2 \rightarrow 4}$, $M _{3 \rightarrow 4}$ are  defined as follows:
+\begin{eqnarray}
+M _{2 \rightarrow 4}(\tilde{x}_4) = \sum _{\tilde{x}_2} \Phi _{24}(\tilde{x}_{2,4}) \nonumber\\
+M _{3 \rightarrow 4}(\tilde{x}_4) = \sum _{\tilde{x}_3} \Phi _{34}(\tilde{x}_{3,4})
+\end{eqnarray}
+Inserting $M _{2 \rightarrow 4}$ and $M _{3 \rightarrow 4}$ into equation (\ref{eq:00:MP1}) leads to:
+\begin{eqnarray}
+\mathbb{P}(x_1) \propto 
+\Phi _{1}(x_1) 
+\sum _{\tilde{x}_5} \Phi _{15}(x_1, \tilde{x}_5) 
+\sum _{\tilde{x}_4} \Phi _{14}(x_1, \tilde{x}_4) \Phi _{4}(\tilde{x}_4)
+M _{2 \rightarrow 4}(\tilde{x}_4)
+M _{3 \rightarrow 4}(\tilde{x}_4)
+\label{eq:00:MP2}
+\end{eqnarray}
+At this point the messages $M _{4 \rightarrow 1}$ and $M _{5 \rightarrow 1}$ can be computed in the following way:
+\begin{eqnarray}
+M _{4 \rightarrow 1(x_1)} = \sum _{\tilde{x}_4} \Phi _{14}(x_1, \tilde{x}_4) \Phi _{4}(\tilde{x}_4)
+M _{2 \rightarrow 4}(\tilde{x}_4)
+M _{3 \rightarrow 4}(\tilde{x}_4) \nonumber\\
+M _{5 \rightarrow 1}(x_1) =  \sum _{\tilde{x}_5} \Phi _{15}(x_1, \tilde{x}_5)
+\end{eqnarray}
+After inserting $M _{4 \rightarrow 1}$ and $M _{5 \rightarrow 1}$ into equation (\ref{eq:00:MP2}) we obtain:
+\begin{eqnarray}
+\mathbb{P}(x_1) & \propto &
+\Phi _{1}(x_1) 
+M _{4 \rightarrow 1}(x_1)
+M _{5 \rightarrow 1}(x_1) \nonumber\\
+\mathbb{P}(x_1) &=&
+\frac{\Phi _{1}(x_1) 
+M _{4 \rightarrow 1}(x_1)
+M _{5 \rightarrow 1}(x_1)}{
+\sum_{\tilde{x}_1}
+\Phi _{1}(\tilde{x}_1) 
+M _{4 \rightarrow 1}(\tilde{x}_1)
+M _{5 \rightarrow 1}(\tilde{x}_1)
+}
+\label{eq:00:MP3}
+\end{eqnarray}
+which ends the computations.
+Messages are, in a certain sense, able to simplify the graph sending some information from an area of the graph to another one. Indeed, variables can be replace by messages, which can be treated as additional factors. 
+Figure \ref{fig:00:example_MP} resumes the computations exposed.
+Notice that the computation of $M _{4 \rightarrow 1}$ must be done after computing  the messages $M _{2 \rightarrow 4}$  and $M _{3 \rightarrow 4}$, while $M _{5 \rightarrow 1}$ can be computed independently from all the others.
+
+\subsection{Message Passing}
+\label{sec:00:MP}
+
+The aforementioned considerations can be extended to a general structured graph.
+Look at Figure \ref{fig:00:general_MP}: the computation of Message $M _{B \rightarrow A}$ can be performed only after having computed all the messages $M _{V_{1,\cdots,m} \rightarrow B}$, i.e. the messages incoming from all the neighbours of $B$ a part from $A$. Clearly $M _{B \rightarrow A}$ is computed as follows:
+\begin{eqnarray}
+M _{B \rightarrow A}(a) &=& 
+\sum _{\tilde{b}} \Phi _{AB}(a, \tilde{b})
+M _{V1 \rightarrow B}(\tilde{b}) \cdot \cdots \cdot 
+M _{Vm \rightarrow B}(\tilde{b}) \nonumber\\
+&=& \sum_{\tilde{b}} \Phi_{AB}(a, \tilde{b}) \prod_{i=1}^{m} M_{V_i \rightarrow B}(\tilde{b})
+\label{eq:00:MP_general}
+\end{eqnarray}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.95 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{MP_generale.pdf_tex}
+	\caption{On the top the general mechanism involved in the message computation; on the bottom the simplification of the graph considering the computed message.}
+	\label{fig:00:general_MP}
+\end{figure} 
+
+Essentially, it's like having simplified the graph: we can append to $A$ the message $M _{B \rightarrow A}(a)$ as it's a Factor, deleting factor $\Psi _{AB}$ and all the other portions of the graph, see Figure \ref{fig:00:general_MP}.
+In turn, $M _{B \rightarrow A}(a)$ will be adopted for computing the message outgoing from $A$.
+\\
+The above elimination is not actually done: all messages incoming to all nodes of a graph are computed and stored for using them in subsequent queries. This is partially not true when considering the evidences. Indeed, when the values of the evidences are retrieved, variables in $\mathcal{O}$ are temporary deleted and replaced with messages, see Figure \ref{fig:00:evidence_split}. Suppose variable $C$ is connected to a variable $A$ through a binary potential $\Phi _{AC}(A,C)$ and to variable $B$ through $\Phi _{B,C}$. Suppose also that variable $C$ is an evidence assuming a value equal to $\hat{c}$, then the messages sent to $A$ and $B$ can be computed independently as follows:
+\begin{eqnarray}
+M _{C \rightarrow A}(a) = \Phi _{AC}(a, \hat{c}) \nonumber\\
+M _{C \rightarrow B}(b) = \Phi _{BC}(b, \hat{c})
+\end{eqnarray}
+Therefore all the variables that become evidences can be considered as leaves of the graph, sending messages to all the neighbouring nodes, possibly splitting an initial compact graph into many subgraphs,  refer to Figure \ref{fig:00:evidence_split}. Such computations are automatically handled by the library.
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.65 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{Evidence_split.pdf_tex}
+	\caption{When variable C become an evidence, is temporary deleted from the graph, replaced by messages.}
+	\label{fig:00:evidence_split}
+\end{figure}  
+
+All the above considerations are valid when considering politree, i.e. graph without loops. Indeed, for these kind of graphs the message passing algorithm is able in a finite number of iterations to compute all the messages, see Figure \ref{fig:00:politree_MP}.
+The same is not true when having loopy graphs (see Figure \ref{fig:00:loopy_MP}), since deadlocking situations arise: no further messages can be computed since for every nodes some incoming ones are missing.
+In such cases a variant of the message passing called loopy belief propagation can be adopted. Loopy belief propagation initializes all the messages to basic shapes having the values of the image all equal to 1 and then recomputes all the messages of all the variables till convergence.
+\\
+You don't have to handle the latter aspect: the belief propagation mechanism is automatically handled by the library, according to the connectivity of the model for which a query is asked.
+
+\begin{figure*}
+	\centering
+\def\svgwidth{0.9 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{MP_politree.pdf_tex}
+	\caption{Steps involved for computing the messages of the politree represented at the top. The leaves are the first nodes for which the outgoing messages can be computed.}
+	\label{fig:00:politree_MP}
+\end{figure*} 
+
+\begin{figure*}
+	\centering
+\def\svgwidth{0.35 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{MP_loopy.pdf_tex}
+	\caption{Steps involved for computing the messages on a loopy graph: after computing the messages outgoing from the leaves, a deadlock is reached since no further messages are computable.}
+	\label{fig:00:loopy_MP}
+\end{figure*} 
+
+
+\section{Maximum a posteriori estimation}
+\label{sec:00:MAP}
+
+Suppose we are not interested in determining the marginal probability of a specific variable, but rather we want the combination in the hidden set $\mathcal{H}$ that maximises the probability $\mathbb{P}(H_{1, \cdots ,n} | O)$. Clearly, we could try to compute the entire distribution $\mathbb{P}(H_{1, \cdots ,n} | O)$ and then take the value of $H$ maximising that distribution. However, this is not computationally possible since even for low medium size graphs the size of $Dom(\cup _{\forall H_i \in \mathcal{H}} H_i)$ can be huge.
+\\
+Maximum a posteriori estimations solve this problem: the value maximising $\mathbb{P}(H_{1, \cdots ,n} | O)$ is computed, without explicitly building the entire distribution $\mathbb{P}(H_{1, \cdots ,n} | O)$. This is achieved by performing belief propagation with a slightly different version of the message  passing algorithm presented in Section \ref{sec:00:MP}. Referring to Figure \ref{fig:00:general_MP}, the message to $A$ is computed as follows when performing a maximum a posteriori estimation:
+\begin{eqnarray}
+M _{B \rightarrow A}(a) = 
+max _{\tilde{b}} \lbrace \Phi_{AB}(a, \tilde{b}) \prod_{i=1}^{m} M_{V_i \rightarrow B}(\tilde{b}) \rbrace
+\rbrace
+\end{eqnarray}
+Essentially, the summation in equation (\ref{eq:00:MP_general}) is replaced with the max operator.
+After all messages are computed, the estimation $h_{MAP} = \lbrace h_{1MAP}, h_{2MAP}, \cdots \rbrace$ is obtained by considering for every variable in $\mathcal{H}$ the value maximising:
+\begin{eqnarray}
+h_{iMAP} = argmax \lbrace  \Phi _{Hi}(h_{iMAP})
+\prod_{k=1}^{L} M_k(h_{iMAP})
+\rbrace
+\end{eqnarray}
+where $M_{1,\cdots,L}$ refer to all the messages incoming to $H_i$. To be precise, this procedure is not guaranteed to return the value actually maximising $\mathbb{P}(H_{1, \cdots ,n} | O)$, but at least a strong local maximum is obtained.
+\\
+At this point it is worthy to clarify that the combination $h_{MAP} = \lbrace h_{1MAP}, h_{2MAP}, \cdots \rbrace$ could not be obtained by simply assuming for every $H_i$ the realization maximising the marginal distribution:
+\begin{eqnarray}
+h_{MAP} \neq \lbrace argmax(\mathbb{P}(h_1)) , \cdots , argmax(\mathbb{P}(h_n)) \rbrace
+\end{eqnarray} 
+This is due to the fact that $\mathbb{P}(H_{1, \cdots ,n} | O)$ is a joint probability distribution, while the marginals $\mathbb{P}(H_i)$ are not.
+For better understanding this aspect consider the graph reported in Figure \ref{fig:00:MAP_sample}, with the potentials $\Phi _{XA}$, $\Phi _{AB}$ and $\Phi _{YB}$ having the images defined in table \ref{tab:00:t3}.
+Suppose discovering that $X=0$ and $Y=1$. Then, performing the standard message passing algorithm explained in the previous Section we obtain the messages reported in Figure \ref{fig:00:MAP_sample}. Clearly individual marginals for $A$ and $B$ would be equal to:
+\begin{eqnarray}
+\mathbb{P}(A)= \binom{\mathbb{P}(A=0)}{\mathbb{P}(A=1)} = \binom{0.5}{0.5} \nonumber\\
+\mathbb{P}(B)= \binom{\mathbb{P}(B=0)}{\mathbb{P}(B=1)} = \binom{0.5}{0.5}
+\end{eqnarray}
+Therefore, all the combinations $\lbrace A=0, B=0 \rbrace$, $\lbrace A=0, B=1 \rbrace$, $\lbrace A=1, B=0 \rbrace$, $\lbrace A=1, B=1 \rbrace$ maximise $\mathbb{P}(A,B | O)$. However, it easy to prove that $E(A,B,X,Y)$ assumes the values reported in table \ref{tab:00:t4}.
+Therefore, the combinations actually maximising the joint distribution $\mathbb{P}(A,B | O)$ are $\lbrace A=0, B=0 \rbrace$ and $\lbrace A=1, B=1 \rbrace$, leading to a different result.
+
+\begin{table}[]
+\centering
+\begin{tabular}{l|l|l|}
+      & $b_0$ & $b_1$ \\
+      \hline
+$a_0$ & 2     & 0  \\
+\hline
+$a_1$ & 0     & 2  \\
+\hline 
+\end{tabular}
+\quad
+\begin{tabular}{l|l|l|}
+      & $x_0$ & $x_1$ \\
+      \hline
+$a_0$ & 1     & 0.1  \\
+\hline
+$a_1$ & 0.1   & 1  \\
+\hline 
+\end{tabular}
+\quad
+\begin{tabular}{l|l|l|}
+      & $y_0$ & $y_1$ \\
+      \hline
+$b_0$ & 1     & 0.1  \\
+\hline
+$b_1$ & 0.1   & 1  \\
+\hline 
+\end{tabular}
+\caption{Factors involved in the graph of Figure \ref{fig:00:MAP_sample}.} 
+\label{tab:00:t3}
+\end{table}
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|l|l|}
+$A$ & $B$ & $E(A,B,X=0,Y=1)$ \\
+\hline
+0 & 0 & 0.2 \\
+\hline
+0 & 1 & 0 \\
+\hline
+1 & 0 & 0 \\
+\hline
+1 & 1 & 0.2 \\
+\hline
+\end{tabular}
+\caption{Factors involved in the graph of Figure \ref{fig:00:MAP_sample}.} 
+\label{tab:00:t4}
+\end{table}
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.8 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{MAP_sample.pdf_tex}
+	\caption{Example of graph adopted. When the evidences are retrieved, the messages computed by making use of the message passing algorithm are reported below.}
+	\label{fig:00:MAP_sample}
+\end{figure}  
+
+\section{Gibbs sampling}
+\label{sec:00:GIBBS}
+
+Gibbs sampling is a Monte Carlo method for obtaining samples from a joint distribution of variables $X_{1,\cdots,m}$, without explicitly compute that distribution. Indeed, Gibbs sampling is an iterative method which requires every time to determine the conditional distribution of a single variable $X_i$ w.r.t to all the others in the group. 
+\\
+More formally the algorithm starts with an initial combination of values $\lbrace x^1_{1,\cdots,m} \rbrace$ for the variable 
+$ \cup _{i = \lbrace 1,\cdots,m \rbrace } X_i$. At every iteration, all the values of that combination are recomputed. At the $j^{th}$ iteration the value of $x^{j+1} _k$ for the subsequent iteration is obtaining by sampling from the following marginal distribution:
+\begin{eqnarray}
+x^{j+1} _k \sim \mathbb{P}(x _{k} | x^j_{\lbrace 1, \cdots , m \rbrace \setminus k } )
+\end{eqnarray}
+After an initial transient, the samples cumulated during the iterations can be considered as drawn from the joint distribution involving group $X_{1,\cdots,m}$. 
+\\ 
+This algorithm can be easily applied to graphical model. Indeed the methodologies exposed in Section \ref{sec:00:MP} can be applied for determining the conditional distribution of a single variable $H_i \in \mathcal{H}$ w.r.t all the others (as well the evidences in $\mathcal{O}$), assuming all variables in $\mathcal{H} \setminus H_i$ as additional observations and computing the marginal probability of $H_i$.
+
+\section{Sub graphs}
+\label{sec:00:SUB_GRAPH}
+
+As explained in Section \ref{sec:00:MP}, the marginal probability of a variable $H_i \in \mathcal{H}$ can be efficiently computed by considering the messages produced by the message passing algorithm. The same messages can be also used for performing graph reduction, with the aim to model the joint probability distribution of a subset of variables $\lbrace H_1, H_2, H_3 \rbrace \subset \mathcal{H}$, i.e. $\mathbb{P}( H_{1,2,3} | O)$. The latter quantity is the marginal probability of the subset of variables of interest.
+\\
+The aim of message passing is essentially to simplify the graph, condensing all the belief information into the messages. Such property is exploited for computing sub graphs. Without loss of generality assume from now on $\mathcal{O} = \emptyset$.
+Consider the graph in Figure \ref{fig:00:subgraph} and suppose we are interested in modelling $\mathbb{P}( A,B,C)$, no matter the values of the other variables. After computing all the messages exploiting message passing, the sub graph reported in Figure \ref{fig:00:subgraph} is the one modelling $\mathbb{P}( A,B,C)$. Actually, that sub graph is a graphical model itself, for which all the properties exposed so far hold.
+For example the energy function $E$ is computable as follows:
+\begin{eqnarray}
+E(A = a,B = b,C= c) = 
+\Phi _{AB}(a,b)
+\Phi _{BC}(b,c)
+\Phi _{AC}(a,c)
+M _{X \rightarrow A}(a)
+M _{Y \rightarrow B}(b)
+\end{eqnarray}
+while the joint probability of $A,B$ and $C$ can be computed in this way:
+\begin{eqnarray}
+\mathbb{P}(A = a,B = b,C= c) = \frac{E(a,b,c)}{ 
+\sum _{ \forall \tilde{a},\tilde{b}, \textbf{c}  } E(\tilde{a},\tilde{b},\tilde{c}) }
+\end{eqnarray}
+Notice that in this case the graph is significantly smaller than the originating one, implying that the above computations can be performed in an acceptable time.
+\\
+Also Gibbs sampling can be applied to a reduced graph, producing samples drawn from the marginal probability $\mathbb{P}( A,B,C)$.
+\\
+The reduction described so far is always possible when considering a subset of variables forming a connected subportion of the original graph, i.e. after reduction there must be a unique sub structure. For instance, variables $X$ and $Y$ of the graph in Figure \ref{fig:00:subgraph_impossible} do not respect the latter specification, meaning that it is not possible to build a sub graph involving $X$ and $Y$.
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.7 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{subgraph.pdf_tex}
+	\caption{Example of graph reduction.}
+	\label{fig:00:subgraph}
+\end{figure} 
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.2 \textwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{subgraph_impossible.pdf_tex}
+	\caption{Example of a subset of variables for which the graph reduction is not possible.}
+	\label{fig:00:subgraph_impossible}
+\end{figure} 
+
+\section{Learning}
+\label{sec:00:LEARN}
+
+The aim of learning is to determine the optimal values for the $w$ (equation (\ref{eq:00:exp_w}) ) of all the tunable potentials (see Section \ref{sec:00:PREL}) $\Psi$.
+To this aim two cases must be distinguished:
+\begin{itemize}
+\item Learning must be performed for a RandomField: see Section \ref{sec:00:UNC_LEARN}
+\item Learning must be performed for a ConditionalRandomField: see Section \ref{sec:00:CON_LEARN} 
+\end{itemize}
+No matter the case, the population of tunable weights, i.e. the weights of the tunable Exponential Factors of the model, will be indicated with $W$:
+\begin{eqnarray}
+W = \lbrace w_1,\cdots , w_D \rbrace
+\end{eqnarray}
+$w_i$ will refer to the $i^{th}$ free parameter of the model.
+
+\subsection{Learning of unconditioned model}
+\label{sec:00:UNC_LEARN}
+
+For the purpose of learning, we assume $\mathcal{O} = \emptyset$. Learning considers a training set $T = \lbrace t_1, \cdots ,t_N \rbrace$ made of realizations of the joint distribution correlating all the variables in $\mathcal{V}$, no matter the fact that they are involved in tunable or non tunable potentials.
+As exposed in Section \ref{sec:00:PREL}, if $W$ is known, the probability of a combination $t_j$ can be evaluated as follows:
+\begin{eqnarray}
+\mathbb{P}(t_j) = \frac{E(t_j, W)}{\mathcal{Z}(W)}
+\end{eqnarray}
+At this point we can observe that the energy function is the product of two main factors: one depending from $t_j$ and $W$  and the other depending only upon $t_j$ representing the contribution of all the non tunable potentials (Factors and Exponential Factors, see Section \ref{sec:00:PREL}):
+\begin{eqnarray}
+E(t_j, W) &=&  exp \big( w_1 \Phi _1(t_j) \big) \cdot \cdots \cdot exp \big( w_D \Phi _D(t_j) \big) \cdot E_0(t_j) \nonumber\\
+		  &=& exp \big( \sum _{i=1} ^{D} w_i \Phi _i(t_j) \big) \cdot E_0(t_j)
+\end{eqnarray}
+The likelihood function $L$ can be defined as follows:
+\begin{eqnarray}
+L = \prod _{t_j \in T} \mathbb{P}(t_j) 
+\end{eqnarray}
+passing to the logarithmic likelihood and dividing by the training set size $N$ we obtain:
+\begin{eqnarray}
+J = \frac{log(L)}{N} &=& \sum _{t_j \in T} \frac{log(\mathbb{P}(t_j))}{N} \nonumber\\
+   					 &=& \sum _{t_j \in T} \frac{ log(E(t_j, W)) - log(\mathcal{Z}(W) }{N} \nonumber\\
+   					 &=& \frac{1}{N} \sum _{t_j \in T}  log(E(t_j, W)) - log(\mathcal{Z}(W)) \nonumber\\
+   					 &=& \frac{1}{N} \sum _{t_j \in T}  \big( \sum _{i=1} ^{D} w_i \Phi _i(t_j) \big)
+   					     -log(\mathcal{Z}(W)) + \cdots \nonumber\\
+   					 	 &+& \frac{1}{N} \sum _{t_j \in T}  log(E_0 (t_j))
+   					 	 \label{eq:00:J_learn}
+\end{eqnarray}
+The aim of learning is to find the value of $W$ maximising $J$. This is done iteratively, exploiting a gradient descend approach. The computations to perform for evaluating the gradient $\frac{\partial J}{\partial W}$ will be exposed in the following part of this Section.
+Notice that in equation (\ref{eq:00:J_learn}), term $\sum _{t_j \in T}  log(E_0 (t_j))$ is constant and consequently will be not considered for computing the gradient of $J$. Equation (\ref{eq:00:J_learn}) can be rewritten as follows:
+\begin{eqnarray}
+J &=& \alpha (T, W) - \beta (W) \nonumber\\
+\alpha &=& \frac{1}{N} \sum _{t_j \in T}  \big( \sum _{i=1} ^{D} w_i \Phi _i(t_j) \big) \label{eq:00:J_learn_alfa} \\
+\beta &=& log(\mathcal{Z}(W)) \label{eq:00:J_learn_beta}
+\end{eqnarray}
+$\alpha$ is influenced by $T$, while the same is not valid for $\beta$. 
+
+\subsubsection{Gradient of $\alpha$}
+
+By the analysis of the equation (\ref{eq:00:J_learn_alfa}) it is clear that:
+\begin{eqnarray}
+\frac{\partial \alpha}{\partial w_i} = \frac{1}{N} \sum _{t_j \in T} \Phi _i(t_j)
+\label{eq:00:J_learn_alpha_simplfied}
+\end{eqnarray}
+
+\subsubsection{Gradient of $\beta$}
+\label{sec:00:beta_unc}
+
+The computation of $\frac{\partial \beta}{\partial w_i}$ requires to manipulate a little bit equation (\ref{eq:00:J_learn_beta}).
+Firstly the derivative of the logarithm must be computed:
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_i} = \frac{1}{\mathcal{Z}} \frac{\partial \mathcal{Z}}{\partial w_i}
+\label{eq:00:J_learn_beta_bis}
+\end{eqnarray}
+The normalizing coefficient $\mathcal{Z}$ is made of the following terms (see also equation (\ref{eq:00::joint_prob})):
+\begin{eqnarray}
+\mathcal{Z}(W) = \sum _{ \tilde{V} \in \bigcup_{i=1}^{p} V_i } \bigg( exp \big( \sum _{i=1} ^{D} w_i \Phi _i(\tilde{V}) \big ) \cdot E_0(\tilde{V}) \bigg) 
+\label{eq:00:Z_W}
+\end{eqnarray} 
+Introducing equation (\ref{eq:00:Z_W}) into (\ref{eq:00:J_learn_beta_bis}) leads to:
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_i} 
+&=& \frac{1}{\mathcal{Z}} \frac{\partial }{\partial w_i} \bigg( \sum_{\tilde{V}} 
+exp \big( \sum_{i=1}^{D} w_i \Phi_i(\tilde{V})  \big) E_0(\tilde{V})  \bigg)  \nonumber\\
+&=& \frac{1}{\mathcal{Z}}  \sum_{\tilde{V}} \frac{\partial }{\partial w_i} \bigg( 
+exp \big( \sum_{i=1}^{D} w_i \Phi_i(\tilde{V})  \big)\bigg) E_0(\tilde{V})   \nonumber\\
+&=& \frac{1}{\mathcal{Z}}  \sum_{\tilde{V}}  
+exp \big( \sum_{i=1}^{D} w_i \Phi_i(\tilde{V})  \big)  E_0(\tilde{V}) \Phi_i(\tilde{V})   \nonumber\\
+&=&  \sum_{\tilde{V}}  \frac{exp \big( \sum_{i=1}^{D} w_i \Phi_i(\tilde{V})  \big)  E_0(\tilde{V})}{\mathcal{Z}} \Phi_i(\tilde{V})   \nonumber\\ 
+&=& \sum_{\tilde{V}}\frac{E(\tilde{V})}{\mathcal{Z}}\Phi_i(\tilde{V}) \nonumber\\
+&=& \sum _{  \tilde{V} } \mathbb{P}(\tilde{V}) \Phi _i(\tilde{V})
+\end{eqnarray}
+Last term in the above equations can be further elaborated. Assume that the variables involved in potential $\Phi _j$ are $V_{1,2}$, then:
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_i} &=& \sum _{  \tilde{V} } \mathbb{P}(\tilde{V}) \Phi _i(\tilde{V}) \nonumber\\
+&=& \sum _{  \tilde{V}_{1,2} } \Phi _i(\tilde{V}_{1,2}) \sum _{  \tilde{V}_{3,4,\cdots}  } \mathbb{P}(\tilde{V}_{1,2,3,4,\cdots})  \nonumber\\
+&=& \sum _{  \tilde{V}_{1,2} } \Phi _i(\tilde{V}_{1,2}) \mathbb{P}(\tilde{V}_{1,2})
+\end{eqnarray}
+where $\mathbb{P}(\tilde{V}_{1,2})$ is the marginal probability (see the initial part of Section \ref{sec:00:PREL}) of the variables involved in the potential $\Phi _i$, which can be easily computable by considering the sub graph containing only $V_1$ and $V_2$ as variables (see Section \ref{sec:00:SUB_GRAPH}). Notice that in case $\Phi _i$ is a unary potential the same holds, considering the marginal distribution of the single variable involved by $\Phi _i$:
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_i} =
+ \sum _{ \forall \tilde{V}_{1} } \Phi _i(\tilde{V}_{1}) \mathbb{P}(\tilde{V}_{1})
+\end{eqnarray}
+which can be easily obtained through the message passing algorithm (Section \ref{sec:00:MP}).
+\\
+\\
+After all the manipulations performed, the gradient $\frac{\partial J}{\partial  w_i}$ has the following compact expression:
+\begin{eqnarray}
+\frac{\partial J}{\partial  w_i} =
+\frac{1}{N} \sum_{j=1}^{N} \Phi_i(D^i_j) - \sum_{\tilde{D}^i} \mathbb{P}(\tilde{D}^i)\Phi_i(\tilde{D}^i)
+\label{eq:00:J_grad_unc}
+\end{eqnarray} 
+
+\subsection{Learning of conditioned model}
+\label{sec:00:CON_LEARN}
+
+For such models leaning is more demanding as will be exposed.
+Recalling the definition provided in the final part of Section \ref{sec:00:PREL}, Conditional Random Fields are graphs for which the set of observations $\mathcal{O}$ is fixed. The training set $T$ is made of realizations of both $\mathcal{H}$ and $\mathcal{O}$:
+\begin{eqnarray}
+T &=& \lbrace t_1, \cdots ,t_N \rbrace \nonumber\\ 
+ &=& \lbrace \lbrace h_1, o_1 \rbrace , \cdots , \lbrace h_N, o_N \rbrace \rbrace
+\end{eqnarray}
+We recall , equation (\ref{eq:00:cond_prob}), that the conditional probability of the hidden variables w.r.t. the observed ones is defined as follows:
+\begin{eqnarray}
+\mathbb{P}(h_j, o_j) &=& \frac{E(h_j, o_j, W)}{\mathcal{Z}(o_j, W)} \nonumber\\
+E(h_j, o_j, W) &=& exp \big( \sum_{i=1}^{D} w_i \Phi_i(h_j, o_j) \big) E_0(h_j, o_j) \nonumber\\
+\mathcal{Z}(o_j, W) &=& \sum_{\tilde{h}} E(\tilde{h}, o_j, W)
+\end{eqnarray}
+The aim of learning is to maximise a likelihood  unction $L$ defined in this case as follows:
+\begin{eqnarray}
+L = \prod_{h_j \in T} \mathbb{P}(h_j | o_j) 
+\end{eqnarray}
+Passing to the logarithms and dividing by the training set size we obtain the following objective function $J$:
+\begin{eqnarray}
+J &=& \frac{log(L)}{N} \nonumber\\
+ &=& \frac{1}{N} \sum_{h_j, o_j \in T} log(E(h_j, o_j, W)) -
+\frac{1}{N} \sum_{h_j, o_j \in T}log(Z(o_j, W)) \nonumber\\
+ &=& \frac{1}{N} \sum_{h_j, o_j \in T} \big( \sum_{i=1}^{D}w_i \Phi_i (h_j, o_j) \big) -
+\frac{1}{N} \sum_{h_j, o_j \in T}log(Z(o_j, W))  \nonumber\\
+ &+& \frac{1}{N} \sum_{h_j, o_j \in T} log(E_0(h_j, o_j)) 
+\label{eq:00:J_learn_cond}
+\end{eqnarray}
+Neglecting $E_0$ which not depends upon $W$, equation (\ref{eq:00:J_learn_cond}) can be rewritten as follows:
+\begin{eqnarray}
+J &=& \alpha(T,W) - \beta(T,W) \nonumber\\
+\alpha(T,W) &=& \frac{1}{N} \sum_{h_j, o_j} \big( \sum_{i=1}^D w_i \Phi_i(h_j, o_j) \big) \nonumber\\
+\beta(T,W) &=& \frac{1}{N} \sum_{o_j} log(\mathcal{Z}(o_j,W))
+\end{eqnarray}
+
+At this point, an important remark must be done: differently from the $\beta$ defined in equation (\ref{eq:00:J_learn_beta}),  $\beta(T, W)$ of conditioned model is a function of the training set. The latter observation has an important consequence: when performing learning of unconditioned model, belief propagation (i.e. the computation of the messages through message passing with the aim of computing the marginal probabilities of the groups of variables involved in the factor of the model) must be performed once for every iteration of the gradient descend; on the opposite when considering conditioned model, belief propagation must be performed at every iteration for every element of the training set, see equation (\ref{eq:00:J_grad_con}). This makes the learning of conditioned models much more computationally demanding. This price is paid in order to not model the correlation among the observations \footnote{that can be highly correlated}, which can be interesting for many applications.
+The computation of $\frac{\partial \alpha}{\partial w_i}$ is analogous to the one of non conditioned model, equation (\ref{eq:00:J_learn_alpha_simplfied}).
+
+\subsubsection{Gradient of $\beta$}
+
+Following the same approach in Section \ref{sec:00:beta_unc}, the gradient of $\beta$ can be computed as follows:
+
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_i} &=& \frac{1}{N} \sum_{j=1}^{N} \frac{\partial log(\mathcal{Z}(o_j, W))}{\partial w_i} \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N} \frac{1}{\mathcal{Z}(o_j)} \frac{\partial \mathcal{Z}(o_j, W)}{\partial w_i} \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N} \frac{\partial}{\partial w_i} \bigg( 
+\sum_{\tilde{h}} exp \big(\sum_{i=1}^D w_i \Phi_i(\tilde{h}, o_j) \big)E_0(\tilde{h}, o_j)
+\bigg) \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N}  
+\sum_{\tilde{h}} \bigg(  exp \big(\sum_{i=1}^D w_i \Phi_j(\tilde{h}, o_j) \big)E_0(\tilde{h}, o_j)\Phi_i(\tilde{h}, o_j) \bigg)  \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N}  \sum_{\tilde{h}} \frac{E(\tilde{h}, o_j, W)}{\mathcal{Z}(o_1)}\Phi_i(\tilde{h}, o_j)   \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N}  \sum_{\tilde{h}} \mathbb{P}(\tilde{h}| o_j) \Phi_i(\tilde{h}, o_j)
+\end{eqnarray}
+
+Suppose the variables involved in the factor $\Phi _j$ are $\tilde{h} _{1,2}$, then:
+
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_i} &=& \frac{1}{N} \sum_{j=1}^{N}  \sum_{\tilde{h}} \mathbb{P}(\tilde{h}| o_j) \Phi_i(\tilde{h}, o_j) \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N}  \sum_{\tilde{h}_{1,2}} \Phi_i(\tilde{h}_{1,2}) \sum_{\tilde{h}_{3,4,\cdots}} \mathbb{P}(\tilde{h} _{1,2,3,4,\cdots}| o_j) \nonumber\\
+&=& \frac{1}{N} \sum_{j=1}^{N}  \sum_{\tilde{h}_{1,2}} \Phi_i(\tilde{h}_{1,2}) \mathbb{P}(\tilde{h} _{1,2}| o_j)
+\end{eqnarray}
+
+where $\mathbb{P}(\tilde{h} _{1,2} | o_j)$ is the conditioned marginal probability of group $\tilde{h} _{1,2}$ w.r.t. the observations $o_j$.
+\\
+\\
+Grouping all the simplifications we obtain:
+ 
+\begin{eqnarray}
+\frac{\partial J}{\partial w_i} = \frac{1}{N} \sum_{j=1}^N \Phi_i(h_j, o_j) - 
+\frac{1}{N} \sum_{j=1}^N \bigg( \sum_{\tilde{h}_{1,2}} \mathbb{P}(\tilde{h}_{1,2}|o_j) \Phi_i(\tilde{h}_{1,2}) \bigg)
+\end{eqnarray}
+
+Generalizing:
+\begin{eqnarray}
+\frac{\partial J}{\partial w_i} = \frac{1}{N} \sum_{j=1}^N \Phi_i(D_j^i, o_j) - 
+\frac{1}{N} \sum_{j=1}^N \bigg( \sum_{\tilde{D}^i} \mathbb{P}(\tilde{D}^i|o_j) \Phi_i(\tilde{D}^i, o_j) \bigg)
+\label{eq:00:J_grad_con}
+\end{eqnarray}
+
+\subsection{Learning of modular structure}
+\label{sec:00:MODULE_LEARN}
+
+Suppose to have a modular structure made of repeating units as for example the graph in Figure \ref{fig:00:mod_struct}. Every single unit has the same population of potentials and we would like to enforce this fact when performing learning. In particular we'll have some sets of Exponential shape sharing the same weight $w_1$ (see Figure \ref{fig:00:mod_struct}). Motivated by this example, we included in the library the possibility to specify that a potential must share its weight with another one. Then, learning is done consistently with the aforementioned specification.
+
+\subsubsection{Gradient of $\alpha$}
+
+Considering the model in Figure \ref{fig:00:mod_struct}, the $\alpha$ part of $J$ (equation (\ref{eq:00:J_learn_alfa})) can be computed as follows:
+\begin{eqnarray}
+\alpha = \frac{1}{N}\sum_{t_j} \big(  w_1 \Phi_1(a_{1j}, b_{1j}) +
+w_1 \Phi_2(a_{2j}, b_{2j}) +
+w_1 \Phi_3(a_{3j}, b_{3j}) + \cdots + \nonumber\\
+\cdots + \sum_{i=2}^{D} w_i \Phi_{i}(t_j) \big)
+\end{eqnarray}
+which leads to:
+\begin{eqnarray}
+\frac{\partial \alpha}{\partial w_1} = \frac{1}{N}\sum_{t_j} \big(  \Phi_1(a_{1j}, b_{1j}) +
+\Phi_2(a_{2j}, b_{2j}) +
+\Phi_3(a_{3j}, b_{3j}) \big)
+\end{eqnarray}
+
+\subsubsection{Gradient of $\beta$}
+
+Regarding the $\beta$ part of $J$ we can write what follows:
+\begin{eqnarray}
+\frac{\partial \beta}{\partial w_1} &=& \frac{1}{Z}\frac{\partial Z}{\partial w_1} \nonumber\\
+&=&  \frac{1}{Z} \frac{\partial}{\partial w_1} \big( 
+\sum_{\tilde{V}} \bigg( exp\big( w_1( 
+\Psi_1(a_{1j}, b_{1j}) + \cdots \nonumber\\
+\cdots &+&
+\Psi_2(a_{2j}, b_{2j}) +
+\Psi_3(a_{3j}, b_{3j})
+)  + \sum_{i=2}^{D} w_i \Phi _i(\tilde{V}) \big) E_0(\tilde{V})) \big)
+ \bigg) \nonumber\\
+&=& \sum_{\tilde{V}} \mathbb{P}(\tilde{V})(
+\Phi_1(\tilde{a}_1, \tilde{b}_1) + 
+\Phi_2(\tilde{a}_2, \tilde{b}_2) + 
+\Phi_3(\tilde{a}_3, \tilde{b}_3)
+) \nonumber\\
+&=& \sum_{\tilde{V}} \mathbb{P}(\tilde{V})\Phi_1(\tilde{a}_1, \tilde{b}_1) +
+\sum_{\tilde{V}} \mathbb{P}(\tilde{V})\Phi_2(\tilde{a}_2, \tilde{b}_2) +
+\sum_{\tilde{V}} \mathbb{P}(\tilde{V})\Phi_3(\tilde{a}_3, \tilde{b}_3) \nonumber\\
+&=& \sum_{\tilde{A}_1, \tilde{B}_1} \mathbb{P}(\tilde{A}_1, \tilde{B}_1) \Phi_1(\tilde{A}_1, \tilde{B}_1) +
+\sum_{\tilde{A}_2, \tilde{B}_2} \mathbb{P}(\tilde{A}_2, \tilde{B}_2) \Phi_2(\tilde{A}_2, \tilde{B}_2) + \cdots \nonumber\\
+\cdots &+&
+\sum_{\tilde{A}_3, \tilde{B}_3} \mathbb{P}(\tilde{A}_3, \tilde{B}_3) \Phi_3(\tilde{A}_3, \tilde{B}_3) 
+\end{eqnarray}
+
+
+Notice that the gradient $\frac{\partial J}{\partial w_1}$ is the summation of three terms: the ones that would have been obtained considering separately the three potentials in which $w_1$ is involved (equation (\ref{eq:00:J_grad_unc})):
+\begin{eqnarray}
+\frac{\partial J}{\partial  w_1} &=&
+\frac{1}{N} \sum_{j=1}^{N} \Phi_1(a^1_i, b^1_i) - \sum_{\tilde{a}^1,\tilde{b}^1} \mathbb{P}(\tilde{a}^1,\tilde{b}^1)\Phi_1(\tilde{a}^1,\tilde{b}^1) + \cdots \nonumber\\
+ &+& \frac{1}{N} \sum_{j=1}^{N} \Phi_2(a^2_i, b^2_i) - \sum_{\tilde{a}^2,\tilde{b}^2} \mathbb{P}(\tilde{a}^2,\tilde{b}^2)\Phi_2(\tilde{a}^2,\tilde{b}^2) + \cdots \nonumber\\
+ &+& \frac{1}{N} \sum_{j=1}^{N} \Phi_3(a^3_i, b^3_i) - \sum_{\tilde{a}^3,\tilde{b}^3} \mathbb{P}(\tilde{a}^3,\tilde{b}^3)\Phi_3(\tilde{a}^3,\tilde{b}^3) +
+\end{eqnarray}
+The above result has a general validity, also considering conditioned graphs.
+
+\begin{figure}
+	\centering
+\def\svgwidth{0.95 \columnwidth}
+\import{../src/Chapter_additional/01_Foundamentals/image/}{Chain.pdf_tex} 
+	\caption{Example of modular structure: weight $w_1$ is simultaneously involved into potentials $\Phi_1, \Phi_2$ and $\Phi_3$.}
+	\label{fig:00:mod_struct}
+\end{figure} 

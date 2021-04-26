@@ -1,0 +1,99 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_1.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{1494.47964182bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.75258486)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_1.pdf}}%
+    \put(0.0503557,0.50307269){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Evidences}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_1.pdf}}%
+    \put(0.09311895,0.69537252){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_1.pdf}}%
+    \put(0.38398221,0.39862714){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{sub-group $A_{1,2,3,4}$}}}%
+    \put(0.68688317,0.74244969){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{sub-group $B_{1,2,3}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_1.pdf}}%
+    \put(0.15079813,0.00718655){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{sub-graph $A_{1,2,3,4}$}}}%
+    \put(0.8144949,0.00314607){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{sub-graph $B_{1,2,3}$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_1.pdf}}%
+    \put(0.03783587,0.35129282){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{x_1 \rightarrow A_2}(A_2)$}}}%
+    \put(-0.00107494,0.22787353){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{x_2 \rightarrow A_1}(A_1)$}}}%
+    \put(0.45177261,0.23699689){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B_1 \rightarrow A_3}(A_3)$}}}%
+    \put(0.60773748,0.14005868){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{A_3 \rightarrow B_1}(B_1)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_1.pdf}}%
+    \put(0.09288771,0.57826892){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$X_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graph_1.pdf}}%
+    \put(0.29075953,0.5772285){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graph_1.pdf}}%
+    \put(0.40991291,0.69425168){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graph_1.pdf}}%
+    \put(0.41275179,0.46785141){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_4$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=10]{graph_1.pdf}}%
+    \put(0.52275818,0.58211611){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=11]{graph_1.pdf}}%
+    \put(0.6754041,0.58077964){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=12]{graph_1.pdf}}%
+    \put(0.79080928,0.47739918){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=13]{graph_1.pdf}}%
+    \put(0.79281667,0.68014534){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=14]{graph_1.pdf}}%
+    \put(0.88917122,0.28870474){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=15]{graph_1.pdf}}%
+    \put(0.77175866,0.18933905){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=16]{graph_1.pdf}}%
+    \put(0.88716386,0.08595857){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=17]{graph_1.pdf}}%
+    \put(0.22924802,0.30281108){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=18]{graph_1.pdf}}%
+    \put(0.34209331,0.19067552){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=19]{graph_1.pdf}}%
+    \put(0.23208689,0.0764108){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_4$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=20]{graph_1.pdf}}%
+    \put(0.11009461,0.18578792){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A_1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=21]{graph_1.pdf}}%
+  \end{picture}%
+\endgroup%

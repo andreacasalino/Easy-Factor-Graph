@@ -1,184 +1,136 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #include <model/ConditionalRandomField.h>
-#include <Parser.h>
-#include <iostream>
-#include "../node/NodeFactoryXmlIO.h"
+#include <train/handlers/BinaryHandler.h>
+#include <train/handlers/UnaryHandler.h>
+#include <io/xml/Importer.h>
+#include <train/handlers/CompositeHandler.h>
+#include "HiddenObservedHandler.h"
+#include <Error.h>
 #include <algorithm>
-#include <set>
-#include "handler/BinaryHandlerWithObservation.h"
-#include "../node/belprop/Propagator.h"
-using namespace std;
 
 namespace EFG::model {
+    ConditionalRandomField::ConditionalRandomField(const std::string& filePath, const std::string& fileName) {
+        auto ev = io::xml::Importer::importFromXml(*this, filePath, fileName);
+        if (ev.empty()) {
+            throw Error("A conditional random field should have at least 1 evidence");
+        }
+        this->resetEvidences(ev);
+        this->regenerateHandlers();
+    }
 
-	ConditionalRandomField::ConditionalRandomField(const std::string& config_xml_file) :
-		GraphLearnable(true) {
-		EFG::node::importInfo readerInfo = EFG::node::createXmlReader(config_xml_file);
-		if(nullptr != readerInfo.reader) {
-			XmlStructureImporter strct(*readerInfo.reader, readerInfo.prefix);
-			auto obsv = strct.GetObservations();
-			std::vector<std::string> ev;
-			vector<size_t> ev_val;
-			ev.reserve(obsv.size());
-			ev_val.reserve(obsv.size());
-			std::for_each(obsv.begin(), obsv.end(), [&ev, &ev_val](auto o) {
-				ev.push_back(o.first);
-				ev_val.push_back(o.second);
-			});
-			this->_Import(strct.GetStructure(), true, ev);
-			this->SetEvidences(ev_val);
-		}
-	};
+    void ConditionalRandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
+        this->InsertTunableCapable::insertTunable(toInsert);
+        this->insertHandler(toInsert);
+    }
 
-	ConditionalRandomField::ConditionalRandomField(const Structure& strct, const std::vector<std::string>& observed_var, const bool& use_cloning_Insert) :
-		GraphLearnable(use_cloning_Insert) {
-		this->_Import(strct, false, observed_var); //not sure that is always false that must be passed
-	}
+    void ConditionalRandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) {
+        this->InsertTunableCapable::insertTunable(toInsert, potentialSharingWeight);
+        this->insertHandler(toInsert);
+    }
 
-	ConditionalRandomField::ConditionalRandomField(const NodeFactory& o) : GraphLearnable(true) {
-		this->_SetPropagator(_GetPropagator(o).copy());
+    train::TrainHandlerPtr ConditionalRandomField::makeHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) {
+        auto handler = this->Trainable::makeHandler(factor);
+        if (nullptr != dynamic_cast<train::handler::UnaryHandler*>(handler.get())) {
+            if (this->evidences.find(*factor->getGroup().getVariables().begin()) != this->evidences.end()) {
+                throw Error("tunable factor attached to node observed is invalid");
+            }
+            if (this->evidences.find(*factor->getGroup().getVariables().rbegin()) != this->evidences.end()) {
+                throw Error("tunable factor attached to node observed is invalid");
+            }
+        }
+        if (nullptr != dynamic_cast<train::handler::BinaryHandler*>(handler.get())) {
+            auto itOa = this->evidences.find(*factor->getGroup().getVariables().begin());
+            auto itOb = this->evidences.find(*factor->getGroup().getVariables().rbegin());
+            if ((itOa != this->evidences.end()) && (itOb != this->evidences.end())) {
+                throw Error("tunable factor connectioning 2 observartions is invalid");
+            }
+            if (itOa != this->evidences.end()) {
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(*factor->getGroup().getVariables().rbegin())->second, std::make_pair(itOa->first, &itOa->second), factor);
+            }
+            if (itOb != this->evidences.end()) {
+                handler = std::make_unique<train::handler::HiddenObservedHandler>(this->nodes.find(*factor->getGroup().getVariables().begin())->second, std::make_pair(itOb->first, &itOb->second), factor);
+            }
+        }
+        return handler;
+    }
 
-		auto obsv = o.GetObservationSet();
-		vector<std::string> ev;
-		vector<size_t> ev_val;
-		ev.reserve(obsv.size());
-		ev_val.reserve(obsv.size());
-		std::for_each(obsv.begin(), obsv.end(), [&ev, &ev_val](auto o) {
-			ev.push_back(o.first->GetName());
-			ev_val.push_back(o.second);
-		});
+    std::vector<float> ConditionalRandomField::getGradient(train::TrainSetPtr trainSet) {
+        this->Trainable::setTrainSet(trainSet);
+        this->lastPropagation.reset();
+        std::vector<float> grad;
+        grad.resize(this->handlers.size());
+        std::size_t pos = 0;
+        // compute alpha part
+        std::for_each(this->handlers.begin(), this->handlers.end(), [&grad, &pos](train::TrainHandlerPtr& h) {
+            grad[pos] = h->getGradientAlpha();
+            ++pos;
+        });
+        // compute beta part
+        std::vector<std::size_t> observationPositions;
+        observationPositions.reserve(this->evidences.size());
+        auto vars = this->getVariables();
+        for (auto it = this->evidences.begin(); it != this->evidences.end(); ++it) {
+            observationPositions.push_back(std::distance(vars.begin(), vars.find(it->first)));
+        }
+        std::vector<std::size_t> observations;
+        observations.resize(observationPositions.size());
+        float coeff = 1.f / static_cast<float>(trainSet->getSet().size());
+        auto setObservations = [&](const categoric::Combination& comb){
+            for (std::size_t k = 0; k < observationPositions.size(); ++k) {
+                observations[k] = comb.data()[observationPositions[k]];
+            }
+            this->setEvidences(observations);
+            this->propagateBelief(nodes::PropagationKind::Sum);
+        };
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const train::CombinationPtr& comb) {
+                setObservations(*comb);
+                pos = 0;
+                std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
+                    train::TrainHandler* pt = h.get();
+                    this->threadPool->push([pt, pos, &grad, &coeff]() { grad[pos] -= coeff * pt->getGradientBeta(); });
+                    ++pos;
+                });
+                this->threadPool->wait();
+            });
+        }
+        else {
+#endif
+            std::for_each(trainSet->getSet().begin(), trainSet->getSet().end(), [&](const train::CombinationPtr& comb) {
+                setObservations(*comb);
+                pos = 0;
+                std::for_each(this->handlers.begin(), this->handlers.end(), [&](train::TrainHandlerPtr& h) {
+                    grad[pos] -= coeff * h->getGradientBeta();
+                    ++pos;
+                });
+            });
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
+        return grad;
+    }
 
-		this->_Import(o.GetStructure(), false, ev);
-		this->SetEvidences(ev_val);
-	};
-
-	struct RedundantRemover {
-		template<typename P>
-		vector<P*> operator()(const vector<P*>& arr, const std::set<std::string>& ordered_evidences) {
-			vector<P*> minimal;
-			minimal.reserve(arr.size());
-			size_t A = arr.size(), V;
-			bool add;
-			for (size_t a = 0; a < A; ++a) {
-				add = true;
-				const vector<CategoricVariable*>& vars = arr[a]->GetDistribution().GetVariables();
-				V = vars.size();
-				if (V == 1) {
-					if (ordered_evidences.find(vars.front()->GetName()) != ordered_evidences.end()) add = false;
-				}
-				else if (V == 2) {
-					if ((ordered_evidences.find(vars.front()->GetName()) != ordered_evidences.end()) && (ordered_evidences.find(vars.back()->GetName()) != ordered_evidences.end()))
-						add = false;
-				}
-				if (add) minimal.push_back(arr[a]);
-			}
-			return minimal;
-		};
-	};
-	void ConditionalRandomField::_Import(const Structure& strct, const bool& use_move, const std::vector<std::string>& evidences) {
-
-		// import the minimal structure that excludes the potential fully connected to obeservatons
-		std::set<std::string> ordered_evidences;
-		for (auto it : evidences) ordered_evidences.insert(it);
-		Structure strct_minimal;
-		RedundantRemover Rm;
-		get<0>(strct_minimal) = Rm(get<0>(strct), ordered_evidences);
-		get<2>(strct_minimal) = Rm(get<2>(strct), ordered_evidences);
-		get<1>(strct_minimal).reserve(get<1>(strct).size());
-		for (size_t k = 0; k < get<1>(strct).size(); ++k) {
-			vector<pot::ExpFactor*> temp = Rm(get<1>(strct)[k], ordered_evidences);
-			if (!temp.empty()) get<1>(strct_minimal).emplace_back(move(temp));
-		}
-		this->_Insert(strct_minimal, use_move);
-
-		//create set of observations and hidden vars
-		if (evidences.empty()) cout << "Warning in when building a Conditional_Random_Field: empty evidences set" << endl;
-		vector<pair<string, size_t>> obsv;
-		obsv.reserve(evidences.size());
-		for (size_t o = 0; o < evidences.size(); ++o) obsv.emplace_back(make_pair(evidences[o], 0));
-		this->_SetEvidences(obsv);
-
-		//replace handlers partially connected to observations
-		list<AtomicHandler*> all_atomics = this->_GetAllHandlers();
-		vector<size_t*> obsv_vals = { nullptr, nullptr };
-		size_t K;
-		for (auto it : all_atomics) {
-			const vector<CategoricVariable*>& vars = it->GetDistribution().GetVariables();
-			K = vars.size();
-			if (K == 2) {
-				obsv_vals[0] = this->_FindObservation(vars[0]->GetName());
-				obsv_vals[1] = this->_FindObservation(vars[1]->GetName());
-
-				if (obsv_vals[0] != nullptr)
-					this->_Replace<BinaryHandlerWithObservation>(it->GetDistribution().GetVariables(), this->_FindNode(vars.back()->GetName()), obsv_vals[0]);
-				else if (obsv_vals[1] != nullptr)
-					this->_Replace<BinaryHandlerWithObservation>(it->GetDistribution().GetVariables(), this->_FindNode(vars.front()->GetName()), obsv_vals[1]);
-			}
-		}
-
-		this->OrderTrainingSet = nullptr;
-		this->posObservationsTrainingSet = nullptr;
-
-	}
-
-	vector<float> ConditionalRandomField::_GetBetaPart(const distr::Combinations& training_set) {
-
-		vector<float> betas;
-		size_t k, K = this->GetModelSize();
-		betas.reserve(K);
-		for (k = 0; k < K; ++k) betas.push_back(0.f);
-		float coeff = 1.f / (float)training_set.size();
-
-		//recompute pos_observations if needed
-		if (&training_set.GetVariables() != this->OrderTrainingSet) {
-			this->OrderTrainingSet = &training_set.GetVariables();
-
-			map<CategoricVariable*, size_t>  obs_map;
-			const vector<CategoricVariable*>& train_set_vars = training_set.GetVariables();
-			K = train_set_vars.size();
-			for (k = 0; k < K; ++k) obs_map.emplace(train_set_vars[k], k);
-
-			auto obs_temp = this->GetObservationSet();
-			K = obs_temp.size();
-			if (this->posObservationsTrainingSet == nullptr) this->posObservationsTrainingSet = new size_t[K];
-			this->posObservationsSize = K;
-			for (k = 0; k < K; ++k) this->posObservationsTrainingSet[k] = obs_map.find(obs_temp[k].first)->second;
-		}
-
-		vector<size_t> observations;
-		observations.reserve(this->posObservationsSize);
-		K = this->GetModelSize();
-		auto it = training_set.getIter();
-
-		itr::forEach<distr::Combinations::constIterator>(it, [this, &observations, &betas, &coeff, &k](distr::Combinations::constIterator& itt) {
-			observations.clear();
-			for (k = 0; k < this->posObservationsSize; ++k) observations.push_back((*itt)[this->posObservationsTrainingSet[k]]);
-
-			this->_SetEvidences(observations);
-			this->_BeliefPropagation(true);
-
-			k = 0;
-			#ifdef THREAD_POOL_ENABLED
-			if (this->ThPool == nullptr) {
-			#endif
-				std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff, &k](LearningHandler* h) {
-					betas[k] += coeff * h->GetBetaPart();
-					++k;
-				});
-			#ifdef THREAD_POOL_ENABLED
-			}
-			else {
-				std::for_each(this->_GetLearnerList()->begin(), this->_GetLearnerList()->end(), [&betas, &coeff, &k, this](LearningHandler* h) {
-					float* pval = &betas[k];
-					this->ThPool->push([pval, &coeff, h]() { *pval += coeff * h->GetBetaPart(); });
-					++k;
-				});
-				this->ThPool->wait();
-			}
-			#endif
-		});
-
-		return betas;
-
-	}
-
+    void ConditionalRandomField::regenerateHandlers() {
+        auto clusters = this->getFactorsTunable();
+        this->handlers.clear();
+        std::for_each(clusters.begin(), clusters.end(), [this](const std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cl) {
+            if (1 == cl.size()) {
+                this->handlers.emplace_back(this->makeHandler(cl.front()));
+            }
+            else {
+                std::unique_ptr<train::handler::CompositeHandler> hndl = std::make_unique<train::handler::CompositeHandler>(this->makeHandler(cl[0]), this->makeHandler(cl[1]));
+                for (std::size_t k = 2; k < cl.size(); ++k) {
+                    hndl->addElement(this->makeHandler(cl[k]));
+                }
+                this->handlers.emplace_back(std::move(hndl));
+            }
+        });
+    }
 }

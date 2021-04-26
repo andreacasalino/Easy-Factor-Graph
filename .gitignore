@@ -3,3 +3,7 @@ TODO_branchPlanning.svg
 bin
 build
 .vscode
+latex
+html
+EFG_debug.pdf
+__pycache__

@@ -1,0 +1,78 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_2_b.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{930.12196638bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.63987068)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_2_b.pdf}}%
+    \put(0.74740271,0.41700567){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow C}(C)  = \begin{pmatrix} \Psi_{BC}( 1, 1 ) \\ \Psi_{BC}( 0, 1 ) \end{pmatrix} = \begin{pmatrix} 1 \\ exp(\alpha) \end{pmatrix} $}}}%
+    \put(0.15821463,0.53012304){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0.25650503,0.60514814){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Psi_{AB} = exp(\beta \Phi_{AB})$}}}%
+    \put(-0.00074733,0.35028475){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$ is observed}}}%
+    \put(0.00669203,0.61536533){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{initial graph}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_2_b.pdf}}%
+    \put(0.51185488,0.53012303){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_2_b.pdf}}%
+    \put(0.90877574,0.53109133){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0.67055301,0.60231302){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$\Psi_{BC} = exp(\alpha \Phi_{BC})$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_2_b.pdf}}%
+    \put(0.15821463,0.29167504){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_2_b.pdf}}%
+    \put(0.47085698,0.29167499){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$B=1$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_2_b.pdf}}%
+    \put(0.88636368,0.28918753){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0.28318849,0.00760674){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow A}(A) = \Phi_{A}(A) \propto \mathbb{P}(A|B)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graph_2_b.pdf}}%
+    \put(0.15821464,0.08432899){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$A$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graph_2_b.pdf}}%
+    \put(0.88636372,0.08184146){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$C$}}}%
+    \put(0.02752243,0.42087373){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow A}(A)  = \begin{pmatrix} \Psi_{AB}( 0, 1 ) \\ \Psi_{AB}( 1, 1 ) \end{pmatrix} = \begin{pmatrix} 1 \\ exp(\beta) \end{pmatrix} $}}}%
+    \put(0.69319225,0.16193369){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$M _{B \rightarrow C}(C) = \Phi_{C}(C) \propto \mathbb{P}(C|B)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graph_2_b.pdf}}%
+  \end{picture}%
+\endgroup%

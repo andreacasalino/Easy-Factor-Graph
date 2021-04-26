@@ -1,0 +1,80 @@
+%% Creator: Inkscape inkscape 0.92.1, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'graph_4.pdf' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{974.62817068bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.50486528)%
+    \put(0,0){\includegraphics[width=\unitlength,page=1]{graph_4.pdf}}%
+    \put(0.40861825,0.05452886){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_3$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=2]{graph_4.pdf}}%
+    \put(0.00861049,0.23670648){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_1=0$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=3]{graph_4.pdf}}%
+    \put(0.25450228,0.23560716){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_2$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=4]{graph_4.pdf}}%
+    \put(0.82510808,0.0400079){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_8$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=5]{graph_4.pdf}}%
+    \put(0.70381677,0.42596939){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_6$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=6]{graph_4.pdf}}%
+    \put(0.40564493,0.4251881){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_4$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=7]{graph_4.pdf}}%
+    \put(0.56813447,0.23780582){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_5$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=8]{graph_4.pdf}}%
+    \put(0.8251869,0.24110377){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$v_7$}}}%
+    \put(0.52054829,0.48147896){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(2 \Phi)$}}}%
+    \put(0.84038214,0.36307847){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(0.2 \Phi)$}}}%
+    \put(0.7107277,0.17806904){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(1 \Phi)$}}}%
+    \put(0.89025167,0.14019657){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(2 \Phi)$}}}%
+    \put(0.55126097,0.34438999){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(1 \Phi)$}}}%
+    \put(0.46309544,0.27315406){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(2 \Phi)$}}}%
+    \put(0.29303058,0.37319219){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(1 \Phi)$}}}%
+    \put(0.27309415,0.09598225){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(0.2 \Phi)$}}}%
+    \put(0.51364333,0.09308538){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(0.2 \Phi)$}}}%
+    \put(0.14119358,0.29316169){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{$exp(2 \Phi)$}}}%
+    \put(0,0){\includegraphics[width=\unitlength,page=9]{graph_4.pdf}}%
+  \end{picture}%
+\endgroup%

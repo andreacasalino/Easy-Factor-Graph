@@ -1,127 +1,47 @@
-option(BUILD_01 "Build Sample_01" ON)
-if(BUILD_01)
-    add_executable(
-        Sample01
-        ./Sample_01_Potential_handling/Main_01.cpp
-    )
+add_subdirectory(Utils)
 
-    target_link_libraries( Sample01
+function(AddSample NAME_)
+    add_executable(${NAME_} ${NAME_}.cpp )
+
+    target_link_libraries(${NAME_}
 		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
-endif()
-
-option(BUILD_02 "Build Sample_02" ON)
-if(BUILD_02)
-    add_executable(
-        Sample02
-        ./Sample_02_Belief_propagation_A/Main_02.cpp
+			Sample-Utils
     )
-
-    target_link_libraries( Sample02
-		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
-endif()
-
-option(BUILD_03 "Build Sample_03" ON)
-if(BUILD_03)
-    add_executable(
-        Sample03
-        ./Sample_03_Belief_propagation_B/Main_03.cpp
-    )
-
-    target_link_libraries( Sample03
-		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
 	
-	add_custom_command(TARGET Sample03 PRE_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_03_Belief_propagation_B/Sample_03_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_03_graphs
-    )
-endif()
-
-option(BUILD_04 "Build Sample_04" ON)
-if(BUILD_04)
-    add_executable(
-        Sample04
-        ./Sample_04_HMM_chain/Main_04.cpp
-    )
-
-    target_link_libraries( Sample04
-		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
-	
-	add_custom_command(TARGET Sample04 PRE_BUILD
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Sample_04_graphs
+	target_compile_definitions(${NAME_} 
+	PUBLIC
+		-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/"
 	)
-endif()
+endfunction()
 
-option(BUILD_05 "Build Sample_05" ON)
-if(BUILD_05)
-    add_executable(
-        Sample05
-        ./Sample_05_Graph_Matrix/Main_05.cpp
-    )
+function(AddSamplePath NAME_)
+    add_executable(${NAME_} ${CMAKE_CURRENT_SOURCE_DIR}/${NAME_}/${NAME_}.cpp )
 
-    target_link_libraries( Sample05
+    target_link_libraries(${NAME_}
 		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
+			Sample-Utils
+    )
 	
-	add_custom_command(TARGET Sample04 PRE_BUILD
-		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/Sample_05_graphs
+	target_compile_definitions(${NAME_} 
+	PUBLIC
+		-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/${NAME_}/"
 	)
-endif()
+endfunction()
 
-option(BUILD_06 "Build Sample_06" ON)
-if(BUILD_06)
-    add_executable(
-        Sample06
-        ./Sample_06_Learning_A/Main_06.cpp
-    )
+AddSample(Sample01-1-Variables)
 
-    target_link_libraries( Sample06
-		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
-	
-	add_custom_command(TARGET Sample06 PRE_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_06_Learning_A/Sample_06_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_06_graphs
-    )
-endif()
+AddSample(Sample01-2-Factors)
 
-option(BUILD_07 "Build Sample_06" ON)
-if(BUILD_07)
-    add_executable(
-        Sample07
-        ./Sample_07_Learning_B/Main_07.cpp
-    )
+AddSample(Sample02-BeliefPropagation-A)
 
-    target_link_libraries( Sample07
-		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
-	
-	add_custom_command(TARGET Sample07 PRE_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_07_Learning_B/Sample_07_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_07_graphs
-    )
-endif()
+AddSamplePath(Sample03-BeliefPropagation-B)
 
-option(BUILD_08 "Build Sample_06" ON)
-if(BUILD_08)
-    add_executable(
-        Sample08
-        ./Sample_08_subgraph_operation/Main_08.cpp
-    )
+AddSample(Sample04-HMM-chain)
 
-    target_link_libraries( Sample08
-		PUBLIC
-			EFG::Easy-Factor-Graph
-    )	
-	
-	add_custom_command(TARGET Sample08 PRE_BUILD
-	    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/Sample_08_subgraph_operation/Sample_08_graphs ${CMAKE_CURRENT_BINARY_DIR}/Sample_08_graphs
-    )
-endif()
+AddSample(Sample05-Matricial)
+
+AddSamplePath(Sample06-Learning-A)
+
+AddSamplePath(Sample07-Learning-B)
+
+AddSamplePath(Sample08-Subgraphing)

@@ -1,39 +1,37 @@
-set(PROJECT_SHORTNAME "Easy-Factor-Graph")
-project(${PROJECT_SHORTNAME} VERSION ${VERSION} LANGUAGES CXX)
-string(REPLACE - _ COMPONENT_NAME ${PROJECT_NAME})
+set(PROJECT_SHORTNAME "EFG")
 
 CollectSourceFiles(${CMAKE_CURRENT_SOURCE_DIR} SOURCES)
-
 GroupSources(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(LIB_OPT)
-	add_library(${PROJECT_NAME} SHARED ${SOURCES})
+	add_library(${PROJECT_SHORTNAME} SHARED ${SOURCES})
 else()
-	add_library(${PROJECT_NAME} STATIC ${SOURCES})
+	add_library(${PROJECT_SHORTNAME} STATIC ${SOURCES})
 endif()
-add_library(EFG::${PROJECT_SHORTNAME} ALIAS ${PROJECT_NAME})
 
-target_compile_features(${PROJECT_NAME}
+target_compile_features(${PROJECT_SHORTNAME}
     PUBLIC cxx_auto_type
     PRIVATE cxx_variadic_templates
 )
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(${PROJECT_SHORTNAME}
     PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Header>
-        $<INSTALL_INTERFACE:Header>
+	PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Source/train/handlers>
 )
 
 if(THREAD_POOL_OPT)
-target_compile_definitions(${PROJECT_NAME} PUBLIC THREAD_POOL_ENABLED)
-target_link_libraries(${PROJECT_NAME}
-    PUBLIC
+target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC THREAD_POOL_ENABLED)
+target_link_libraries(${PROJECT_SHORTNAME}
+    PRIVATE
         XMLPrs::XML-Parser
-	thpl::Thread-Pool
+	PUBLIC
+		thpl::Thread-Pool
 )
 else()
-target_link_libraries(${PROJECT_NAME}
-    PUBLIC
+target_link_libraries(${PROJECT_SHORTNAME}
+    PRIVATE
         XMLPrs::XML-Parser
 )
 endif()

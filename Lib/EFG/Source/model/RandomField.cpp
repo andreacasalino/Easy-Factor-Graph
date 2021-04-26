@@ -1,75 +1,52 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
 #include <model/RandomField.h>
-#include <Parser.h>
-#include <iostream>
-#include "../node/NodeFactoryXmlIO.h"
 #include <algorithm>
-#include <Error.h>
-using namespace std;
 
 namespace EFG::model {
+    void RandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
+        this->InsertTunableCapable::insertTunable(toInsert);
+        this->insertHandler(toInsert);
+    }
 
-	RandomField::RandomField(const std::string& config_xml_file) :
-		GraphLearnable(true) {
-		EFG::node::importInfo readerInfo = EFG::node::createXmlReader(config_xml_file);
-		if(nullptr != readerInfo.reader) {
-			XmlStructureImporter strct(*readerInfo.reader, readerInfo.prefix);
-			this->_Insert(strct.GetStructure(), true);
-			this->_SetEvidences(strct.GetObservations());
-		}
-	};
+    void RandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) {
+        this->InsertTunableCapable::insertTunable(toInsert, potentialSharingWeight);
+        this->insertHandler(toInsert);
+    }
 
-	vector<float> RandomField::_GetBetaPart(const distr::Combinations& training_set) {
-
-		this->SetEvidences(std::vector<std::pair<std::string, size_t>>{});
-
-		this->_BeliefPropagation(true);
-
-		vector<float> betas;
-		betas.reserve(this->GetModelSize());
-		auto L = this->_GetLearnerList();
-
-		#ifdef THREAD_POOL_ENABLED
-		if (this->ThPool == nullptr) {
-		#endif
-			std::for_each(L->begin(), L->end(), [&betas](LearningHandler* l) { betas.push_back(l->GetBetaPart()); });
-		#ifdef THREAD_POOL_ENABLED
-		}
-		else {
-			std::for_each(L->begin(), L->end(), [&betas, this](LearningHandler* l) { 
-				betas.push_back(0.f);
-				float* pval = &betas.back();
-				this->ThPool->push([pval, l]() { *pval = l->GetBetaPart(); });
-			});
-			this->ThPool->wait();
-		}
-		#endif
-		return betas;
-	}
-
-#define INSERT_SHARE \
-	if (P != nullptr) {\
-		vector<CategoricVariable*> vars_shared;\
-		vars_shared.reserve(vars_of_pot_whose_weight_is_to_share.size());\
-		for (size_t k = 0; k < vars_of_pot_whose_weight_is_to_share.size(); ++k) {\
-			node::Node* temp = this->_FindNode(vars_of_pot_whose_weight_is_to_share[k]);\
-			if (temp == nullptr) throw Error("model::RandomField", "inexistent variable");\
-			vars_shared.push_back(temp->GetVar());\
-		}\
-		this->_Share(vars_shared, pot.GetDistribution().GetVariables());\
-	}
-
-	void RandomField::Insert(pot::ExpFactor& pot, const std::vector<std::string>& vars_of_pot_whose_weight_is_to_share) {
-
-		auto P = this->GraphLearnable::_Insert(pot, true);
-		INSERT_SHARE
-
-	};
-
-	void RandomField::InsertMove(pot::ExpFactor&& pot, const std::vector<std::string>& vars_of_pot_whose_weight_is_to_share) {
-
-		auto P = this->GraphLearnable::_Insert(std::move(pot), true);
-		INSERT_SHARE
-
-	};
-
+    std::vector<float> RandomField::getGradient(train::TrainSetPtr trainSet) {
+        this->Trainable::setTrainSet(trainSet);
+        if (!this->evidences.empty()) {
+            this->resetEvidences({});
+        }
+        this->lastPropagation.reset();
+        std::vector<float> grad;
+        grad.resize(this->handlers.size());
+        std::size_t pos = 0;
+        this->propagateBelief(nodes::PropagationKind::Sum);
+#ifdef THREAD_POOL_ENABLED
+        if (nullptr != this->threadPool) {
+            std::for_each(this->handlers.begin(), this->handlers.end(), [this, &grad, &pos](train::TrainHandlerPtr& h) {
+                train::TrainHandler* pt = h.get();
+                this->threadPool->push([pt, pos, &grad]() { grad[pos] = pt->getGradientAlpha() - pt->getGradientBeta(); });
+                ++pos;
+            });
+            this->threadPool->wait();
+        }
+        else {
+#endif
+            std::for_each(this->handlers.begin(), this->handlers.end(), [&grad, &pos](train::TrainHandlerPtr& h) {
+                grad[pos] = h->getGradientAlpha() - h->getGradientBeta();
+                ++pos;
+            });
+#ifdef THREAD_POOL_ENABLED
+        }
+#endif
+        return grad;
+    }
 }
