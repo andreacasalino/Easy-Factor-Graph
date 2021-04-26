@@ -55,10 +55,9 @@ int main() {
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({ expf(alfa), 1.f, 1.f, expf(alfa) }) << endl;
         cout << graph.getJointMarginalDistribution({ "A", "B" }).getProbabilities() << endl << endl;
-    }, "Subgraph from simple chain");
+    }, "Joint distribution of a subgroup of variables", "refer to Section 4.8.1 of the documentation");
 
     EFG::sample::samplePart([]() {        
-        //build the graph described in 'Sample 08: Sub-graphing'
         model::RandomField graph;
         io::xml::Importer::importFromXml(graph, SAMPLE_FOLDER, "graph.xml");
         // set the evidences
@@ -122,7 +121,7 @@ int main() {
             cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
             cout << marginal_A12434.find(comb_raw.back()) / distrSum << endl;
         }
-    }, "Subgraph from complex graph");
+    }, "Joint distribution of a subgroup of variables inside a complex model", "refer to Section 4.8.2 of the documentation");
 
 	return EXIT_SUCCESS;
 }

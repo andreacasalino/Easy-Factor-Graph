@@ -5,9 +5,6 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-// Refer also to Section 'Sample 06: Learning, part A' of the documentation
-
-
 #include <model/RandomField.h>
 #include <train/trainers/GradientDescend.h>
 #include <io/xml/Importer.h>
@@ -30,7 +27,6 @@ void trainModel(model::RandomField& graph, TrainSetPtr trainSet, train::Trainer&
 
 int main() {	
 	EFG::sample::samplePart([]() {
-		//build the structure explained in 'Sample 06: Learning, part A / part 01'
 		VariablePtr A = makeVariable(2, "A");
 		VariablePtr B = makeVariable(2, "B");
 		VariablePtr C = makeVariable(2, "C");
@@ -67,10 +63,9 @@ int main() {
 		GradientDescend trainer;
 		trainer.setMaxIterations(50);
 		trainModel(graph, std::make_shared<TrainSet>(samples), trainer, std::make_pair("C" , 0), "A");
-	}, "Simple tunable model");
+	}, "Simple tunable model", "refer to Section 4.6.1 of the documentation");
 
 	EFG::sample::samplePart([]() {
-		//build the structure explained in 'Sample 06: Learning, part A / part 02'
 		VariablePtr A = makeVariable(2, "A");
 		VariablePtr B = makeVariable(2, "B");
 		VariablePtr C = makeVariable(2, "C");
@@ -90,7 +85,7 @@ int main() {
 		GradientDescend trainer;
 		trainer.setAdvancement(0.1f);
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)), trainer, std::make_pair("D" , 0), "A");
-	}, "Medium size tunable and non tunable factors model");
+	}, "Medium size tunable model", "refer to Section 4.6.2 of the documentation");
 
 	EFG::sample::samplePart([]() {
 		model::RandomField graph;
@@ -99,7 +94,7 @@ int main() {
 		GradientDescend trainer;
 		trainer.setAdvancement(0.1f);
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1500, 100)), trainer, std::make_pair("v5" , 0), "v1", 3);
-	}, "Complex tunable model");
+	}, "Complex tunable model", "refer to Section 4.6.3 of the documentation");
 	
 	EFG::sample::samplePart([]() {
 		VariablePtr X1 = makeVariable(2, "X1");
@@ -123,7 +118,7 @@ int main() {
 		GradientDescend trainer;
 		trainer.setMaxIterations(50);
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)), trainer, std::make_pair("X1" , 0), "Y2");
-	}, "Model with shared weights");
+	}, "Tunable model with shared weights", "refer to Section 4.6.4 of the documentation");
 
 	return EXIT_SUCCESS;
 }

@@ -5,9 +5,6 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-// Refer also to Section 'Sample 02: Belief propagation, part B' of the documentation
-
-
 #include <model/Graph.h>
 #include <io/xml/Importer.h>
 #include <Presenter.h>
@@ -34,7 +31,6 @@ int main() {
 		cout << "E=1\n";
 
 		// compute the marginals distributions of the other variables and compare it 
-		// with the theoretical results (see also 'Sample 03: Belief propagation, part B / part 01')
 		cout << "P(A|E)\n";
 		cout << "theoretical\n";
 		cout << sample::makeDistribution({ (a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e)) }) << endl;
@@ -104,11 +100,11 @@ int main() {
 		cout << "theoretical\n";
 		cout << sample::makeDistribution({ 1.f, e }) << endl;
 		cout << graph.getMarginalDistribution("E") << endl << endl;
-	}, "Simple polytree", "Belief propagation, part B");
+	}, "Simple polytree belief propagation", "refer to Section 4.3.1 of the documentation");
 
 	EFG::sample::samplePart([]() {
 		model::Graph politree;
-		//import the graph described in 'Sample 03: Belief propagation, part B / part 02' from an existing xml file
+		//import the graph an existing xml file
 		xml::Importer::importFromXml(politree, SAMPLE_FOLDER, "graph_2.xml");
 		
 		//active the thread pool to fasten the computation
@@ -138,11 +134,11 @@ int main() {
 		cout << "empirical\n";
 		cout << sample::getEmpiricalMarginalFrequencies(politree.findVariable("v12"), samples, hidden_set) << endl;
 		cout << politree.getMarginalDistribution("v12") << endl << endl;
-	}, "Complex polytree", "Belief propagation, part B");
+	}, "Complex polytree belief propagation", "refer to Section 4.3.2 of the documentation");
 
 	EFG::sample::samplePart([]() {
 		model::Graph loop;
-		//import the graph described in 'Sample 03: Belief propagation, part B / part 03' from an existing xml file
+		//import the graph an existing xml file
 		xml::Importer::importFromXml(loop, SAMPLE_FOLDER, "graph_3.xml");
 		
 		// set the observation
@@ -150,9 +146,7 @@ int main() {
 		cout << endl << endl;
 		cout << "E=1\n";
 		
-		// compute the marginals distributions of the hidden variables and compare it 
-		// with the theoretical results (see also 'Sample 03: Belief propagation, part B / part 03')
-		
+		// compute the marginals distributions of the hidden variables and compare it 		
 		float M = expf(1.f);
 		float M_alfa = powf(M, 3) + M + 2.f*powf(M, 2);
 		float M_beta = powf(M, 4) + 2.f*M + powf(M, 2);
@@ -176,11 +170,11 @@ int main() {
 		cout << "theoretical\n";
 		cout << sample::makeDistribution({ M * M_alfa + M_beta, M_alfa + M * M_beta }) << endl;
 		cout << loop.getMarginalDistribution("A") << endl << endl;
-	}, "Simple Loopy model", "Belief propagation, part B");
+	}, "Simple loopy model belief propagation", "refer to Section 4.3.3 of the documentation");
 
 	EFG::sample::samplePart([]() {
 		model::Graph loop;
-		//import the graph described in 'Sample 03: Belief propagation, part B / part 04' from an existing xml file
+		//import the graph from an existing xml file
 		xml::Importer::importFromXml(loop, SAMPLE_FOLDER, "graph_4.xml");
 		
 		//active the thread pool to fasten the computation
@@ -201,7 +195,7 @@ int main() {
 		cout << "empirical\n";
 		cout << sample::getEmpiricalMarginalFrequencies(loop.findVariable("v8"), samples, hidden_set) << endl;
 		cout << loop.getMarginalDistribution("v8") << endl << endl;
-	}, "Complex loopy model", "Belief propagation, part B");
+	}, "Complex loopy model belief propagation", "refer to Section 4.3.4 of the documentation");
 
 	return EXIT_SUCCESS;
 }

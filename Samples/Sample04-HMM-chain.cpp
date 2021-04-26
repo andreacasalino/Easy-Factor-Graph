@@ -5,8 +5,6 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-// Refer also to Section 'Sample 04: Hidden Markov model like structure' of the documentation
-
 #include <model/Graph.h>
 #include <io/xml/Exporter.h>
 #include <distribution/factor/const/Indicator.h>
@@ -30,7 +28,7 @@ int main() {
 		vector<size_t> Y_MAP;
 		Y_MAP.reserve(chain_size);
 
-		//create a chain with a strong weight on the potentials XY. Evidences are set as indicated in Sample 04 
+		//create a chain with a strong weight on the potentials XY. 
 		auto G_XY = makeChain(chain_size, var_dom_size, 2.f, 0.5f);
 		//compute MAP on hidden variables and display it
 		for (size_t k = 0; k < chain_size; ++k) {
@@ -38,7 +36,7 @@ int main() {
 		}
 		cout << "Strong correlation with edivences,   MAP on Y0,1,..   " << Y_MAP << endl;
 
-		//create a chain with a strong weight on the potentials YY. Evidences are set as indicated in Sample 04
+		//create a chain with a strong weight on the potentials YY.
 		auto G_YY = makeChain(chain_size, var_dom_size, 0.5f, 2.f);
 		//compute MAP on hidden variables and display it
 		Y_MAP.clear();
@@ -50,7 +48,7 @@ int main() {
 		//export chains into an xml (just as an exporting example)
 		io::xml::Exporter::exportToXml(*G_XY, "Graph_XY.xml", "Graph_XY");
 		io::xml::Exporter::exportToXml(*G_YY, "Graph_YY.xml", "Graph_YY");
-	}, "HMM", "", "Check the content of Graph_XY.xml and Graph_YY.xml");
+	}, "Simple chain of hidden and observed variables", "refer to Section 4.4 of the documentation", "Check the content of the created Graph_XY.xml and Graph_YY.xml");
 
 	return EXIT_SUCCESS;
 }
@@ -60,7 +58,6 @@ unique_ptr<model::Graph> makeChain(const std::size_t& Chain_size, const std::siz
 	if (var_size < 2) throw Error("invalid variable size");
 
 	unique_ptr<model::Graph> G = make_unique<model::Graph>();
-	//build the chain structure described in 'Sample 04: Hidden Markov model like structure'
 	factor::cnst::FactorExponential P_XY(factor::cnst::Factor(std::set<categoric::VariablePtr>{makeVariable(var_size, "X_fake"), makeVariable(var_size, "Y_fake")}, true), w_XY);
 	factor::cnst::FactorExponential P_YY(factor::cnst::Factor(std::set<categoric::VariablePtr>{makeVariable(var_size, "Y_fake"), makeVariable(var_size, "Y2_fake")}, true), w_YY);
 

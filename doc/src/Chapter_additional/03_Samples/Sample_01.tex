@@ -6,7 +6,94 @@
 
 The aim of this series of examples is mainly to show how to handle the creation of variables and factors.
 
-\subsection{part 01}
+\subsection{Variables creation}
+
+\subsubsection{part 01}
+
+This example creates a tow initial variables $A$ and $B$ with a domain size equal to 2 and places them into a group storing them. Later, it adds variables $C$ and $D$, with the same domain size. Finally, tries to add again $C$, showing the this further addition is correctly refused.
+
+\subsubsection{part 02}
+
+This example considers 3 variables $A$, $B$ and $C$ with a domain sizes equal to, respectively, 2,4 and 3, i.e:
+\begin{eqnarray}
+Dom(A) &=& \lbrace a_1 = 0, a_2 = 1 \rbrace \nonumber\\
+Dom(B) &=& \lbrace b_1 = 0, b_2 = 1, b_3 = 2, b_4 = 3 \rbrace \nonumber\\
+Dom(C) &=& \lbrace c_1 = 0, c_2 = 1, c_3 = 2 \rbrace
+\end{eqnarray}
+
+Then, evaluates the joint domain of: $A \cup B$, $A \cup C$ and $A \cup B \cup C$, which should results in the following combinations reported in, respectively, tables \ref{tab:sampleVar:AB}, \ref{tab:sampleVar:AC} and \ref{tab:sampleVar:ABC}.
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|}
+      $Dom(AB) = Dom(A \cup B )$  \\
+      \hline
+$\lbrace a_1, b_1  \rbrace$ \\ \hline
+$\lbrace a_1, b_2  \rbrace$ \\ \hline
+$\lbrace a_1, b_3  \rbrace$ \\ \hline
+$\lbrace a_1, b_4  \rbrace$ \\ \hline
+$\lbrace a_2, b_1  \rbrace$ \\ \hline
+$\lbrace a_2, b_2  \rbrace$ \\ \hline
+$\lbrace a_2, b_3  \rbrace$ \\ \hline
+$\lbrace a_2, b_4  \rbrace$ \\ \hline
+\end{tabular}
+\caption{Domain of $AB$.} 
+\label{tab:sampleVar:AB}
+\end{table}
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|}
+      $Dom(AC) = Dom(A \cup C )$  \\
+      \hline
+$\lbrace a_1, c_1  \rbrace$ \\ \hline
+$\lbrace a_1, c_2  \rbrace$ \\ \hline
+$\lbrace a_1, c_3  \rbrace$ \\ \hline
+$\lbrace a_2, c_1  \rbrace$ \\ \hline
+$\lbrace a_2, c_2  \rbrace$ \\ \hline
+$\lbrace a_2, c_3  \rbrace$ \\ \hline
+\end{tabular}
+\caption{Domain of $AC$.} 
+\label{tab:sampleVar:AC}
+\end{table}
+
+\begin{table}[]
+\centering
+\begin{tabular}{|l|}
+      $Dom(ABC) = Dom(A \cup B \cup C )$  \\
+      \hline
+$\lbrace a_1, b_1, c_1  \rbrace$ \\ \hline
+$\lbrace a_1, b_1, c_2  \rbrace$ \\ \hline
+$\lbrace a_1, b_1, c_3  \rbrace$ \\ \hline
+$\lbrace a_1, b_2, c_1  \rbrace$ \\ \hline
+$\lbrace a_1, b_2, c_2  \rbrace$ \\ \hline
+$\lbrace a_1, b_2, c_3  \rbrace$ \\ \hline
+$\lbrace a_1, b_3, c_1  \rbrace$ \\ \hline
+$\lbrace a_1, b_3, c_2  \rbrace$ \\ \hline
+$\lbrace a_1, b_3, c_3  \rbrace$ \\ \hline
+$\lbrace a_1, b_4, c_1  \rbrace$ \\ \hline
+$\lbrace a_1, b_4, c_2  \rbrace$ \\ \hline
+$\lbrace a_1, b_4, c_3  \rbrace$ \\ \hline
+$\lbrace a_2, b_1, c_1  \rbrace$ \\ \hline
+$\lbrace a_2, b_1, c_2  \rbrace$ \\ \hline
+$\lbrace a_2, b_1, c_3  \rbrace$ \\ \hline
+$\lbrace a_2, b_2, c_1  \rbrace$ \\ \hline
+$\lbrace a_2, b_2, c_2  \rbrace$ \\ \hline
+$\lbrace a_2, b_2, c_3  \rbrace$ \\ \hline
+$\lbrace a_2, b_3, c_1  \rbrace$ \\ \hline
+$\lbrace a_2, b_3, c_2  \rbrace$ \\ \hline
+$\lbrace a_2, b_3, c_3  \rbrace$ \\ \hline
+$\lbrace a_2, b_4, c_1  \rbrace$ \\ \hline
+$\lbrace a_2, b_4, c_2  \rbrace$ \\ \hline
+$\lbrace a_2, b_4, c_3  \rbrace$ \\ \hline
+\end{tabular}
+\caption{Domain of $ABC$.} 
+\label{tab:sampleVar:ABC}
+\end{table}
+
+\subsection{Factors creation}
+
+\subsubsection{part 01}
 
 Part 01 creates a shape factor $\Phi_{AB}$, involving the pair of variables $A$ and $B$. Both that variables have a domain size equal to 4, i.e. $Dom(A) = \lbrace a_0 = 0, a_1 =1 , a_2=2, a_3=3 \rbrace$ and  $Dom(B) = \lbrace b_0=0, b_1=1, b_2=2, b_3=3 \rbrace$.
 The generic value in the image $\Phi_{AB}$ is equal to:
@@ -34,7 +121,7 @@ $a_3 = 3$ & 3     & 5     & 7     & 9     \\
 \label{tab:S_1:t1}
 \end{table}
 
-\subsection{part 02}
+\subsubsection{part 02}
 
 \begin{figure}
 \begin{tabular}{cc}
@@ -50,12 +137,12 @@ $a_3 = 3$ & 3     & 5     & 7     & 9     \\
 \label{fig:sample_01:0}
 \end{figure}
 
-Part 02 considers a ternary correlating factor $\Phi_{C\,\,V123}$, involving variables $V_1$, $V_2$ and $V_3$, each having a domain size equal to 3. Ternary factors cannot be part of a graph, but it is anyway possible to build them using class Potential$\_$Shape.
+Part 02 considers a ternary correlating factor $\Phi_{C\,\,V123}$, involving variables $V_1$, $V_2$ and $V_3$, each having a domain size equal to 3. Ternary factors cannot be part of a graph, but it is anyway possible to build them as distribution object.
 The values in the image of $\Phi_{C\,\,V123}$ are all 0, except for those combination for which $V_1,V_2$ and $V_3$ assume the same value ($0,1$ or $2$) and in such cases, the image is equal to 1.
 \\
 The same example builds at a second stage a ternary anti-correlating factor $\Phi_{A\,\,V123}$. The values in the image of $\Phi_{A\,\,V123}$  are all 1, except for those combination for which $V_1,V_2$ and $V_3$ assume the same value ($0,1$ or $2$) and in such cases the image is equal to 1.
 \\
-When considering a graph having only $\Psi_{C,\,V123}(\Phi_{C\,\,V123} \cdot w)$ as a factor, the ripartition function $Z$ is equal to:
+When considering a graph having only $\Psi_{C,\,V123} = exp( \Phi_{C\,\,V123} \cdot w)$ as a factor, the ripartition function $Z$ is equal to:
 \begin{eqnarray}
 Z = (4^3 - 4) + 4 \cdot exp(w)
 \end{eqnarray}
@@ -68,7 +155,7 @@ The probability to have as a realization a combination with the same values is e
 \end{eqnarray}
 The value assumed by $\mathbb{P}( V_1 = v,  V_2 = v, V_3 = v | w)$  is reported in Figure \ref{fig:sample_01:0}, together with the complementary probability $1 - \mathbb{P}( V_1 = v,  V_2 = v, V_3 = v | w)$.
 \\
-When considering a graph having only $\Psi_{A,\,V123} = w exp( \Phi_{A\,\,V123} )$ as factor, the ripartition function $Z$ is equal to:
+When considering a graph having only $\Psi_{A,\,V123} = exp( \Phi_{A\,\,V123} \cdot w)$ as factor, the ripartition function $Z$ is equal to:
 \begin{eqnarray}
 Z = (4^3 - 4) \cdot exp(w) + 4
 \end{eqnarray}

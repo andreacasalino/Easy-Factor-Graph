@@ -5,8 +5,6 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
-// Refer also to Section 'Sample 05: Matricial structure' of the documentation
-
 #include <model/Graph.h>
 #include <io/xml/Exporter.h>
 #include <print/ProbabilityDistributionPrint.h>
@@ -23,7 +21,7 @@ unique_ptr<model::Graph> makeMatrix(const std::size_t& Size, const std::size_t& 
 
 int main() {
 	EFG::sample::samplePart([]() {
-		size_t Size = 10; // A matrix of Size x Size variables will be created (see 'Sample 05: Matricial structure' of the documentation), you can change this value
+		size_t Size = 10; // A matrix of Size x Size variables will be created
 		size_t var_dom_size = 3; //you can change it
 		float weight_potential = 1.1f;
 
@@ -36,7 +34,7 @@ int main() {
 		for (size_t k = 1; k < Size; k++) {
 			cout << Matrix->getMarginalDistribution("V" + to_string(k) + "_" + to_string(k)) << endl;
 		}
-	}, "Matricial", "", "Check the content of Matrix.xml");
+	}, "Matricial structure", "refer to Section 4.5 of the documentation", "Check the content of the created Matrix.xml");
 	
 	return EXIT_SUCCESS;
 }

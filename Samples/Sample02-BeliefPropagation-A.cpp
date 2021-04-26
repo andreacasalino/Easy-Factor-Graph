@@ -34,7 +34,7 @@ int main () {
         //make a new belief propagation setting B=0 as observation
         graph.resetEvidences(std::map<std::string, std::size_t>{{"B", 0}});
 
-        //compute the marginal probability of A s.t. the evidence of B: values are compared with the theoretical result (see 'Sample 02: Belief propagation, part A / part 01')
+        //compute the marginal probabilities
         cout << "P(A|B=0)" << endl;
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({expf(teta), 1.f}) << endl;
@@ -47,10 +47,9 @@ int main () {
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({1.f, expf(teta)}) << endl;
         cout << graph.getMarginalDistribution("A") << endl << endl;
-    },  "graph with a single potential", "Belief propagation, part A");
+    },  "Graph with a single potential", "refer to Section 4.2.1 of the documentation");
 
     EFG::sample::samplePart([](){
-        //build the graph described in 'Sample 02: Belief propagation, part A / part 02'
         model::Graph graph;
         float alfa = 0.5f, beta = 1.f;
 
@@ -60,8 +59,7 @@ int main () {
         //make a new belief propagation setting C=1 as observation
         graph.resetEvidences(std::map<std::string, std::size_t>{{"C", 1}});
 
-        //compute the marginals of A,B and then compare results with the theoretial ones 
-        //(see also Sample 2/ part 2 of the documentation)
+        //compute the marginals of A,B and then compare results with the theoretical ones, see documentation
         cout << "P(B|C=1)\n";
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({ 1.f, expf(alfa)}) << endl;
@@ -84,7 +82,7 @@ int main () {
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({ 1.f, expf(alfa) }) << endl;
         cout << graph.getMarginalDistribution("C") << endl << endl;
-    }, "two potentials and 3 variables", "Belief propagation, part A");
+    }, "Graph with two potentials and 3 variables", "refer to Section 4.2.2 of the documentation");
 
     EFG::sample::samplePart([](){
         auto process_chain = [](const std::size_t& chain_size, const std::size_t& var_size, const float& w) {
@@ -107,13 +105,13 @@ int main () {
             cout << graph.getMarginalDistribution(Y.back()->name()) << endl;
             cout << endl;
         };
-        //build chain graphs described in 'Sample 02: Belief propagation, part A / part 03'
+        //build the chain
         std::size_t domainSize = 5;
         for (int k = 2; k <= 10; k++) {
             cout << "chain size equal to " << k << ", marginals of Y_n:   ";
             process_chain(k, domainSize, 3.5f);
         }
-    }, "Belief degradation", "Belief propagation, part A");
+    }, "Belief degradation on a chain of variables", "refer to Section 4.2.3 of the documentation");
 
     return EXIT_SUCCESS;
 }

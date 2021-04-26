@@ -5,8 +5,6 @@
 * report any bug to andrecasa91@gmail.com.
  **/
 
- // This example is also explained in the documentation (the .pdf file), Section 'Learning of graphs, part B'
-
 #include <model/ConditionalRandomField.h>
 #include <train/trainers/GradientDescend.h>
 #include <categoric/Range.h>
@@ -46,7 +44,7 @@ int main() {
 		GradientDescend<StochasticExtractor> trainer;
 		trainer.setPercentage(0.05f);
 		trainer.setMaxIterations(10);
-		cout << "training the model" << endl;
+		cout << "training the model, take some time cause conditioned model are much more computational demanding ..." << endl;
 		trainer.train(graph2Learn, trainSet);
 
 		// compare the marginals computation of the real and the learnt models
@@ -76,7 +74,7 @@ int main() {
 		cout << "learnt model " << endl;
 		graph2Learn.setEvidences(obs);
 		cout << graph2Learn.getMarginalDistribution("Y4") << endl << endl;
-	}, "Learning of conditioned model");
+	}, "Tuning of a conditional random field", "refer to Section 4.7");
 
 	return EXIT_SUCCESS;
 }

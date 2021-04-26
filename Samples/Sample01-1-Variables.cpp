@@ -17,7 +17,7 @@ int main() {
     EFG::sample::samplePart([]() {
         //define a group variable
         Group groupABCD(makeVariable(2, "A"), makeVariable(2, "B"));
-        cout << "groupABCD: " << groupABCD << endl;
+        cout << "groupABCD with only A and B for the moment: " << groupABCD << endl;
 
         groupABCD.add(makeVariable(2, "C"));
         groupABCD.add(makeVariable(2, "D"));
@@ -31,7 +31,7 @@ int main() {
             cout << "insertion of C in ABCD group correctly refused" << endl;
         }
         cout << "groupABCD: " << groupABCD << endl;
-    }, "Group Variable");
+    }, "Group of variables", "refer to Section 4.1.1.1 of the documentation");
 
     EFG::sample::samplePart([]() {
         // build some variables
@@ -48,7 +48,7 @@ int main() {
 
         cout << "A B C range:" << endl;
         cout << Range({ A, B, C }) << endl;
-    }, "Range of Group");
+    }, "Joint domains", "refer to Section 4.1.1.2 of the documentation");
 
 	return EXIT_SUCCESS;
 }
