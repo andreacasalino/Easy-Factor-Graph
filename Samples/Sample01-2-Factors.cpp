@@ -43,7 +43,7 @@ int main () {
 		VariablePtr Y = makeVariable(4, "Y");
 		//build Phi_XY, which has the same image of Phi_AB, but considering the realizations of X and Y
 		factor::modif::Factor Phi_XY(Phi_AB);
-		Phi_XY.replaceGroup(Group({X, Y}));
+		Phi_XY.replaceGroup(Group(std::set<categoric::VariablePtr>{X, Y}));
 		cout << Phi_XY << endl << endl;
 	}, "Distribution construction", "refer to Section 4.1.2.1 of the documentation");
 
