@@ -1,5 +1,10 @@
 add_subdirectory(Utils)
 
+function(SetUpSample NAME_)
+	set_target_properties(${NAME_} PROPERTIES VS_DEBUGGER_ENVIRONMENT "PATH=%PATH%;${CMAKE_INSTALL_PREFIX}/bin/")
+	install(TARGETS ${NAME_})	
+endfunction()
+
 function(AddSample NAME_)
     add_executable(${NAME_} ${NAME_}.cpp )
 
@@ -12,6 +17,8 @@ function(AddSample NAME_)
 	PUBLIC
 		-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/"
 	)
+		
+	SetUpSample(${NAME_})
 endfunction()
 
 function(AddSamplePath NAME_)
@@ -26,6 +33,8 @@ function(AddSamplePath NAME_)
 	PUBLIC
 		-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/${NAME_}/"
 	)
+	
+	SetUpSample(${NAME_})
 endfunction()
 
 AddSample(Sample01-1-Variables)

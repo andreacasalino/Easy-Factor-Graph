@@ -14,7 +14,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 set(WITH_SOURCE_TREE ON)
 include(GroupSources)
 include(AutoCollect)
-
+include(MakeLibrary)
 
 project(EFG-Core)
 option(THREAD_POOL_OPT "thread pool enabled (ON) or disabled (OFF)" ON)
