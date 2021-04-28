@@ -28,6 +28,8 @@ The library contains some minimal functionalities to also perform training using
 the compilation of such library might cause problems in some systems. Therefore, you can also decide to not use the thread pool (and not compile it at all) by selecting **OFF** for the [CMake](https://cmake.org) option **THREAD_POOL_OPT**
       
  * Compile the library and the samples
+
+ * You can also just download the compiled binaries of the library of the latest master commit [here](https://github.com/andreacasalino/Easy-Factor-Graph/actions) 
  
 **What else?**
 
