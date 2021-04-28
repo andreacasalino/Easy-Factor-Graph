@@ -28,7 +28,7 @@ if(BUILD_SAMPLES)
     add_subdirectory(Samples)
 endif()
 
-if(BUILD_SAMPLES)
+if(BUILD_TESTS)
 	project(EFG-Tests)
     add_subdirectory(Tests)
 endif()
