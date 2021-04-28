@@ -16,6 +16,8 @@ include(GroupSources)
 include(AutoCollect)
 include(MakeLibrary)
 
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
 project(EFG-Core)
 option(THREAD_POOL_OPT "thread pool enabled (ON) or disabled (OFF)" ON)
 add_subdirectory(Lib)
