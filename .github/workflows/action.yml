@@ -22,7 +22,7 @@ jobs:
         submodule_update: ON
     - name: Install artifacts
       run: cmake --install ./build
-      uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v2
       with:
         path: artifacts
         name: Ubuntu_GCC_static.tar.gz
