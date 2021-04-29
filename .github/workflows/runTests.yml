@@ -20,5 +20,5 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
         submodule_update: ON
-     # -name: Unit Tests
-      # run: ./build/Tests/Test-01-Range
+    - name: Test-01
+      run: ./build/Tests/Test01-Range
