@@ -18,7 +18,7 @@ jobs:
     - name: Build project
       uses: nicledomaS/cmake_build_action@v1.3
       with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
         submodule_update: ON
         run_tests: ON
         unit_test_build: -Dtest=ON
@@ -28,6 +28,8 @@ jobs:
       with:
         path: artifacts
         name: Ubuntu_GCC_static.tar.gz
+    -name: Unit Tests
+        run: ./build/Tests/Test01-Range
         
   ubuntu-build-gcc-shared:
     runs-on: ubuntu-latest
