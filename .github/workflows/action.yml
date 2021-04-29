@@ -26,8 +26,8 @@ jobs:
       with:
         path: artifacts
         name: Ubuntu_GCC_static.tar.gz
-     # -name: Unit Tests
-      # run: cmake --build build --target Test01-Range
+     -name: Unit Tests
+      run: ./build/Tests/Test-01-Range
         
   ubuntu-build-gcc-shared:
     runs-on: ubuntu-latest
