@@ -1,5 +1,5 @@
  
-name: C/C++ CI
+name: Binaries Compilation
 
 on:
   push:

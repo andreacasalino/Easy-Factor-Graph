@@ -2,14 +2,17 @@ add_subdirectory(GoogleTest/)
 set(BUILD_GMOCK OFF)
 set(INSTALL_GTEST OFF)
 
+add_subdirectory(Utils)
+
 function(MakeTest NAME)
 add_executable(${NAME} ${NAME}.cpp)
 
 target_link_libraries(${NAME}
 PUBLIC
-	gtest
-	EFG
+	Test-Utils
 )
 endfunction()
 
 MakeTest(Test01-Range)
+
+MakeTest(Test02-Distributions)
