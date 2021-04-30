@@ -1,6 +1,7 @@
+if (WIN32)
+	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+endif (WIN32)
 add_subdirectory(GoogleTest/)
-set(BUILD_GMOCK OFF)
-set(INSTALL_GTEST OFF)
 
 add_subdirectory(Utils)
 
@@ -11,6 +12,8 @@ target_link_libraries(${NAME}
 PUBLIC
 	Test-Utils
 )
+
+install(TARGETS ${NAME})
 endfunction()
 
 MakeTest(Test01-Range)
