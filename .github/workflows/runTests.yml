@@ -26,3 +26,7 @@ jobs:
       run: ./build/Tests/Test02-Distribution
     - name: Test-03
       run: ./build/Tests/Test03-DistributionFinder
+    - name: Test-04
+      run: ./build/Tests/Test04-FactorSetting
+    - name: Test-05
+      run: ./build/Tests/Test05-FactorConstruction
