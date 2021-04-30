@@ -34,6 +34,13 @@ public:
       test::compare(it->first, *res.first);
       EXPECT_EQ(it->second, res.second);
     }
+    // search for inexistent combination
+    {
+      Combination comb = makeBiggerCombination(this->combinations[1], 2);
+      auto res = finder.find(comb);
+      EXPECT_EQ(nullptr, res.first);
+      EXPECT_EQ(0.f, res.second);
+    }
   }
 };
 

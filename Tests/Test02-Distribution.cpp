@@ -51,6 +51,7 @@ TEST_F(DistributionTernary,findTernary) {
   EXPECT_EQ(this->find(combinations[2]) , 2.f);
   EXPECT_EQ(this->find(combinations[3]) , 0.f);
   EXPECT_EQ(this->find(combinations[4]) , 3.f);
+  EXPECT_EQ(this->find(combinations[5]) , 0.f);
   EXPECT_EQ(this->find(combinations[6]) , 1.5f);
 }
 
