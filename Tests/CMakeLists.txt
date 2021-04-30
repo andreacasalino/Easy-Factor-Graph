@@ -26,4 +26,4 @@ MakeTest(Test04-FactorSetting)
 
 MakeTest(Test05-FactorConstruction)
 
-# MakeTest(Test06-FactorExponential)
+MakeTest(Test06-Evidences)
