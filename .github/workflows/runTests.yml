@@ -22,3 +22,7 @@ jobs:
         submodule_update: ON
     - name: Test-01
       run: ./build/Tests/Test01-Range
+    - name: Test-02
+      run: ./build/Tests/Test02-Distribution
+    - name: Test-03
+      run: ./build/Tests/Test03-DistributionFinder
