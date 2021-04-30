@@ -47,10 +47,6 @@ TEST(Range, binaryGroupBig) {
                       makeCombination({2,3})}); 
 }
 
-TEST(Range, failingTest) {
-    EXPECT_EQ(1,2); 
-}
-
 TEST(Range, ternaryGroup) { 
     VariablePtr A = makeVariable(3 , "A");
     VariablePtr B = makeVariable(4 , "B");
