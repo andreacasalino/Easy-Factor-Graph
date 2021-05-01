@@ -27,3 +27,5 @@ MakeTest(Test04-FactorSetting)
 MakeTest(Test05-FactorConstruction)
 
 MakeTest(Test06-Insertions)
+
+MakeTest(Test07-Evidences)

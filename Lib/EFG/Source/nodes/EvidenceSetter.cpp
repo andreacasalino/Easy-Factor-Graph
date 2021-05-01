@@ -27,6 +27,7 @@ namespace EFG::nodes {
             auto itN = this->nodes.find(it->first);
             reconnnect(itN->second);
             disconnect(itN->second, *itOb);
+            it->second = *itOb;
             ++itOb;
         }
         this->lastPropagation.reset();

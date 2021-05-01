@@ -34,6 +34,8 @@ jobs:
       run: ./artifacts/bin/Test05-FactorConstruction
     - name: Test-06
       run: ./artifacts/bin/Test06-Insertions
+    - name: Test-07
+      run: ./artifacts/bin/Test07-Evidences
       
   ubuntu-clang-tests:
     runs-on: ubuntu-latest
@@ -59,6 +61,8 @@ jobs:
       run: ./artifacts/bin/Test05-FactorConstruction
     - name: Test-06
       run: ./artifacts/bin/Test06-Insertions
+    - name: Test-07
+      run: ./artifacts/bin/Test07-Evidences
       
   windows-vs-tests:
     runs-on: ubuntu-latest
@@ -83,4 +87,6 @@ jobs:
     - name: Test-05
       run: ./build/artifacts/bin/Test05-FactorConstruction
     - name: Test-06
-      run: ./artifacts/bin/Test06-Insertions
+      run: ./build/artifacts/bin/Test06-Insertions
+    - name: Test-07
+      run: ./build/artifacts/bin/Test07-Evidences
