@@ -43,7 +43,6 @@ namespace EFG::nodes {
 
         void absorb(const StructureTunableAware& toAbsorb, const bool& useCopyInsertion) override;
 
-    private:
         std::map<std::shared_ptr<distribution::factor::modif::FactorExponential>, std::size_t>::const_iterator findSharingFactor(const std::set<categoric::VariablePtr>& potentialSharingWeight) const;
     };
 }

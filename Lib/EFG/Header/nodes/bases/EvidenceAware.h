@@ -26,7 +26,7 @@ namespace EFG::nodes {
     public:
         std::set<categoric::VariablePtr> getHiddenVariables() const;
         std::set<categoric::VariablePtr> getObservedVariables() const;
-        inline const std::map<categoric::VariablePtr, const std::size_t>& getEvidences() const { return this->evidences; };
+        inline const std::map<categoric::VariablePtr, std::size_t>& getEvidences() const { return this->evidences; };
 
     protected:
         /**
@@ -34,7 +34,7 @@ namespace EFG::nodes {
          * Nodes in different clusters are not currently connected (due to the model structure or the kind of evidences currently set)
          */
         HiddenClusters hidden;
-        std::map<categoric::VariablePtr, const std::size_t> evidences;
+        std::map<categoric::VariablePtr, std::size_t> evidences;
     };
 }
 

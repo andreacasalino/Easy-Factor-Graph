@@ -1,5 +1,5 @@
  
-name: C/C++ CI
+name: Binaries Compilation
 
 on:
   push:
@@ -20,8 +20,6 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF
         submodule_update: ON
-        run_tests: ON
-        unit_test_build: -Dtest=ON
     - name: Install artifacts
       run: cmake --install ./build
     - uses: actions/upload-artifact@v2
@@ -39,8 +37,6 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
-        run_tests: ON
-        unit_test_build: -Dtest=ON
     - name: Install artifacts
       run: cmake --install ./build
     - uses: actions/upload-artifact@v2
@@ -58,8 +54,6 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF
         submodule_update: ON
-        run_tests: ON
-        unit_test_build: -Dtest=ON
     - name: Install artifacts
       run: cmake --install ./build
     - uses: actions/upload-artifact@v2
@@ -77,8 +71,6 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
-        run_tests: ON
-        unit_test_build: -Dtest=ON
     - name: Install artifacts
       run: cmake --install ./build
     - uses: actions/upload-artifact@v2
@@ -96,8 +88,6 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF
         submodule_update: ON
-        run_tests: ON
-        unit_test_build: -Dtest=ON
     - name: Install artifacts
       run: cmake --install ./build
     - uses: actions/upload-artifact@v2
@@ -115,8 +105,6 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
-        run_tests: ON
-        unit_test_build: -Dtest=ON
     - name: Install artifacts
       run: cmake --install ./build
     - uses: actions/upload-artifact@v2

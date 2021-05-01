@@ -1,0 +1,104 @@
+ 
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  ubuntu-gcc-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        submodule_update: ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - name: Test-01
+      run: ./artifacts/bin/Test01-Range
+    - name: Test-02
+      run: ./artifacts/bin/Test02-Distribution
+    - name: Test-03
+      run: ./artifacts/bin/Test03-DistributionFinder
+    - name: Test-04
+      run: ./artifacts/bin/Test04-FactorSetting
+    - name: Test-05
+      run: ./artifacts/bin/Test05-FactorConstruction
+    - name: Test-06
+      run: ./artifacts/bin/Test06-Insertions
+    - name: Test-07
+      run: ./artifacts/bin/Test07-Evidences
+    - name: Test-08
+      run: ./artifacts/bin/Test08-BeliefPropagation
+    - name: Test-09
+      run: ./artifacts/bin/Test09-Gibbs
+      
+  ubuntu-clang-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        submodule_update: ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - name: Test-01
+      run: ./artifacts/bin/Test01-Range
+    - name: Test-02
+      run: ./artifacts/bin/Test02-Distribution
+    - name: Test-03
+      run: ./artifacts/bin/Test03-DistributionFinder
+    - name: Test-04
+      run: ./artifacts/bin/Test04-FactorSetting
+    - name: Test-05
+      run: ./artifacts/bin/Test05-FactorConstruction
+    - name: Test-06
+      run: ./artifacts/bin/Test06-Insertions
+    - name: Test-07
+      run: ./artifacts/bin/Test07-Evidences
+    - name: Test-08
+      run: ./artifacts/bin/Test08-BeliefPropagation
+    - name: Test-09
+      run: ./artifacts/bin/Test09-Gibbs
+      
+  windows-vs-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Build project
+      uses: nicledomaS/cmake_build_action@v1.3
+      with:
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        submodule_update: ON
+    - name: Install artifacts
+      run: cmake --install ./build
+    - name: Test-01
+      run: ./build/artifacts/bin/Test01-Range
+    - name: Test-02
+      run: ./build/artifacts/bin/Test02-Distribution
+    - name: Test-03
+      run: ./build/artifacts/bin/Test03-DistributionFinder
+    - name: Test-04
+      run: ./build/artifacts/bin/Test04-FactorSetting
+    - name: Test-05
+      run: ./build/artifacts/bin/Test05-FactorConstruction
+    - name: Test-06
+      run: ./build/artifacts/bin/Test06-Insertions
+    - name: Test-07
+      run: ./build/artifacts/bin/Test07-Evidences
+    - name: Test-08
+      run: ./build/artifacts/bin/Test08-BeliefPropagation
+    - name: Test-09
+      run: ./build/artifacts/bin/Test09-Gibbs

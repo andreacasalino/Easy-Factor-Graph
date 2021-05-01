@@ -37,7 +37,7 @@ int main() {
         graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ B, C }, true), beta));
         graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ C, D }, true), 1.f));
         
-        // get the join marginal probabilities of group ABC
+        // get the joint marginal probabilities of group ABC
         cout << "P(A,B,C)" << endl;
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({expf(alfa) * expf(beta),
@@ -50,7 +50,7 @@ int main() {
                                                expf(alfa) * expf(beta)}) << endl;
         cout << graph.getJointMarginalDistribution({"A", "B", "C"}).getProbabilities() << endl << endl;
 
-        // get the join marginal probabilities of group AB
+        // get the joint marginal probabilities of group AB
         cout << "P(A,B)" << endl;
         cout << "theoretical " << endl;
         cout << EFG::sample::makeDistribution({ expf(alfa), 1.f, 1.f, expf(alfa) }) << endl;

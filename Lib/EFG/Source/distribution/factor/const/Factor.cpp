@@ -179,9 +179,13 @@ namespace EFG::distribution::factor::cnst {
         std::string line;
         while (!reader.eof()) {
             std::getline(reader, line);
-            fillCombination(xmlPrs::Parser::sliceFragments(line), comb, image);
-            this->checkCombination(comb, image);
-            this->values->emplace(comb, image);
+            auto slices = xmlPrs::Parser::sliceFragments(line);
+            if(!slices.empty()) {
+                // ingore empty lines
+                fillCombination(slices, comb, image);
+                this->checkCombination(comb, image);
+                this->values->emplace(comb, image);
+            }
         }
     }
 }

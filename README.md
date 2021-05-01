@@ -1,3 +1,6 @@
+![binaries_compilation](https://github.com/andreacasalino/Easy-Factor-Graph/actions/workflows/action.yml/installArtifacts.svg)
+![binaries_compilation](https://github.com/andreacasalino/Easy-Factor-Graph/actions/workflows/action.yml/runTests.svg)
+
 **Easy Factor Graph**, aka **EFG**, is a general purpose c++ library for handling **undirected graphical models**.
 **undirected graphical models** are probabilistic models similar to **bayesian networks**, but offerring some more nice 
 properties. Not familiar with this kind of concepts? Don't worry, have a look at the [documentation](https://github.com/andreacasalino/Easy-Factor-Graph/blob/master/doc/EFG.pdf) in the **doc** folder

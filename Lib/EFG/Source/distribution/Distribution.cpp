@@ -49,6 +49,9 @@ namespace EFG::distribution {
     }
 
     std::vector<float> Distribution::getProbabilities() const {
+        if(this->values->empty()) {
+            return std::vector<float>(this->group->size() , 1.f  /static_cast<float>(this->group->size()));
+        }
         std::vector<float> probs;
         const std::size_t jointSize = this->group->size();
         probs.reserve(jointSize);
