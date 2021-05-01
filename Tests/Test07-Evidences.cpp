@@ -6,8 +6,6 @@ using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::model;
 
-// tests of Evidence Setter and changer: check hidden clusters and evidence are correctly updated 
-
 class GraphTest 
 : public ::testing::Test
 , public model::Graph { 

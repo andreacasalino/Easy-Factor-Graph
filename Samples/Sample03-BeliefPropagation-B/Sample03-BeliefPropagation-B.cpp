@@ -154,7 +154,7 @@ int main() {
 		cout << "P(D|E)\n";
 		cout << "theoretical\n";
 		cout << sample::makeDistribution({ 3.f * M + powf(M,3), powf(M,4) + 3.f * powf(M,2) }) << endl;
-		cout << loop.getMarginalDistribution("B") << endl << endl;
+		cout << loop.getMarginalDistribution("D") << endl << endl;
 
 		cout << "P(C|E)\n";
 		cout << "theoretical\n";

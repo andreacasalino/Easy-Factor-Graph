@@ -29,3 +29,5 @@ MakeTest(Test05-FactorConstruction)
 MakeTest(Test06-Insertions)
 
 MakeTest(Test07-Evidences)
+
+MakeTest(Test08-BeliefPropagation)
