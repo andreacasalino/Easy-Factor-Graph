@@ -89,7 +89,7 @@ int main() {
 
 	EFG::sample::samplePart([]() {
 		model::RandomField graph;
-		xml::Importer::importFromXml(graph, SAMPLE_FOLDER , "graph_3.xml");
+		xml::Importer::importFromXml(graph, EFG::io::FilePath(SAMPLE_FOLDER , "graph_3.xml"));
 
 		GradientDescend trainer;
 		trainer.setAdvancement(0.1f);

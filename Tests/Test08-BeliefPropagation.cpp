@@ -34,7 +34,7 @@ protected:
   GraphTest() = default;
 
   void SetUp() override {
-    io::xml::Importer::importFromXml(*this, std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , this->getFileName());
+    io::xml::Importer::importFromXml(*this, io::FilePath(std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , this->getFileName()));
   }
 
   // check all messages were computed after propagation

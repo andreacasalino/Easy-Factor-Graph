@@ -29,7 +29,7 @@ void compare(float probTheory0, float probTheory1, float frequency1, const float
 TEST(GibbsSampling, polyTree) {
     float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
     Graph model;
-    io::xml::Importer::importFromXml(model, std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , "graph_1.xml");
+    io::xml::Importer::importFromXml(model, io::FilePath(std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , "graph_1.xml"));
 
     // E=1
     model.resetEvidences({ {"E", 1} });
@@ -45,7 +45,7 @@ TEST(GibbsSampling, loopy) {
     float M_alfa = powf(M, 3) + M + 2.f*powf(M, 2);
     float M_beta = powf(M, 4) + 2.f*M + powf(M, 2);
     Graph model;
-    io::xml::Importer::importFromXml(model, std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , "graph_3.xml");
+    io::xml::Importer::importFromXml(model, io::FilePath(std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , "graph_3.xml"));
 
     // E=1
     model.resetEvidences({ {"E", 1} });

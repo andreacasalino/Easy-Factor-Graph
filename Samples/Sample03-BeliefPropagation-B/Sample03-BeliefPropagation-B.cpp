@@ -22,7 +22,7 @@ int main() {
 	EFG::sample::samplePart([]() {
 		model::Graph graph;
 		//import the graph described in 'Sample 03: Belief propagation, part B / part 01' from an existing xml file
-		xml::Importer::importFromXml(graph, SAMPLE_FOLDER, "graph_1.xml");
+		xml::Importer::importFromXml(graph, EFG::io::FilePath(SAMPLE_FOLDER, "graph_1.xml"));
 		float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
 
 		// set E=1 as an evidence
@@ -105,7 +105,7 @@ int main() {
 	EFG::sample::samplePart([]() {
 		model::Graph politree;
 		//import the graph an existing xml file
-		xml::Importer::importFromXml(politree, SAMPLE_FOLDER, "graph_2.xml");
+		xml::Importer::importFromXml(politree, EFG::io::FilePath(SAMPLE_FOLDER, "graph_2.xml"));
 		
 		//active the thread pool to fasten the computation
 #ifdef THREAD_POOL_ENABLED
@@ -139,7 +139,7 @@ int main() {
 	EFG::sample::samplePart([]() {
 		model::Graph loop;
 		//import the graph an existing xml file
-		xml::Importer::importFromXml(loop, SAMPLE_FOLDER, "graph_3.xml");
+		xml::Importer::importFromXml(loop, EFG::io::FilePath(SAMPLE_FOLDER, "graph_3.xml"));
 		
 		// set the observation
 		loop.resetEvidences(std::map<std::string, std::size_t>{ {"E", 1} });
@@ -175,7 +175,7 @@ int main() {
 	EFG::sample::samplePart([]() {
 		model::Graph loop;
 		//import the graph from an existing xml file
-		xml::Importer::importFromXml(loop, SAMPLE_FOLDER, "graph_4.xml");
+		xml::Importer::importFromXml(loop, EFG::io::FilePath(SAMPLE_FOLDER, "graph_4.xml"));
 		
 		//active the thread pool to fasten the computation
 #ifdef THREAD_POOL_ENABLED

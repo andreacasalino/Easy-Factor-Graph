@@ -15,8 +15,8 @@
 #include <algorithm>
 
 namespace EFG::model {
-    ConditionalRandomField::ConditionalRandomField(const std::string& filePath, const std::string& fileName) {
-        auto ev = io::xml::Importer::importFromXml(*this, filePath, fileName);
+    ConditionalRandomField::ConditionalRandomField(const io::FilePath& filePath) {
+        auto ev = io::xml::Importer::importFromXml(*this, filePath);
         if (ev.empty()) {
             throw Error("A conditional random field should have at least 1 evidence");
         }
