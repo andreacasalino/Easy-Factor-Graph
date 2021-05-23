@@ -59,7 +59,7 @@ int main() {
 
     EFG::sample::samplePart([]() {        
         model::RandomField graph;
-        io::xml::Importer::importFromXml(graph, SAMPLE_FOLDER, "graph.xml");
+        io::xml::Importer::importFromXml(graph, EFG::io::FilePath(SAMPLE_FOLDER, "graph.xml"));
         // set the evidences
         graph.resetEvidences(map<string, size_t>{ {"X1", 0}, { "X2",0 }});
         

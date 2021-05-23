@@ -9,6 +9,7 @@
 #define EFG_IO_XML_IMPORTER_H
 
 #include <io/Importer.h>
+#include <io/FilePath.h>
 
 namespace EFG::io::xml {
     class Importer : public io::Importer {
@@ -16,14 +17,13 @@ namespace EFG::io::xml {
         /**
          * @brief imports the structure (variables and factors) described in an xml file and add it to the passed model
          * @param the model receiving the parsed data
-         * @param the folder storing the xml
-         * @param the xml file name
+         * @param the path storing the xml to import
          * @return the set of evidences red from the file. Attention! this quantities are returned to allow the user
          * to set such evidence, since this is not automatically done when importing
          */
         template<typename Model>
-        static std::map<std::string, std::size_t> importFromXml(Model& model, const std::string& filePath, const std::string& fileName) {
-            return Importer().importComponents(filePath, fileName, getComponents(model));
+        static std::map<std::string, std::size_t> importFromXml(Model& model, const FilePath& filePath) {
+            return Importer().importComponents(filePath.getPath(), filePath.getFileName(), getComponents(model));
         };
 
     private:

@@ -26,7 +26,7 @@ TrainSetPtr makeCondModelTrainSet(model::ConditionalRandomField& Model);
 
 int main() {
 	EFG::sample::samplePart([]() {
-		model::ConditionalRandomField graph(SAMPLE_FOLDER, "cond_graph.xml");
+		model::ConditionalRandomField graph(EFG::io::FilePath(SAMPLE_FOLDER, "cond_graph.xml"));
 
 		cout << "creating the training set, might take a while" << endl;
 		TrainSetPtr trainSet = makeCondModelTrainSet(graph);
