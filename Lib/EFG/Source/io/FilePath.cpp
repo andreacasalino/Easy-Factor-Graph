@@ -41,7 +41,7 @@ namespace EFG::io {
         // find last /
         for (std::size_t k = fullPathFixed.size() - 2; k > 0; --k) {
             if (SEPARATOR == fullPathFixed[k]) {
-                this->path = std::string(fullPathFixed, 0, k);
+                this->path = std::string(fullPathFixed, 0, k+1);
                 this->fileName = std::string(fullPathFixed, k+1, fullPathFixed.size() - k - 1);
                 return;
             }
