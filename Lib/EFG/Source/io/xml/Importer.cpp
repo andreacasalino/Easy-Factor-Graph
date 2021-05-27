@@ -128,19 +128,24 @@ namespace EFG::io::xml {
 		const auto& potTag = parser.getRoot().getNested("Potential");
 		for (auto itP = potTag.begin(); itP != potTag.end(); ++itP) {
 			auto distribution = importDistribution(filePath, *itP->second, variables);
+			distribution::factor::cnst::FactorExponential* expCnstPtr = dynamic_cast<distribution::factor::cnst::FactorExponential*>(distribution.get());
 			distribution::factor::modif::FactorExponential* expPtr = dynamic_cast<distribution::factor::modif::FactorExponential*>(distribution.get());
-			if ((nullptr == expPtr) || (nullptr == std::get<1>(components)))  {
+			if (nullptr == expCnstPtr)  {
 				// import as non tunable factor
-				std::get<0>(components)->insertCopy(*distribution);
+				components.first->insertCopy(*distribution);
+			}
+			else if ((nullptr == expPtr) || (nullptr == components.second))  {
+				// import as an exponential non tunable factor
+				components.first->insertCopy(*expCnstPtr);
 			}
 			else {
-				// tunable factor
+				// import as a tunable factor
 				auto shareTag = itP->second->getNested("Share");
 				if (shareTag.begin() == shareTag.end()) {
-					std::get<1>(components)->insertTunableCopy(*expPtr);
+					components.second->insertTunableCopy(*expPtr);
 				}
 				else {
-					std::get<1>(components)->insertTunableCopy(*expPtr, importGroup(*shareTag.begin()->second, variables).getVariables());
+					components.second->insertTunableCopy(*expPtr, importGroup(*shareTag.begin()->second, variables).getVariables());
 				}
 			}
 		}		
