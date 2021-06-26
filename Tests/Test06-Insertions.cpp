@@ -19,7 +19,7 @@ protected:
     void checkPostInsertion() {
         EXPECT_EQ(nullptr, this->lastPropagation);
         EXPECT_EQ(this->hidden.clusters.size(), 1);
-        std::set<EFG::nodes::Node*> clusterExpected = std::set<EFG::nodes::Node*>{&this->nodes.begin()->second, &this->nodes.rbegin()->second};
+        std::set<EFG::strct::Node*> clusterExpected = std::set<EFG::strct::Node*>{&this->nodes.begin()->second, &this->nodes.rbegin()->second};
         EXPECT_EQ(this->hidden.clusters.front(), clusterExpected);
     };
 };
@@ -48,9 +48,9 @@ TEST_F(GraphTest, insertFactorCopy) {
     this->insertCopy(factor);
     
     EXPECT_TRUE(containsElementPtrs(this->getVariables(), factor.getGroup().getVariables()));
-    EXPECT_EQ(this->factors.size(), 1);
-    EXPECT_EQ(this->factorsExp.size(), 0);
-    test::compare(**this->factors.begin(), factor);
+    EXPECT_EQ(this->factorsConst.size(), 1);
+    EXPECT_EQ(this->factorsConstExp.size(), 0);
+    test::compare(**this->factorsConst.begin(), factor);
     this->checkPostInsertion();
 }
 
@@ -59,9 +59,9 @@ TEST_F(GraphTest, insertFactorShared) {
     this->insert(factor);
     
     EXPECT_TRUE(containsElementPtrs(this->getVariables(), factor->getGroup().getVariables()));
-    EXPECT_EQ(this->factors.size(), 1);
-    EXPECT_EQ(this->factorsExp.size(), 0);
-    EXPECT_EQ(factor.get(), this->factors.begin()->get());
+    EXPECT_EQ(this->factorsConst.size(), 1);
+    EXPECT_EQ(this->factorsConstExp.size(), 0);
+    EXPECT_EQ(factor.get(), this->factorsConst.begin()->get());
     this->checkPostInsertion();
 }
 
@@ -73,10 +73,10 @@ TEST_F(RandomFieldTest, insertFactorExpCopy) {
     this->insertCopy(factor);
     
     EXPECT_TRUE(containsElementPtrs(this->getVariables(), factor.getGroup().getVariables()));
-    EXPECT_EQ(this->factors.size(), 0);
-    EXPECT_EQ(this->factorsExp.size(), 1);
-    EXPECT_EQ(this->factorsTunable.size(), 0);
-    test::compare(**this->factorsExp.begin(), factor);
+    EXPECT_EQ(this->factorsConst.size(), 0);
+    EXPECT_EQ(this->factorsConstExp.size(), 1);
+    EXPECT_EQ(this->factorsExp.size(), 0);
+    test::compare(**this->factorsConstExp.begin(), factor);
     this->checkPostInsertion();
 }
 
@@ -86,10 +86,10 @@ TEST_F(RandomFieldTest, insertFactorExpShared) {
     this->insert(factor);
     
     EXPECT_TRUE(containsElementPtrs(this->getVariables(), factor->getGroup().getVariables()));
-    EXPECT_EQ(this->factors.size(), 0);
-    EXPECT_EQ(this->factorsExp.size(), 1);
-    EXPECT_EQ(this->factorsTunable.size(), 0);
-    EXPECT_EQ(factor.get(), this->factorsExp.begin()->get());
+    EXPECT_EQ(this->factorsConst.size(), 0);
+    EXPECT_EQ(this->factorsConstExp.size(), 1);
+    EXPECT_EQ(this->factorsExp.size(), 0);
+    EXPECT_EQ(factor.get(), this->factorsConstExp.begin()->get());
     this->checkPostInsertion();
 }
 
@@ -100,10 +100,10 @@ TEST_F(RandomFieldTest, insertTunableCopy) {
     this->insertTunableCopy(factor);
     
     EXPECT_TRUE(containsElementPtrs(this->getVariables(), factor.getGroup().getVariables()));
-    EXPECT_EQ(this->factors.size(), 0);
-    EXPECT_EQ(this->factorsExp.size(), 0);
-    EXPECT_EQ(this->factorsTunable.size(), 1);
-    EXPECT_EQ(this->factorsTunable.begin()->second, 0);
+    EXPECT_EQ(this->factorsConst.size(), 0);
+    EXPECT_EQ(this->factorsConstExp.size(), 0);
+    EXPECT_EQ(this->factorsExp.size(), 1);
+    EXPECT_EQ(this->factorsExp.begin()->second, 0);
     // EXPECT_EQ(*this->factorsTunable.begin()->first, factor);
     EXPECT_EQ(this->numberOfClusters, 1);
     this->checkPostInsertion();
@@ -111,7 +111,7 @@ TEST_F(RandomFieldTest, insertTunableCopy) {
     // second insertion
     factor::modif::FactorExponential factor2(factor::cnst::Factor(std::set<VariablePtr>{makeVariable(2, "B"), makeVariable(2, "C")} , true), w);    
     this->insertTunableCopy(factor2);
-    EXPECT_EQ(this->factorsTunable.size(), 2);
+    EXPECT_EQ(this->factorsExp.size(), 2);
     {
         auto itTunab = this->findSharingFactor(factor2.getGroup().getVariables());
         EXPECT_EQ(itTunab->second, 1);
@@ -121,7 +121,7 @@ TEST_F(RandomFieldTest, insertTunableCopy) {
     // third insertion
     factor::modif::FactorExponential factor3(factor::cnst::Factor(std::set<VariablePtr>{makeVariable(2, "C"), makeVariable(2, "D")} , true), w + 1.f);    
     this->insertTunableCopy(factor3, factor.getGroup().getVariables());
-    EXPECT_EQ(this->factorsTunable.size(), 3);
+    EXPECT_EQ(this->factorsExp.size(), 3);
     {
         auto itTunab = this->findSharingFactor(factor3.getGroup().getVariables());
         EXPECT_EQ(itTunab->first->getWeight(), w);
@@ -137,18 +137,18 @@ TEST_F(RandomFieldTest, insertTunableShared) {
     this->insertTunable(factor);
     
     EXPECT_TRUE(containsElementPtrs(this->getVariables(), factor->getGroup().getVariables()));
-    EXPECT_EQ(this->factors.size(), 0);
-    EXPECT_EQ(this->factorsExp.size(), 0);
-    EXPECT_EQ(this->factorsTunable.size(), 1);
-    EXPECT_EQ(this->factorsTunable.begin()->second, 0);
-    EXPECT_EQ(factor.get(), this->factorsTunable.begin()->first.get());
+    EXPECT_EQ(this->factorsConst.size(), 0);
+    EXPECT_EQ(this->factorsConstExp.size(), 0);
+    EXPECT_EQ(this->factorsExp.size(), 1);
+    EXPECT_EQ(this->factorsExp.begin()->second, 0);
+    EXPECT_EQ(factor.get(), this->factorsExp.begin()->first.get());
     EXPECT_EQ(this->numberOfClusters, 1);
     this->checkPostInsertion();
 
     // second insertion
     std::shared_ptr<factor::modif::FactorExponential> factor2 = std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{this->findVariable("B"), makeVariable(2, "C")} , true), w);       
     this->insertTunable(factor2);
-    EXPECT_EQ(this->factorsTunable.size(), 2);
+    EXPECT_EQ(this->factorsExp.size(), 2);
     {
         auto itTunab = this->findSharingFactor(factor2->getGroup().getVariables());
         EXPECT_EQ(itTunab->second, 1);
@@ -158,7 +158,7 @@ TEST_F(RandomFieldTest, insertTunableShared) {
     // third insertion
     std::shared_ptr<factor::modif::FactorExponential> factor3 = std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{this->findVariable("C"), makeVariable(2, "D")} , true), w+1.f);       
     this->insertTunable(factor3, factor->getGroup().getVariables());
-    EXPECT_EQ(this->factorsTunable.size(), 3);
+    EXPECT_EQ(this->factorsExp.size(), 3);
     {
         auto itTunab = this->findSharingFactor(factor3->getGroup().getVariables());
         EXPECT_EQ(itTunab->first->getWeight(), w);

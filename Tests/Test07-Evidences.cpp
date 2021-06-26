@@ -47,7 +47,7 @@ protected:
   }
 
   bool clusterExists(const std::set<VariablePtr>& vars) {
-    std::set<nodes::Node*> cluster;
+    std::set<strct::Node*> cluster;
     for (auto it = vars.begin(); it!=vars.end(); ++it) {
       cluster.emplace(&this->nodes.find(*it)->second);
     }

@@ -22,8 +22,19 @@ float getFrequency1(const std::vector<Combination>& samples, const std::set<Vari
     return static_cast<float>(instances) / static_cast<float>(samples.size());
 };
 
-void compare(float probTheory0, float probTheory1, float frequency1, const float threshold = 0.02f) {
-    EXPECT_LE(fabs((probTheory1 / (probTheory0 + probTheory1)) - frequency1) , threshold);
+void compare(float probTheory0, float probTheory1, float frequency1, const float threshold = 0.05f) {
+    float probTheory = probTheory1 / (probTheory0 + probTheory1);
+    EXPECT_LE(fabs(probTheory - frequency1) , threshold);
+}
+
+TEST(GibbsSampling, trivialBinary) {
+    float w = 2.f;
+    Graph model;
+    model.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor({ makeVariable(2, "A"), makeVariable(2, "B") }, true), w));
+    
+    model.resetEvidences({ {"A", 1} });
+    auto samples = model.getHiddenSetSamples(100, 20);
+    compare(1.f, expf(w), getFrequency1(samples, model.getHiddenVariables(), model.findVariable("B")));
 }
 
 TEST(GibbsSampling, polyTree) {
@@ -50,10 +61,10 @@ TEST(GibbsSampling, loopy) {
     // E=1
     model.resetEvidences({ {"E", 1} });
     auto samples = model.getHiddenSetSamples(500, 20);
-    compare(3.f * M + powf(M,3), powf(M,4) + 3.f * powf(M,2), getFrequency1(samples, model.getHiddenVariables(), model.findVariable("D")), 0.05);
-    compare(M_alfa, M_beta, getFrequency1(samples, model.getHiddenVariables(), model.findVariable("C")), 0.05);
-    compare(M_alfa, M_beta, getFrequency1(samples, model.getHiddenVariables(), model.findVariable("B")), 0.05);
-    compare(M * M_alfa + M_beta, M_alfa + M * M_beta , getFrequency1(samples, model.getHiddenVariables(), model.findVariable("A")), 0.05);
+    compare(3.f * M + powf(M,3), powf(M,4) + 3.f * powf(M,2), getFrequency1(samples, model.getHiddenVariables(), model.findVariable("D")), 0.06);
+    compare(M_alfa, M_beta, getFrequency1(samples, model.getHiddenVariables(), model.findVariable("C")), 0.06);
+    compare(M_alfa, M_beta, getFrequency1(samples, model.getHiddenVariables(), model.findVariable("B")), 0.06);
+    compare(M * M_alfa + M_beta, M_alfa + M * M_beta , getFrequency1(samples, model.getHiddenVariables(), model.findVariable("A")), 0.06);
 }
 
 int main(int argc, char *argv[]) {

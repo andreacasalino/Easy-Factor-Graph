@@ -12,7 +12,7 @@
 namespace EFG::strct {
     void InsertTunableCapable::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert) {
         this->InsertCapable::insert(toInsert);
-        this->factorsExp.extract(toInsert);
+        this->factorsConstExp.extract(toInsert);
         this->factorsExp.emplace(toInsert, this->numberOfClusters);
         ++this->numberOfClusters;
     }
@@ -35,7 +35,7 @@ namespace EFG::strct {
     void InsertTunableCapable::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential> toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight) {
         auto it = this->findSharingFactor(this->convertUsingLocals(potentialSharingWeight));
         this->InsertCapable::insert(toInsert);
-        this->factorsExp.extract(toInsert);
+        this->factorsConstExp.extract(toInsert);
         toInsert->setWeight(it->first->getWeight());
         this->factorsExp.emplace(toInsert, it->second);
     }

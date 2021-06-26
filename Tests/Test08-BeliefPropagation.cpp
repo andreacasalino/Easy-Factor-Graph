@@ -39,7 +39,7 @@ protected:
 
   // check all messages were computed after propagation
   void checkMessages() {
-    auto checkCluster = [](const std::set<nodes::Node*>& cluster){
+    auto checkCluster = [](const std::set<strct::Node*>& cluster){
       for(auto c = cluster.begin(); c!=cluster.end(); ++c) {
         for(auto m = (*c)->activeConnections.begin(); m != (*c)->activeConnections.end(); ++m) {
           EXPECT_TRUE(nullptr != m->second.message2This);
