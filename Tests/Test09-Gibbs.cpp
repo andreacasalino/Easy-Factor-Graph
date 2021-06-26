@@ -34,7 +34,7 @@ TEST(GibbsSampling, trivialBinary) {
     model.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor({ makeVariable(2, "A"), makeVariable(2, "B") }, true), w));
     
     model.resetEvidences({ {"A", 1} });
-    auto samples = model.getHiddenSetSamples(100, 20);
+    auto samples = model.getHiddenSetSamples(500, 50);
     compare(1.f, expf(w), getFrequency1(samples, model.getHiddenVariables(), model.findVariable("B")));
 }
 
