@@ -8,9 +8,9 @@
 #ifndef EFG_IO_EXPORTER_H
 #define EFG_IO_EXPORTER_H
 
-#include <nodes/bases/EvidenceAware.h>
-#include <nodes/bases/StructureAware.h>
-#include <nodes/bases/StructureTunableAware.h>
+#include <structure/components/EvidenceAware.h>
+#include <structure/components/StructureAware.h>
+#include <structure/components/StructureTunableAware.h>
 #include <Error.h>
 
 namespace EFG::io {
@@ -19,20 +19,20 @@ namespace EFG::io {
         Exporter() = default;
 
         template<typename Model>
-        static std::tuple<const nodes::EvidenceAware*, const nodes::StructureAware*, const nodes::StructureTunableAware*> getComponents(const Model& model) {
-            const nodes::EvidenceAware* evidences = dynamic_cast<const nodes::EvidenceAware*>(&model);
+        static std::tuple<const strct::EvidenceAware*, const strct::StructureAware*, const strct::StructureTunableAware*> getComponents(const Model& model) {
+            const strct::EvidenceAware* evidences = dynamic_cast<const strct::EvidenceAware*>(&model);
             if (nullptr == evidences) {
                 throw Error("the model should be evidence aware");
             }
 
-            const nodes::StructureAware* structure = dynamic_cast<const nodes::StructureAware*>(&model);
+            const strct::StructureAware* structure = dynamic_cast<const strct::StructureAware*>(&model);
             if (nullptr == structure) {
                 throw Error("the model should be at least structure aware");
             }
-            return std::make_tuple(evidences, structure, dynamic_cast<const nodes::StructureTunableAware*>(&model));
+            return std::make_tuple(evidences, structure, dynamic_cast<const strct::StructureTunableAware*>(&model));
         };
 
-        virtual void exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const nodes::EvidenceAware*, const nodes::StructureAware*, const nodes::StructureTunableAware*>& components) = 0;
+        virtual void exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const strct::EvidenceAware*, const strct::StructureAware*, const strct::StructureTunableAware*>& components) = 0;
     };
 }
 

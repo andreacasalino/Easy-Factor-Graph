@@ -79,6 +79,7 @@ namespace EFG::distribution {
     };
 
     typedef std::shared_ptr<Distribution> DistributionPtr;
+    typedef std::shared_ptr<const Distribution> DistributionCnstPtr;
 }
 
 #endif

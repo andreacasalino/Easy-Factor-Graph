@@ -34,7 +34,7 @@ namespace EFG::io::json {
 		return potential;
 	};
 
-	void Exporter::exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const nodes::EvidenceAware*, const nodes::StructureAware*, const nodes::StructureTunableAware*>& components) {
+	void Exporter::exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const strct::EvidenceAware*, const strct::StructureAware*, const strct::StructureTunableAware*>& components) {
 		structJSON exporter;
 		std::string name = modelName;
 		if (name.empty()) {
@@ -61,12 +61,12 @@ namespace EFG::io::json {
 		}
 		arrayJSON potentials;
 		// factors
-		auto factors = std::get<1>(components)->getFactors();
+		auto factors = std::get<1>(components)->getConstFactors();
 		std::for_each(factors.begin(), factors.end(), [&potentials](const std::shared_ptr<distribution::factor::cnst::Factor>& f) {
 			potentials.addElement(printPotential(*f));
 		});
 		// exp const factors
-		auto factorsExp = std::get<1>(components)->getFactorsExp();
+		auto factorsExp = std::get<1>(components)->getConstFactorsExp();
 		std::for_each(factorsExp.begin(), factorsExp.end(), [&potentials](const std::shared_ptr<distribution::factor::cnst::FactorExponential>& f) {
 			auto pot = printPotential(*f);
 			pot.addElement("weight", Number<float>(f->getWeight()));
@@ -75,7 +75,7 @@ namespace EFG::io::json {
 		});
 		if (nullptr != std::get<2>(components)) {
 			// exp tunable factors
-			auto factorsExp = std::get<2>(components)->getFactorsTunable();
+			auto factorsExp = std::get<2>(components)->getFactorsExp();
 			std::for_each(factorsExp.begin(), factorsExp.end(), [&potentials](const std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cluster) {
 				auto itCl = cluster.begin();
 				auto pot = printPotential(**itCl);

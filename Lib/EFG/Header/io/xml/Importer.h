@@ -27,7 +27,7 @@ namespace EFG::io::xml {
         };
 
     private:
-        std::map<std::string, std::size_t> importComponents(const std::string& filePath, const std::string& fileName, const std::pair<nodes::InsertCapable*, nodes::InsertTunableCapable*>& components) final;
+        std::map<std::string, std::size_t> importComponents(const std::string& filePath, const std::string& fileName, const std::pair<strct::InsertCapable*, strct::InsertTunableCapable*>& components) final;
     };
 }
 
