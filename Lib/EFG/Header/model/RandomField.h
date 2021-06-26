@@ -8,22 +8,22 @@
 #ifndef EFG_MODEL_RANDOM_FIELD_H
 #define EFG_MODEL_RANDOM_FIELD_H
 
-#include <nodes/BeliefPropagator.h>
-#include <nodes/EvidenceChanger.h>
-#include <nodes/EvidenceSetter.h>
-#include <nodes/GibbsSampler.h>
-#include <nodes/InsertTunableCapable.h>
-#include <nodes/QueryHandler.h>
+#include <structure/BeliefPropagator.h>
+#include <structure/EvidenceChanger.h>
+#include <structure/EvidenceSetter.h>
+#include <structure/GibbsSampler.h>
+#include <structure/InsertTunableCapable.h>
+#include <structure/QueryHandler.h>
 #include <train/Trainable.h>
 
 namespace EFG::model {
     class RandomField
-        : public nodes::BeliefPropagator
-        , public nodes::EvidencesChanger
-        , public nodes::EvidencesSetter
-        , public nodes::GibbsSampler
-        , public nodes::InsertTunableCapable
-        , public nodes::QueryHandler
+        : public strct::BeliefPropagator
+        , public strct::EvidencesChanger
+        , public strct::EvidencesSetter
+        , public strct::GibbsSampler
+        , public strct::InsertTunableCapable
+        , public strct::QueryHandler
         , public train::Trainable {
     public:
         RandomField() = default;

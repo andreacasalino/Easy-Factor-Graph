@@ -25,7 +25,7 @@ namespace EFG::io::json {
         };
 
     private:
-        void exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const nodes::EvidenceAware*, const nodes::StructureAware*, const nodes::StructureTunableAware*>& components) final;
+        void exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const strct::EvidenceAware*, const strct::StructureAware*, const strct::StructureTunableAware*>& components) final;
     };
 }
 

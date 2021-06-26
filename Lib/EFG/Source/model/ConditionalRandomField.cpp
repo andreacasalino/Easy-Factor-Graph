@@ -86,7 +86,7 @@ namespace EFG::model {
                 observations[k] = comb.data()[observationPositions[k]];
             }
             this->setEvidences(observations);
-            this->propagateBelief(nodes::PropagationKind::Sum);
+            this->propagateBelief(strct::PropagationKind::Sum);
         };
 #ifdef THREAD_POOL_ENABLED
         if (nullptr != this->threadPool) {
@@ -118,7 +118,7 @@ namespace EFG::model {
     }
 
     void ConditionalRandomField::regenerateHandlers() {
-        auto clusters = this->getFactorsTunable();
+        auto clusters = this->getFactorsExp();
         this->handlers.clear();
         std::for_each(clusters.begin(), clusters.end(), [this](const std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cl) {
             if (1 == cl.size()) {

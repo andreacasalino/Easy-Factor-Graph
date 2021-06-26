@@ -8,24 +8,24 @@
 #ifndef EFG_MODEL_GRAPH_H
 #define EFG_MODEL_GRAPH_H
 
-#include <nodes/BeliefPropagator.h>
-#include <nodes/EvidenceChanger.h>
-#include <nodes/EvidenceSetter.h>
-#include <nodes/GibbsSampler.h>
-#include <nodes/InsertCapable.h>
-#include <nodes/QueryHandler.h>
+#include <structure/BeliefPropagator.h>
+#include <structure/EvidenceChanger.h>
+#include <structure/EvidenceSetter.h>
+#include <structure/GibbsSampler.h>
+#include <structure/InsertCapable.h>
+#include <structure/QueryHandler.h>
 
 namespace EFG::model {
     /**
      * @brief A simple graph object, that can't store tunable factors.
      */
     class Graph
-        : public nodes::BeliefPropagator
-        , public nodes::EvidencesChanger
-        , public nodes::EvidencesSetter
-        , public nodes::GibbsSampler
-        , public nodes::InsertCapable
-        , public nodes::QueryHandler {
+        : public strct::BeliefPropagator
+        , public strct::EvidencesChanger
+        , public strct::EvidencesSetter
+        , public strct::GibbsSampler
+        , public strct::InsertCapable
+        , public strct::QueryHandler {
     public:
         Graph() = default;
 

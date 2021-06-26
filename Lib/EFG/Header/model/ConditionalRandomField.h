@@ -8,23 +8,23 @@
 #ifndef EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H
 #define EFG_MODEL_CONDITIONAL_RANDOM_FIELD_H
 
-#include <nodes/BeliefPropagator.h>
-#include <nodes/EvidenceChanger.h>
-#include <nodes/EvidenceSetter.h>
-#include <nodes/GibbsSampler.h>
-#include <nodes/InsertTunableCapable.h>
-#include <nodes/QueryHandler.h>
+#include <structure/BeliefPropagator.h>
+#include <structure/EvidenceChanger.h>
+#include <structure/EvidenceSetter.h>
+#include <structure/GibbsSampler.h>
+#include <structure/InsertTunableCapable.h>
+#include <structure/QueryHandler.h>
 #include <train/Trainable.h>
 #include <io/FilePath.h>
 
 namespace EFG::model {
     class ConditionalRandomField
-        : public nodes::BeliefPropagator
-        , private nodes::EvidencesChanger
-        , public nodes::EvidencesSetter
-        , public nodes::GibbsSampler
-        , public nodes::InsertTunableCapable
-        , public nodes::QueryHandler
+        : public strct::BeliefPropagator
+        , private strct::EvidencesChanger
+        , public strct::EvidencesSetter
+        , public strct::GibbsSampler
+        , public strct::InsertTunableCapable
+        , public strct::QueryHandler
         , public train::Trainable {
     public:
         ConditionalRandomField() = delete;
@@ -66,7 +66,7 @@ namespace EFG::model {
 
         template<typename Model>
         void absorbOther(const Model& o) {
-            const nodes::EvidenceAware* evPtr = dynamic_cast<const nodes::EvidenceAware*>(&o);
+            const strct::EvidenceAware* evPtr = dynamic_cast<const strct::EvidenceAware*>(&o);
             if (nullptr == evPtr) {
                 throw Error("the passed model is not evidence aware");
             }

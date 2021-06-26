@@ -10,10 +10,10 @@
 
 #include <categoric/Group.h>
 #include <train/TrainSet.h>
-#include <nodes/bases/NodesAware.h>
-#include <nodes/bases/BeliefAware.h>
-#include <nodes/bases/ThreadPoolAware.h>
-#include <nodes/bases/StructureTunableAware.h>
+#include <structure/components/NodesAware.h>
+#include <structure/components/BeliefAware.h>
+#include <structure/components/ThreadPoolAware.h>
+#include <structure/components/StructureTunableAware.h>
 #include <list>
 
 namespace EFG::train {
@@ -33,11 +33,11 @@ namespace EFG::train {
      * @brief An object storing tunable factors, whose weights can be tuned with training
      */
     class Trainable 
-        : virtual public nodes::NodesAware
-        , virtual public nodes::BeliefAware
-        , virtual public nodes::StructureTunableAware
+        : virtual public strct::NodesAware
+        , virtual public strct::BeliefAware
+        , virtual public strct::StructureTunableAware
 #ifdef THREAD_POOL_ENABLED
-        , virtual public nodes::ThreadPoolAware
+        , virtual public strct::ThreadPoolAware
 #endif
     {
     public:

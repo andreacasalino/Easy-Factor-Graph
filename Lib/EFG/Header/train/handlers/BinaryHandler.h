@@ -9,18 +9,18 @@
 #define EFG_TRAIN_HANDLER_BINARY_H
 
 #include <train/handlers/BaseHandler.h>
-#include <nodes/Node.h>
+#include <structure/Node.h>
 
 namespace EFG::train::handler {
     class BinaryHandler : public BaseHandler {
     public:
-        BinaryHandler(nodes::Node& nodeA, nodes::Node& nodeB, std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
+        BinaryHandler(strct::Node& nodeA, strct::Node& nodeB, std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
 
         float getGradientBeta() final;
 
     protected:
-        nodes::Node* nodeA;
-        nodes::Node* nodeB;
+        strct::Node* nodeA;
+        strct::Node* nodeB;
     };
 }
 

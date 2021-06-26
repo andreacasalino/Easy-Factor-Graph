@@ -29,7 +29,7 @@ namespace EFG::io::xml {
 		return pot_tag;
 	};
 
-	void Exporter::exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const nodes::EvidenceAware*, const nodes::StructureAware*, const nodes::StructureTunableAware*>& components) {
+	void Exporter::exportComponents(const std::string& filePath, const std::string& modelName, const std::tuple<const strct::EvidenceAware*, const strct::StructureAware*, const strct::StructureTunableAware*>& components) {
 		xmlPrs::Parser parser;
 		xmlPrs::Tag& exp_root = parser.getRoot();
 		if (modelName.empty()) {
@@ -54,12 +54,12 @@ namespace EFG::io::xml {
 			temp.getAttributes().emplace("flag", "O");
 		}
 		// factors
-		auto factors = std::get<1>(components)->getFactors();
+		auto factors = std::get<1>(components)->getConstFactors();
 		std::for_each(factors.begin(), factors.end(), [&exp_root](const std::shared_ptr<distribution::factor::cnst::Factor>& f) {
 			printPotential(*f, exp_root);
 			});
 		// exp const factors
-		auto factorsExp = std::get<1>(components)->getFactorsExp();
+		auto factorsExp = std::get<1>(components)->getConstFactorsExp();
 		std::for_each(factorsExp.begin(), factorsExp.end(), [&exp_root](const std::shared_ptr<distribution::factor::cnst::FactorExponential>& f) {
 			auto& temp = printPotential(*f, exp_root);
 			temp.getAttributes().emplace("weight", std::to_string(f->getWeight()));
@@ -67,7 +67,7 @@ namespace EFG::io::xml {
 			});
 		if (nullptr != std::get<2>(components)) {
 			// exp tunable factors
-			auto factorsExp = std::get<2>(components)->getFactorsTunable();
+			auto factorsExp = std::get<2>(components)->getFactorsExp();
 			std::for_each(factorsExp.begin(), factorsExp.end(), [&exp_root](const std::vector<std::shared_ptr<distribution::factor::modif::FactorExponential>>& cluster) {
 				auto itCl = cluster.begin();
 				auto& temp = printPotential(**itCl, exp_root);

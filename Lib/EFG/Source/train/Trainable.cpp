@@ -8,7 +8,7 @@
 #include <train/Trainable.h>
 #include <train/handlers/UnaryHandler.h>
 #include <train/handlers/BinaryHandler.h>
-#include <nodes/bases/StructureAware.h>
+#include <structure/components/StructureAware.h>
 #include <train/handlers/CompositeHandler.h>
 #include <algorithm>
 #include <Error.h>
@@ -69,7 +69,7 @@ namespace EFG::train {
 
     void Trainable::insertHandler(std::shared_ptr<distribution::factor::modif::FactorExponential> factor) {
         auto newHandler = this->makeHandler(factor);
-        auto itF = this->factorsTunable.find(factor);
+        auto itF = this->factorsExp.find(factor);
         if (this->handlers.size() == itF->second) {
             // it is a new cluster
             this->handlers.emplace_back(std::move(newHandler));

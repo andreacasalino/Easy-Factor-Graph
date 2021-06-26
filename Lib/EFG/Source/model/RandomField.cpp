@@ -28,7 +28,7 @@ namespace EFG::model {
         std::vector<float> grad;
         grad.resize(this->handlers.size());
         std::size_t pos = 0;
-        this->propagateBelief(nodes::PropagationKind::Sum);
+        this->propagateBelief(strct::PropagationKind::Sum);
 #ifdef THREAD_POOL_ENABLED
         if (nullptr != this->threadPool) {
             std::for_each(this->handlers.begin(), this->handlers.end(), [this, &grad, &pos](train::TrainHandlerPtr& h) {

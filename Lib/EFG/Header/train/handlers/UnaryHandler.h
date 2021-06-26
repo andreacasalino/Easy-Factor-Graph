@@ -9,17 +9,17 @@
 #define EFG_TRAIN_HANDLER_UNARY_H
 
 #include <train/handlers/BaseHandler.h>
-#include <nodes/Node.h>
+#include <structure/Node.h>
 
 namespace EFG::train::handler {
     class UnaryHandler : public BaseHandler {
     public:
-        UnaryHandler(nodes::Node& node, std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
+        UnaryHandler(strct::Node& node, std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
 
         float getGradientBeta() final;
 
     protected:
-        nodes::Node* node;
+        strct::Node* node;
     };
 }
 

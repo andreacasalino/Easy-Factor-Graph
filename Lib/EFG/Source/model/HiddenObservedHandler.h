@@ -9,17 +9,17 @@
 #define EFG_TRAIN_HANDLER_HIDDEN_OBSERVED_H
 
 #include <train/handlers/BaseHandler.h>
-#include <nodes/Node.h>
+#include <structure/Node.h>
 
 namespace EFG::train::handler {
     class HiddenObservedHandler : public BaseHandler {
     public:
-        HiddenObservedHandler(nodes::Node& nodeHidden, const std::pair<categoric::VariablePtr, const std::size_t*>& observed, std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
+        HiddenObservedHandler(strct::Node& nodeHidden, const std::pair<categoric::VariablePtr, const std::size_t*>& observed, std::shared_ptr<distribution::factor::modif::FactorExponential> factor);
 
         float getGradientBeta() final;
 
     protected:
-        nodes::Node* nodeHidden;
+        strct::Node* nodeHidden;
         categoric::VariablePtr observedVar;
         const std::size_t* observedVal;
     };

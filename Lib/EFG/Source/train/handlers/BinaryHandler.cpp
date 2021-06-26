@@ -6,10 +6,10 @@
  **/
 
 #include <train/handlers/BinaryHandler.h>
-#include "../../nodes/Commons.h"
+#include "../../structure/Commons.h"
 
 namespace EFG::train::handler {
-    BinaryHandler::BinaryHandler(nodes::Node& nodeA, nodes::Node& nodeB, std::shared_ptr<distribution::factor::modif::FactorExponential> factor)
+    BinaryHandler::BinaryHandler(strct::Node& nodeA, strct::Node& nodeB, std::shared_ptr<distribution::factor::modif::FactorExponential> factor)
         : BaseHandler(factor)
         , nodeA(&nodeA)
         , nodeB(&nodeB) {
@@ -18,11 +18,11 @@ namespace EFG::train::handler {
     float BinaryHandler::getGradientBeta() {
         float beta = 0.f;
         std::set<const distribution::Distribution*> toMerge;
-        nodes::gatherUnaries(toMerge, *this->nodeA);
+        strct::gatherUnaries(toMerge, *this->nodeA);
         for (auto it = this->nodeA->activeConnections.begin(); it != this->nodeA->activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }
-        nodes::gatherUnaries(toMerge, *this->nodeB);
+        strct::gatherUnaries(toMerge, *this->nodeB);
         for (auto it = this->nodeB->activeConnections.begin(); it != this->nodeB->activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }

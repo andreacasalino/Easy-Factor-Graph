@@ -6,10 +6,10 @@
  **/
 
 #include <train/handlers/UnaryHandler.h>
-#include "../../nodes/Commons.h"
+#include "../../structure/Commons.h"
 
 namespace EFG::train::handler {
-    UnaryHandler::UnaryHandler(nodes::Node& node, std::shared_ptr<distribution::factor::modif::FactorExponential> factor)
+    UnaryHandler::UnaryHandler(strct::Node& node, std::shared_ptr<distribution::factor::modif::FactorExponential> factor)
         : BaseHandler(factor)
         , node(&node) {
     }
@@ -17,7 +17,7 @@ namespace EFG::train::handler {
     float UnaryHandler::getGradientBeta() {
         float beta = 0.f;
         std::set<const distribution::Distribution*> toMerge;
-        nodes::gatherUnaries(toMerge, *this->node);
+        strct::gatherUnaries(toMerge, *this->node);
         for (auto it = this->node->activeConnections.begin(); it != this->node->activeConnections.end(); ++it) {
             toMerge.emplace(it->second.message2This.get());
         }
