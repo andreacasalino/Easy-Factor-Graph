@@ -14,8 +14,6 @@
 #include <distribution/factor/const/Factor.h>
 
 namespace EFG::strct {
-	class ActivationEvaluator;
-
     class QueryHandler
 		: virtual public NodesAware
 		, virtual public EvidenceAware
@@ -46,8 +44,6 @@ namespace EFG::strct {
 		 * values are ordered in the same way the variables in the hiddden set can be ordered (alfabetic order)
 		 */
 		std::vector<size_t> getHiddenSetMAP();
-
-		ActivationEvaluator getActivationEvaluator() const;
     };
 }
 

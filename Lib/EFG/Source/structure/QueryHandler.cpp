@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <Error.h>
 #include <distribution/DistributionFinder.h>
-#include <structure/ActivationEvaluator.h>
 
 namespace EFG::strct {
     distribution::factor::cnst::Factor mergeMessages(const Node& node) {
@@ -129,9 +128,5 @@ namespace EFG::strct {
             MAP.push_back(getMAPnode(this->nodes.find(v)->second));
         });
         return MAP;
-    }
-
-    ActivationEvaluator QueryHandler::getActivationEvaluator() const {
-        return ActivationEvaluator(this->getAllFactors(), this->getVariables());
     }
 }
