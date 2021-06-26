@@ -23,8 +23,8 @@ float getFrequency1(const std::vector<Combination>& samples, const std::set<Vari
 };
 
 void compare(float probTheory0, float probTheory1, float frequency1, const float threshold = 0.05f) {
-    float probTheory = probTheory1 / (probTheory0 + probTheory1);
-    std::cout << "prob theory " << probTheory << "   ;   prob sampler " << frequency1 << std::endl;
+    float probTheory = probTheory1 / (probTheory0 + probTheory1);/*
+    std::cout << "prob theory " << probTheory << "   ;   prob sampler " << frequency1 << std::endl;*/
     EXPECT_LE(fabs(probTheory - frequency1) , threshold);
 }
 
