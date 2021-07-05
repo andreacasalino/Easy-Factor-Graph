@@ -40,6 +40,8 @@ jobs:
       run: ./artifacts/bin/Test08-BeliefPropagation
     - name: Test-09
       run: ./artifacts/bin/Test09-Gibbs
+    - name: Test-10
+      run: ./artifacts/bin/Test10-Learning
       
   ubuntu-clang-tests:
     runs-on: ubuntu-latest
@@ -71,6 +73,8 @@ jobs:
       run: ./artifacts/bin/Test08-BeliefPropagation
     - name: Test-09
       run: ./artifacts/bin/Test09-Gibbs
+    - name: Test-10
+      run: ./artifacts/bin/Test10-Learning
       
   windows-vs-tests:
     runs-on: ubuntu-latest
@@ -102,3 +106,5 @@ jobs:
       run: ./build/artifacts/bin/Test08-BeliefPropagation
     - name: Test-09
       run: ./build/artifacts/bin/Test09-Gibbs
+    - name: Test-10
+      run: ./build/artifacts/bin/Test10-Learning
