@@ -30,7 +30,7 @@ namespace EFG::train {
         for (std::size_t k = 0; k < this->maxIterations; ++k) {
             this->descend();
             this->update();
-            if (l1Norm(*this->lastGrad) < MIN_GRAD_L1) {
+            if (l1Norm(this->lastGrad) < MIN_GRAD_L1) {
                 break;
             }
         }
@@ -40,16 +40,16 @@ namespace EFG::train {
     void IterativeDescend::update() {
         ++this->doneIterations;
 #ifdef ADVANCED_TRAINERS_ENABLED
-        this->lastWeights = std::make_unique<Vect>(this->model->getWeights());
-        this->lastGrad = std::make_unique<Vect>(this->getGradient());
+        this->lastWeights = this->model->getWeights();
+        this->lastGrad = this->getGradient();
 #endif
     };
 
     void IterativeDescend::reset() {
         this->doneIterations = 1;
 #ifdef ADVANCED_TRAINERS_ENABLED
-        this->lastWeights = std::make_unique<Vect>(this->model->getWeights());
-        this->lastGrad = std::make_unique<Vect>(this->getGradient());
+        this->lastWeights = this->model->getWeights();
+        this->lastGrad = this->getGradient();
 #endif
     };
 }

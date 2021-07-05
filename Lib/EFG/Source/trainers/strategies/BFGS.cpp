@@ -18,9 +18,7 @@ namespace EFG::train {
         Vtrasp *= -rho;
         Vtrasp.addIdentity();
 
-        this->invHessianApprox *= V;
-        Vtrasp *= this->invHessianApprox;
-        this->invHessianApprox = std::move(Vtrasp);
+        this->invHessianApprox = Vtrasp * this->invHessianApprox * V;
         Matr S(deltaWeight, deltaWeight);
         S *= rho;
         this->invHessianApprox += S;

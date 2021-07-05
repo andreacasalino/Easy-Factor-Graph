@@ -10,20 +10,26 @@
 #include <trainers/GradientDescendConjugate.h>
 
 namespace EFG::train {
-    void GradientDescendConjugate::reset() {
-        this->IterativeDescend::reset();
-        this->lastDirection = this->getGradient();
+    float FletcherReeves::getBeta() const {
+        Vect grad = this->getGradient();
+        return dot(grad, grad) / dot(this->lastGrad, this->lastGrad);
     }
 
-    void GradientDescendConjugate::descend() {
-        Vect direction = this->getGradient();
-        direction *= -1.f;
-        direction += this->computeBeta() * this->lastDirection;
-        this->minimize(direction);
-        this->lastDirection = std::move(direction);
+    float PolakRibiere::getBeta() const {
+        Vect grad = this->getGradient();
+        return dot(grad, grad - this->lastGrad) / dot(this->lastGrad, this->lastGrad);
     }
 
+    float HestenesStiefel::getBeta() const {
+        Vect grad = this->getGradient();
+        Vect deltaGrad = grad - this->lastGrad;
+        return dot(grad, deltaGrad) / dot(this->lastDirection, deltaGrad);
+    }
 
+    float DaiYuan::getBeta() const {
+        Vect grad = this->getGradient();
+        return dot(grad, grad) / dot(this->lastDirection, grad - this->lastGrad);
+    }
 }
 
 #endif

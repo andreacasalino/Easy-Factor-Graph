@@ -14,40 +14,60 @@
 #include <trainers/strategies/YundaSearcher.h>
 
 namespace EFG::train {
-    class GradientDescendConjugate
-        : public IterativeDescend {
+    /**
+     * @brief refer to https://en.wikipedia.org/wiki/Nonlinear_conjugate_gradient_method
+     */
+    class BetaStrategy
+        : virtual public ModelAware {
     protected:
-        void reset() override;
-
-        void descend() override;
-
-        virtual float computeBeta() = 0;
+        virtual float getBeta() const = 0;
 
         Vect lastDirection;
     };
 
-
-
-    template<typename TrainSetT = BasicTrainSet, typename LineSearcherT = YundaSearcher>
-    class FletcherBroyden
-        : public GradientDescendConjugate
-        , public TrainSetT
-        , public LineSearcherT {
-        static_assert(std::is_base_of<TrainSetT, BasicTrainSet>::value, "TrainSetT should be a form of BasicTrainSet");
-        static_assert(std::is_base_of<LineSearcherT, LineSearcher>::value, "LineSearcherT should be a form of LineSearcher");
+    class FletcherReeves : public BetaStrategy {
     protected:
-        inline float computeBeta() override { return };
+        float getBeta() const override;
     };
 
-    template<typename TrainSetT = BasicTrainSet, typename LineSearcherT = YundaSearcher>
-    class PolakRibiere
-        : public GradientDescendConjugate
+    class PolakRibiere : public BetaStrategy {
+    protected:
+        float getBeta() const override;
+    };
+
+    class HestenesStiefel : public BetaStrategy {
+    protected:
+        float getBeta() const override;
+    };
+
+    class DaiYuan : public BetaStrategy {
+    protected:
+        float getBeta() const override;
+    };
+
+    template<typename TrainSetT = BasicTrainSet, typename LineSearcherT = YundaSearcher, typename BetaStrategyT = FletcherReeves>
+    class GradientDescendConjugate
+        : public IterativeDescend
         , public TrainSetT
-        , public LineSearcherT {
+        , public LineSearcherT
+        , public BetaStrategyT {
         static_assert(std::is_base_of<TrainSetT, BasicTrainSet>::value, "TrainSetT should be a form of BasicTrainSet");
         static_assert(std::is_base_of<LineSearcherT, LineSearcher>::value, "LineSearcherT should be a form of LineSearcher");
+        static_assert(std::is_base_of<BetaStrategyT, BetaStrategy>::value, "BetaStrategyT should be a form of BetaStrategy");
     protected:
-        inline float computeBeta() override { return };
+        void reset() override {
+            this->IterativeDescend::reset();
+            this->lastDirection = this->getGradient();
+            this->lastDirection *= -1.f;
+        }
+
+        void descend() override {
+            Vect direction = this->getGradient();
+            direction *= -1.f;
+            direction += this->getBeta() * this->lastDirection;
+            this->minimize(direction);
+            this->lastDirection = std::move(direction);
+        };
     };
 }
 

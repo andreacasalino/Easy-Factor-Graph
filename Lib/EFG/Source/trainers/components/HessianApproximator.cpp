@@ -11,7 +11,7 @@
 
 namespace EFG::train {
     void HessianApproximator::update() {
-        this->updateInvHessian(this->model->getWeights() - *this->lastWeights, this->getGradient() - *this->lastGrad);
+        this->updateInvHessian(this->model->getWeights() - this->lastWeights, this->getGradient() - this->lastGrad);
     }
 
     void HessianApproximator::reset() {

@@ -32,18 +32,25 @@ namespace EFG::train {
 
     class Matr {
     public:
-        Matr(const std::size_t& size);  // zeros(size, size)
+        Matr(const std::size_t size);  // zeros(size, size)
         Matr(const Vect& a, const Vect& b);
 
-        Matr& operator+=(const Matr& m) const;
-
-        Vect operator*(const Vect& v) const;
-        Matr& operator*=(const Matr& m) const;
-        Matr& operator*=(const float& m) const;
+        Matr(Matr&&) = default;
+        Matr& operator=(Matr&&) = default;
 
         void addIdentity();
 
+        Matr& operator-();
+
+        Matr& operator+=(const Matr& m);
+
+        Vect operator*(const Vect& v) const;
+        Matr operator*(const Matr& m) const;
+        Matr& operator*=(const float& m);
+
     private:
+        inline std::size_t getPos(const std::size_t row, const std::size_t col) const { return (row-1)*sqrt(this->buffer.size()) + col; };
+
         Vect buffer;
     };
 }

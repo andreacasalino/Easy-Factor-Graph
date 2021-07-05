@@ -20,11 +20,11 @@ namespace EFG::train {
     protected:
         Trainable* model = nullptr;
 
-        Vect getGradient() const { return -this->model->getGradient(this->getTrainSet()); };
+        inline Vect getGradient() const { return -this->model->getGradient(this->getTrainSet()); };
 
 #ifdef ADVANCED_TRAINERS_ENABLED
-        std::unique_ptr<Vect> lastWeights;
-        std::unique_ptr<Vect> lastGrad;
+        Vect lastWeights;
+        Vect lastGrad;
 #endif
     };
 }

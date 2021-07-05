@@ -27,7 +27,7 @@ namespace EFG::train {
         static_assert(std::is_base_of<HessianApproximatorT, HessianApproximator>::value, "HessianApproximatorT should be a form of HessianApproximator");
     protected:
         inline void descend() override { 
-            Vect dierction = this->invHessianApprox * this->getGradient();
+            Vect direction = this->invHessianApprox * this->getGradient();
             direction *= -1.f;
             this->minimize(direction);
         };
