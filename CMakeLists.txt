@@ -21,6 +21,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 project(EFG-Core)
 option(THREAD_POOL_OPT "thread pool enabled (ON) or disabled (OFF)" ON)
+option(ADVANCED_TRAINERS_OPT "use advance trainers for model weight optimization (ON) or not (OFF). In the last case only fixed step gradient descend will be available." ON)
 add_subdirectory(Lib)
 
 if(BUILD_SAMPLES)

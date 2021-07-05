@@ -9,9 +9,10 @@
 #define EFG_TRAIN_TRAINER_H
 
 #include <train/Trainable.h>
+#include <Component.h>
 
 namespace EFG::train {
-    class Trainer {
+    class Trainer : virtual public Component {
     public:
         /**
          * @brief trains the passed model, using the passed training set
@@ -19,14 +20,6 @@ namespace EFG::train {
          * @param the training set to use
          */
         virtual void train(Trainable& model, TrainSetPtr trainSet) = 0;
-
-        inline std::size_t getMaxIterations() const { return this->maxIterations; };
-        inline void setMaxIterations(std::size_t iter) { this->maxIterations = iter; };
-
-    protected:
-        Trainer() = default;
-
-        std::size_t maxIterations = 100;
     };
 }
 
