@@ -19,8 +19,8 @@ namespace EFG::train {
         : public IterativeDescend
         , public TrainSetT
         , public LineSearcherT {
-        static_assert(std::is_base_of<TrainSetT, BasicTrainSet>::value, "TrainSetT should be a form of BasicTrainSet");
-        static_assert(std::is_base_of<LineSearcherT, LineSearcher>::value, "LineSearcherT should be a form of LineSearcher");
+        static_assert(std::is_base_of<BasicTrainSet, TrainSetT>::value, "TrainSetT should be a form of BasicTrainSet");
+        static_assert(std::is_base_of<LineSearcher, LineSearcherT>::value, "LineSearcherT should be a form of LineSearcher");
     protected:
         inline void descend() override { 
             Vect direction = this->getGradient();

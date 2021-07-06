@@ -15,7 +15,7 @@ namespace EFG::train {
     constexpr int ITER_MAX = 10;
 
     float YundaSearcher::computeC1() const {
-        float temp = powf(0.9f, this->doneIterations);
+        float temp = powf(0.9f, static_cast<float>(this->doneIterations));
         return 0.0001f * (1.f - temp) - temp;
     }
 

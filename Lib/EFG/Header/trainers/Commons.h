@@ -49,7 +49,8 @@ namespace EFG::train {
         Matr& operator*=(const float& m);
 
     private:
-        inline std::size_t getPos(const std::size_t row, const std::size_t col) const { return (row-1)*sqrt(this->buffer.size()) + col; };
+        inline std::size_t getPos(const std::size_t row, const std::size_t col) const { return (row-1) * this->getSize() + col; };
+        inline std::size_t getSize() const { return static_cast<std::size_t>(sqrt(static_cast<float>(this->buffer.size()))); };
 
         Vect buffer;
     };

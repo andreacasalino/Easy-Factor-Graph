@@ -22,9 +22,9 @@ namespace EFG::train {
         , public TrainSetT
         , public LineSearcherT
         , public HessianApproximatorT {
-        static_assert(std::is_base_of<TrainSetT, BasicTrainSet>::value, "TrainSetT should be a form of BasicTrainSet");
-        static_assert(std::is_base_of<LineSearcherT, LineSearcher>::value, "LineSearcherT should be a form of LineSearcher");
-        static_assert(std::is_base_of<HessianApproximatorT, HessianApproximator>::value, "HessianApproximatorT should be a form of HessianApproximator");
+        static_assert(std::is_base_of<BasicTrainSet, TrainSetT>::value, "TrainSetT should be a form of BasicTrainSet");
+        static_assert(std::is_base_of<LineSearcher, LineSearcherT>::value, "LineSearcherT should be a form of LineSearcher");
+        static_assert(std::is_base_of<HessianApproximator, HessianApproximatorT>::value, "HessianApproximatorT should be a form of HessianApproximator");
     protected:
         inline void descend() override { 
             Vect direction = this->invHessianApprox * this->getGradient();

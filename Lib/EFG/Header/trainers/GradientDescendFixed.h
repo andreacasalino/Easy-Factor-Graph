@@ -17,7 +17,7 @@ namespace EFG::train {
     class GradientDescendFixed
         : public IterativeDescend
         , public TrainSetT {
-        static_assert(std::is_base_of<TrainSetT, BasicTrainSet>::value, "TrainSetT should be a form of BasicTrainSet");
+        static_assert(std::is_base_of<BasicTrainSet, TrainSetT>::value, "TrainSetT should be a form of BasicTrainSet");
     public:
         void setStep(const float step) { 
             if (step <= 0.f) {

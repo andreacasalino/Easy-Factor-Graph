@@ -107,7 +107,7 @@ namespace EFG::train {
 
 	void Matr::addIdentity() {
 		float* data = this->buffer.data();
-		std::size_t size = sqrt(this->buffer.size());
+		std::size_t size = this->getSize();
 		for (std::size_t k = 0; k < size; ++k) {
 			data[this->getPos(k, k)] += 1.f;
 		}
@@ -140,13 +140,14 @@ namespace EFG::train {
 
 	Matr& Matr::operator*=(const float& m) {
 		this->buffer *= m;
+		return *this;
 	}
 
 	Matr Matr::operator*(const Matr& m) const {
 		if (this->buffer.size() != m.buffer.size()) {
 			throw Error("Matrices with invalid sizes");
 		}
-		std::size_t size = sqrt(this->buffer.size());
+		std::size_t size = this->getSize();
 		Vect temp(size, 0.f);
 		Matr res(size);
 		const float* mData = m.buffer.data();

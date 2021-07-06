@@ -51,9 +51,9 @@ namespace EFG::train {
         , public TrainSetT
         , public LineSearcherT
         , public BetaStrategyT {
-        static_assert(std::is_base_of<TrainSetT, BasicTrainSet>::value, "TrainSetT should be a form of BasicTrainSet");
-        static_assert(std::is_base_of<LineSearcherT, LineSearcher>::value, "LineSearcherT should be a form of LineSearcher");
-        static_assert(std::is_base_of<BetaStrategyT, BetaStrategy>::value, "BetaStrategyT should be a form of BetaStrategy");
+        static_assert(std::is_base_of<BasicTrainSet, TrainSetT>::value, "TrainSetT should be a form of BasicTrainSet");
+        static_assert(std::is_base_of<LineSearcher, LineSearcherT>::value, "LineSearcherT should be a form of LineSearcher");
+        static_assert(std::is_base_of<BetaStrategy, BetaStrategyT>::value, "BetaStrategyT should be a form of BetaStrategy");
     protected:
         void reset() override {
             this->IterativeDescend::reset();
@@ -64,7 +64,9 @@ namespace EFG::train {
         void descend() override {
             Vect direction = this->getGradient();
             direction *= -1.f;
-            direction += this->getBeta() * this->lastDirection;
+            Vect correction = this->lastDirection;
+            correction *= this->getBeta();
+            direction += correction;
             this->minimize(direction);
             this->lastDirection = std::move(direction);
         };

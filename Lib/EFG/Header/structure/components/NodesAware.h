@@ -21,12 +21,6 @@ namespace EFG::strct {
 
         categoric::VariablePtr findVariable(const std::string& name) const;
 
-        /**
-         * @return all the factors that are part of the model, regardless the fact they are
-         * exponential or not, tunable or not.
-         */
-        std::set<distribution::DistributionCnstPtr> getAllFactors() const;
-
     protected:
         /**
          * @brief The set of variables part of the model, with the connectivity information

@@ -7,59 +7,70 @@
 #include <trainers/GradientDescend.h>
 #include <trainers/QuasiNewton.h>
 #include <trainers/GradientDescendConjugate.h>
+#include <trainers/strategies/StochasticTrainSet.h>
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::model;
 
 
-template<typename Trainer>
-class TrainerStoryAware : public Trainer {
+template<typename TrainerT>
+class TrainerStoryAware : public TrainerT {
+public:
+    inline const std::list<train::Vect>& getDescendStory() const { return this->descendStory; };
+
 protected:
     void update() override {
         this->descendStory.push_back(this->model->getWeights());
         this->Trainer::update();
     };
 
-    inline const std::list<Vec>& getDescendStory() const { return this->descendStory; };
+    void reset() override {
+        this->descendStory.clear();
+        this->Trainer::reset();
+    }
 
-    std::list<Vec> descendStory;
+    std::list<train::Vect> descendStory;
 };
 
 class LearnableTest
-    : public ::testing::Test
-    , public model::RandomField {
+    : public ::testing::Test {
 protected:
     LearnableTest() = default;
 
     virtual std::unique_ptr<model::RandomField> getReferenceModel() const = 0;
 
     std::unique_ptr<model::RandomField> referenceModel;
+
+    std::unique_ptr<model::RandomField> trainedModel;
     std::list<DistributionFinder> finders;
+
     void SetUp() override {
         this->referenceModel = this->getReferenceModel();
-        this->absorb(*this->referenceModel, true);
-        this->setOnes();
-        auto vars = this->getVariables();
-        for (auto it = this->factorsAll.begin(); it != this->factorsAll.end(); ++it) {
+        this->trainedModel = std::make_unique<model::RandomField>();
+        this->trainedModel->absorbModel(*this->referenceModel, true);
+        auto vars = this->trainedModel->getVariables();
+        for (auto it = this->trainedModel->getAllFactors().begin(); it != this->trainedModel->getAllFactors().end(); ++it) {
             this->finders.emplace_back(**it, vars);
         }
     }
 
     template<typename Trainer>
     void useTrainer(train::TrainSetPtr trainSet) {
+        this->trainedModel->setOnes();
         TrainerStoryAware<Trainer> trainer;
         trainer.setMaxIterations(20);
-        trainer.train(*this, trainSet);
+        trainer.train(*this->trainedModel, trainSet);
         // check marginal compuation
-        auto vars = this->getVariables();
-        this->resetEvidences({ {(*vars.begin())->name(), 0} });
+        auto vars = this->referenceModel->getVariables();
+        this->trainedModel->resetEvidences({ {(*vars.begin())->name(), 0} });
         this->referenceModel->resetEvidences({ {(*vars.begin())->name(), 0} });
-        auto distrLearnt = this->getMarginalDistribution((*vars.rbegin())->name());
+        auto distrLearnt = this->trainedModel->getMarginalDistribution((*vars.rbegin())->name());
         auto distrReal = this->referenceModel->getMarginalDistribution((*vars.rbegin())->name());
-        throw 0; // compare somehow the 2 distributions
+        EXPECT_LE(fabsf(distrLearnt.front() - distrReal.front()), 0.1f);
+        EXPECT_LE(fabsf(distrLearnt.back()  - distrReal.back()), 0.1f);
         // check decresing trend
-        auto finalWeight = this->getWeights();
+        auto finalWeight = this->trainedModel->getWeights();
         auto story = trainer.getDescendStory();
         auto it = story.begin();
         float lastLkl = this->getLikeliHood(*it, trainSet);
@@ -69,23 +80,7 @@ protected:
             EXPECT_GE(lastLkl, lkl);
             lastLkl = lkl;
         }
-        this->setWeights(finalWeight);
-    };
-
-    void useAllTrainers() {
-        std::cout << "sampling train set" << std::endl;
-        train::TrainSetPtr trainSet = std::make_shared<train::TrainSet>(this->referenceModel->getHiddenSetSamples(500, 50));
-        std::cout << "Gradient descend start";
-        this->useTrainer<train::GradientDescend>(trainSet);
-        std::cout << " stop" << std::endl;
-
-        std::cout << "QuasiNewton descend start";
-        this->useTrainer<train::QuasiNewton>(trainSet);
-        std::cout << " stop" << std::endl;
-
-        std::cout << "GradientDescendConjugate descend start";
-        this->useTrainer<train::GradientDescendConjugate>(trainSet);
-        std::cout << " stop" << std::endl;
+        this->trainedModel->setWeights(finalWeight);
     };
 
     float getLogActivation(const EFG::categoric::Combination& c) const {
@@ -97,10 +92,10 @@ protected:
     };
 
     float getLikeliHood(const std::vector<float>& weights, const train::TrainSetPtr& trainSet) {
-        this->setWeights(weights);
+        this->trainedModel->setWeights(weights);
         float Z = 0.f;
         {
-            EFG::categoric::Range group(this->getVariables());
+            EFG::categoric::Range group(this->trainedModel->getVariables());
             EFG::iterator::forEach(group, [this, &Z](const EFG::categoric::Range& r) {
                 Z += this->getLogActivation(r.get());
             });
@@ -111,6 +106,40 @@ protected:
         }
         return lkl - Z;
     }
+
+    void useAllTrainers() {
+        std::cout << "sampling train set" << std::endl;
+        train::TrainSetPtr trainSet = std::make_shared<train::TrainSet>(this->referenceModel->getHiddenSetSamples(500, 50));
+
+        std::cout << "Gradient descend start";
+        this->useTrainer<train::GradientDescend<train::BasicTrainSet, train::YundaSearcher>>(trainSet);
+        std::cout << " stop" << std::endl;
+
+        std::cout << "QuasiNewton descend start";
+        this->useTrainer<train::QuasiNewton<train::BasicTrainSet, train::YundaSearcher, train::BFGS>>(trainSet);
+        std::cout << " stop" << std::endl;
+
+        std::cout << "GradientDescendConjugate descend start";
+        this->useTrainer<train::GradientDescendConjugate<train::BasicTrainSet, train::YundaSearcher, train::FletcherReeves>>(trainSet);
+        std::cout << " stop" << std::endl;
+    };
+
+    void useAllTrainersStoch() {
+        std::cout << "sampling train set" << std::endl;
+        train::TrainSetPtr trainSet = std::make_shared<train::TrainSet>(this->referenceModel->getHiddenSetSamples(2000, 50));
+
+        std::cout << "Gradient descend start";
+        this->useTrainer<train::GradientDescend<train::StochasticTrainSet, train::YundaSearcher>>(trainSet);
+        std::cout << " stop" << std::endl;
+
+        std::cout << "QuasiNewton descend start";
+        this->useTrainer<train::QuasiNewton<train::StochasticTrainSet, train::YundaSearcher, train::BFGS>>(trainSet);
+        std::cout << " stop" << std::endl;
+
+        std::cout << "GradientDescendConjugate descend start";
+        this->useTrainer<train::GradientDescendConjugate<train::StochasticTrainSet, train::YundaSearcher, train::FletcherReeves>>(trainSet);
+        std::cout << " stop" << std::endl;
+    };
 };
 
 class SmallModel : public LearnableTest {
@@ -129,11 +158,12 @@ protected:
         return std::move(model);
     }
 };
-TEST_F(SmallModel, smallModelTraining) {
+
+TEST_F(SmallModel, smallModelCompleteTrainSet) {
     std::cout << "--------------------------" << std::endl;
-    std::cout << "small model" << std::endl;
     this->useAllTrainers();
-    throw 0; // check weights value
+    EXPECT_LE(fabsf(this->referenceModel->getWeights().front() - this->trainedModel->getWeights().front()), 0.2f);
+    EXPECT_LE(fabsf(this->referenceModel->getWeights().back()  - this->trainedModel->getWeights().back()), 0.2f);
     std::cout << "--------------------------" << std::endl << std::endl;
 }
 
@@ -157,11 +187,16 @@ protected:
         return std::move(model);
     }
 };
-TEST_F(MediumModel, mediumModelTraining) {
+
+TEST_F(MediumModel, mediumModelCompleteTrainSet) {
     std::cout << "--------------------------" << std::endl;
-    std::cout << "medium model" << std::endl;
     this->useAllTrainers();
-    throw 0; // check weights value
+    std::cout << "--------------------------" << std::endl << std::endl;
+}
+
+TEST_F(MediumModel, mediumModelStochTrainSet) {
+    std::cout << "--------------------------" << std::endl;
+    this->useAllTrainersStoch();
     std::cout << "--------------------------" << std::endl << std::endl;
 }
 

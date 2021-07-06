@@ -24,20 +24,4 @@ namespace EFG::strct {
         }
         return it->first;
     }
-
-    std::set<distribution::DistributionCnstPtr> NodesAware::getAllFactors() const {
-        std::set<distribution::DistributionCnstPtr> factors;
-        for (auto it = this->nodes.begin(); it != this->nodes.end(); ++it) {
-            std::for_each(it->second.unaryFactors.begin(), it->second.unaryFactors.end(), [&factors](const distribution::DistributionPtr& d) {
-                factors.emplace(d);
-            });
-            for (auto itA = it->second.activeConnections.begin(); itA != it->second.activeConnections.end(); ++itA) {
-                factors.emplace(itA->second.factor);
-            }
-            for (auto itD = it->second.disabledConnections.begin(); itD != it->second.disabledConnections.end(); ++itD) {
-                factors.emplace(itD->second.factor);
-            }
-        }
-        return factors;
-    }
 }
