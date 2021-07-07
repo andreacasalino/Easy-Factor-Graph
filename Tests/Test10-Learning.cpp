@@ -22,12 +22,12 @@ public:
 protected:
     void update() override {
         this->descendStory.push_back(this->model->getWeights());
-        this->Trainer::update();
+        this->TrainerT::update();
     };
 
     void reset() override {
         this->descendStory.clear();
-        this->Trainer::reset();
+        this->TrainerT::reset();
     }
 
     std::list<train::Vect> descendStory;
@@ -73,10 +73,12 @@ protected:
         auto finalWeight = this->trainedModel->getWeights();
         auto story = trainer.getDescendStory();
         auto it = story.begin();
-        float lastLkl = this->getLikeliHood(*it, trainSet);
+        this->trainedModel->setWeights(*it);
+        float lastLkl = this->getLikeliHood(trainSet);
         ++it;
         for (it; it != story.end(); ++it) {
-            float lkl = this->getLikeliHood(*it, trainSet);
+            this->trainedModel->setWeights(*it);
+            float lkl = this->getLikeliHood(trainSet);
             EXPECT_GE(lastLkl, lkl);
             lastLkl = lkl;
         }
@@ -91,8 +93,7 @@ protected:
         return res;
     };
 
-    float getLikeliHood(const std::vector<float>& weights, const train::TrainSetPtr& trainSet) {
-        this->trainedModel->setWeights(weights);
+    float getLikeliHood(const train::TrainSetPtr& trainSet) {
         float Z = 0.f;
         {
             EFG::categoric::Range group(this->trainedModel->getVariables());
@@ -153,19 +154,11 @@ protected:
 
         std::unique_ptr<model::RandomField> model = std::make_unique<model::RandomField>();
         model->insert(std::make_shared < factor::cnst::FactorExponential>(factor::cnst::IndicatorFactor(A, 0), 1.f));
-        model->insert(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
-        model->insert(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
+        model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
+        model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
         return std::move(model);
     }
 };
-
-TEST_F(SmallModel, smallModelCompleteTrainSet) {
-    std::cout << "--------------------------" << std::endl;
-    this->useAllTrainers();
-    EXPECT_LE(fabsf(this->referenceModel->getWeights().front() - this->trainedModel->getWeights().front()), 0.2f);
-    EXPECT_LE(fabsf(this->referenceModel->getWeights().back()  - this->trainedModel->getWeights().back()), 0.2f);
-    std::cout << "--------------------------" << std::endl << std::endl;
-}
 
 class MediumModel : public LearnableTest {
 public:
@@ -187,6 +180,14 @@ protected:
         return std::move(model);
     }
 };
+
+TEST_F(SmallModel, smallModelCompleteTrainSet) {
+    std::cout << "--------------------------" << std::endl;
+    this->useAllTrainers();
+    EXPECT_LE(fabsf(this->referenceModel->getWeights().front() - this->trainedModel->getWeights().front()), 0.2f);
+    EXPECT_LE(fabsf(this->referenceModel->getWeights().back()  - this->trainedModel->getWeights().back()), 0.2f);
+    std::cout << "--------------------------" << std::endl << std::endl;
+}
 
 TEST_F(MediumModel, mediumModelCompleteTrainSet) {
     std::cout << "--------------------------" << std::endl;

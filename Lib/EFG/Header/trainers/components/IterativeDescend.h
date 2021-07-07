@@ -19,9 +19,10 @@ namespace EFG::train {
         , public virtual ModelAware
         , public virtual IterationsAware
         , public virtual Updatable {
-    protected:
+    public:
         void train(Trainable& model, TrainSetPtr trainSet) override;
 
+    protected:
         virtual void descend() = 0;
 
         void update() override;
