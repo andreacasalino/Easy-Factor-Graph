@@ -8,6 +8,7 @@
 #include <trainers/components/IterativeDescend.h>
 #include <trainers/Commons.h>
 #include <Error.h>
+#include <math.h>
 
 namespace EFG::train {
     void IterativeDescend::setWeightsTollerance(const float value) {
