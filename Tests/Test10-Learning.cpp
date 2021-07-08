@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <math.h>
 #include <model/RandomField.h>
 #include <model/ConditionalRandomField.h>
 #include <categoric/Range.h>
@@ -82,8 +83,8 @@ protected:
         distrReal = dynamic_cast<EFG::strct::QueryHandler*>(this->referenceModel.get())->getMarginalDistribution((*vars.rbegin())->name());
         distrLearnt = dynamic_cast<EFG::strct::QueryHandler*>(this->trainedModel.get())->getMarginalDistribution((*vars.rbegin())->name());
 
-        EXPECT_LE(fabs(static_cast<float>(distrLearnt.front() - distrReal.front())), 0.1f);
-        EXPECT_LE(fabs(static_cast<float>(distrLearnt.back() - distrReal.back())), 0.1f);
+        EXPECT_LE(fabs(distrLearnt.front() - distrReal.front()), 0.1f);
+        EXPECT_LE(fabs(distrLearnt.back() - distrReal.back()), 0.1f);
         // check tuned values
         auto finalWeight = this->trainedModel->getWeights();
         {
