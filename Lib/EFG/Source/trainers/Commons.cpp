@@ -10,14 +10,6 @@
 #include <Error.h>
 
 namespace EFG::train {
-	Vect& operator-(Vect& v) {
-		float* data = v.data();
-		for (std::size_t k = 0; k < v.size(); ++k) {
-			data[k] = -data[k];
-		}
-		return v;
-	};
-
 	Vect& operator+=(Vect& a, const Vect& b) {
 		if (a.size() != b.size()) {
 			throw Error("Vectors with invalid sizes");
@@ -84,21 +76,23 @@ namespace EFG::train {
 	};
 
 	Matr::Matr(const std::size_t size)
-		: buffer(size*size, 0.f) {
+		: size(size)
+		, buffer(size*size, 0.f) {
 	}
 
 	Matr::Matr(const Vect& a, const Vect& b) {
 		if (a.size() != b.size()) {
 			throw Error("Vectors with invalid sizes");
 		}
-		this->buffer.resize(a.size() * a.size());
+		this->size = a.size();
+		this->buffer.resize(this->size * this->size);
 		const float* dataA = a.data();
 		const float* dataB = b.data();
 		std::size_t posB;
 		float* data = this->buffer.data();
 		std::size_t pos = 0;
-		for (std::size_t posA = 0; posA < a.size(); ++posA) {
-			for (posB = 0; posB < a.size(); ++posB) {
+		for (std::size_t posA = 0; posA < this->size; ++posA) {
+			for (posB = 0; posB < this->size; ++posB) {
 				data[pos] = dataA[posA] * dataB[posB];
 				++pos;
 			}
@@ -107,15 +101,9 @@ namespace EFG::train {
 
 	void Matr::addIdentity() {
 		float* data = this->buffer.data();
-		std::size_t size = this->getSize();
-		for (std::size_t k = 0; k < size; ++k) {
+		for (std::size_t k = 0; k < this->size; ++k) {
 			data[this->getPos(k, k)] += 1.f;
 		}
-	}
-
-	Matr& Matr::operator-() {
-		this->buffer = -this->buffer;
-		return *this;
 	}
 
 	Matr& Matr::operator+=(const Matr& m) {
@@ -123,17 +111,22 @@ namespace EFG::train {
 		return *this;
 	}
 
+	Matr& Matr::operator-=(const Matr& m) {
+		this->buffer -= m.buffer;
+		return *this;
+	}
+
 	Vect Matr::operator*(const Vect& v) const {
-		if (this->buffer.size() != v.size()* v.size()) {
+		if (this->size != v.size()) {
 			throw Error("Vector with invalid size");
 		}
 		Vect res;
-		res.reserve(v.size());
+		res.reserve(this->size);
 		const float* data = this->buffer.data();
 		std::size_t pos = 0;
-		for (std::size_t k = 0; k < v.size(); ++k) {
-			res.push_back(dot(&data[pos], v.data(), v.size()));
-			pos += v.size();
+		for (std::size_t k = 0; k < this->size; ++k) {
+			res.push_back(dot(&data[pos], v.data(), this->size));
+			pos += this->size;
 		}
 		return res;
 	}
@@ -144,12 +137,11 @@ namespace EFG::train {
 	}
 
 	Matr Matr::operator*(const Matr& m) const {
-		if (this->buffer.size() != m.buffer.size()) {
+		if (this->size != m.size) {
 			throw Error("Matrices with invalid sizes");
 		}
-		std::size_t size = this->getSize();
-		Vect temp(size, 0.f);
-		Matr res(size);
+		Vect temp(this->size, 0.f);
+		Matr res(this->size);
 		const float* mData = m.buffer.data();
 		float* resData = res.buffer.data();
 		std::size_t s;

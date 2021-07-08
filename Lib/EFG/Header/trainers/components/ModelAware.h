@@ -20,7 +20,11 @@ namespace EFG::train {
     protected:
         Trainable* model = nullptr;
 
-        inline Vect getGradient() const { return -this->model->getGradient(this->getTrainSet()); };
+        inline Vect getGradient() const { 
+            Vect direction = this->model->getGradient(this->getTrainSet()); 
+            direction *= -1.f;
+            return direction;
+        };
 
 #ifdef ADVANCED_TRAINERS_ENABLED
         Vect lastWeights;

@@ -28,15 +28,15 @@ namespace EFG::train {
 
     protected:
         void descend() override {
-            auto direction = this->model->getGradient();
-            auto w = this->model->getWeights();
+            auto direction = this->getGradient();
             direction *= this->step;
+            auto w = this->model->getWeights();
             w -= direction;
             this->model->setWeights(w);
         };
 
     private:
-        float step = 1.f;
+        float step = 0.5f;
     };
 }
 

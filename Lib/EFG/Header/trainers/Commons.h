@@ -14,8 +14,6 @@
 namespace EFG::train {
     typedef std::vector<float> Vect;
 
-    Vect& operator-(Vect& v);
-
 	Vect& operator+=(Vect& a, const Vect& b);
 
 	Vect operator+(const Vect& a, const Vect& b);
@@ -40,18 +38,17 @@ namespace EFG::train {
 
         void addIdentity();
 
-        Matr& operator-();
-
         Matr& operator+=(const Matr& m);
+        Matr& operator-=(const Matr& m);
 
+        Matr& operator*=(const float& m);
         Vect operator*(const Vect& v) const;
         Matr operator*(const Matr& m) const;
-        Matr& operator*=(const float& m);
 
     private:
-        inline std::size_t getPos(const std::size_t row, const std::size_t col) const { return (row-1) * this->getSize() + col; };
-        inline std::size_t getSize() const { return static_cast<std::size_t>(sqrt(static_cast<float>(this->buffer.size()))); };
+        inline std::size_t getPos(const std::size_t row, const std::size_t col) const { return row * this->size + col; };
 
+        std::size_t size;
         Vect buffer;
     };
 }

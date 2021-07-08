@@ -22,11 +22,18 @@ namespace EFG::train {
     public:
         void train(Trainable& model, TrainSetPtr trainSet) override;
 
+        void setWeightsTollerance(const float value);
+        void setGradientTollerance(const float value);
+
     protected:
         virtual void descend() = 0;
 
         void update() override;
         void reset() override;
+
+    private:
+        float weightsTollerance = 0.005f;
+        float gradientTollerance = 0.005f;
     };
 }
 

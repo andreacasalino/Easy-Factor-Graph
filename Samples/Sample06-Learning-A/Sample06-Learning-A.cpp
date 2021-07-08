@@ -6,7 +6,7 @@
  **/
 
 #include <model/RandomField.h>
-#include <train/trainers/GradientDescend.h>
+#include <trainers/QuasiNewton.h>
 #include <io/xml/Importer.h>
 #include <CombinationMaker.h>
 #include <print/ProbabilityDistributionPrint.h>
@@ -60,7 +60,7 @@ int main() {
 		cout << "theoretical " << expf(alfa) / Z << endl;
 		cout << "Gibbs sampler results " << sample::getEmpiricalFrequencies(sample::makeCombination({ 1,1,0 }), Group(A, B, C), samples, Group(A, B, C).getVariables()) << endl << endl;
 
-		GradientDescend trainer;
+		train::QuasiNewton trainer;
 		trainer.setMaxIterations(50);
 		trainModel(graph, std::make_shared<TrainSet>(samples), trainer, std::make_pair("C" , 0), "A");
 	}, "Simple tunable model", "refer to Section 4.6.1 of the documentation");
@@ -82,8 +82,7 @@ int main() {
 		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor({ B, D }, true), delta));
 		graph.insertCopy(factor::cnst::Factor({ D, E }, true));
 
-		GradientDescend trainer;
-		trainer.setAdvancement(0.1f);
+		train::QuasiNewton trainer;
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)), trainer, std::make_pair("D" , 0), "A");
 	}, "Medium size tunable model", "refer to Section 4.6.2 of the documentation");
 
@@ -91,8 +90,7 @@ int main() {
 		model::RandomField graph;
 		xml::Importer::importFromXml(graph, EFG::io::FilePath(SAMPLE_FOLDER , "graph_3.xml"));
 
-		GradientDescend trainer;
-		trainer.setAdvancement(0.1f);
+		train::QuasiNewton trainer;
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1500, 100)), trainer, std::make_pair("v5" , 0), "v1", 3);
 	}, "Complex tunable model", "refer to Section 4.6.3 of the documentation");
 	
@@ -115,7 +113,7 @@ int main() {
 		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor({ Y1, Y2 }, true), alfa));
 		graph.insertTunableCopy(factor::modif::FactorExponential(factor::cnst::Factor({ Y2, X3 }, true), 1.f), { Y1, Y2 });  // the same weight of Y1-Y2 is assumed
 
-		GradientDescend trainer;
+		train::QuasiNewton trainer;
 		trainer.setMaxIterations(50);
 		trainModel(graph, std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)), trainer, std::make_pair("X1" , 0), "Y2");
 	}, "Tunable model with shared weights", "refer to Section 4.6.4 of the documentation");

@@ -10,7 +10,19 @@
 #include <Error.h>
 
 namespace EFG::train {
-    constexpr float MIN_GRAD_L1 = 0.001f;
+    void IterativeDescend::setWeightsTollerance(const float value) {
+        if (value < 0.f) {
+            throw Error("Negative tollerance value");
+        }
+        this->weightsTollerance = value;
+    };
+
+    void IterativeDescend::setGradientTollerance(const float value) {
+        if (value < 0.f) {
+            throw Error("Negative tollerance value");
+        }
+        this->gradientTollerance = value;
+    };
 
     float l1Norm(const Vect& v) {
         float res = 0.f;
@@ -27,12 +39,19 @@ namespace EFG::train {
         this->model = &model;
         this->resetTrainSet(trainSet);
         this->reset();
+        std::unique_ptr<Vect> wOld = std::make_unique<Vect>(this->model->getWeights());
+        std::unique_ptr<Vect> wAtt;
         for (std::size_t k = 0; k < this->maxIterations; ++k) {
             this->descend();
             this->update();
-            if (l1Norm(this->lastGrad) < MIN_GRAD_L1) {
+            if (l1Norm(this->lastGrad) < this->gradientTollerance) {
                 break;
             }
+            wAtt = std::make_unique<Vect>(this->model->getWeights());
+            if (l1Norm(*wOld - *wAtt) < this->weightsTollerance) {
+                break;
+            }
+            std::swap(wOld, wAtt);
         }
         this->model = nullptr;
     }

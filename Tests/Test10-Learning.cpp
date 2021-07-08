@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 #include <model/RandomField.h>
+#include <model/ConditionalRandomField.h>
 #include <categoric/Range.h>
 #include <distribution/DistributionFinder.h>
 #include <distribution/factor/const/Indicator.h>
 
+#include <trainers/GradientDescendFixed.h>
 #include <trainers/GradientDescend.h>
 #include <trainers/QuasiNewton.h>
 #include <trainers/GradientDescendConjugate.h>
@@ -38,39 +40,58 @@ class LearnableTest
 protected:
     LearnableTest() = default;
 
-    virtual std::unique_ptr<model::RandomField> getReferenceModel() const = 0;
+    virtual std::unique_ptr<train::Trainable> getReferenceModel() const = 0;
 
-    std::unique_ptr<model::RandomField> referenceModel;
+    virtual train::TrainSetPtr getTrainSet() {
+        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(this->referenceModel.get());
+        return std::make_unique<train::TrainSet>(sampler->getHiddenSetSamples(500, 50));
+    };
 
-    std::unique_ptr<model::RandomField> trainedModel;
+    std::unique_ptr<train::Trainable> referenceModel;
+    std::unique_ptr<train::Trainable> trainedModel;
+    train::TrainSetPtr trainSet;
     std::list<DistributionFinder> finders;
 
     void SetUp() override {
         this->referenceModel = this->getReferenceModel();
-        this->trainedModel = std::make_unique<model::RandomField>();
-        this->trainedModel->absorbModel(*this->referenceModel, true);
+        this->trainedModel = this->getReferenceModel();
+        this->trainSet = this->getTrainSet();
         auto vars = this->trainedModel->getVariables();
-        for (auto it = this->trainedModel->getAllFactors().begin(); it != this->trainedModel->getAllFactors().end(); ++it) {
+        EFG::strct::StructureAware* structure = dynamic_cast<EFG::strct::StructureAware*>(this->trainedModel.get());
+        for (auto it = structure->getAllFactors().begin(); it != structure->getAllFactors().end(); ++it) {
             this->finders.emplace_back(**it, vars);
         }
     }
 
     template<typename Trainer>
-    void useTrainer(train::TrainSetPtr trainSet) {
+    void useTrainer() {
         this->trainedModel->setOnes();
         TrainerStoryAware<Trainer> trainer;
-        trainer.setMaxIterations(20);
+        trainer.setMaxIterations(30);
         trainer.train(*this->trainedModel, trainSet);
-        // check marginal compuation
+        std::cout << "Iterations done " << trainer.getDescendStory().size() << std::endl;
+        // check marginal computation
         auto vars = this->referenceModel->getVariables();
-        this->trainedModel->resetEvidences({ {(*vars.begin())->name(), 0} });
-        this->referenceModel->resetEvidences({ {(*vars.begin())->name(), 0} });
-        auto distrLearnt = this->trainedModel->getMarginalDistribution((*vars.rbegin())->name());
-        auto distrReal = this->referenceModel->getMarginalDistribution((*vars.rbegin())->name());
+        std::vector<float> distrLearnt, distrReal;
+        EFG::strct::EvidencesChanger* referenceSetter = dynamic_cast<EFG::strct::EvidencesChanger*>(this->referenceModel.get());
+        if (nullptr != referenceSetter) {
+            // random field
+            referenceSetter->resetEvidences({ {(*vars.rbegin())->name(), 0} });
+            dynamic_cast<EFG::strct::EvidencesChanger*>(this->trainedModel.get())->resetEvidences({ {(*vars.rbegin())->name(), 0} });
+        }
+        distrReal = dynamic_cast<EFG::strct::QueryHandler*>(this->referenceModel.get())->getMarginalDistribution((*vars.rbegin())->name());
+        distrLearnt = dynamic_cast<EFG::strct::QueryHandler*>(this->trainedModel.get())->getMarginalDistribution((*vars.rbegin())->name());
         EXPECT_LE(fabsf(distrLearnt.front() - distrReal.front()), 0.1f);
-        EXPECT_LE(fabsf(distrLearnt.back()  - distrReal.back()), 0.1f);
-        // check decresing trend
+        EXPECT_LE(fabsf(distrLearnt.back() - distrReal.back()), 0.1f);
+        // check tuned values
         auto finalWeight = this->trainedModel->getWeights();
+        {
+            auto referenceWeight = this->referenceModel->getWeights();
+            for (std::size_t k = 0; k < finalWeight.size(); ++k) {
+                EXPECT_LE(fabsf(finalWeight[k] - referenceWeight[k]) , 0.3f);
+            }
+        }
+        // check decresing trend
         auto story = trainer.getDescendStory();
         auto it = story.begin();
         this->trainedModel->setWeights(*it);
@@ -107,47 +128,28 @@ protected:
         }
         return lkl - Z;
     }
-
-    void useAllTrainers() {
-        std::cout << "sampling train set" << std::endl;
-        train::TrainSetPtr trainSet = std::make_shared<train::TrainSet>(this->referenceModel->getHiddenSetSamples(500, 50));
-
-        std::cout << "Gradient descend start";
-        this->useTrainer<train::GradientDescend<train::BasicTrainSet, train::YundaSearcher>>(trainSet);
-        std::cout << " stop" << std::endl;
-
-        std::cout << "QuasiNewton descend start";
-        this->useTrainer<train::QuasiNewton<train::BasicTrainSet, train::YundaSearcher, train::BFGS>>(trainSet);
-        std::cout << " stop" << std::endl;
-
-        std::cout << "GradientDescendConjugate descend start";
-        this->useTrainer<train::GradientDescendConjugate<train::BasicTrainSet, train::YundaSearcher, train::FletcherReeves>>(trainSet);
-        std::cout << " stop" << std::endl;
-    };
-
-    void useAllTrainersStoch() {
-        std::cout << "sampling train set" << std::endl;
-        train::TrainSetPtr trainSet = std::make_shared<train::TrainSet>(this->referenceModel->getHiddenSetSamples(2000, 50));
-
-        std::cout << "Gradient descend start";
-        this->useTrainer<train::GradientDescend<train::StochasticTrainSet, train::YundaSearcher>>(trainSet);
-        std::cout << " stop" << std::endl;
-
-        std::cout << "QuasiNewton descend start";
-        this->useTrainer<train::QuasiNewton<train::StochasticTrainSet, train::YundaSearcher, train::BFGS>>(trainSet);
-        std::cout << " stop" << std::endl;
-
-        std::cout << "GradientDescendConjugate descend start";
-        this->useTrainer<train::GradientDescendConjugate<train::StochasticTrainSet, train::YundaSearcher, train::FletcherReeves>>(trainSet);
-        std::cout << " stop" << std::endl;
-    };
 };
 
-class SmallModel : public LearnableTest {
+#define TEST_TRAINERS(Model) \
+    TEST_F(Model, GradientDescendFixed) { \
+        this->useTrainer<train::GradientDescendFixed<train::BasicTrainSet>>(); \
+    } \
+    TEST_F(Model, GradientDescendAdaptive) { \
+            this->useTrainer<train::GradientDescend<train::BasicTrainSet, train::YundaSearcher>>(); \
+    } \
+    TEST_F(Model, GradientDescendConjugate) { \
+            this->useTrainer<train::GradientDescendConjugate<train::BasicTrainSet, train::YundaSearcher, train::FletcherReeves>>(); \
+    } \
+    TEST_F(Model, QuasiNewton) { \
+            this->useTrainer<train::QuasiNewton<train::BasicTrainSet, train::YundaSearcher, train::BFGS>>(); \
+    } 
+
+
+class SmallRandomField : public LearnableTest {
 public:
-    SmallModel() = default;
+    SmallRandomField() = default;
 protected:
-    std::unique_ptr<model::RandomField> getReferenceModel() const override {
+    std::unique_ptr<train::Trainable> getReferenceModel() const override {
         VariablePtr A = std::make_shared<Variable>(3, "A");
         VariablePtr B = std::make_shared<Variable>(3, "B");
         VariablePtr C = std::make_shared<Variable>(3, "C");
@@ -160,11 +162,11 @@ protected:
     }
 };
 
-class MediumModel : public LearnableTest {
+class MediumRandomField : public LearnableTest {
 public:
-    MediumModel() = default;
+    MediumRandomField() = default;
 protected:
-    std::unique_ptr<model::RandomField> getReferenceModel() const override {
+    std::unique_ptr<train::Trainable> getReferenceModel() const override {
         VariablePtr A = std::make_shared<Variable>(3, "A");
         VariablePtr B = std::make_shared<Variable>(3, "B");
         VariablePtr C = std::make_shared<Variable>(3, "C");
@@ -173,33 +175,53 @@ protected:
 
         std::unique_ptr<model::RandomField> model = std::make_unique<model::RandomField>();
         model->insert(std::make_shared < factor::cnst::FactorExponential>(factor::cnst::IndicatorFactor(A, 0), 1.f));
-        model->insert(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
-        model->insert(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
-        model->insert(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, D}, true), 2.f));
-        model->insert(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, E}, true), 0.5f));
+        model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
+        model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
+        model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, D}, true), 2.f));
+        model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, E}, true), 0.5f));
         return std::move(model);
     }
 };
 
-TEST_F(SmallModel, smallModelCompleteTrainSet) {
-    std::cout << "--------------------------" << std::endl;
-    this->useAllTrainers();
-    EXPECT_LE(fabsf(this->referenceModel->getWeights().front() - this->trainedModel->getWeights().front()), 0.2f);
-    EXPECT_LE(fabsf(this->referenceModel->getWeights().back()  - this->trainedModel->getWeights().back()), 0.2f);
-    std::cout << "--------------------------" << std::endl << std::endl;
-}
+//class SmallConditionalRandomField : public LearnableTest {
+//public:
+//    SmallConditionalRandomField() = default;
+//protected:
+//    std::unique_ptr<train::Trainable> getReferenceModel() const override {
+//        VariablePtr A = std::make_shared<Variable>(3, "A");
+//        VariablePtr B = std::make_shared<Variable>(3, "B");
+//        VariablePtr C = std::make_shared<Variable>(3, "C");
+//
+//        model::RandomField model;
+//        model.insert(std::make_shared < factor::cnst::FactorExponential>(factor::cnst::IndicatorFactor(A, 0), 1.f));
+//        model.insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
+//        model.insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
+//        model.resetEvidences({ {"B", 0},{"C", 0} });
+//        return std::make_unique<ConditionalRandomField>(model);
+//    }
+//
+//    train::TrainSetPtr getTrainSet(const std::size_t iter) {
+//        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(this->referenceModel.get());
+//        EFG::strct::EvidencesSetter* evHndl = dynamic_cast<EFG::strct::EvidencesSetter*>(this->referenceModel.get());
+//        categoric::Range range(sampler->getHiddenVariables());
+//        std::vector<categoric::Combination> samples;
+//        samples.reserve(categoric::Group(sampler->getHiddenVariables()).size() * iter);
+//        iterator::forEach(range, [&](const categoric::Range& r) {
+//            evHndl->setEvidences(r.get());
+//            auto temp = sampler->getHiddenSetSamples(iter, 50);
+//            for (auto it = temp.begin(); it != temp.end(); ++it) {
+//                samples.push_back({it->data()[0] , r.get().data()[0], r.get().data()[1] });
+//            }
+//        });
+//        return std::make_unique<train::TrainSet>(samples);
+//    };
+//};
 
-TEST_F(MediumModel, mediumModelCompleteTrainSet) {
-    std::cout << "--------------------------" << std::endl;
-    this->useAllTrainers();
-    std::cout << "--------------------------" << std::endl << std::endl;
-}
+TEST_TRAINERS(SmallRandomField);
 
-TEST_F(MediumModel, mediumModelStochTrainSet) {
-    std::cout << "--------------------------" << std::endl;
-    this->useAllTrainersStoch();
-    std::cout << "--------------------------" << std::endl << std::endl;
-}
+TEST_TRAINERS(MediumRandomField);
+
+//TEST_TRAINERS(SmallConditionalRandomField);
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
