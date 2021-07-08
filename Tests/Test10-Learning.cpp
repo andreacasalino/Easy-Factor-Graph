@@ -81,14 +81,15 @@ protected:
         }
         distrReal = dynamic_cast<EFG::strct::QueryHandler*>(this->referenceModel.get())->getMarginalDistribution((*vars.rbegin())->name());
         distrLearnt = dynamic_cast<EFG::strct::QueryHandler*>(this->trainedModel.get())->getMarginalDistribution((*vars.rbegin())->name());
-        EXPECT_LE(fabsf(static_cast<float>(distrLearnt.front() - distrReal.front())), 0.1f);
-        EXPECT_LE(fabsf(static_cast<float>(distrLearnt.back() - distrReal.back())), 0.1f);
+
+        EXPECT_LE(fabs(static_cast<float>(distrLearnt.front() - distrReal.front())), 0.1f);
+        EXPECT_LE(fabs(static_cast<float>(distrLearnt.back() - distrReal.back())), 0.1f);
         // check tuned values
         auto finalWeight = this->trainedModel->getWeights();
         {
             auto referenceWeight = this->referenceModel->getWeights();
             for (std::size_t k = 0; k < finalWeight.size(); ++k) {
-                EXPECT_LE(fabsf(finalWeight[k] - referenceWeight[k]) , 0.3f);
+                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , 0.3f);
             }
         }
         // check decresing trend

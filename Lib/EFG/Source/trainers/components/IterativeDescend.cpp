@@ -29,8 +29,8 @@ namespace EFG::train {
         float res = 0.f;
         const float* data = v.data();
         for (std::size_t k = 0; k < v.size(); ++k) {
-            if (fabsf(data[k]) > res) {
-                res = fabsf(data[k]);
+            if (fabs(data[k]) > res) {
+                res = fabs(data[k]);
             }
         }
         return res;
