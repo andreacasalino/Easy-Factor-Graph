@@ -7,6 +7,7 @@
 
 #ifdef ADVANCED_TRAINERS_ENABLED
 #include <trainers/strategies/YundaSearcher.h>
+#include <math.h>
 
 namespace EFG::train {
     constexpr float ALFA_MAX = 1.f;
