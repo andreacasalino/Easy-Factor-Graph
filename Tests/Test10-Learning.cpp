@@ -94,6 +94,7 @@ protected:
     };
     static std::unique_ptr<Info> info;
 
+	float wErrToll = 0.3f;
     template<typename TrainerT>
     void useTrainer(bool updateInfo = false) {
         if (updateInfo) {
@@ -129,7 +130,7 @@ protected:
         {
             auto referenceWeight = info->referenceModel->getWeights();
             for (std::size_t k = 0; k < finalWeight.size(); ++k) {
-                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , 0.3f);
+                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , this->wErrToll);
             }
         }
     // check decresing trend
@@ -241,6 +242,10 @@ protected:
         });
         return std::make_shared<train::TrainSet>(rawSamples);
     };
+	
+	void SetUp() override {
+		this->wErrToll = 0.35f;
+	}
 };
 
 TEST_TRAINERS(SmallRandomField);
