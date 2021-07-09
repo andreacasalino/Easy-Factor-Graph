@@ -42,6 +42,7 @@ docGenHandler.reprint("./latex/make.bat")
 subprocess.call([r'.\\latex\\make.bat'])
 
 # copy html folder to root
+shutil.rmtree("../html", ignore_errors=True)
 shutil.copytree("./html", "../html")
 
 # clean up
