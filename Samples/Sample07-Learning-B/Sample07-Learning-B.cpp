@@ -6,7 +6,8 @@
  **/
 
 #include <model/ConditionalRandomField.h>
-#include <train/trainers/GradientDescend.h>
+#include <trainers/QuasiNewton.h>
+#include <trainers/strategies/StochasticTrainSet.h>
 #include <categoric/Range.h>
 #include <io/xml/Importer.h>
 #include <print/ProbabilityDistributionPrint.h>
@@ -41,9 +42,10 @@ int main() {
 #endif
 
 		// use stochastic gradient descend
-		GradientDescend<StochasticExtractor> trainer;
+		train::QuasiNewton<train::StochasticTrainSet> trainer;
 		trainer.setPercentage(0.05f);
 		trainer.setMaxIterations(10);
+		trainer.enablePrintAdvancement();
 		cout << "training the model, take some time cause conditioned model are much more computational demanding ..." << endl;
 		trainer.train(graph2Learn, trainSet);
 

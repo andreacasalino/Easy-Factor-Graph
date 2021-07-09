@@ -30,7 +30,9 @@ The library contains some minimal functionalities to also perform training using
    * When setting the CMake LIB_OPT flag to ON, the libraries that are part of this project will be compiled as shared, otherwise as static. By default the static behaviour is set  
    * some computations are speed up using a thread pool implemented in an external library. However,
 the compilation of such library might cause problems in some systems. Therefore, you can also decide to not use the thread pool (and not compile it at all) by selecting **OFF** for the [CMake](https://cmake.org) option **THREAD_POOL_OPT**
-      
+   * This library contains many different iterative tuners, that can be used to train any kind of factor graph. However, if you don't need to use it or you simply need to use a basic fixed step size gradient descend, you can disable the compilation 
+    of such advanced trainers by setting the [CMake](https://cmake.org) option **ADVANCED_TRAINERS_OPT** to **OFF**, which is set to **ON** by default.
+	  
  * Compile the library and the samples
 
  * You can also just download the compiled binaries of the library of the latest master commit [here](https://github.com/andreacasalino/Easy-Factor-Graph/actions) 

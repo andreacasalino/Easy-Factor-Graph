@@ -567,10 +567,6 @@ No matter the case, the population of tunable weights, i.e. the weights of the t
 W = \lbrace w_1,\cdots , w_D \rbrace
 \end{eqnarray}
 $w_i$ will refer to the $i^{th}$ free parameter of the model.
-
-\subsection{Learning of unconditioned model}
-\label{sec:00:UNC_LEARN}
-
 For the purpose of learning, we assume $\mathcal{O} = \emptyset$. Learning considers a training set $T = \lbrace t_1, \cdots ,t_N \rbrace$ made of realizations of the joint distribution correlating all the variables in $\mathcal{V}$, no matter the fact that they are involved in tunable or non tunable potentials.
 As exposed in Section \ref{sec:00:PREL}, if $W$ is known, the probability of a combination $t_j$ can be evaluated as follows:
 \begin{eqnarray}
@@ -595,7 +591,19 @@ J = \frac{log(L)}{N} &=& \sum _{t_j \in T} \frac{log(\mathbb{P}(t_j))}{N} \nonum
    					 	 &+& \frac{1}{N} \sum _{t_j \in T}  log(E_0 (t_j))
    					 	 \label{eq:00:J_learn}
 \end{eqnarray}
-The aim of learning is to find the value of $W$ maximising $J$. This is done iteratively, exploiting a gradient descend approach. The computations to perform for evaluating the gradient $\frac{\partial J}{\partial W}$ will be exposed in the following part of this Section.
+The aim of learning become essentially to find the value of $W$ maximising $J$. This is typically done iteratively, by searching at every iteration the optimum along a direction similar
+to the one given by the gradient $\frac{\partial J}{\partial W}$.
+The way the gradient is exploited to update the searching direction characterize the kind of aproach.
+\\
+The basic gradient descend approach assumes the searching direction equal to the gradient, while Quasi Newton methods (\url{https://www.jstor.org/stable/2006193}) use an estimation of the hessian (computed using only the gradient variation) in order to
+correct the direction given by the gradient. Non linear conjugate approach (\url{https://www.caam.rice.edu/~yzhang/caam554/pdf/cgsurvey.pdf}) implements memory-based approaches that compute the new searching direction by considering
+both the actual value of the gradient as well as the old used direction.
+\\
+The above methods are already implemented inside this library.
+
+\subsection{Learning of unconditioned model}
+\label{sec:00:UNC_LEARN}
+The computations to perform for evaluating the gradient $\frac{\partial J}{\partial W}$ in case of unconditioned model will be exposed in this Section.
 Notice that in equation (\ref{eq:00:J_learn}), term $\sum _{t_j \in T}  log(E_0 (t_j))$ is constant and consequently will be not considered for computing the gradient of $J$. Equation (\ref{eq:00:J_learn}) can be rewritten as follows:
 \begin{eqnarray}
 J &=& \alpha (T, W) - \beta (W) \nonumber\\
