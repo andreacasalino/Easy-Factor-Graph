@@ -13,7 +13,7 @@
 
 namespace EFG::train {
     /**
-     * @brief The BFGS approach is used, as described here https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm
+     * @brief The BFGS approach is used, as described here <a href="linkURL"> https://machinelearningmastery.com/bfgs-optimization-in-python/ </a>
      */
     class BFGS
         : public HessianApproximator {
