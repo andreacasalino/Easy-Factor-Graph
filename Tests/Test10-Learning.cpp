@@ -217,6 +217,7 @@ protected:
 
     void SetUp() override {
         this->checkLkl = false;
+		this->wErrToll = 0.37f;
     }
 };
 
