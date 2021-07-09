@@ -39,7 +39,7 @@ latexSource.addLine("\\begin{document}")
 latexSource.addLine("\\maketitle")
 
 # add contents
-latexSource.addLine(FileHandler("./src/additional_Sections.tex").getContent())
+latexSource.addLine(FileHandler("./additional_Sections.tex").getContent())
     
 latexSource.addLine("\\end{document}")        
 latexSource.close()
