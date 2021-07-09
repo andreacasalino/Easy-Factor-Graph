@@ -15,7 +15,7 @@
 
 namespace EFG::train {
     /**
-     * @brief refer to https://en.wikipedia.org/wiki/Nonlinear_conjugate_gradient_method
+     * @brief refer to the https://en.wikipedia.org/wiki/Nonlinear_conjugate_gradient_method and the possible strategies to compute beta
      */
     class BetaStrategy
         : virtual public ModelAware {
@@ -45,6 +45,9 @@ namespace EFG::train {
         float getBeta() const override;
     };
 
+    /**
+     * @brief At every iteration the minimum along the direction of the conjugate gradient method, https://en.wikipedia.org/wiki/Nonlinear_conjugate_gradient_method, is searched
+     */
     template<typename TrainSetT = BasicTrainSet, typename LineSearcherT = YundaSearcher, typename BetaStrategyT = FletcherReeves>
     class GradientDescendConjugate
         : public IterativeDescend

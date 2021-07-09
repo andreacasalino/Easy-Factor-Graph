@@ -14,6 +14,12 @@
 #include <trainers/components/Updatable.h>
 
 namespace EFG::train {
+    /**
+     * @brief Base class for every iterative tuner.
+     * The iterations are stopped in case:
+        - the l1 norm of the gradient is below a certain threshold
+        - the l1 of the difference between the old values of the weights and the new ones is below a certain threshold
+     */
     class IterativeDescend
         : public Trainer
         , public virtual ModelAware
@@ -22,10 +28,23 @@ namespace EFG::train {
     public:
         void train(Trainable& model, TrainSetPtr trainSet) override;
 
+        /**
+         * @brief Set the threshold to consider for the weights improvements 
+         * in order to decide whether to arrest the iterations or not.
+         * @param the minimum l1 norm acceptable value
+         */
         void setWeightsTollerance(const float value);
+        /**
+         * @brief Set the threshold to consider for the gradient
+         * in order to decide whether to arrest the iterations or not.
+         * @param the minimum l1 norm acceptable value
+         */
         void setGradientTollerance(const float value);
 
     protected:
+        /**
+         * @brief called at every iteration to improve the weights
+         */
         virtual void descend() = 0;
 
         void update() override;

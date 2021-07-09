@@ -14,6 +14,9 @@
 #include <trainers/strategies/YundaSearcher.h>
 
 namespace EFG::train {
+    /**
+     * @brief At every iteration the minimum along the gradient direction is searched
+     */
     template<typename TrainSetT = BasicTrainSet, typename LineSearcherT = YundaSearcher>
     class GradientDescend
         : public IterativeDescend

@@ -13,6 +13,10 @@
 #include <Error.h>
 
 namespace EFG::train {
+    /**
+     * @brief At the every iteration the weights are updated in the following way:
+        w_k+1 = w_k + step * gradient
+     */
     template<typename TrainSetT = BasicTrainSet>
     class GradientDescendFixed
         : public IterativeDescend

@@ -14,6 +14,9 @@
 #include <trainers/Commons.h>
 
 namespace EFG::train {
+    /**
+     * @brief The base for an object storing the local hessian approximation of the function to optimize
+     */
     class HessianApproximator
         : public virtual ModelAware
         , public virtual Updatable {

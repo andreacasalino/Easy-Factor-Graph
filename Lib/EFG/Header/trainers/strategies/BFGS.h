@@ -12,6 +12,9 @@
 #include <trainers/components/HessianApproximator.h>
 
 namespace EFG::train {
+    /**
+     * @brief The BFGS approach is used, as described here https://en.wikipedia.org/wiki/Broyden–Fletcher–Goldfarb–Shanno_algorithm
+     */
     class BFGS
         : public HessianApproximator {
     private:

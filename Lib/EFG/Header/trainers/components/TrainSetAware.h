@@ -16,6 +16,9 @@ namespace EFG::train {
     protected:
         virtual TrainSetPtr getTrainSet() const = 0;
 
+        /**
+         * @param the new training set to use
+         */
         virtual void resetTrainSet(TrainSetPtr trainSet) = 0;
     };
 }

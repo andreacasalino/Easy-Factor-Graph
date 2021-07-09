@@ -13,6 +13,9 @@
 #include <trainers/components/IterationsAware.h>
 
 namespace EFG::train {
+    /**
+     * @brief The approach described here http://www.optimization-online.org/DB_FILE/2016/07/5560.pdf (Algorithm A) is implemented by this class.
+     */
     class YundaSearcher
         : public LineSearcher
         , virtual public IterationsAware {

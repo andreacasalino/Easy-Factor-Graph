@@ -15,6 +15,9 @@ namespace EFG::train {
     class IterationsAware 
         : virtual public Component {
     public:
+        /**
+         * @param the maximum number of iterations allowed to search the optimum
+         */
         void setMaxIterations(const std::size_t iter);
 
     protected:
