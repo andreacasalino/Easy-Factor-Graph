@@ -41,6 +41,17 @@ namespace EFG::train {
          */
         void setGradientTollerance(const float value);
 
+        /**
+         * @brief Display in the console the advancement.
+         *  By default the advancement is not displayed
+         */
+        inline void enablePrintAdvancement() { this->printAdvnc = true; };
+        /**
+         * @brief Prevent to display in the console the advancement
+         *  By default the advancement is not displayed
+         */
+        inline void disablePrintAdvancement() { this->printAdvnc = false; };
+
     protected:
         /**
          * @brief called at every iteration to improve the weights
@@ -53,6 +64,7 @@ namespace EFG::train {
     private:
         float weightsTollerance = 0.005f;
         float gradientTollerance = 0.005f;
+        bool printAdvnc = false;
     };
 }
 

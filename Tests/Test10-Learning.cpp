@@ -95,6 +95,7 @@ protected:
     static std::unique_ptr<Info> info;
 
 	float wErrToll = 0.3f;
+    bool checkLkl = true;
     template<typename TrainerT>
     void useTrainer(bool updateInfo = false) {
         if (updateInfo) {
@@ -133,35 +134,37 @@ protected:
                 EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , this->wErrToll);
             }
         }
+        if (this->checkLkl) {
     // check decresing trend
-        auto story = trainer.getDescendStory();
-        auto it = story.begin();
-        info->trainedModel->setWeights(*it);
-        float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
-        ++it;
-        for (it; it != story.end(); ++it) {
+            auto story = trainer.getDescendStory();
+            auto it = story.begin();
             info->trainedModel->setWeights(*it);
-            float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
-            EXPECT_GE(lastLkl, lkl);
-            lastLkl = lkl;
+            float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
+            ++it;
+            for (it; it != story.end(); ++it) {
+                info->trainedModel->setWeights(*it);
+                float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
+                EXPECT_GE(lastLkl, lkl);
+                lastLkl = lkl;
+            }
+            info->trainedModel->setWeights(finalWeight);
         }
-        info->trainedModel->setWeights(finalWeight);
     };
 };
 std::unique_ptr<LearnableTest::Info> LearnableTest::info = nullptr;
 
-#define TEST_TRAINERS(Model) \
+#define TEST_TRAINERS(Model, TrainSetT) \
     TEST_F(Model, GradientDescendFixed) { \
-        this->useTrainer<train::GradientDescendFixed<train::BasicTrainSet>>(true); \
+        this->useTrainer<train::GradientDescendFixed<TrainSetT>>(true); \
     } \
     TEST_F(Model, GradientDescendAdaptive) { \
-            this->useTrainer<train::GradientDescend<train::BasicTrainSet, train::YundaSearcher>>(); \
+            this->useTrainer<train::GradientDescend<TrainSetT, train::YundaSearcher>>(); \
     } \
     TEST_F(Model, GradientDescendConjugate) { \
-            this->useTrainer<train::GradientDescendConjugate<train::BasicTrainSet, train::YundaSearcher, train::FletcherReeves>>(); \
+            this->useTrainer<train::GradientDescendConjugate<TrainSetT, train::YundaSearcher, train::FletcherReeves>>(); \
     } \
     TEST_F(Model, QuasiNewton) { \
-            this->useTrainer<train::QuasiNewton<train::BasicTrainSet, train::YundaSearcher, train::BFGS>>(); \
+            this->useTrainer<train::QuasiNewton<TrainSetT, train::YundaSearcher, train::BFGS>>(); \
     } 
 
 
@@ -200,6 +203,20 @@ protected:
         model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, D}, true), 2.f));
         model->insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, E}, true), 0.5f));
         return std::move(model);
+    }
+};
+
+class MediumRandomFieldStoch : public MediumRandomField {
+public:
+    MediumRandomFieldStoch() = default;
+protected:
+    train::TrainSetPtr getTrainSet() override {
+        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(info->referenceModel.get());
+        return std::make_unique<train::TrainSet>(sampler->getHiddenSetSamples(3000, 50));
+    };
+
+    void SetUp() override {
+        this->checkLkl = false;
     }
 };
 
@@ -248,11 +265,13 @@ protected:
 	}
 };
 
-TEST_TRAINERS(SmallRandomField);
+TEST_TRAINERS(SmallRandomField, train::BasicTrainSet);
 
-TEST_TRAINERS(MediumRandomField);
+TEST_TRAINERS(MediumRandomField, train::BasicTrainSet);
 
-TEST_TRAINERS(SmallConditionalRandomField);
+TEST_TRAINERS(MediumRandomFieldStoch, train::StochasticTrainSet);
+
+TEST_TRAINERS(SmallConditionalRandomField, train::BasicTrainSet);
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

@@ -45,6 +45,7 @@ int main() {
 		train::QuasiNewton<train::StochasticTrainSet> trainer;
 		trainer.setPercentage(0.05f);
 		trainer.setMaxIterations(10);
+		trainer.enablePrintAdvancement();
 		cout << "training the model, take some time cause conditioned model are much more computational demanding ..." << endl;
 		trainer.train(graph2Learn, trainSet);
 

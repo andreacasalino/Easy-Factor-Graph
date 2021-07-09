@@ -9,6 +9,7 @@
 #include <trainers/Commons.h>
 #include <Error.h>
 #include <math.h>
+#include <iostream>
 
 namespace EFG::train {
     void IterativeDescend::setWeightsTollerance(const float value) {
@@ -43,6 +44,9 @@ namespace EFG::train {
         std::unique_ptr<Vect> wOld = std::make_unique<Vect>(this->model->getWeights());
         std::unique_ptr<Vect> wAtt;
         for (std::size_t k = 0; k < this->maxIterations; ++k) {
+            if (this->printAdvnc) {
+                std::cout << "\r iteration:  " << k << " / " << this->maxIterations << std::endl;
+            }
             this->descend();
             this->update();
             if (l1Norm(this->lastGrad) < this->gradientTollerance) {
