@@ -36,76 +36,14 @@ protected:
     std::list<train::Vect> descendStory;
 };
 
-class LearnableTest
-    : public ::testing::Test {
-protected:
-    LearnableTest() = default;
-
-    virtual std::unique_ptr<train::Trainable> getReferenceModel() const = 0;
-
-    virtual train::TrainSetPtr getTrainSet() {
-        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(this->referenceModel.get());
-        return std::make_unique<train::TrainSet>(sampler->getHiddenSetSamples(500, 50));
-    };
-
-    std::unique_ptr<train::Trainable> referenceModel;
-    std::unique_ptr<train::Trainable> trainedModel;
-    train::TrainSetPtr trainSet;
-    std::list<DistributionFinder> finders;
-
-    void SetUp() override {
-        this->referenceModel = this->getReferenceModel();
-        this->trainedModel = this->getReferenceModel();
-        this->trainSet = this->getTrainSet();
-        auto vars = this->trainedModel->getVariables();
-        EFG::strct::StructureAware* structure = dynamic_cast<EFG::strct::StructureAware*>(this->trainedModel.get());
-        for (auto it = structure->getAllFactors().begin(); it != structure->getAllFactors().end(); ++it) {
+class LikelihoodAware {
+public:
+    LikelihoodAware(const train::Trainable& model) {
+        this->vars = model.getVariables();
+        const EFG::strct::StructureAware* str = dynamic_cast<const EFG::strct::StructureAware*>(&model);
+        for (auto it = str->getAllFactors().begin(); it != str->getAllFactors().end(); ++it) {
             this->finders.emplace_back(**it, vars);
         }
-    }
-
-    template<typename Trainer>
-    void useTrainer() {
-        this->trainedModel->setOnes();
-        TrainerStoryAware<Trainer> trainer;
-        trainer.setMaxIterations(30);
-        trainer.train(*this->trainedModel, trainSet);
-        std::cout << "Iterations done " << trainer.getDescendStory().size() << std::endl;
-        // check marginal computation
-        auto vars = this->referenceModel->getVariables();
-        std::vector<float> distrLearnt, distrReal;
-        EFG::strct::EvidencesChanger* referenceSetter = dynamic_cast<EFG::strct::EvidencesChanger*>(this->referenceModel.get());
-        if (nullptr != referenceSetter) {
-            // random field
-            referenceSetter->resetEvidences({ {(*vars.rbegin())->name(), 0} });
-            dynamic_cast<EFG::strct::EvidencesChanger*>(this->trainedModel.get())->resetEvidences({ {(*vars.rbegin())->name(), 0} });
-        }
-        distrReal = dynamic_cast<EFG::strct::QueryHandler*>(this->referenceModel.get())->getMarginalDistribution((*vars.rbegin())->name());
-        distrLearnt = dynamic_cast<EFG::strct::QueryHandler*>(this->trainedModel.get())->getMarginalDistribution((*vars.rbegin())->name());
-
-        EXPECT_LE(fabs(distrLearnt.front() - distrReal.front()), 0.1f);
-        EXPECT_LE(fabs(distrLearnt.back() - distrReal.back()), 0.1f);
-        // check tuned values
-        auto finalWeight = this->trainedModel->getWeights();
-        {
-            auto referenceWeight = this->referenceModel->getWeights();
-            for (std::size_t k = 0; k < finalWeight.size(); ++k) {
-                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , 0.3f);
-            }
-        }
-        // check decresing trend
-        auto story = trainer.getDescendStory();
-        auto it = story.begin();
-        this->trainedModel->setWeights(*it);
-        float lastLkl = this->getLikeliHood(trainSet);
-        ++it;
-        for (it; it != story.end(); ++it) {
-            this->trainedModel->setWeights(*it);
-            float lkl = this->getLikeliHood(trainSet);
-            EXPECT_GE(lastLkl, lkl);
-            lastLkl = lkl;
-        }
-        this->trainedModel->setWeights(finalWeight);
     };
 
     float getLogActivation(const EFG::categoric::Combination& c) const {
@@ -116,13 +54,13 @@ protected:
         return res;
     };
 
-    float getLikeliHood(const train::TrainSetPtr& trainSet) {
+    float getLogLikeliHood(const train::TrainSetPtr& trainSet) {
         float Z = 0.f;
         {
-            EFG::categoric::Range group(this->trainedModel->getVariables());
+            EFG::categoric::Range group(this->vars);
             EFG::iterator::forEach(group, [this, &Z](const EFG::categoric::Range& r) {
                 Z += this->getLogActivation(r.get());
-            });
+                });
         }
         float lkl = 0.f, coeff = 1.f / static_cast<float>(trainSet->getSet().size());
         for (auto it = trainSet->getSet().begin(); it != trainSet->getSet().end(); ++it) {
@@ -130,11 +68,90 @@ protected:
         }
         return lkl - Z;
     }
+
+private:
+    std::set<categoric::VariablePtr> vars;
+    std::list<DistributionFinder> finders;
 };
+
+class LearnableTest
+    : public ::testing::Test {
+protected:
+    LearnableTest() = default;
+
+    virtual std::unique_ptr<train::Trainable> getReferenceModel() const = 0;
+
+    virtual train::TrainSetPtr getTrainSet() {
+        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(info->referenceModel.get());
+        return std::make_unique<train::TrainSet>(sampler->getHiddenSetSamples(500, 50));
+    };
+
+    struct Info {
+        std::unique_ptr<train::Trainable> referenceModel;
+        std::unique_ptr<train::Trainable> trainedModel;
+        train::TrainSetPtr                trainSet;
+        std::unique_ptr<LikelihoodAware>  evaluator;
+    };
+    static std::unique_ptr<Info> info;
+
+    template<typename TrainerT>
+    void useTrainer(bool updateInfo = false) {
+        if (updateInfo) {
+            info = std::make_unique<Info>();
+            info->referenceModel = this->getReferenceModel();
+            info->trainedModel = this->getReferenceModel();
+            info->evaluator = std::make_unique<LikelihoodAware>(*info->trainedModel.get());
+            info->trainSet = this->getTrainSet();
+            std::cout << "train set sampled " << std::endl;
+        }
+        info->trainedModel->setOnes();
+    // do training
+        TrainerStoryAware<TrainerT> trainer;
+        trainer.setMaxIterations(30);
+        trainer.train(*info->trainedModel, info->trainSet);
+        std::cout << "Iterations done " << trainer.getDescendStory().size() << std::endl;
+    // check marginal computation
+        auto vars = info->referenceModel->getVariables();
+        std::vector<float> distrLearnt, distrReal;
+        EFG::strct::EvidencesChanger* referenceSetter = dynamic_cast<EFG::strct::EvidencesChanger*>(info->referenceModel.get());
+        if (nullptr != referenceSetter) {
+            // random field
+            referenceSetter->resetEvidences({ {(*vars.rbegin())->name(), 0} });
+            dynamic_cast<EFG::strct::EvidencesChanger*>(info->trainedModel.get())->resetEvidences({ {(*vars.rbegin())->name(), 0} });
+        }
+        distrReal = dynamic_cast<EFG::strct::QueryHandler*>(info->referenceModel.get())->getMarginalDistribution((*vars.rbegin())->name());
+        distrLearnt = dynamic_cast<EFG::strct::QueryHandler*>(info->trainedModel.get())->getMarginalDistribution((*vars.rbegin())->name());
+
+        EXPECT_LE(fabs(distrLearnt.front() - distrReal.front()), 0.1f);
+        EXPECT_LE(fabs(distrLearnt.back() - distrReal.back()), 0.1f);
+    // check tuned values
+        auto finalWeight = info->trainedModel->getWeights();
+        {
+            auto referenceWeight = info->referenceModel->getWeights();
+            for (std::size_t k = 0; k < finalWeight.size(); ++k) {
+                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , 0.3f);
+            }
+        }
+    // check decresing trend
+        auto story = trainer.getDescendStory();
+        auto it = story.begin();
+        info->trainedModel->setWeights(*it);
+        float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
+        ++it;
+        for (it; it != story.end(); ++it) {
+            info->trainedModel->setWeights(*it);
+            float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
+            EXPECT_GE(lastLkl, lkl);
+            lastLkl = lkl;
+        }
+        info->trainedModel->setWeights(finalWeight);
+    };
+};
+std::unique_ptr<LearnableTest::Info> LearnableTest::info = nullptr;
 
 #define TEST_TRAINERS(Model) \
     TEST_F(Model, GradientDescendFixed) { \
-        this->useTrainer<train::GradientDescendFixed<train::BasicTrainSet>>(); \
+        this->useTrainer<train::GradientDescendFixed<train::BasicTrainSet>>(true); \
     } \
     TEST_F(Model, GradientDescendAdaptive) { \
             this->useTrainer<train::GradientDescend<train::BasicTrainSet, train::YundaSearcher>>(); \
@@ -185,45 +202,52 @@ protected:
     }
 };
 
-//class SmallConditionalRandomField : public LearnableTest {
-//public:
-//    SmallConditionalRandomField() = default;
-//protected:
-//    std::unique_ptr<train::Trainable> getReferenceModel() const override {
-//        VariablePtr A = std::make_shared<Variable>(3, "A");
-//        VariablePtr B = std::make_shared<Variable>(3, "B");
-//        VariablePtr C = std::make_shared<Variable>(3, "C");
-//
-//        model::RandomField model;
-//        model.insert(std::make_shared < factor::cnst::FactorExponential>(factor::cnst::IndicatorFactor(A, 0), 1.f));
-//        model.insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
-//        model.insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
-//        model.resetEvidences({ {"B", 0},{"C", 0} });
-//        return std::make_unique<ConditionalRandomField>(model);
-//    }
-//
-//    train::TrainSetPtr getTrainSet(const std::size_t iter) {
-//        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(this->referenceModel.get());
-//        EFG::strct::EvidencesSetter* evHndl = dynamic_cast<EFG::strct::EvidencesSetter*>(this->referenceModel.get());
-//        categoric::Range range(sampler->getHiddenVariables());
-//        std::vector<categoric::Combination> samples;
-//        samples.reserve(categoric::Group(sampler->getHiddenVariables()).size() * iter);
-//        iterator::forEach(range, [&](const categoric::Range& r) {
-//            evHndl->setEvidences(r.get());
-//            auto temp = sampler->getHiddenSetSamples(iter, 50);
-//            for (auto it = temp.begin(); it != temp.end(); ++it) {
-//                samples.push_back({it->data()[0] , r.get().data()[0], r.get().data()[1] });
-//            }
-//        });
-//        return std::make_unique<train::TrainSet>(samples);
-//    };
-//};
+class SmallConditionalRandomField : public LearnableTest {
+public:
+    SmallConditionalRandomField() = default;
+protected:
+    std::unique_ptr<train::Trainable> getReferenceModel() const override {
+        VariablePtr A = std::make_shared<Variable>(3, "A");
+        VariablePtr B = std::make_shared<Variable>(3, "B");
+        VariablePtr C = std::make_shared<Variable>(3, "C");
+
+        model::RandomField model;
+        model.insert(std::make_shared < factor::cnst::FactorExponential>(factor::cnst::IndicatorFactor(A, 0), 1.f));
+        model.insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
+        model.insertTunable(std::make_shared < factor::modif::FactorExponential>(factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
+        model.resetEvidences({ {"B", 0},{"C", 0} });
+        return std::make_unique<ConditionalRandomField>(model);
+    }
+
+    train::TrainSetPtr getTrainSet() override {
+        std::size_t iter = 50;
+        std::vector<categoric::Combination> rawSamples;
+        EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(info->referenceModel.get());
+        EFG::strct::NodesAware* nodes = dynamic_cast<EFG::strct::NodesAware*>(info->referenceModel.get());
+        EFG::strct::EvidencesSetter* setter = dynamic_cast<EFG::strct::EvidencesSetter*>(info->referenceModel.get());
+        std::set<categoric::VariablePtr> evidences = { nodes->findVariable("B"), nodes->findVariable("C") };
+        rawSamples.reserve(iter * categoric::Group(evidences).size());
+        categoric::Range range(evidences);
+        iterator::forEach(range, [&](const categoric::Range& r) {
+            std::vector<std::size_t> ev = { r.get().data()[0] , r.get().data()[1] };
+            setter->setEvidences(ev);
+            auto samples = sampler->getHiddenSetSamples(iter, 50);
+            for (auto it = samples.begin(); it != samples.end(); ++it) {
+                rawSamples.emplace_back(3);
+                rawSamples.back().data()[0] = it->data()[0];
+                rawSamples.back().data()[1] = ev[0];
+                rawSamples.back().data()[2] = ev[1];
+            }
+        });
+        return std::make_shared<train::TrainSet>(rawSamples);
+    };
+};
 
 TEST_TRAINERS(SmallRandomField);
 
 TEST_TRAINERS(MediumRandomField);
 
-//TEST_TRAINERS(SmallConditionalRandomField);
+TEST_TRAINERS(SmallConditionalRandomField);
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
