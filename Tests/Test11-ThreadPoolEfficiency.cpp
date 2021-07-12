@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
+#include <ModelTest.h>
 #include <model/RandomField.h>
-#include <io/xml/Importer.h>
 #include <chrono>
 using namespace EFG;
 using namespace EFG::categoric;
@@ -8,20 +8,12 @@ using namespace EFG::distribution;
 using namespace EFG::model;
 
 class GraphTest
-    : public ::testing::Test
-    , public model::RandomField {
+    : virtual public model::RandomField {
 protected:
-    GraphTest() = default;
-
-    void SetUp() override {
-        io::xml::Importer::importFromXml(*this, io::FilePath(std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/"), this->getFileName()));
-    }
-
-    virtual std::string getFileName() = 0;
-
     enum Task { BeliefProp, Gibbs, Gradient };
     void profile(const Task& task, const std::size_t trials) {
         std::function<void(void)> t;
+        train::TrainSetPtr trainSet;
         switch (task)
         {
         case Task::BeliefProp:
@@ -36,8 +28,9 @@ protected:
             };
             break;
         case Task::Gradient:
+            trainSet = std::make_shared<train::TrainSet>(this->getHiddenSetSamples(1500, 100));
             t = [&]() {
-                this->getGradient();
+                this->getGradient(trainSet);
             };
             break;
         default:
@@ -62,31 +55,45 @@ protected:
     };
 };
 
-class ComplexPolyTree : public GraphTest {
+class ComplexPolyTree 
+    : public test::ModelTest<RandomField>
+    , public GraphTest {
 public:
     ComplexPolyTree() = default;
 protected:
-    std::string getFileName() final { return "graph_2.xml"; };
+    std::string getName() const final { return "graph_3.xml"; };
+    std::string getFolder() const final { return "Sample06-Learning-A/"; };
 };
 
-class ComplexLoopy : public GraphTest {
+TEST_F(ComplexPolyTree, BeliefPropagation) {
+    this->profile(Task::BeliefProp, 20);
+}
+TEST_F(ComplexPolyTree, GibbsSampling) {
+    this->profile(Task::Gibbs, 5);
+}
+TEST_F(ComplexPolyTree, GradientComputation) {
+    this->profile(Task::Gradient, 20);
+}
+
+
+
+class ComplexLoopy
+    : public test::ModelTest<RandomField>
+    , public GraphTest {
 public:
     ComplexLoopy() = default;
 protected:
-    std::string getFileName() final { return "graph_4.xml"; };
+    std::string getName() const final { return "graph_4.xml"; };
 };
 
-#define PROFILE(MODEL) \
-TEST_F(MODEL, BeliefPropagation) { \
-    this->profile(Task::BeliefProp); \
-} \
-TEST_F(MODEL, GibbsSampling) { \
-    this->profile(Task::Gibbs); \
-} \
-TEST_F(MODEL, GradientComputation) { \
-    this->profile(Task::Gradient); \
+TEST_F(ComplexLoopy, BeliefPropagation) {
+    this->profile(Task::BeliefProp, 20);
+}
+TEST_F(ComplexLoopy, GibbsSampling) {
+    this->profile(Task::Gibbs, 5);
 }
 
-PROFILE(ComplexPolyTree)
-
-PROFILE(ComplexPolyTree)
+int main(int argc, char* argv[]) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
