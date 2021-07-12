@@ -35,3 +35,5 @@ MakeTest(Test08-BeliefPropagation)
 MakeTest(Test09-Gibbs)
 
 MakeTest(Test10-Learning)
+
+MakeTest(Test11-ThreadPoolEfficiency)

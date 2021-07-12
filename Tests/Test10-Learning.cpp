@@ -96,8 +96,12 @@ protected:
 
 	float wErrToll = 0.3f;
     bool checkLkl = true;
+    std::size_t threadPoolSize = 0;
     template<typename TrainerT>
     void useTrainer(bool updateInfo = false) {
+        if (this->threadPoolSize > 1) {
+            dynamic_cast<strct::ThreadPoolAware*>(info->trainedModel.get())->setThreadPoolSize(this->threadPoolSize);
+        }
         if (updateInfo) {
             info = std::make_unique<Info>();
             info->referenceModel = this->getReferenceModel();
@@ -221,6 +225,15 @@ protected:
     }
 };
 
+class MediumRandomFieldThreadPool : public MediumRandomField {
+public:
+    MediumRandomFieldThreadPool() = default;
+protected:
+    void SetUp() override {
+        this->threadPoolSize = 3;
+    }
+};
+
 class SmallConditionalRandomField : public LearnableTest {
 public:
     SmallConditionalRandomField() = default;
@@ -273,6 +286,8 @@ TEST_TRAINERS(MediumRandomField, train::BasicTrainSet);
 TEST_TRAINERS(MediumRandomFieldStoch, train::StochasticTrainSet);
 
 TEST_TRAINERS(SmallConditionalRandomField, train::BasicTrainSet);
+
+TEST_TRAINERS(MediumRandomFieldThreadPool, train::BasicTrainSet);
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

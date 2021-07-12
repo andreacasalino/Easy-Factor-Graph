@@ -33,12 +33,14 @@ namespace EFG::train {
          * @brief Set the threshold to consider for the weights improvements 
          * in order to decide whether to arrest the iterations or not.
          * @param the minimum l1 norm acceptable value
+         * @throw when the passed value is negative
          */
         void setWeightsTollerance(const float value);
         /**
          * @brief Set the threshold to consider for the gradient
          * in order to decide whether to arrest the iterations or not.
          * @param the minimum l1 norm acceptable value
+         * @throw when the passed value is negative
          */
         void setGradientTollerance(const float value);
 
