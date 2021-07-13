@@ -1,16 +1,47 @@
 #include <gtest/gtest.h>
-#include <ModelTest.h>
 #include <model/RandomField.h>
+#include <sstream>
 #include <chrono>
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::model;
 
-class GraphTest
-    : virtual public model::RandomField {
-protected:
-    enum Task { BeliefProp, Gibbs, Gradient };
+constexpr std::size_t VAR_SIZE = 4;
+
+enum Task { BeliefProp, Gibbs, Gradient };
+class BinaryStructure
+    : public RandomField {
+public:
+    BinaryStructure(const std::size_t levels, bool loopy) {
+        std::size_t counter = 0;
+        auto varGen = [&counter]() {
+            std::stringstream stream;
+            stream << "V";
+            stream << counter;
+            ++counter;
+            return categoric::makeVariable(VAR_SIZE, stream.str());
+        };
+
+        std::list<categoric::VariablePtr> toExpand, nextExpand;
+        toExpand.push_back(varGen());
+        for (std::size_t k = 1; k < levels; ++k) {
+            for (auto it = toExpand.begin(); it != toExpand.end(); ++it) {
+                categoric::VariablePtr varA = varGen();
+                categoric::VariablePtr varB = varGen();
+                this->insertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(std::set<categoric::VariablePtr>{*it, varA}, true), 1.f));
+                this->insertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(std::set<categoric::VariablePtr>{*it, varB}, true), 1.f));
+                if (loopy) {
+                    this->insertTunable(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor(std::set<categoric::VariablePtr>{varA, varB}, true), 1.f));
+                }
+                nextExpand.push_back(varA);
+                nextExpand.push_back(varB);
+            }
+            toExpand = nextExpand;
+            nextExpand.clear();
+        }
+    }
+
     void profile(const Task& task, const std::size_t trials) {
         std::function<void(void)> t;
         train::TrainSetPtr trainSet;
@@ -28,7 +59,7 @@ protected:
             };
             break;
         case Task::Gradient:
-            trainSet = std::make_shared<train::TrainSet>(this->getHiddenSetSamples(1500, 100));
+            trainSet = std::make_shared<train::TrainSet>(this->getHiddenSetSamples(500, 20));
             t = [&]() {
                 this->getGradient(trainSet);
             };
@@ -37,60 +68,46 @@ protected:
             break;
         }
 
-        std::vector<float> averages;
-        averages.reserve(4);
-        for (std::size_t th = 0; th < 4; ++th) {
-            this->setThreadPoolSize(th + 1);
-            averages.push_back(0.f);
+        auto profile = [&]() {
+            float meanTime = 0.f;
             for (std::size_t k = 0; k < trials; ++k) {
                 auto tic = std::chrono::high_resolution_clock::now();
                 t();
-                averages.back() +=  std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - tic).count() / static_cast<float>(trials);
+                meanTime += std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count() / static_cast<float>(trials);
             }
-        }
-        // check that the averages are monotonically decreasing
-        for (std::size_t k = 1; k < averages.size(); ++k) {
-            EXPECT_LE(averages[k], averages[k - 1]);
-        }
+            return meanTime;
+        };
+        float averagesSerial = profile();
+        this->setThreadPoolSize(3);
+        float averagesPool = profile();
+        EXPECT_LE(averagesPool, averagesSerial);
     };
 };
 
-class ComplexPolyTree 
-    : public test::ModelTest<RandomField>
-    , public GraphTest {
-public:
-    ComplexPolyTree() = default;
-protected:
-    std::string getName() const final { return "graph_3.xml"; };
-    std::string getFolder() const final { return "Sample06-Learning-A/"; };
-};
 
-TEST_F(ComplexPolyTree, BeliefPropagation) {
-    this->profile(Task::BeliefProp, 100);
+
+TEST(Polytree, BeliefPropagation) {
+    BinaryStructure model(6, false);
+    model.profile(Task::BeliefProp, 50);
 }
-TEST_F(ComplexPolyTree, GibbsSampling) {
-    this->profile(Task::Gibbs, 10);
+TEST(Polytree, GibbsSampling) {
+    BinaryStructure model(4, false);
+    model.profile(Task::Gibbs, 10);
 }
-TEST_F(ComplexPolyTree, GradientComputation) {
-    this->profile(Task::Gradient, 20);
+TEST(Polytree, GradientComputation) {
+    BinaryStructure model(6, false);
+    model.profile(Task::Gradient, 30);
 }
 
 
 
-class ComplexLoopy
-    : public test::ModelTest<RandomField>
-    , public GraphTest {
-public:
-    ComplexLoopy() = default;
-protected:
-    std::string getName() const final { return "graph_4.xml"; };
-};
-
-TEST_F(ComplexLoopy, BeliefPropagation) {
-    this->profile(Task::BeliefProp, 100);
+TEST(LoopyTree, BeliefPropagation) {
+    BinaryStructure model(6, true);
+    model.profile(Task::BeliefProp, 50);
 }
-TEST_F(ComplexLoopy, GibbsSampling) {
-    this->profile(Task::Gibbs, 10);
+TEST(LoopyTree, GibbsSampling) {
+    BinaryStructure model(4, true);
+    model.profile(Task::Gibbs, 10);
 }
 
 int main(int argc, char* argv[]) {
