@@ -66,10 +66,10 @@ protected:
 };
 
 TEST_F(ComplexPolyTree, BeliefPropagation) {
-    this->profile(Task::BeliefProp, 20);
+    this->profile(Task::BeliefProp, 100);
 }
 TEST_F(ComplexPolyTree, GibbsSampling) {
-    this->profile(Task::Gibbs, 5);
+    this->profile(Task::Gibbs, 10);
 }
 TEST_F(ComplexPolyTree, GradientComputation) {
     this->profile(Task::Gradient, 20);
@@ -87,10 +87,10 @@ protected:
 };
 
 TEST_F(ComplexLoopy, BeliefPropagation) {
-    this->profile(Task::BeliefProp, 20);
+    this->profile(Task::BeliefProp, 100);
 }
 TEST_F(ComplexLoopy, GibbsSampling) {
-    this->profile(Task::Gibbs, 5);
+    this->profile(Task::Gibbs, 10);
 }
 
 int main(int argc, char* argv[]) {

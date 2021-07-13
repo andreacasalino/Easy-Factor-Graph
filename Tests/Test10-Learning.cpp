@@ -139,15 +139,19 @@ protected:
         info->trainedModel->setWeights(finalWeight);
     }
 
+    virtual void resetInfo() {
+        info = std::make_unique<Info>();
+        info->referenceModel = this->getModel();
+        info->trainedModel = this->getModel();
+        info->evaluator = std::make_unique<LikelihoodAware>(*info->trainedModel.get());
+        info->trainSet = this->getTrainSet();
+        std::cout << "train set sampled " << std::endl;
+    }
+
     template<typename TrainerT>
     void useTrainer(bool updateInfo = false) {
         if (updateInfo) {
-            info = std::make_unique<Info>();
-            info->referenceModel = this->getModel();
-            info->trainedModel = this->getModel();
-            info->evaluator = std::make_unique<LikelihoodAware>(*info->trainedModel.get());
-            info->trainSet = this->getTrainSet();
-            std::cout << "train set sampled " << std::endl;
+            this->resetInfo();
         }
         info->trainedModel->setOnes();
         // do training
@@ -241,10 +245,9 @@ class MediumRandomFieldThreadPool : public MediumRandomField {
 public:
     MediumRandomFieldThreadPool() = default;
 protected:
-    template<typename TrainerT>
-    void useTrainer(bool updateInfo = false) {
+    void resetInfo() override {
+        this->MediumRandomField::resetInfo();
         dynamic_cast<strct::ThreadPoolAware*>(info->trainedModel.get())->setThreadPoolSize(3);
-        this->MediumRandomFieldThreadPool::useTrainer<TrainerT>(updateInfo);
     }
 };
 
