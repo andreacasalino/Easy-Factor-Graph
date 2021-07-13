@@ -49,7 +49,7 @@ namespace EFG::train {
         };
         
     private:
-        std::chrono::time_point<std::chrono::steady_clock> start;
+        const std::chrono::time_point<std::chrono::system_clock> start;
         std::chrono::milliseconds& cumulatedTime;
     };
 
