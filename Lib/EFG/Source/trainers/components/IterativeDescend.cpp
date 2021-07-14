@@ -49,7 +49,11 @@ namespace EFG::train {
         };
         
     private:
+#ifdef _MSC_VER
+        std::chrono::high_resolution_clock::time_point start;
+#else
         const std::chrono::time_point<std::chrono::system_clock> start;
+#endif
         std::chrono::milliseconds& cumulatedTime;
     };
 
