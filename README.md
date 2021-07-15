@@ -35,7 +35,7 @@ the compilation of such library might cause problems in some systems. Therefore,
 	  
  * Compile the library and the samples
 
- * You can also just download the compiled binaries of the library of the latest master commit [here](https://github.com/andreacasalino/Easy-Factor-Graph/actions) 
+ * You can also just download the compiled binaries (compiled in Release) of the library of the latest master commit [here](https://github.com/andreacasalino/Easy-Factor-Graph/actions) 
  
 **What else?**
 
