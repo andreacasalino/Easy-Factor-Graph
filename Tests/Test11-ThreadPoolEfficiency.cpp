@@ -78,7 +78,7 @@ public:
             return meanTime;
         };
         float averageSerial = profile();
-        this->setThreadPoolSize(3);
+        this->setThreadPoolSize(2);
         float averagePool = profile();
         std::cout << "serial: " << averageSerial << std::endl;
         std::cout << "pool:   " << averagePool << std::endl;

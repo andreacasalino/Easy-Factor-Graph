@@ -146,7 +146,7 @@ std::vector<Combination> getGibbsSamples(model::RandomField& graph, std::size_t 
 #endif
 	auto samples = graph.getHiddenSetSamples(numberOfSamples, deltaIteration);
 #ifdef THREAD_POOL_ENABLED
-	graph.setThreadPoolSize(0);
+	graph.setThreadPoolSize(1);
 #endif
 	return samples;
 }

@@ -13,9 +13,11 @@ endif()
 
 if(THREAD_POOL_OPT)
 target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC THREAD_POOL_ENABLED)
+find_package(OpenMP)
 target_link_libraries(${PROJECT_SHORTNAME}
     PRIVATE
         XML-Parser
+		OpenMP::OpenMP_CXX
 	PUBLIC
 		Thread-Pool
 )
