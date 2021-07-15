@@ -94,7 +94,7 @@ jobs:
     - name: Build project
       uses: nicledomaS/cmake_build_action@v1.3
       with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DBUILD_SAMPLES=OFF
         submodule_update: ON
     - name: build release
       run: cmake --build ./build --config Release
@@ -102,7 +102,7 @@ jobs:
       run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
-        path: build/artifacts
+        path: artifacts
         name: Win32_VisualStudio_static.zip
                 
   windows-build-vs-shared:
@@ -113,7 +113,7 @@ jobs:
     - name: Build project
       uses: nicledomaS/cmake_build_action@v1.3
       with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
     - name: build release
       run: cmake --build ./build --config Release
@@ -121,5 +121,5 @@ jobs:
       run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
-        path: build/artifacts
+        path: artifacts
         name: Win32_VisualStudio_shared.zip
