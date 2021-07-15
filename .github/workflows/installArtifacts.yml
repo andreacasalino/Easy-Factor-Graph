@@ -20,8 +20,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
@@ -37,8 +39,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
@@ -54,8 +58,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
@@ -71,8 +77,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
@@ -88,8 +96,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: build/artifacts
@@ -105,8 +115,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DLIB_OPT=ON
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - uses: actions/upload-artifact@v2
       with:
         path: build/artifacts

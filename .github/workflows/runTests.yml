@@ -20,8 +20,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - name: Test-01
       run: ./artifacts/bin/Test01-Range
     - name: Test-02
@@ -53,8 +55,10 @@ jobs:
       with:
         cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - name: Test-01
       run: ./artifacts/bin/Test01-Range
     - name: Test-02
@@ -77,34 +81,36 @@ jobs:
       run: ./artifacts/bin/Test10-Learning
       
   windows-vs-tests:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
     - name: Build project
       uses: nicledomaS/cmake_build_action@v1.3
       with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./build/artifacts/;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
+        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON
         submodule_update: ON
+    - name: build release
+      run: cmake --build ./build --config Release
     - name: Install artifacts
-      run: cmake --install ./build
+      run: cmake --install ./build --config Release
     - name: Test-01
-      run: ./build/artifacts/bin/Test01-Range
+      run: ./artifacts/bin/Test01-Range
     - name: Test-02
-      run: ./build/artifacts/bin/Test02-Distribution
+      run: ./artifacts/bin/Test02-Distribution
     - name: Test-03
-      run: ./build/artifacts/bin/Test03-DistributionFinder
+      run: ./artifacts/bin/Test03-DistributionFinder
     - name: Test-04
-      run: ./build/artifacts/bin/Test04-FactorSetting
+      run: ./artifacts/bin/Test04-FactorSetting
     - name: Test-05
-      run: ./build/artifacts/bin/Test05-FactorConstruction
+      run: ./artifacts/bin/Test05-FactorConstruction
     - name: Test-06
-      run: ./build/artifacts/bin/Test06-Insertions
+      run: ./artifacts/bin/Test06-Insertions
     - name: Test-07
-      run: ./build/artifacts/bin/Test07-Evidences
+      run: ./artifacts/bin/Test07-Evidences
     - name: Test-08
-      run: ./build/artifacts/bin/Test08-BeliefPropagation
+      run: ./artifacts/bin/Test08-BeliefPropagation
     - name: Test-09
-      run: ./build/artifacts/bin/Test09-Gibbs
+      run: ./artifacts/bin/Test09-Gibbs
     - name: Test-10
-      run: ./build/artifacts/bin/Test10-Learning
+      run: ./artifacts/bin/Test10-Learning
