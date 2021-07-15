@@ -12,7 +12,7 @@ on:
 jobs:
   binCompile:
     strategy:
-      max-parallel: 4
+      # max-parallel: 4
       matrix:
         name: [ubuntu-gcc-static, ubuntu-clang-static, windows-VS-static,ubuntu-gcc-shared, ubuntu-clang-shared, windows-VS-shared]
         include:
@@ -40,6 +40,7 @@ jobs:
               os: windows-latest
               compiler_opt: ""      
               lib_opt: ";-DLIB_OPT=ON"
+              
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
