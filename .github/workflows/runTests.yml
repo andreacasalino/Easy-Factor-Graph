@@ -17,10 +17,10 @@ jobs:
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
-              compiler_opt: ";-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++"
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
             - name: ubuntu-clang
               os: ubuntu-latest
-              compiler_opt: ";-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++"
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
             - name: windows-VS
               os: windows-latest
               compiler_opt: ""
@@ -29,15 +29,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DBUILD_SAMPLES=OFF;-DBUILD_TESTS=ON${{ matrix.compiler_opt }}
-        submodule_update: ON
-    - name: build release
-      run: cmake --build ./build --config Release
-    - name: Install artifacts
-      run: cmake --install ./build --config Release
+    - name: Checkout submodules
+      run:  git submodule update --init --recursive
+    - name: CMake configure
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_SAMPLES=OFF -DBUILD_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
+    - name: Build
+      run:  cmake --build ./build --config Release
+    - name: Install
+      run:  cmake --install ./build --config Release
     - name: Test-01
       run: ./artifacts/bin/Test01-Range
     - name: Test-02

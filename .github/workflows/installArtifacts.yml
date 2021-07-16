@@ -18,11 +18,11 @@ jobs:
         include:
             - name: ubuntu-gcc-static
               os: ubuntu-latest
-              compiler_opt: ";-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++"
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
               lib_opt: ""
             - name: ubuntu-clang-static
               os: ubuntu-latest
-              compiler_opt: ";-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++"
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
               lib_opt: ""
             - name: windows-VS-static
               os: windows-latest
@@ -30,26 +30,25 @@ jobs:
               lib_opt: ""
             - name: ubuntu-gcc-shared
               os: ubuntu-latest
-              compiler_opt: ";-DCMAKE_C_COMPILER=gcc;-DCMAKE_CXX_COMPILER=g++"
-              lib_opt: ";-DLIB_OPT=ON"
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              lib_opt: "-DLIB_OPT=ON"
             - name: ubuntu-clang-shared
               os: ubuntu-latest
-              compiler_opt: ";-DCMAKE_C_COMPILER=clang;-DCMAKE_CXX_COMPILER=clang++"
-              lib_opt: ";-DLIB_OPT=ON"
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              lib_opt: "-DLIB_OPT=ON"
             - name: windows-VS-shared
               os: windows-latest
               compiler_opt: ""      
-              lib_opt: ";-DLIB_OPT=ON"
+              lib_opt: "-DLIB_OPT=ON"
               
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
       uses: actions/checkout@v2.0.0
-    - name: Build project
-      uses: nicledomaS/cmake_build_action@v1.3
-      with:
-        cmake_args: -B./build;-DCMAKE_INSTALL_PREFIX:STRING=./artifacts/;-DBUILD_SAMPLES=OFF${{ matrix.compiler_opt }}${{ matrix.lib_opt }}
-        submodule_update: ON
+    - name: Checkout submodules
+      run:  git submodule update --init --recursive
+    - name: CMake configure
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_SAMPLES=OFF -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.lib_opt }}
     - name: build release
       run: cmake --build ./build --config Release
     - name: Install artifacts
