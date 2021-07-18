@@ -74,22 +74,21 @@ public:
                 auto tic = std::chrono::high_resolution_clock::now();
                 t();
                 float temp = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count());
-                std::cout << ' ' << temp;
+                //std::cout << ' ' << temp;
                 totaltime += temp;
             }
-            std::cout << std::endl;
+            //std::cout << std::endl;
             return totaltime;
         };
+
+        float serialTime = profile();
+        std::cout << "serial: " << serialTime << std::endl;
 
         this->setThreadPoolSize(2);
         float pooTime = profile();
         std::cout << "pool:   " << pooTime << std::endl;
-
-        this->setThreadPoolSize(1);
-        float serialTime = profile();
-        std::cout << "serial: " << serialTime << std::endl;
-
-
+        // !! IMPORTANT !! on local machines this works, showing the effectiveness of the thread pool. However, for reason, on the CI server the execution
+        // time of the threads much higher.
         // EXPECT_LE(serialTime, pooTime);
     };
 };
@@ -100,34 +99,25 @@ TEST(Polytree, BeliefPropagation) {
     BinaryStructure model(8, false);
     model.profile(Task::BeliefProp, 50);
 }
-TEST(Polytree, BeliefPropagation2) {
-    BinaryStructure model(7, false);
-    model.profile(Task::BeliefProp, 50);
+TEST(Polytree, GibbsSampling) {
+    BinaryStructure model(4, false);
+    model.profile(Task::Gibbs, 10);
 }
-TEST(Polytree, BeliefPropagation3) {
-    BinaryStructure model(6, false);
-    model.profile(Task::BeliefProp, 50);
+TEST(Polytree, GradientComputation) {
+    BinaryStructure model(8, false);
+    model.profile(Task::Gradient, 30);
 }
 
-//TEST(Polytree, GibbsSampling) {
-//    BinaryStructure model(4, false);
-//    model.profile(Task::Gibbs, 10);
-//}
-//TEST(Polytree, GradientComputation) {
-//    BinaryStructure model(8, false);
-//    model.profile(Task::Gradient, 30);
-//}
-//
-//
-//
-//TEST(LoopyTree, BeliefPropagation) {
-//    BinaryStructure model(8, true);
-//    model.profile(Task::BeliefProp, 50);
-//}
-//TEST(LoopyTree, GibbsSampling) {
-//    BinaryStructure model(4, true);
-//    model.profile(Task::Gibbs, 10);
-//}
+
+
+TEST(LoopyTree, BeliefPropagation) {
+    BinaryStructure model(8, true);
+    model.profile(Task::BeliefProp, 50);
+}
+TEST(LoopyTree, GibbsSampling) {
+    BinaryStructure model(4, true);
+    model.profile(Task::Gibbs, 10);
+}
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
