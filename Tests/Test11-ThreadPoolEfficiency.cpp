@@ -74,9 +74,10 @@ public:
                 auto tic = std::chrono::high_resolution_clock::now();
                 t();
                 float temp = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count());
-                //std::cout << temp << std::endl;
+                std::cout << ' ' << temp;
                 totaltime += temp;
             }
+            std::cout << std::endl;
             return totaltime;
         };
 
