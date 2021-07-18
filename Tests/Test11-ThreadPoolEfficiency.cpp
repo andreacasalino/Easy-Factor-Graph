@@ -73,15 +73,20 @@ public:
             for (std::size_t k = 0; k < trials; ++k) {
                 auto tic = std::chrono::high_resolution_clock::now();
                 t();
-                totaltime += static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count()) / static_cast<float>(trials);
+                float temp = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count());
+                //std::cout << temp << std::endl;
+                totaltime += temp;
             }
             return totaltime;
         };
+
         float serialTime = profile();
+        std::cout << "serial: " << serialTime << std::endl;
+
         this->setThreadPoolSize(2);
         float pooTime = profile();
-        std::cout << "serial: " << serialTime << std::endl;
         std::cout << "pool:   " << pooTime << std::endl;
+
         // EXPECT_LE(serialTime, pooTime);
     };
 };
