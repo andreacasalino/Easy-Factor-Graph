@@ -81,12 +81,14 @@ public:
             return totaltime;
         };
 
-        float serialTime = profile();
-        std::cout << "serial: " << serialTime << std::endl;
-
         this->setThreadPoolSize(2);
         float pooTime = profile();
         std::cout << "pool:   " << pooTime << std::endl;
+
+        this->setThreadPoolSize(1);
+        float serialTime = profile();
+        std::cout << "serial: " << serialTime << std::endl;
+
 
         // EXPECT_LE(serialTime, pooTime);
     };
