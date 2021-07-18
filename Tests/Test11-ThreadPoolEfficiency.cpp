@@ -69,20 +69,20 @@ public:
         }
 
         auto profile = [&]() {
-            float meanTime = 0.f;
+            float totaltime = 0.f;
             for (std::size_t k = 0; k < trials; ++k) {
                 auto tic = std::chrono::high_resolution_clock::now();
                 t();
-                meanTime += static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count()) / static_cast<float>(trials);
+                totaltime += static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - tic).count()) / static_cast<float>(trials);
             }
-            return meanTime;
+            return totaltime;
         };
-        float averageSerial = profile();
+        float serialTime = profile();
         this->setThreadPoolSize(2);
-        float averagePool = profile();
-        std::cout << "serial: " << averageSerial << std::endl;
-        std::cout << "pool:   " << averagePool << std::endl;
-        // EXPECT_LE(averagePool, averageSerial);
+        float pooTime = profile();
+        std::cout << "serial: " << serialTime << std::endl;
+        std::cout << "pool:   " << pooTime << std::endl;
+        // EXPECT_LE(serialTime, pooTime);
     };
 };
 
@@ -92,25 +92,34 @@ TEST(Polytree, BeliefPropagation) {
     BinaryStructure model(8, false);
     model.profile(Task::BeliefProp, 50);
 }
-TEST(Polytree, GibbsSampling) {
-    BinaryStructure model(4, false);
-    model.profile(Task::Gibbs, 10);
-}
-TEST(Polytree, GradientComputation) {
-    BinaryStructure model(8, false);
-    model.profile(Task::Gradient, 30);
-}
-
-
-
-TEST(LoopyTree, BeliefPropagation) {
-    BinaryStructure model(8, true);
+TEST(Polytree, BeliefPropagation2) {
+    BinaryStructure model(7, false);
     model.profile(Task::BeliefProp, 50);
 }
-TEST(LoopyTree, GibbsSampling) {
-    BinaryStructure model(4, true);
-    model.profile(Task::Gibbs, 10);
+TEST(Polytree, BeliefPropagation3) {
+    BinaryStructure model(6, false);
+    model.profile(Task::BeliefProp, 50);
 }
+
+//TEST(Polytree, GibbsSampling) {
+//    BinaryStructure model(4, false);
+//    model.profile(Task::Gibbs, 10);
+//}
+//TEST(Polytree, GradientComputation) {
+//    BinaryStructure model(8, false);
+//    model.profile(Task::Gradient, 30);
+//}
+//
+//
+//
+//TEST(LoopyTree, BeliefPropagation) {
+//    BinaryStructure model(8, true);
+//    model.profile(Task::BeliefProp, 50);
+//}
+//TEST(LoopyTree, GibbsSampling) {
+//    BinaryStructure model(4, true);
+//    model.profile(Task::Gibbs, 10);
+//}
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);
