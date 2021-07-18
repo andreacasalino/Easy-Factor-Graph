@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
+#include <ModelTest.h>
 #include <model/Graph.h>
-#include <io/xml/Importer.h>
 #include <distribution/factor/const/Indicator.h>
 #include <math.h>
 using namespace EFG;
@@ -27,38 +27,31 @@ void compare(const std::vector<float>& probTheory, const std::vector<float>& pro
   }
 }
 
-class GraphTest 
-: public ::testing::Test
-, public model::Graph { 
-protected: 
-  GraphTest() = default;
-
-  void SetUp() override {
-    io::xml::Importer::importFromXml(*this, io::FilePath(std::string(SAMPLE_FOLDER) + std::string("Sample03-BeliefPropagation-B/") , this->getFileName()));
-  }
-
-  // check all messages were computed after propagation
-  void checkMessages() {
-    auto checkCluster = [](const std::set<strct::Node*>& cluster){
-      for(auto c = cluster.begin(); c!=cluster.end(); ++c) {
-        for(auto m = (*c)->activeConnections.begin(); m != (*c)->activeConnections.end(); ++m) {
-          EXPECT_TRUE(nullptr != m->second.message2This);
+class MessageChecker
+    : virtual public Graph {
+protected:
+    // check all messages were computed after propagation
+    void checkMessages() {
+        auto checkCluster = [](const std::set<strct::Node*>& cluster) {
+            for (auto c = cluster.begin(); c != cluster.end(); ++c) {
+                for (auto m = (*c)->activeConnections.begin(); m != (*c)->activeConnections.end(); ++m) {
+                    EXPECT_TRUE(nullptr != m->second.message2This);
+                }
+            }
+        };
+        for (auto it = this->hidden.clusters.begin(); it != this->hidden.clusters.end(); ++it) {
+            checkCluster(*it);
         }
-      }
     };
-    for(auto it =this->hidden.clusters.begin(); it!=this->hidden.clusters.end(); ++it) {
-      checkCluster(*it);
-    }
-  };
-
-  virtual std::string getFileName() = 0;
 };
 
-class SimplePolyTreeModel : public GraphTest {
+class SimplePolyTreeModel 
+    : public MessageChecker
+    , public test::ModelTest<Graph> {
 public:
   SimplePolyTreeModel() =  default;
 protected:
-  std::string getFileName() final { return "graph_1.xml"; };
+  std::string getName() const final { return "graph_1.xml"; };
 };
 TEST_F(SimplePolyTreeModel, simplePolyTree) {
 	float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
@@ -79,11 +72,13 @@ TEST_F(SimplePolyTreeModel, simplePolyTree) {
   compare({ 1.f, e }, this->getMarginalDistribution("E"));
 }
 
-class ComplexPolyTreeModel : public GraphTest {
+class ComplexPolyTreeModel
+    : public MessageChecker
+    , public test::ModelTest<Graph> {
 public:
   ComplexPolyTreeModel() =  default;
 protected:
-  std::string getFileName() final { return "graph_2.xml"; };
+  std::string getName() const final { return "graph_2.xml"; };
 };
 TEST_F(ComplexPolyTreeModel, complexPolyTree) {
   this->resetEvidences({{"v1", 1}, {"v2", 1}, { "v3", 1 }});
@@ -128,11 +123,13 @@ TEST_F(ComplexPolyTreeModel, complexPolyTreeThreadPool) {
   this->checkMessages();
 }
 
-class SimpleLoopyModel : public GraphTest {
+class SimpleLoopyModel
+    : public MessageChecker
+    , public test::ModelTest<Graph>{
 public:
   SimpleLoopyModel() =  default;
 protected:
-  std::string getFileName() final { return "graph_3.xml"; };
+  std::string getName() const final { return "graph_3.xml"; };
 };
 TEST_F(SimpleLoopyModel, simpleLoopy) {
   float M = expf(1.f);
@@ -148,11 +145,13 @@ TEST_F(SimpleLoopyModel, simpleLoopy) {
   compare({ M * M_alfa + M_beta, M_alfa + M * M_beta }, this->getMarginalDistribution("A"), 0.045f);
 }
 
-class ComplexLoopyModel : public GraphTest {
+class ComplexLoopyModel
+    : public MessageChecker
+    , public test::ModelTest<Graph> {
 public:
   ComplexLoopyModel() =  default;
 protected:
-  std::string getFileName() final { return "graph_4.xml"; };
+  std::string getName() const final { return "graph_4.xml"; };
 };
 TEST_F(ComplexLoopyModel, complexLoopy) {
   this->resetEvidences({{"v1", 1}});

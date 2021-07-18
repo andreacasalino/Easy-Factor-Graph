@@ -74,12 +74,12 @@ private:
     std::list<DistributionFinder> finders;
 };
 
-class LearnableTest
+class TrainTest
     : public ::testing::Test {
 protected:
-    LearnableTest() = default;
+    TrainTest() = default;
 
-    virtual std::unique_ptr<train::Trainable> getReferenceModel() const = 0;
+    virtual std::unique_ptr<train::Trainable> getModel() const = 0;
 
     virtual train::TrainSetPtr getTrainSet() {
         EFG::strct::GibbsSampler* sampler = dynamic_cast<EFG::strct::GibbsSampler*>(info->referenceModel.get());
@@ -94,25 +94,18 @@ protected:
     };
     static std::unique_ptr<Info> info;
 
-	float wErrToll = 0.3f;
-    bool checkLkl = true;
-    template<typename TrainerT>
-    void useTrainer(bool updateInfo = false) {
-        if (updateInfo) {
-            info = std::make_unique<Info>();
-            info->referenceModel = this->getReferenceModel();
-            info->trainedModel = this->getReferenceModel();
-            info->evaluator = std::make_unique<LikelihoodAware>(*info->trainedModel.get());
-            info->trainSet = this->getTrainSet();
-            std::cout << "train set sampled " << std::endl;
+    float wErrToll = 0.3f;
+    void checkWeights() const {
+        // check tuned values
+        auto finalWeight = info->trainedModel->getWeights();
+        {
+            auto referenceWeight = info->referenceModel->getWeights();
+            for (std::size_t k = 0; k < finalWeight.size(); ++k) {
+                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]), this->wErrToll);
+            }
         }
-        info->trainedModel->setOnes();
-    // do training
-        TrainerStoryAware<TrainerT> trainer;
-        trainer.setMaxIterations(30);
-        trainer.train(*info->trainedModel, info->trainSet);
-        std::cout << "Iterations done " << trainer.getDescendStory().size() << std::endl;
-    // check marginal computation
+    }
+    void checkMarginals() {
         auto vars = info->referenceModel->getVariables();
         std::vector<float> distrLearnt, distrReal;
         EFG::strct::EvidencesChanger* referenceSetter = dynamic_cast<EFG::strct::EvidencesChanger*>(info->referenceModel.get());
@@ -126,32 +119,59 @@ protected:
 
         EXPECT_LE(fabs(distrLearnt.front() - distrReal.front()), 0.1f);
         EXPECT_LE(fabs(distrLearnt.back() - distrReal.back()), 0.1f);
-    // check tuned values
+    }
+
+    bool checkLkl = true;
+    template<typename TrainerT>
+    void checkLikelihood(const TrainerStoryAware<TrainerT>& trainer) {
         auto finalWeight = info->trainedModel->getWeights();
-        {
-            auto referenceWeight = info->referenceModel->getWeights();
-            for (std::size_t k = 0; k < finalWeight.size(); ++k) {
-                EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]) , this->wErrToll);
-            }
-        }
-        if (this->checkLkl) {
-    // check decresing trend
-            auto story = trainer.getDescendStory();
-            auto it = story.begin();
+        auto story = trainer.getDescendStory();
+        auto it = story.begin();
+        info->trainedModel->setWeights(*it);
+        float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
+        ++it;
+        for (it; it != story.end(); ++it) {
             info->trainedModel->setWeights(*it);
-            float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
-            ++it;
-            for (it; it != story.end(); ++it) {
-                info->trainedModel->setWeights(*it);
-                float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
-                EXPECT_GE(lastLkl, lkl);
-                lastLkl = lkl;
-            }
-            info->trainedModel->setWeights(finalWeight);
+            float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
+            EXPECT_GE(lastLkl, lkl);
+            lastLkl = lkl;
         }
-    };
+        info->trainedModel->setWeights(finalWeight);
+    }
+
+    virtual void resetInfo() {
+        info = std::make_unique<Info>();
+        info->referenceModel = this->getModel();
+        info->trainedModel = this->getModel();
+        info->evaluator = std::make_unique<LikelihoodAware>(*info->trainedModel.get());
+        info->trainSet = this->getTrainSet();
+        std::cout << "train set sampled " << std::endl;
+    }
+
+    template<typename TrainerT>
+    void useTrainer(bool updateInfo = false) {
+        if (updateInfo) {
+            this->resetInfo();
+        }
+        info->trainedModel->setOnes();
+        // do training
+        TrainerStoryAware<TrainerT> trainer;
+        trainer.setMaxIterations(30);
+        trainer.train(*info->trainedModel, info->trainSet);
+        std::cout << "Iterations done " << trainer.getDescendStory().size() << std::endl;
+        // check tuned values
+        this->checkWeights();
+        // check marginal computation
+        this->checkMarginals();
+        // check decresing trend
+        if (this->checkLkl) {
+            this->checkLikelihood(trainer);
+        }
+    }
 };
-std::unique_ptr<LearnableTest::Info> LearnableTest::info = nullptr;
+std::unique_ptr<TrainTest::Info> TrainTest::info = nullptr;
+
+
 
 #define TEST_TRAINERS(Model, TrainSetT) \
     TEST_F(Model, GradientDescendFixed) { \
@@ -168,11 +188,11 @@ std::unique_ptr<LearnableTest::Info> LearnableTest::info = nullptr;
     } 
 
 
-class SmallRandomField : public LearnableTest {
+class SmallRandomField : public TrainTest {
 public:
     SmallRandomField() = default;
 protected:
-    std::unique_ptr<train::Trainable> getReferenceModel() const override {
+    std::unique_ptr<train::Trainable> getModel() const override {
         VariablePtr A = std::make_shared<Variable>(3, "A");
         VariablePtr B = std::make_shared<Variable>(3, "B");
         VariablePtr C = std::make_shared<Variable>(3, "C");
@@ -185,11 +205,11 @@ protected:
     }
 };
 
-class MediumRandomField : public LearnableTest {
+class MediumRandomField : public TrainTest {
 public:
     MediumRandomField() = default;
 protected:
-    std::unique_ptr<train::Trainable> getReferenceModel() const override {
+    std::unique_ptr<train::Trainable> getModel() const override {
         VariablePtr A = std::make_shared<Variable>(3, "A");
         VariablePtr B = std::make_shared<Variable>(3, "B");
         VariablePtr C = std::make_shared<Variable>(3, "C");
@@ -221,11 +241,21 @@ protected:
     }
 };
 
-class SmallConditionalRandomField : public LearnableTest {
+class MediumRandomFieldThreadPool : public MediumRandomField {
+public:
+    MediumRandomFieldThreadPool() = default;
+protected:
+    void resetInfo() override {
+        this->MediumRandomField::resetInfo();
+        dynamic_cast<strct::ThreadPoolAware*>(info->trainedModel.get())->setThreadPoolSize(3);
+    }
+};
+
+class SmallConditionalRandomField : public TrainTest {
 public:
     SmallConditionalRandomField() = default;
 protected:
-    std::unique_ptr<train::Trainable> getReferenceModel() const override {
+    std::unique_ptr<train::Trainable> getModel() const override {
         VariablePtr A = std::make_shared<Variable>(3, "A");
         VariablePtr B = std::make_shared<Variable>(3, "B");
         VariablePtr C = std::make_shared<Variable>(3, "C");
@@ -273,6 +303,8 @@ TEST_TRAINERS(MediumRandomField, train::BasicTrainSet);
 TEST_TRAINERS(MediumRandomFieldStoch, train::StochasticTrainSet);
 
 TEST_TRAINERS(SmallConditionalRandomField, train::BasicTrainSet);
+
+TEST_TRAINERS(MediumRandomFieldThreadPool, train::BasicTrainSet);
 
 int main(int argc, char* argv[]) {
     ::testing::InitGoogleTest(&argc, argv);

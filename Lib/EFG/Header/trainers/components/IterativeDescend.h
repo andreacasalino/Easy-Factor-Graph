@@ -12,6 +12,7 @@
 #include <trainers/components/ModelAware.h>
 #include <trainers/components/IterationsAware.h>
 #include <trainers/components/Updatable.h>
+#include <chrono>
 
 namespace EFG::train {
     /**
@@ -32,12 +33,14 @@ namespace EFG::train {
          * @brief Set the threshold to consider for the weights improvements 
          * in order to decide whether to arrest the iterations or not.
          * @param the minimum l1 norm acceptable value
+         * @throw when the passed value is negative
          */
         void setWeightsTollerance(const float value);
         /**
          * @brief Set the threshold to consider for the gradient
          * in order to decide whether to arrest the iterations or not.
          * @param the minimum l1 norm acceptable value
+         * @throw when the passed value is negative
          */
         void setGradientTollerance(const float value);
 
@@ -52,6 +55,11 @@ namespace EFG::train {
          */
         inline void disablePrintAdvancement() { this->printAdvnc = false; };
 
+        /**
+         * @return the time elapsed in the previous call to train(...)
+         */
+        inline const std::chrono::milliseconds& getElapsedTime() const { return this->elapsed; };
+
     protected:
         /**
          * @brief called at every iteration to improve the weights
@@ -65,6 +73,7 @@ namespace EFG::train {
         float weightsTollerance = 0.005f;
         float gradientTollerance = 0.005f;
         bool printAdvnc = false;
+        std::chrono::milliseconds elapsed = std::chrono::milliseconds(0);
     };
 }
 

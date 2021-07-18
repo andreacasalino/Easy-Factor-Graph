@@ -17,8 +17,10 @@ namespace EFG::strct {
     public: 
         /** 
          * @brief Enable the thread pool. Use it only for medium-big sized graphs.
-         * When passing <= 1 the actual pool is destroyed. When building the object, a default 0 size value is assumed,
-         * i.e. no thread pool is activated.
+         *    - When passing  1, the pool is not used and an already enabled pool is destroyed. 
+         *    - When passing  >= 1, the pool with the passed size is enabled and built internally 
+         *    - When passing  0, the number of available cores on this machine is assumed as poolSize
+         *    - When building the object, a default 1 size value is assumed, i.e. no thread pool is activated.
          */
         void setThreadPoolSize(const std::size_t& poolSize);
 

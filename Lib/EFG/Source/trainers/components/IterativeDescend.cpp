@@ -37,7 +37,28 @@ namespace EFG::train {
         return res;
     };
 
+    class TimeCounter {
+    public:
+        TimeCounter(std::chrono::milliseconds& cumulatedTime)
+            : start(std::chrono::high_resolution_clock::now())
+            , cumulatedTime(cumulatedTime) {
+        };
+
+        ~TimeCounter() {
+            this->cumulatedTime += std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - this->start);
+        };
+        
+    private:
+#ifdef _MSC_VER
+        std::chrono::high_resolution_clock::time_point start;
+#else
+        const std::chrono::time_point<std::chrono::system_clock> start;
+#endif
+        std::chrono::milliseconds& cumulatedTime;
+    };
+
     void IterativeDescend::train(Trainable& model, TrainSetPtr trainSet) {
+        this->elapsed = std::chrono::milliseconds(0);
         this->model = &model;
         this->resetTrainSet(trainSet);
         this->reset();
@@ -47,6 +68,7 @@ namespace EFG::train {
             if (this->printAdvnc) {
                 std::cout << "\r iteration:  " << k << " / " << this->maxIterations << std::endl;
             }
+            TimeCounter counter(this->elapsed);
             this->descend();
             this->update();
             if (l1Norm(this->lastGrad) < this->gradientTollerance) {

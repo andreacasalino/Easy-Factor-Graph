@@ -17,6 +17,7 @@ namespace EFG::train {
     public:
         /**
          * @param the maximum number of iterations allowed to search the optimum
+         * @throw in case the passed number of interations is too low
          */
         void setMaxIterations(const std::size_t iter);
 
