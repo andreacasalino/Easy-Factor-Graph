@@ -15,14 +15,9 @@ The library contains some minimal functionalities to also perform training using
 
  * the documentation in ./doc explains both how to use **EFG** as well give some theoretical background 
  * the sources of the library are contained in ./Lib
- * ./EFG_Samples contains 8 classes of examples, extensively showing how to use **EFG**
+ * ./Samples contains 8 classes of examples, extensively showing how to use **EFG**
 
 **Compile**
-
- * After cloning the library you need to initialize the git submodules by running the following commands from the root folder:
-   
-   * `git submodule init`
-   * `git submodule update`
    
  * Configure and generate the project using [CMake](https://cmake.org)
 
