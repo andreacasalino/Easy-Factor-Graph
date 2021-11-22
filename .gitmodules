@@ -4,6 +4,3 @@
 [submodule "Lib/XML-parser"]
 	path = Lib/XML-parser
 	url = https://github.com/andreacasalino/XML-parser
-[submodule "Tests/GoogleTest"]
-	path = Tests/GoogleTest
-	url = https://github.com/google/googletest.git
