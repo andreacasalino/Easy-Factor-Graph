@@ -1,3 +1,4 @@
+SET(BUILD_XML_Parser_SAMPLES OFF CACHE BOOL "Override xml parser sample option" FORCE)
 include(FetchContent)
 FetchContent_Declare(
   xml_parser
@@ -5,9 +6,9 @@ FetchContent_Declare(
   GIT_TAG        master
 )
 FetchContent_MakeAvailable(xml_parser)
-set(BUILD_XML_Parser_SAMPLES OFF)
 
 if(THREAD_POOL_OPT)
+	SET(BUILD_Thread_Pool_SAMPLES OFF CACHE BOOL "Override thread pool sample option" FORCE)
 	include(FetchContent)
 	FetchContent_Declare(
 	  thread_pool
@@ -15,7 +16,6 @@ if(THREAD_POOL_OPT)
 	  GIT_TAG        master
 	)
 	FetchContent_MakeAvailable(thread_pool)
-	set(BUILD_Thread_Pool_SAMPLES  OFF)
 endif()
 
 set(PROJECT_SHORTNAME "EFG")
