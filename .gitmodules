@@ -1,6 +1,0 @@
-[submodule "Lib/Thread-Pool"]
-	path = Lib/Thread-Pool
-	url = https://github.com/andreacasalino/Cpp-Thread-Pool
-[submodule "Lib/XML-parser"]
-	path = Lib/XML-parser
-	url = https://github.com/andreacasalino/XML-parser
