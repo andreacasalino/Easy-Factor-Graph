@@ -9,28 +9,23 @@
 #define EFG_TRAINER_MODEL_AWARE_H
 
 #include <train/Trainable.h>
-#include <trainers/components/TrainSetAware.h>
-#ifdef ADVANCED_TRAINERS_ENABLED
 #include <trainers/Commons.h>
-#endif
+#include <trainers/components/TrainSetAware.h>
 
 namespace EFG::train {
-    class ModelAware 
-        : virtual public TrainSetAware {
-    protected:
-        Trainable* model = nullptr;
+class ModelAware : virtual public TrainSetAware {
+protected:
+  Trainable *model = nullptr;
 
-        inline Vect getGradient() const { 
-            Vect direction = this->model->getGradient(this->getTrainSet()); 
-            direction *= -1.f;
-            return direction;
-        };
+  inline Vect getGradient() const {
+    Vect direction = this->model->getGradient(this->getTrainSet());
+    direction *= -1.f;
+    return direction;
+  };
 
-#ifdef ADVANCED_TRAINERS_ENABLED
-        Vect lastWeights;
-        Vect lastGrad;
-#endif
-    };
-}
+  Vect lastWeights;
+  Vect lastGrad;
+};
+} // namespace EFG::train
 
 #endif

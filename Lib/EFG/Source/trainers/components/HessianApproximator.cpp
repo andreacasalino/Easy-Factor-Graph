@@ -5,19 +5,18 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifdef ADVANCED_TRAINERS_ENABLED
-#include <trainers/components/HessianApproximator.h>
 #include <trainers/Commons.h>
+#include <trainers/components/HessianApproximator.h>
 
 namespace EFG::train {
-    void HessianApproximator::update() {
-        this->updateInvHessian(this->model->getWeights() - this->lastWeights, this->getGradient() - this->lastGrad);
-    }
-
-    void HessianApproximator::reset() {
-        std::size_t size = this->model->getWeights().size();
-        this->invHessianApprox = Matr(size);
-        this->invHessianApprox.addIdentity();
-    }
+void HessianApproximator::update() {
+  this->updateInvHessian(this->model->getWeights() - this->lastWeights,
+                         this->getGradient() - this->lastGrad);
 }
-#endif
+
+void HessianApproximator::reset() {
+  std::size_t size = this->model->getWeights().size();
+  this->invHessianApprox = Matr(size);
+  this->invHessianApprox.addIdentity();
+}
+} // namespace EFG::train
