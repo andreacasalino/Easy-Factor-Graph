@@ -5,7 +5,6 @@
 // * report any bug to andrecasa91@gmail.com.
 // **/
 //
-//#ifdef ADVANCED_TRAINERS_ENABLED
 //#ifndef EFG_TRAINER_LBFGS_H
 //#define EFG_TRAINER_LBFGS_H
 //
@@ -14,5 +13,4 @@
 //
 // todo
 //
-//#endif
 //#endif
