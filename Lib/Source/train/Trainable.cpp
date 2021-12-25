@@ -131,9 +131,11 @@ public:
   };
   ::train::Vect getGradient() const override {
     if (nullptr == percentage) {
-      return convert(model->getGradient(*trainSet));
+      return convert(model->getGradient(trainSet));
     }
-    return convert(model->getGradient(trainSet->getRandomSubSet(*percentage)));
+    TrainSetPtr sampled =
+        std::make_shared<TrainSet>(trainSet->getRandomSubSet(*percentage));
+    return convert(model->getGradient(sampled));
   };
 
 private:

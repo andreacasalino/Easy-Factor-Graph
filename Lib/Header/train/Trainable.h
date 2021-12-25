@@ -77,7 +77,7 @@ protected:
 
   std::list<TrainHandlerPtr> handlers;
 
-  void Trainable::setTrainSet(TrainSetPtr newSet);
+  void setTrainSet(TrainSetPtr newSet);
   class WeightsAware;
 
 private:
