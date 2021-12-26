@@ -206,14 +206,23 @@ protected:
     }
   }
 
+  bool use_adaptive_descend = true;
+  bool use_conjugate = true;
+  bool use_newton = true;
   void CHECK() {
     this->checkGradient();
     this->checkTrainer<::train::GradientDescendFixed>();
-    this->checkTrainer<::train::GradientDescend<::train::YundaSearcher>>();
-    this->checkTrainer<::train::GradientDescendConjugate<
-        ::train::YundaSearcher, ::train::FletcherReeves>>();
-    this->checkTrainer<
-        ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>();
+    if (use_adaptive_descend) {
+      this->checkTrainer<::train::GradientDescend<::train::YundaSearcher>>();
+    }
+    if (use_conjugate) {
+      this->checkTrainer<::train::GradientDescendConjugate<
+          ::train::YundaSearcher, ::train::FletcherReeves>>();
+    }
+    if (use_newton) {
+      this->checkTrainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>();
+    }
   }
 };
 
@@ -284,6 +293,10 @@ protected:
     this->checkLkl = false;
     this->wErrToll = 0.37f;
     this->train_set_percentage = std::make_unique<float>(0.1f);
+
+    this->use_adaptive_descend = false;
+    this->use_conjugate = false;
+    this->use_newton = false;
   }
 };
 
