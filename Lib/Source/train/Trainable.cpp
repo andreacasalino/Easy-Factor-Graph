@@ -106,13 +106,12 @@ namespace {
 
 class Trainable::WeightsAware : public ::train::ParametersAware {
 public:
-  WeightsAware(train::Trainable &model, TrainSetPtr trainSet) {
+  WeightsAware(train::Trainable &model, TrainSetPtr set) {
     this->model = &model;
-    this->trainSet = trainSet;
+    this->trainSet = set;
   };
-  WeightsAware(train::Trainable &model, TrainSetPtr trainSet,
-               const float percentage)
-      : WeightsAware(model, trainSet) {
+  WeightsAware(train::Trainable &model, TrainSetPtr set, const float percentage)
+      : WeightsAware(model, set) {
     this->percentage = std::make_unique<float>(percentage);
   };
 
@@ -129,11 +128,11 @@ public:
   };
   ::train::Vect getGradient() const override {
     if (nullptr == percentage) {
-      return convert(model->getGradient(trainSet));
+      return -convert(model->getGradient(trainSet));
     }
     TrainSetPtr sampled =
         std::make_shared<TrainSet>(trainSet->getRandomSubSet(*percentage));
-    return convert(model->getGradient(sampled));
+    return -convert(model->getGradient(sampled));
   };
 
 private:

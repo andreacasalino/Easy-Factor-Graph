@@ -14,20 +14,19 @@ using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::model;
 
-template <typename TrainerT> class TrainerStoryAware : public TrainerT {
+template <typename TrainerT> class StoryAware : public TrainerT {
 public:
-  inline const std::list<std::vector<float>> &getDescendStory() const {
-    return this->descendStory;
-  };
+  std::list<std::vector<float>> getStory() const { return descendStory; }
 
 protected:
   void updateDirection() override {
-    auto par = this->getParameters();
-    this->descendStory.emplace_back();
-    this->descendStory.back().reserve(par.size());
+    Eigen::VectorXd par = this->getParameters();
+    std::vector<float> w;
+    w.reserve(par.size());
     for (Eigen::Index i = 0; i < par.size(); ++i) {
-      this->descendStory.back().push_back(par(i));
+      w.push_back(par(i));
     }
+    this->descendStory.emplace_back(std::move(w));
     this->TrainerT::updateDirection();
   };
 
@@ -36,6 +35,7 @@ protected:
     this->TrainerT::initDirection();
   }
 
+private:
   std::list<std::vector<float>> descendStory;
 };
 
@@ -83,8 +83,6 @@ private:
 
 class TrainTest : public ::testing::Test {
 protected:
-  TrainTest() = default;
-
   virtual std::unique_ptr<EFG::train::Trainable> getModel() const = 0;
 
   virtual EFG::train::TrainSetPtr getTrainSet() {
@@ -100,7 +98,17 @@ protected:
     EFG::train::TrainSetPtr trainSet;
     std::unique_ptr<LikelihoodAware> evaluator;
   };
-  static std::unique_ptr<Info> info;
+  std::unique_ptr<Info> info;
+  std::unique_ptr<float> train_set_percentage;
+  void SetUp() override {
+    info = std::make_unique<Info>();
+    info->referenceModel = this->getModel();
+    info->trainedModel = this->getModel();
+    info->evaluator =
+        std::make_unique<LikelihoodAware>(*info->trainedModel.get());
+    info->trainSet = this->getTrainSet();
+    std::cout << "train set sampled " << std::endl;
+  }
 
   float wErrToll = 0.3f;
   void checkWeights() const {
@@ -138,9 +146,9 @@ protected:
 
   bool checkLkl = true;
   template <typename TrainerT>
-  void checkLikelihood(const TrainerStoryAware<TrainerT> &trainer) {
+  void checkLikelihood(const StoryAware<TrainerT> &trainer) {
     auto finalWeight = info->trainedModel->getWeights();
-    auto story = trainer.getDescendStory();
+    auto story = trainer.getStory();
     auto it = story.begin();
     info->trainedModel->setWeights(*it);
     float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
@@ -152,16 +160,6 @@ protected:
       lastLkl = lkl;
     }
     info->trainedModel->setWeights(finalWeight);
-  }
-
-  virtual void resetInfo() {
-    info = std::make_unique<Info>();
-    info->referenceModel = this->getModel();
-    info->trainedModel = this->getModel();
-    info->evaluator =
-        std::make_unique<LikelihoodAware>(*info->trainedModel.get());
-    info->trainSet = this->getTrainSet();
-    std::cout << "train set sampled " << std::endl;
   }
 
   void checkGradient() {
@@ -180,18 +178,24 @@ protected:
     }
   }
 
-  template <typename TrainerT> void useTrainer(bool use_stochastic) {
+  template <typename TrainerT> void checkTrainer() {
     info->trainedModel->setOnes();
     // do training
-    TrainerStoryAware<TrainerT> trainer;
+    StoryAware<TrainerT> trainer;
     trainer.setMaxIterations(30);
-    if (use_stochastic) {
-      info->trainedModel->train(trainer, info->trainSet, 0.1f);
+    {
+      ::train::GradientDescendFixed *as_fixed =
+          dynamic_cast<::train::GradientDescendFixed *>(&trainer);
+      if (nullptr != as_fixed) {
+        as_fixed->setOptimizationStep(0.5);
+      }
+    }
+    if (nullptr != train_set_percentage) {
+      info->trainedModel->train(trainer, info->trainSet, *train_set_percentage);
     } else {
       info->trainedModel->train(trainer, info->trainSet);
     }
-    std::cout << "Iterations done " << trainer.getDescendStory().size()
-              << std::endl;
+    std::cout << "Iterations done " << trainer.getStory().size() << std::endl;
     // check tuned values
     this->checkWeights();
     // check marginal computation
@@ -201,35 +205,17 @@ protected:
       this->checkLikelihood(trainer);
     }
   }
-};
-std::unique_ptr<TrainTest::Info> TrainTest::info = nullptr;
 
-#define TEST_TRAINERS(TrainTestT, use_percentage)                              \
-  TEST_F(TrainTestT, GradientDescendFixed) {                                   \
-    this->resetInfo();                                                         \
-    this->checkGradient();                                                     \
-    this->useTrainer<::train::GradientDescendFixed>(use_percentage);           \
+  void CHECK() {
+    this->checkGradient();
+    this->checkTrainer<::train::GradientDescendFixed>();
+    this->checkTrainer<::train::GradientDescend<::train::YundaSearcher>>();
+    this->checkTrainer<::train::GradientDescendConjugate<
+        ::train::YundaSearcher, ::train::FletcherReeves>>();
+    this->checkTrainer<
+        ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>();
   }
-
-// #define TEST_TRAINERS(TrainTestT, use_percentage)                              \
-//   TEST_F(TrainTestT, GradientDescendFixed) {                                   \
-//     this->resetInfo();                                                         \
-//     this->checkGradient();                                                     \
-//     this->useTrainer<::train::GradientDescendFixed>(use_percentage);           \
-//   }                                                                            \
-//   TEST_F(TrainTestT, GradientDescendAdaptive) {                                \
-//     this->useTrainer<::train::GradientDescend<::train::YundaSearcher>>(        \
-//         use_percentage);                                                       \
-//   }                                                                            \
-//   TEST_F(TrainTestT, GradientDescendConjugate) {                               \
-//     this->useTrainer<::train::GradientDescendConjugate<                        \
-//         ::train::YundaSearcher, ::train::FletcherReeves>>(use_percentage);     \
-//   }                                                                            \
-//   TEST_F(TrainTestT, QuasiNewton) {                                            \
-//     this->useTrainer<                                                          \
-//         ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(          \
-//         use_percentage);                                                       \
-//   }
+};
 
 class SmallRandomField : public TrainTest {
 public:
@@ -294,8 +280,10 @@ protected:
   };
 
   void SetUp() override {
+    this->MediumRandomField::SetUp();
     this->checkLkl = false;
     this->wErrToll = 0.37f;
+    this->train_set_percentage = std::make_unique<float>(0.1f);
   }
 };
 
@@ -304,8 +292,8 @@ public:
   MediumRandomFieldThreadPool() = default;
 
 protected:
-  void resetInfo() override {
-    this->MediumRandomField::resetInfo();
+  void SetUp() override {
+    this->MediumRandomField::SetUp();
     dynamic_cast<strct::ThreadPoolAware *>(info->trainedModel.get())
         ->setThreadPoolSize(3);
   }
@@ -359,18 +347,21 @@ protected:
     return std::make_shared<EFG::train::TrainSet>(rawSamples);
   };
 
-  void SetUp() override { this->wErrToll = 0.35f; }
+  void SetUp() override {
+    this->TrainTest::SetUp();
+    this->wErrToll = 0.35f;
+  }
 };
 
-TEST_TRAINERS(SmallRandomField, false);
+TEST_F(SmallRandomField, check) { this->CHECK(); }
 
-TEST_TRAINERS(MediumRandomField, false);
+TEST_F(MediumRandomField, check) { this->CHECK(); }
 
-TEST_TRAINERS(MediumRandomFieldStoch, true);
+TEST_F(MediumRandomFieldStoch, check) { this->CHECK(); }
 
-TEST_TRAINERS(SmallConditionalRandomField, false);
+TEST_F(SmallConditionalRandomField, check) { this->CHECK(); }
 
-TEST_TRAINERS(MediumRandomFieldThreadPool, false);
+TEST_F(MediumRandomFieldThreadPool, check) { this->CHECK(); }
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
