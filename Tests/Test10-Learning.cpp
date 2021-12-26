@@ -164,11 +164,23 @@ protected:
     std::cout << "train set sampled " << std::endl;
   }
 
-  template <typename TrainerT>
-  void useTrainer(bool use_stochastic, bool updateInfo = false) {
-    if (updateInfo) {
-      this->resetInfo();
+  void checkGradient() {
+    info->trainedModel->setOnes();
+    auto grad = info->trainedModel->getGradient(info->trainSet);
+    auto real_w = info->referenceModel->getWeights();
+    EXPECT_EQ(grad.size(), real_w.size());
+    auto same_sign = [](const float a, const float b) {
+      if (a > 0) {
+        return b > 0;
+      }
+      return b < 0;
+    };
+    for (std::size_t k = 0; k < grad.size(); ++k) {
+      EXPECT_TRUE(same_sign(grad[k], real_w[k] - 1.0));
     }
+  }
+
+  template <typename TrainerT> void useTrainer(bool use_stochastic) {
     info->trainedModel->setOnes();
     // do training
     TrainerStoryAware<TrainerT> trainer;
@@ -194,21 +206,30 @@ std::unique_ptr<TrainTest::Info> TrainTest::info = nullptr;
 
 #define TEST_TRAINERS(TrainTestT, use_percentage)                              \
   TEST_F(TrainTestT, GradientDescendFixed) {                                   \
-    this->useTrainer<::train::GradientDescendFixed>(use_percentage, true);     \
-  }                                                                            \
-  TEST_F(TrainTestT, GradientDescendAdaptive) {                                \
-    this->useTrainer<::train::GradientDescend<::train::YundaSearcher>>(        \
-        use_percentage);                                                       \
-  }                                                                            \
-  TEST_F(TrainTestT, GradientDescendConjugate) {                               \
-    this->useTrainer<::train::GradientDescendConjugate<                        \
-        ::train::YundaSearcher, ::train::FletcherReeves>>(use_percentage);     \
-  }                                                                            \
-  TEST_F(TrainTestT, QuasiNewton) {                                            \
-    this->useTrainer<                                                          \
-        ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(          \
-        use_percentage);                                                       \
+    this->resetInfo();                                                         \
+    this->checkGradient();                                                     \
+    this->useTrainer<::train::GradientDescendFixed>(use_percentage);           \
   }
+
+// #define TEST_TRAINERS(TrainTestT, use_percentage)                              \
+//   TEST_F(TrainTestT, GradientDescendFixed) {                                   \
+//     this->resetInfo();                                                         \
+//     this->checkGradient();                                                     \
+//     this->useTrainer<::train::GradientDescendFixed>(use_percentage);           \
+//   }                                                                            \
+//   TEST_F(TrainTestT, GradientDescendAdaptive) {                                \
+//     this->useTrainer<::train::GradientDescend<::train::YundaSearcher>>(        \
+//         use_percentage);                                                       \
+//   }                                                                            \
+//   TEST_F(TrainTestT, GradientDescendConjugate) {                               \
+//     this->useTrainer<::train::GradientDescendConjugate<                        \
+//         ::train::YundaSearcher, ::train::FletcherReeves>>(use_percentage);     \
+//   }                                                                            \
+//   TEST_F(TrainTestT, QuasiNewton) {                                            \
+//     this->useTrainer<                                                          \
+//         ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(          \
+//         use_percentage);                                                       \
+//   }
 
 class SmallRandomField : public TrainTest {
 public:

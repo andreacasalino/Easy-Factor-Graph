@@ -97,9 +97,8 @@ void Trainable::insertHandler(
 namespace {
 ::train::Vect convert(const std::vector<float> &buffer) {
   ::train::Vect result(static_cast<Eigen::Index>(buffer.size()));
-  std::size_t pos = 0;
-  for (Eigen::Index i = 0; i < result.size(); ++i, ++pos) {
-    result(i) = static_cast<double>(buffer[pos]);
+  for (std::size_t i = 0; i < buffer.size(); ++i) {
+    result(static_cast<Eigen::Index>(i)) = buffer[i];
   }
   return result;
 }
@@ -123,8 +122,7 @@ public:
   void setParameters(const ::train::Vect &v) override {
     std::vector<float> w;
     w.reserve(v.size());
-    std::size_t pos = 0;
-    for (Eigen::Index i = 0; i < v.size(); ++i, ++pos) {
+    for (Eigen::Index i = 0; i < v.size(); ++i) {
       w.push_back(static_cast<float>(v(i)));
     }
     model->setWeights(w);
