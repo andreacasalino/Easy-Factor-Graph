@@ -18,6 +18,13 @@ if(THREAD_POOL_OPT)
 	FetchContent_MakeAvailable(thread_pool)
 endif()
 
+FetchContent_Declare(
+  trainers
+  GIT_REPOSITORY https://github.com/andreacasalino/TrainingTools.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(trainers)
+
 set(PROJECT_SHORTNAME "EFG")
 
 MakeLibrary(${PROJECT_SHORTNAME} Header)
@@ -35,6 +42,7 @@ target_link_libraries(${PROJECT_SHORTNAME}
         XML-Parser
 		OpenMP::OpenMP_CXX
 	PUBLIC
+		TrainingTools
 		Thread-Pool
 )
 else()
