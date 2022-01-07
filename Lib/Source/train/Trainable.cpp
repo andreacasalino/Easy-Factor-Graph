@@ -128,11 +128,11 @@ public:
   };
   ::train::Vect getGradient() const override {
     if (nullptr == percentage) {
-      return -convert(model->getGradient(trainSet));
+      return convert(model->getGradient(trainSet));
     }
     TrainSetPtr sampled =
         std::make_shared<TrainSet>(trainSet->getRandomSubSet(*percentage));
-    return -convert(model->getGradient(sampled));
+    return convert(model->getGradient(sampled));
   };
 
 private:
@@ -143,12 +143,14 @@ private:
 
 void Trainable::train(::train::Trainer &solver, TrainSetPtr trainSet) {
   WeightsAware model(*this, trainSet);
+  solver.maximize();
   solver.train(model);
 }
 
 void Trainable::train(::train::Trainer &solver, TrainSetPtr trainSet,
                       const float percentage) {
   WeightsAware model(*this, trainSet, percentage);
+  solver.maximize();
   solver.train(model);
 }
 } // namespace EFG::train
