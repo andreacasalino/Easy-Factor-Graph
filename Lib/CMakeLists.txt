@@ -3,7 +3,7 @@ include(FetchContent)
 FetchContent_Declare(
   xml_parser
   GIT_REPOSITORY https://github.com/andreacasalino/XML-parser.git
-  GIT_TAG        master
+  GIT_TAG        5006262a76192b1af4988f1530be12cec4e8b74a
 )
 FetchContent_MakeAvailable(xml_parser)
 
