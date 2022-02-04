@@ -38,11 +38,9 @@ template <typename Predicate>
 void for_each_nested_with_name(const xmlPrs::Tag &father,
                                const std::string &name, Predicate predicate) {
   auto range = father.getNested().equal_range(name);
-  std::for_each(
-      range.first, range.second,
-      [&predicate](const std::pair<xmlPrs::Name, xmlPrs::TagPtr> &element) {
-        predicate(*element.second);
-      });
+  for (auto it = range.first; it != range.second; ++it) {
+    predicate(*it->second);
+  }
 }
 
 template <typename Predicate>
