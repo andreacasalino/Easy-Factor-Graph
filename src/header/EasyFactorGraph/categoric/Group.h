@@ -8,10 +8,14 @@
 #pragma once
 
 #include <EasyFactorGraph/categoric/Variable.h>
+#include <unordered_map>
 #include <unordered_set>
 
 namespace EFG::categoric {
-using Variables = std::unordered_set<VariablePtr>;
+using VariablesSoup = std::vector<VariablePtr>;
+using VariablesSet = std::unordered_set<VariablePtr>;
+
+VariablesSet to_vars_set(const VariablesSoup &soup);
 
 /**
  * @brief An ensemble of categoric variables. Each variable in the ensemble
@@ -22,7 +26,7 @@ public:
   /**
    * @param the initial variables of the group
    */
-  explicit Group(const Variables &group);
+  explicit Group(const VariablesSoup &group);
 
   /**
    * @param the initial variable to put in the group
@@ -35,9 +39,9 @@ public:
    * @param all the other initial variables
    */
   template <typename... Vars>
-  Group(const VariablePtr &varA, const VariablePtr &varB, Vars... vars) {
-    this->add(varA);
-    this->add(varB, vars...);
+  Group(const VariablePtr &varA, const VariablePtr &varB, const Vars &...vars)
+      : Group(varA) {
+    this->addVariables(varB, vars...);
   }
 
   /**
@@ -51,21 +55,22 @@ public:
    * the sizes of the 2 groups should be the same and the elements in
    * the same positions must have the same domain size
    */
-  void replaceVariables(const Group &o);
+  void replaceVariables(const VariablesSoup &new_variables);
 
   inline bool operator==(const Group &o) const {
-    return (this->group == o.group);
+    return (this->group_sorted == o.group_sorted);
   };
 
   /**
    * @param the variable to add in the group
    * @throw in case a variable with the same name is already part of the group
    */
-  void addVariable(VariablePtr var);
+  void addVariable(const VariablePtr &var);
 
-  template <typename... Vars> void addVariables(VariablePtr var, Vars... vars) {
-    this->add(var);
-    this->add(vars...);
+  template <typename... Vars>
+  void addVariables(const VariablePtr &var, const Vars &...vars) {
+    this->addVariable(var);
+    this->addVariables(vars...);
   }
 
   /** @return the size of the joint domain of the group.
@@ -74,18 +79,18 @@ public:
    */
   std::size_t size() const;
 
-  inline const Variables &getVariables() const { return this->group; }
+  inline const VariablesSoup &getVariables() const { return this->group; }
+  inline const VariablesSet &getVariablesSet() const {
+    return this->group_sorted;
+  }
 
 protected:
-  Variables group;
+  VariablesSoup group;
+  VariablesSet group_sorted;
 };
 
-/**
- * @brief get the complementary group of the subset w.r.t a certain set.
- * For instance the complementary of <A,C> w.r.t. <A,B,C,D,E> is <B,D,E>
- * @throw when not all variables in subset are present in set
- * @throw when the complementary is an empty set
- */
-Variables get_complementary(const Variables &entire_set,
-                            const Variables &subset);
+VariablesSet &operator-=(VariablesSet &subject, const VariablesSet &to_remove);
+
+VariablesSet get_complementary(const VariablesSet &entire_set,
+                               const VariablesSet &subset);
 } // namespace EFG::categoric

@@ -5,55 +5,41 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <categoric/Combination.h>
-#include <Error.h>
-#include <cstring>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/Combination.h>
 
 namespace EFG::categoric {
-    Combination::Combination(std::size_t bufferSize)
-        : bufferSize(bufferSize) {
-        if (0 == this->bufferSize) {
-            throw Error("size should be at least 1");
-        }
-        this->buffer = (std::size_t*)(malloc(sizeof(std::size_t) * bufferSize));
-        for (std::size_t k = 0; k < this->bufferSize; ++k) {
-            this->buffer[k] = 0;
-        }
-    }
-
-    Combination::Combination(const std::size_t* buffer, std::size_t bufferSize)
-        : bufferSize(bufferSize) {
-        this->buffer = (std::size_t*)(malloc(sizeof(std::size_t) * bufferSize));
-        for (std::size_t k = 0; k < this->bufferSize; ++k) {
-            this->buffer[k] = buffer[k];
-        }
-    }
-
-    Combination::Combination(const Combination& o)
-        : Combination(o.buffer, o.bufferSize) {
-    }
-
-    Combination& Combination::operator=(const Combination& o) {
-        if (this->bufferSize != o.bufferSize) {
-            throw Error("can't copy a different sized combination");
-        }
-        std::memcpy(this->buffer, o.buffer, bufferSize);
-        return *this;
-    }
-
-    Combination::~Combination() { 
-        free(this->buffer); 
-    };
-
-    bool Combination::operator<(const Combination& o) const {
-        if (this->bufferSize != o.bufferSize) {
-            throw Error("uncomparable combinations");
-        }
-        for (std::size_t k = 0; k < this->bufferSize; ++k) {
-            if (this->buffer[k] != o.buffer[k]) {
-                return (this->buffer[k] < o.buffer[k]);
-            }
-        }
-        return false;
-    };
+namespace {
+std::vector<std::size_t> zeros(const std::size_t bufferSize) {
+  std::vector<std::size_t> result;
+  result.reserve(bufferSize);
+  for (std::size_t k = 0; k < bufferSize; ++k) {
+    result.push_back(0);
+  }
+  return result;
 }
+} // namespace
+
+Combination::Combination(const std::size_t bufferSize)
+    : Combination(zeros(bufferSize)) {}
+
+Combination::Combination(std::vector<std::size_t> &&buffer)
+    : values(std::move(buffer)) {
+  if (0 == values.size()) {
+    throw Error("Size of Combination should be at least 1");
+  }
+}
+
+bool Combination::operator<(const Combination &o) const {
+  if (this->values.size() != o.values.size()) {
+    throw Error("Uncomparable Combinations");
+  }
+  const auto size = this->values.size();
+  for (std::size_t k = 0; k < size; ++k) {
+    if (this->values[k] != o.values[k]) {
+      return (this->values[k] < o.values[k]);
+    }
+  }
+  return false;
+};
+} // namespace EFG::categoric

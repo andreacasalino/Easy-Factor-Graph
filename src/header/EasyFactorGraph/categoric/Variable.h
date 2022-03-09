@@ -48,7 +48,7 @@ VariablePtr make_variable(const std::size_t &size, const std::string &name) {
 namespace std {
 template <> struct hash<EFG::categoric::Variable> {
   std::size_t operator()(const EFG::categoric::Variable &v) const {
-    (hash<string>()(v.name()) ^ (hash<std::size_t>()(v.size()) << 1));
+    return hash<string>()(v.name());
   }
 };
 

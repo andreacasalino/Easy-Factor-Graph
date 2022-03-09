@@ -5,66 +5,55 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <categoric/Group.h>
-#include <algorithm>
-#include <Error.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
 
 namespace EFG::categoric {
-    Group::Group(const std::set<VariablePtr>& group)
-        : group(group) {
-    }
-
-    Group::Group(VariablePtr var)
-        : group({var}) {
-    }
-
-    Group::Group(VariablePtr varA, VariablePtr varB)
-        : Group(varA) {
-        this->add(varB);
-    }
-
-    void Group::add(VariablePtr var) {
-        if(this->group.end() != this->group.find(var)) {
-            throw Error("A variable with the same name is already part of the group");
-        }
-        this->group.emplace(var);
-    }
-
-    Group& Group::operator=(const Group& replacer) {
-        if(replacer.group.size() != this->group.size()) {
-            throw Error("replacing variables should be in number the same");
-        }
-        auto itThis = this->group.begin();
-        std::for_each(replacer.group.begin(), replacer.group.end(), [&itThis](const VariablePtr& v){
-            if((*itThis)->size() != v->size()) {
-                throw Error("replacing variables should have the same sizes");
-            }
-            ++itThis;
-        });
-        this->group = replacer.group;
-        return *this;
-    }
-
-    std::size_t Group::size() const {
-        std::size_t S = 1;
-        std::for_each(this->group.begin(), this->group.end(), [&S](const VariablePtr& v){
-            S *= v->size();
-        });
-        return S;
-    }
-
-    std::set<VariablePtr> getComplementary(const std::set<VariablePtr>& set, const std::set<VariablePtr>& subset) {
-        auto complementary = set;
-        std::for_each(subset.begin(), subset.end(), [&complementary](const categoric::VariablePtr& v) {
-            auto itV = complementary.find(v);
-            if (itV == complementary.end()) {
-                throw Error("variable in subset non existing in set");
-            }
-            complementary.erase(itV);
-        });
-        if (complementary.empty()) {
-            throw Error("at least 1 variable should remain");
-        }
-        return complementary;
-    };
+namespace {
+std::vector<size_t> get_sizes(const Group &variables) {
+  std::vector<size_t> result;
+  result.reserve(variables.size());
+  for (const auto &var : variables.getVariables()) {
+    result.push_back(var->size());
+  }
+  return result;
 }
+} // namespace
+
+Range::Range(const Group &variables) {
+  data = std::make_unique<Data>(get_sizes(variables), );
+}
+
+Range::Range(const std::set<VariablePtr> &group) : combination(group.size()) {
+  this->sizes.reserve(group.size());
+  for (auto it = group.begin(); it != group.end(); ++it) {
+    this->sizes.push_back((*it)->size());
+  }
+}
+
+void Range::reset() {
+  std::size_t *data = this->combination.data();
+  for (std::size_t k = 0; k < this->sizes.size(); ++k) {
+    data[k] = 0;
+  }
+  this->isAtEnd = false;
+};
+
+void Range::operator++() {
+  std::size_t *data = this->combination.data();
+  std::size_t k = this->combination.size() - 1;
+  while (true) {
+    ++data[k];
+    if (data[k] == this->sizes[k]) {
+      if (k == 0) {
+        this->isAtEnd = true;
+        break;
+      } else {
+        data[k] = 0;
+        --k;
+      }
+    } else
+      break;
+  }
+};
+} // namespace EFG::categoric

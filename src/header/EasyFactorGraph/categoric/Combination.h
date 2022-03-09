@@ -19,7 +19,7 @@ public:
    * @brief A buffer of zeros with the passed size is created
    * @throw if bufferSize is 0
    */
-  Combination(std::size_t bufferSize);
+  Combination(const std::size_t bufferSize);
 
   Combination(std::vector<std::size_t> &&buffer);
 

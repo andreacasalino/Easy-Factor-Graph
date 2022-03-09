@@ -37,7 +37,7 @@ public:
 
   /** @param the group of variables whose joint domain must be iterated
    */
-  explicit Range(const Variables &variables);
+  explicit Range(const Group &variables);
 
   Range() = default;
 
