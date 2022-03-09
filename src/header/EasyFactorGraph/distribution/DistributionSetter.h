@@ -13,13 +13,6 @@ namespace EFG::distribution {
 class DistributionSetter : virtual public Distribution {
 public:
   /**
-   * @brief replace the variables describing the domain of this distribution
-   */
-  inline void replaceGroup(const categoric::Group &newGroup) {
-    *this->group = newGroup;
-  };
-
-  /**
    * @brief sets the image of the passed combination.
    * In case the combination is currently not part of the distribution, it is
    * added with the passe raw image value.
@@ -30,18 +23,12 @@ public:
   void setImageRaw(const categoric::Combination &comb, const float &value);
 
   /**
-   * @brief creates all the non explicitly set combinations and assumed for them
-   * a 0 raw image value.
-   */
-  void fillDomain();
-
-  /**
    * @brief sets the raw images of all the combinations equal to the passed
    * value
    * @throw passing a negative number for value
    */
   void setAllImagesRaw(const float &value);
 
-  void clear();
+  void clear() { getCombinationsMap().clear(); };
 };
 } // namespace EFG::distribution

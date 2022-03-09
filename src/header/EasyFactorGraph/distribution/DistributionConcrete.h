@@ -5,6 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#pragma once
+
 #include <EasyFactorGraph/distribution/Distribution.h>
 
 namespace EFG::distribution {
@@ -15,7 +17,7 @@ public:
   // get finder
   // TODO
 
-  const Evaluator &getEvaluator() const final { return *evaluator; };
+  const Evaluator &getEvaluator() const final { return *evaluator; }
   const categoric::Group &getVariables() const final { return variables; }
   const CombinationRawValuesMap &getCombinationsMap() const final {
     return *combinations_map;
@@ -29,9 +31,14 @@ protected:
   DistributionConcrete(const EvaluatorPtr &evaluator,
                        const categoric::Group &vars);
 
+  DistributionConcrete(const EvaluatorPtr &evaluator,
+                       const categoric::Group &vars,
+                       const CombinationRawValuesMapPtr &map);
+
   CombinationRawValuesMap &getCombinationsMap() final {
     return *combinations_map;
   }
+  Evaluator &getEvaluator() final { return *evaluator; };
 
 private:
   categoric::Group variables;

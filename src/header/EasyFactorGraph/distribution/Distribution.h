@@ -52,6 +52,7 @@ public:
 
 protected:
   virtual CombinationRawValuesMap &getCombinationsMap() = 0;
+  virtual Evaluator &getEvaluator() = 0;
 
   Distribution() = default;
 };

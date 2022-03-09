@@ -21,9 +21,11 @@ public:
   FactorExponential(const Factor &factor, const float weigth);
 
   /**
-   * @brief sets the weight used by teh exponential function converting the raw
+   * @brief sets the weight used by teh exponential function converting the
+   raw
    * images
    */
   void setWeight(float w);
+  float getWeight(float w) const;
 };
 } // namespace EFG::distribution

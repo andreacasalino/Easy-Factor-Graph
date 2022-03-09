@@ -5,42 +5,40 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <distribution/DistributionSetter.h>
-#include <categoric/Range.h>
-#include <Error.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/distribution/DistributionSetter.h>
 
 namespace EFG::distribution {
-    void DistributionSetter::setImageRaw(const categoric::Combination& comb, const float& value) {
-        this->checkCombination(comb, value);
-        auto it = this->values->find(comb);
-        if (it == this->values->end()) {
-            this->values->emplace(comb, value);
-        }
-        else {
-            it->second = value;
-        }
+void DistributionSetter::setImageRaw(const categoric::Combination &comb,
+                                     const float &value) {
+  if (value < 0.f) {
+    throw Error("negative value is not possible");
+  }
+  const auto &vars = getVariables().getVariables();
+  const auto size = vars.size();
+  const auto &comb_data = comb.data();
+  if (comb_data.size() != size) {
+    throw Error{"Invalid combination"};
+  }
+  for (std::size_t k = 0; k < size; ++k) {
+    if (vars[k]->size() <= comb_data[k]) {
+      throw Error{"Invalid combination"};
     }
-
-    void DistributionSetter::fillDomain() {
-        if (this->values->size() == this->group->size()) {
-            return;
-        }
-        categoric::Range r(this->group->getVariables());
-        iterator::forEach(r, [this](const categoric::Range& r) {
-            auto it = this->values->find(r.get());
-            if (it == this->values->end()) {
-                this->values->emplace(r.get(), 0.f);
-            }
-        });
-    }
-
-    void DistributionSetter::setAllImagesRaw(const float& value) {
-        if (value < 0.f) {
-            throw Error("negative value is not possible");
-        }
-        this->fillDomain();
-        for (auto it = this->values->begin(); it != this->values->end(); ++it) {
-            it->second = value;
-        }
-    }
+  }
+  getCombinationsMap()[comb] = value;
 }
+
+void DistributionSetter::setAllImagesRaw(const float &value) {
+  if (value < 0.f) {
+    throw Error("negative value is not possible");
+  }
+  clear();
+  categoric::GroupRange range(getVariables());
+  auto &map = getCombinationsMap();
+  for_each_combination(range,
+                       [&map, &value](const categoric::Combination &comb) {
+                         map[comb] = value;
+                       });
+}
+} // namespace EFG::distribution

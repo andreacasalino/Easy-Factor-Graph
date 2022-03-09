@@ -17,4 +17,14 @@ DistributionConcrete::DistributionConcrete(const EvaluatorPtr &evaluator,
   }
   combinations_map = std::make_shared<CombinationRawValuesMap>();
 }
+
+DistributionConcrete::DistributionConcrete(
+    const EvaluatorPtr &evaluator, const categoric::Group &vars,
+    const CombinationRawValuesMapPtr &map)
+    : DistributionConcrete(evaluator, vars) {
+  if (nullptr == map) {
+    throw Error{"Empty combinations map"};
+  }
+  combinations_map = map;
+}
 } // namespace EFG::distribution
