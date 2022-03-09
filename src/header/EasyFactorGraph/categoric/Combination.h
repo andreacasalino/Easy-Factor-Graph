@@ -5,56 +5,45 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifndef EFG_CATEGORIC_COMBINATION_H
-#define EFG_CATEGORIC_COMBINATION_H
+#pragma once
 
 #include <vector>
 
 namespace EFG::categoric {
-    /** 
-     * @brief An immutable combination of discrete values
-     */
-    class Combination {
-    public:
-        /**
-         * @brief A buffer of zeros with the passed size is created
-         * @throw if bufferSize is 0
-         */
-        Combination(std::size_t bufferSize);
+/**
+ * @brief An immutable combination of discrete values
+ */
+class Combination {
+public:
+  /**
+   * @brief A buffer of zeros with the passed size is created
+   * @throw if bufferSize is 0
+   */
+  Combination(std::size_t bufferSize);
 
-        /**
-         * @brief The passed buffer is copied to create this one
-         * @param the buffer to clone
-         * @param the buffer size
-         */
-        Combination(const std::size_t* buffer, std::size_t bufferSize);
+  Combination(std::vector<std::size_t> &&buffer);
 
-        Combination(const Combination& o);
+  /**
+   * @brief compare two equally sized combination.
+   * Examples of ordering:
+   * <0,0,0> < <0,1,0>
+   * <0,1> < <1,0>
+   * @throw when o has a different size
+   */
+  bool operator<(const Combination &o) const;
 
-        /**
-         * @throw when o has a different size
-         */
-        Combination& operator=(const Combination& o);
+  inline std::size_t size() const { return values.size(); };
+  inline const std::vector<std::size_t> &data() const { return values; };
 
-        ~Combination();
+private:
+  const std::vector<std::size_t> values;
+};
 
-        /**
-         * @brief compare two equally sized combination.
-         * Examples of ordering:
-         * <0,0,0> < <0,1,0>
-         * <0,1> < <1,0>
-         * @throw when o has a different size
-         */
-        bool operator<(const Combination& o) const;
+bool operator==(const Combination &a, const Combination &b) {
+  return a.data() == b.data();
+};
 
-        inline std::size_t size() const { return this->bufferSize; };
-        inline const std::size_t* data() const { return this->buffer; };
-        inline std::size_t* data() { return this->buffer; };
-
-    private:
-        const std::size_t bufferSize;
-        std::size_t* buffer;
-    };
-}
-
-#endif
+bool operator!=(const Combination &a, const Combination &b) {
+  return a.data() != b.data();
+};
+} // namespace EFG::categoric

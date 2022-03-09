@@ -5,14 +5,15 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <categoric/Variable.h>
-#include <Error.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/Variable.h>
 
 namespace EFG::categoric {
-    Variable::Variable(const std::size_t& size, const std::string& name)
-        : Size(size)
-        , Name(name) {
-        if (name.size() == 0)  throw Error("empty name forbidden");
-        if (size == 0) throw Error("null size forbidden");
-    }
+Variable::Variable(const std::size_t &size, const std::string &name)
+    : Size(size), Name(name) {
+  if (name.size() == 0)
+    throw Error("Empty name for Variable forbidden");
+  if (size == 0)
+    throw Error("Null size for Variable forbidden");
 }
+} // namespace EFG::categoric
