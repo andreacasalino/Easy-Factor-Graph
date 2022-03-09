@@ -23,6 +23,8 @@ public:
 
   Combination(std::vector<std::size_t> &&buffer);
 
+  Combination(const Combination &o);
+
   /**
    * @brief compare two equally sized combination.
    * Examples of ordering:
@@ -39,11 +41,7 @@ private:
   const std::vector<std::size_t> values;
 };
 
-bool operator==(const Combination &a, const Combination &b) {
-  return a.data() == b.data();
-};
+bool operator==(const Combination &a, const Combination &b);
 
-bool operator!=(const Combination &a, const Combination &b) {
-  return a.data() != b.data();
-};
+bool operator!=(const Combination &a, const Combination &b);
 } // namespace EFG::categoric

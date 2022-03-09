@@ -24,22 +24,22 @@ endfunction()
 
 MakeTest(Test01-Range)
 
-MakeTest(Test02-Distribution)
+# MakeTest(Test02-Distribution)
 
-MakeTest(Test03-DistributionFinder)
+# MakeTest(Test03-DistributionFinder)
 
-MakeTest(Test04-FactorSetting)
+# MakeTest(Test04-FactorSetting)
 
-MakeTest(Test05-FactorConstruction)
+# MakeTest(Test05-FactorConstruction)
 
-MakeTest(Test06-Insertions)
+# MakeTest(Test06-Insertions)
 
-MakeTest(Test07-Evidences)
+# MakeTest(Test07-Evidences)
 
-MakeTest(Test08-BeliefPropagation)
+# MakeTest(Test08-BeliefPropagation)
 
-MakeTest(Test09-Gibbs)
+# MakeTest(Test09-Gibbs)
 
-MakeTest(Test10-Learning)
+# MakeTest(Test10-Learning)
 
-MakeTest(Test11-ThreadPoolEfficiency)
+# MakeTest(Test11-ThreadPoolEfficiency)

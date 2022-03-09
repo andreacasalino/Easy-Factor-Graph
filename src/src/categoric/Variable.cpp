@@ -16,4 +16,8 @@ Variable::Variable(const std::size_t &size, const std::string &name)
   if (size == 0)
     throw Error("Null size for Variable forbidden");
 }
+
+VariablePtr make_variable(const std::size_t &size, const std::string &name) {
+  return std::make_shared<Variable>(size, name);
+};
 } // namespace EFG::categoric

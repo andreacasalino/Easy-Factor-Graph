@@ -39,9 +39,8 @@ public:
    * @param all the other initial variables
    */
   template <typename... Vars>
-  Group(const VariablePtr &varA, const VariablePtr &varB, const Vars &...vars)
-      : Group(varA) {
-    this->addVariables(varB, vars...);
+  Group(const VariablePtr &varA, const VariablePtr &varB, const Vars &...vars) {
+    this->add(varA, varB, vars...);
   }
 
   /**
@@ -65,12 +64,12 @@ public:
    * @param the variable to add in the group
    * @throw in case a variable with the same name is already part of the group
    */
-  void addVariable(const VariablePtr &var);
+  void add(const VariablePtr &var);
 
   template <typename... Vars>
-  void addVariables(const VariablePtr &var, const Vars &...vars) {
-    this->addVariable(var);
-    this->addVariables(vars...);
+  void add(const VariablePtr &var, const Vars &...vars) {
+    this->add(var);
+    this->add(vars...);
   }
 
   /** @return the size of the joint domain of the group.
@@ -85,6 +84,8 @@ public:
   }
 
 protected:
+  Group() = default;
+
   VariablesSoup group;
   VariablesSet group_sorted;
 };

@@ -22,16 +22,20 @@ std::vector<size_t> get_sizes(const Group &variables) {
 
 GroupRange::GroupRange(const Group &variables) {
   data = std::make_unique<Data>(Data{get_sizes(variables), nullptr, false});
-  data->combination = std::make_unique<Combination>(variables.size());
+  data->combination =
+      std::make_unique<Combination>(variables.getVariables().size());
 }
 
-void GroupRange::reset() {
-  data->combination = std::make_unique<Combination>(data->sizes.size());
-  data->end_of_range = false;
-};
+GroupRange::GroupRange(const GroupRange &o) {
+  if (nullptr != o.data) {
+    data = std::make_unique<Data>(
+        Data{o.data->sizes, nullptr, o.data->end_of_range});
+    data->combination = std::make_unique<Combination>(*o.data->combination);
+  }
+}
 
 GroupRange &GroupRange::operator++() {
-  if (data->end_of_range) {
+  if (nullptr == data) {
     throw Error{"GroupRange not incrementable"};
   }
   auto new_comb = this->data->combination->data();
@@ -41,7 +45,8 @@ GroupRange &GroupRange::operator++() {
     if (new_comb[k] == data->sizes[k]) {
       if (k == 0) {
         this->data->end_of_range = true;
-        break;
+        data.reset();
+        return *this;
       } else {
         new_comb[k] = 0;
         --k;
@@ -51,5 +56,12 @@ GroupRange &GroupRange::operator++() {
   }
   data->combination = std::make_unique<Combination>(std::move(new_comb));
   return *this;
+};
+
+bool operator==(const GroupRange &a, const GroupRange &b) {
+  return a.isEqual(b);
+};
+bool operator!=(const GroupRange &a, const GroupRange &b) {
+  return !a.isEqual(b);
 };
 } // namespace EFG::categoric

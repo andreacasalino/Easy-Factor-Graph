@@ -38,9 +38,7 @@ protected:
 
 using VariablePtr = std::shared_ptr<Variable>;
 
-VariablePtr make_variable(const std::size_t &size, const std::string &name) {
-  return std::make_shared<Variable>(size, name);
-};
+VariablePtr make_variable(const std::size_t &size, const std::string &name);
 } // namespace EFG::categoric
 
 #include <functional>

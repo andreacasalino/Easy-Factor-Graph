@@ -32,7 +32,7 @@ Group::Group(const VariablePtr &var) {
   group_sorted.emplace(var);
 }
 
-void Group::addVariable(const VariablePtr &var) {
+void Group::add(const VariablePtr &var) {
   auto it = group_sorted.find(var);
   if (it == group_sorted.end()) {
     group.push_back(var);

@@ -30,6 +30,8 @@ Combination::Combination(std::vector<std::size_t> &&buffer)
   }
 }
 
+Combination::Combination(const Combination &o) : values(o.values) {}
+
 bool Combination::operator<(const Combination &o) const {
   if (this->values.size() != o.values.size()) {
     throw Error("Uncomparable Combinations");
@@ -41,5 +43,13 @@ bool Combination::operator<(const Combination &o) const {
     }
   }
   return false;
+};
+
+bool operator==(const Combination &a, const Combination &b) {
+  return a.data() == b.data();
+};
+
+bool operator!=(const Combination &a, const Combination &b) {
+  return a.data() != b.data();
 };
 } // namespace EFG::categoric

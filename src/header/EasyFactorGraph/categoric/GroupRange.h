@@ -39,11 +39,7 @@ public:
    */
   explicit GroupRange(const Group &variables);
 
-  /**
-   * @brief Make the object to point to the first element of the joint domain
-   * <0,0,...>, i.e. reset the status as it is after construction.
-   */
-  void reset();
+  GroupRange(const GroupRange &o);
 
   const pointer operator->() const { return data->combination.get(); }
   const reference operator*() const { return *data->combination; }
@@ -71,12 +67,8 @@ private:
 
 static const GroupRange RANGE_END = GroupRange::end();
 
-bool operator==(const GroupRange &a, const GroupRange &b) {
-  return a.isEqual(b);
-};
-bool operator!=(const GroupRange &a, const GroupRange &b) {
-  return !a.isEqual(b);
-};
+bool operator==(const GroupRange &a, const GroupRange &b);
+bool operator!=(const GroupRange &a, const GroupRange &b);
 
 template <typename Predicate>
 void for_each_combination(GroupRange &range, const Predicate &predicate) {
