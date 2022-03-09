@@ -26,7 +26,7 @@ namespace EFG::categoric {
  * element is pointed. When calling get() the current pointed element can be
  * accessed.
  */
-class Range {
+class GroupRange {
 public:
   // https://www.internalpointers.com/post/writing-custom-iterators-modern-cpp
   using iterator_category = std::input_iterator_tag;
@@ -37,45 +37,50 @@ public:
 
   /** @param the group of variables whose joint domain must be iterated
    */
-  explicit Range(const Group &variables);
-
-  Range() = default;
+  explicit GroupRange(const Group &variables);
 
   /**
    * @brief Make the object to point to the first element of the joint domain
    * <0,0,...>, i.e. reset the status as it is after construction.
    */
-  Range reset();
+  void reset();
 
-  const pointer operator->() const { return &data->combination; }
-  const reference operator*() const { return data->combination; }
+  const pointer operator->() const { return data->combination.get(); }
+  const reference operator*() const { return *data->combination; }
 
   /**
    * @brief Make the object to point to the next element in the joint domain.
    * @throw if the current pointed element is the last one.
    */
-  Range &operator++();
+  GroupRange &operator++();
 
-  static Range end() { return Range{}; };
+  static GroupRange end() { return GroupRange{}; };
 
-  bool isEqual(const Range &o) const;
+  bool isEqual(const GroupRange &o) const { return this->data == o.data; };
 
 private:
+  GroupRange() = default;
+
   struct Data {
     const std::vector<size_t> sizes;
-    Combination combination;
+    std::unique_ptr<Combination> combination;
+    bool end_of_range;
   };
   std::unique_ptr<Data> data;
 };
 
-constexpr Range RangeEnd;
+static const GroupRange RANGE_END = GroupRange::end();
 
-bool operator==(const Range &a, const Range &b) { return a.isEqual(b); };
-bool operator!=(const Range &a, const Range &b) { return !a.isEqual(b); };
+bool operator==(const GroupRange &a, const GroupRange &b) {
+  return a.isEqual(b);
+};
+bool operator!=(const GroupRange &a, const GroupRange &b) {
+  return !a.isEqual(b);
+};
 
 template <typename Predicate>
-void for_each_combination(Range &range, const Predicate &predicate) {
-  for (; range != RangeEnd; ++range) {
+void for_each_combination(GroupRange &range, const Predicate &predicate) {
+  for (; range != RANGE_END; ++range) {
     predicate(*range);
   }
 }
