@@ -48,7 +48,7 @@ void Group::replaceVariables(const VariablesSoup &new_variables) {
     throw Error{"Invalid new variables group"};
   }
   for (std::size_t k = 0; k < new_variables.size(); ++k) {
-    if (new_variables[k]->size() < group[k]->size()) {
+    if (new_variables[k]->size() != group[k]->size()) {
       throw Error{"Invalid new variables group"};
     }
   }

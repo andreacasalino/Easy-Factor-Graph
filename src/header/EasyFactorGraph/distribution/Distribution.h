@@ -7,14 +7,13 @@
 
 #pragma once
 
-#include <EasyFactorGraph/Combination.h>
-#include <EasyFactorGraph/Evaluator.h>
-#include <EasyFactorGraph/Group.h>
+#include <EasyFactorGraph/categoric/Combination.h>
+#include <EasyFactorGraph/categoric/Group.h>
+#include <EasyFactorGraph/distribution/Evaluator.h>
 #include <map>
 
 namespace EFG::distribution {
 using CombinationRawValuesMap = std::map<categoric::Combination, float>;
-using CombinationRawValuesMapPtr = std::shared_ptr<CombinationRawValuesMap>;
 
 /**
  * @brief Base object for any kind of categoric distribution.
@@ -52,6 +51,8 @@ public:
   std::vector<float> getProbabilities() const;
 
 protected:
+  virtual CombinationRawValuesMap &getCombinationsMap() = 0;
+
   Distribution() = default;
 };
 

@@ -21,8 +21,6 @@ public:
    * @return the converted image
    */
   virtual float evaluate(const float &input) const = 0;
-
-  virtual std::shared_ptr<Evaluator> copy() const = 0;
 };
 
 using EvaluatorPtr = std::shared_ptr<Evaluator>;
