@@ -37,8 +37,8 @@ public:
   virtual const CombinationRawValuesMap &getCombinationsMap() const = 0;
 
 protected:
-  virtual CombinationRawValuesMap &getCombinationsMap() = 0;
-  virtual Evaluator &getEvaluator() = 0;
+  virtual CombinationRawValuesMap &getCombinationsMap_() = 0;
+  virtual Evaluator &getEvaluator_() = 0;
 
   Distribution() = default;
 };

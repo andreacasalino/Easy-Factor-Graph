@@ -57,7 +57,7 @@ FactorExponential::FactorExponential(const Factor &factor, const float weigth)
                            make_exponential_distribution(factor)) {}
 
 void FactorExponential::setWeight(float w) {
-  static_cast<ExponentialEvaluator &>(getEvaluator()).setWeight(w);
+  static_cast<ExponentialEvaluator &>(getEvaluator_()).setWeight(w);
 }
 
 float FactorExponential::getWeight(float w) const {

@@ -24,7 +24,7 @@ endfunction()
 
 MakeTest(Test01-Range)
 
-# MakeTest(Test02-Distribution)
+MakeTest(Test02-Distribution)
 
 # MakeTest(Test03-DistributionFinder)
 

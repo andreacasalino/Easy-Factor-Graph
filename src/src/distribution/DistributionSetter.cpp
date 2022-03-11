@@ -26,7 +26,7 @@ void DistributionSetter::setImageRaw(const categoric::Combination &comb,
       throw Error{"Invalid combination"};
     }
   }
-  getCombinationsMap()[comb] = value;
+  getCombinationsMap_()[comb] = value;
 }
 
 void DistributionSetter::setAllImagesRaw(const float &value) {
@@ -35,7 +35,7 @@ void DistributionSetter::setAllImagesRaw(const float &value) {
   }
   clear();
   categoric::GroupRange range(getVariables());
-  auto &map = getCombinationsMap();
+  auto &map = getCombinationsMap_();
   for_each_combination(range,
                        [&map, &value](const categoric::Combination &comb) {
                          map[comb] = value;

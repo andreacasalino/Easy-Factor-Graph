@@ -29,6 +29,6 @@ public:
    */
   void setAllImagesRaw(const float &value);
 
-  void clear() { getCombinationsMap().clear(); };
+  void clear() { getCombinationsMap_().clear(); };
 };
 } // namespace EFG::distribution

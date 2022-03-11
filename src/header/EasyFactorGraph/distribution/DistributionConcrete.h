@@ -58,10 +58,10 @@ protected:
                        const categoric::Group &vars,
                        const CombinationRawValuesMapPtr &map);
 
-  CombinationRawValuesMap &getCombinationsMap() final {
+  CombinationRawValuesMap &getCombinationsMap_() final {
     return *combinations_map;
   }
-  Evaluator &getEvaluator() final { return *evaluator; };
+  Evaluator &getEvaluator_() final { return *evaluator; };
 
 private:
   categoric::Group variables;
