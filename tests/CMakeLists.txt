@@ -26,7 +26,7 @@ MakeTest(Test01-Range)
 
 MakeTest(Test02-Distribution)
 
-# MakeTest(Test03-DistributionFinder)
+MakeTest(Test03-DistributionFinder)
 
 # MakeTest(Test04-FactorSetting)
 

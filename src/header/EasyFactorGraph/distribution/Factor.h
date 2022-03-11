@@ -13,8 +13,20 @@
 namespace EFG::distribution {
 class BasicEvaluator;
 
+struct UseSimpleCorrelation {};
+constexpr UseSimpleCorrelation USE_SIMPLE_CORRELATION_TAG =
+    UseSimpleCorrelation{};
+
+struct UseSimpleAntiCorrelation {};
+constexpr UseSimpleAntiCorrelation USE_SIMPLE_ANTI_CORRELATION_TAG =
+    UseSimpleAntiCorrelation{};
+
 class Factor : public DistributionConcrete, public DistributionSetter {
 public:
   Factor(const categoric::Group &vars);
+
+  Factor(const categoric::Group &vars, const UseSimpleCorrelation &);
+
+  Factor(const categoric::Group &vars, const UseSimpleAntiCorrelation &);
 };
 } // namespace EFG::distribution
