@@ -1,50 +1,54 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #ifndef EFG_STRUCTURE_BELIEF_AWARE_H
-// #define EFG_STRUCTURE_BELIEF_AWARE_H
+#pragma once
 
-// #include <structure/Node.h>
-// #include <Component.h>
-// #include <memory>
+#include <EasyFactorGraph/structure/Node.h>
 
-// namespace EFG::strct {
-//     enum PropagationKind { Sum, MAP };
+namespace EFG::strct {
+enum PropagationKind { Sum, MAP };
 
-//     struct PropagationResult {
-//         PropagationKind kindDone;
-//         //std::size_t iterationsRequired;
-//         bool wasTerminated;
-//     };
+struct PropagationContext {
+  std::size_t max_iterations_loopy_propagation;
+  std::size_t threads_to_use;
+};
 
-//     class BeliefAware : virtual public Component {
-//     public:
-//         void setMaxIterationsLoopyPropagation(std::size_t iterations) {
-//         this->maxIterationsLoopyPropagtion = iterations; }; inline
-//         std::size_t getMaxIterationsLoopyPropagation() const { return
-//         this->maxIterationsLoopyPropagtion; }
+struct PropagationResult {
+  PropagationKind propagation_kind_done;
+  // std::size_t iterationsRequired;
+  bool was_completed;
+};
 
-//         inline PropagationResult getLastPropagationResult() const {return
-//         *this->lastPropagation.get(); };
+class BeliefAware {
+public:
+  virtual ~BeliefAware() = default;
 
-//     protected:
-//         virtual void propagateBelief(const PropagationKind& kind) = 0;
+  const PropagationContext &getContext() const { return context; }
+  void setContext(const PropagationContext &cntxt) { context = cntxt; };
 
-//         /**
-//          * @brief maximum number of iterations considered when doing loopy
-//          propagation
-//          */
-//         std::size_t maxIterationsLoopyPropagtion = 100;
-//         /**
-//          * @brief results about the last belief propagation done. It is a
-//          nullptr until the first propagation is triggered
-//          */
-//         std::unique_ptr<PropagationResult> lastPropagation;
-//     };
-// }
+  bool hasPropagationResult() const { return nullptr != lastPropagation; }
+  const PropagationResult &getLastPropagationResult() const {
+    return *this->lastPropagation;
+  };
 
-// #endif
+protected:
+  BeliefAware() = default;
+
+  void lazyBeliefPropagation(const PropagationKind &kind);
+  void resetBelief() { lastPropagation.reset(); }
+
+  virtual PropagationResult propagateBelief(const PropagationKind &kind) = 0;
+
+private:
+  PropagationContext context;
+  /**
+   * @brief results about the last belief propagation done. It is a
+   nullptr until the first propagation is triggered
+   */
+  std::unique_ptr<PropagationResult> lastPropagation;
+};
+} // namespace EFG::strct

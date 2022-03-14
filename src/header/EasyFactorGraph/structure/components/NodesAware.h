@@ -1,33 +1,67 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #ifndef EFG_STRUCTURE_NODES_AWARE_H
-// #define EFG_STRUCTURE_NODES_AWARE_H
+#pragma once
 
-// #include <structure/Node.h>
-// #include <Component.h>
+#include <EasyFactorGraph/distribution/Distribution.h>
+#include <EasyFactorGraph/structure/Node.h>
 
-// namespace EFG::strct {
-//     class NodesAware : virtual public Component {
-//     public:
-//         /**
-//          * @return all the variables (hidden or observed) in the model
-//          */
-//         std::set<categoric::VariablePtr> getVariables() const;
+#include <unordered_map>
 
-//         categoric::VariablePtr findVariable(const std::string& name) const;
+namespace std {
+template <> class hash<EFG::distribution::DistributionCnstPtr> {
+public:
+  std::size_t
+  operator()(const EFG::distribution::DistributionCnstPtr &subject) const {
+    return std::hash<const EFG::distribution::Distribution *>{}(subject.get());
+  };
+};
+} // namespace std
 
-//     protected:
-//         /**
-//          * @brief The set of variables part of the model, with the
-//          connectivity information
-//          */
-//         std::map<categoric::VariablePtr, Node> nodes;
-//     };
-// }
+namespace EFG::strct {
+class NodesAware {
+public:
+  virtual ~NodesAware() = default;
 
-// #endif
+  const std::unordered_set<EFG::distribution::DistributionCnstPtr> &
+  getAllFactors() const {
+    return this->factorsAll;
+  };
+
+  /**
+   * @return all the variables (hidden or observed) in the model
+   */
+  categoric::VariablesSet getVariables() const;
+
+  categoric::VariablePtr findVariable(const std::string &name) const;
+
+protected:
+  NodesAware() = default;
+
+  void
+  addDistribution(const EFG::distribution::DistributionCnstPtr &distribution);
+
+  Node *findNode(const std::string &name) const;
+
+  const std::unordered_map<categoric::VariablePtr, Node> &getNodes() const {
+    return nodes;
+  };
+
+private:
+  /**
+   * @brief a register storing ALL the factors in the model, no matter
+   the kind (exponential, const, non const)
+   */
+  std::unordered_set<EFG::distribution::DistributionCnstPtr> factorsAll;
+
+  /**
+   * @brief The set of variables part of the model, with the
+   connectivity information
+   */
+  std::unordered_map<categoric::VariablePtr, Node> nodes;
+};
+} // namespace EFG::strct

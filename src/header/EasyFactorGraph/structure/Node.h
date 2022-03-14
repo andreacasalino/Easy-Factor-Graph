@@ -11,19 +11,18 @@
 #include <list>
 
 namespace EFG::strct {
-// struct Connection {
-//   distribution::DistributionPtr factor;
-//   // nullptr when the message is not already available
-//   std::unique_ptr<distribution::Distribution> message2ThisNode;
-// };
+struct Connection {
+  distribution::DistributionCnstPtr factor;
 
-// struct Node {
-//   explicit Node(categoric::VariablePtr var);
+  // nullptr when the message is not already available
+  std::unique_ptr<distribution::DistributionCnstPtr> message2ThisNode;
+};
 
-//   categoric::VariablePtr variable;
-//   std::list<distribution::DistributionPtr> unaryFactors;
-//   std::map<Node *, Connection> activeConnections;
-//   // here message to this is the marginalized factor
-//   std::map<Node *, Connection> disabledConnections;
-// };
+struct Node {
+  categoric::VariablePtr variable;
+  std::list<distribution::DistributionCnstPtr> unaryFactors;
+  std::map<Node *, Connection> activeConnections;
+  // here message to this is the marginalized factor
+  std::map<Node *, Connection> disabledConnections;
+};
 } // namespace EFG::strct

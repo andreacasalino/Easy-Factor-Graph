@@ -1,45 +1,53 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #ifndef EFG_STRUCTURE_EVIDENCE_AWARE_H
-// #define EFG_STRUCTURE_EVIDENCE_AWARE_H
+#pragma once
 
-// #include <structure/Node.h>
-// #include <Component.h>
+#include <EasyFactorGraph/structure/Node.h>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
-// namespace EFG::strct {
-//     struct HiddenClusters {
-//         explicit HiddenClusters(const std::set<Node*>& toSplit);
-//         HiddenClusters() = default;
-//         void add(const std::list<std::set<Node*>>& toAdd);
-//         std::list<std::set<Node*>>::iterator find(Node& node);
+namespace EFG::strct {
+using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t>;
 
-//         std::list<std::set<Node*>> clusters;
-//     };
-//     void copyCluster(std::set<Node*>& recipient, const std::set<Node*>&
-//     toAdd);
+class EvidencesAware {
+public:
+  virtual ~EvidencesAware() = default;
 
-//     class EvidenceAware : virtual public Component {
-//     public:
-//         std::set<categoric::VariablePtr> getHiddenVariables() const;
-//         std::set<categoric::VariablePtr> getObservedVariables() const;
-//         inline const std::map<categoric::VariablePtr, std::size_t>&
-//         getEvidences() const { return this->evidences; };
+  std::unordered_set<categoric::VariablePtr> getHiddenVariables() const;
+  std::unordered_set<categoric::VariablePtr> getObservedVariables() const;
+  const Evidences &getEvidences() const { return context.evidences; };
 
-//     protected:
-//         /**
-//          * @brief Clusters of hidden node. Each cluster is a group of
-//          connected hidden nodes.
-//          * Nodes in different clusters are not currently connected (due to
-//          the model structure or the kind of evidences currently set)
-//          */
-//         HiddenClusters hidden;
-//         std::map<categoric::VariablePtr, std::size_t> evidences;
-//     };
-// }
+protected:
+  EvidencesAware() = default;
 
-// #endif
+  /**
+   * @brief Clusters of hidden node. Each cluster is a group of
+   connected hidden nodes.
+   * Nodes in different clusters are not currently connected (due to
+   the model structure or the kind of evidences currently set)
+   */
+  using HiddenCluster = std::set<Node *>;
+  struct EvidenceContext {
+    std::vector<HiddenCluster> hidden_clusters;
+    Evidences evidences;
+  };
+
+  const EvidenceContext &getEvidenceContext() const { return context; };
+
+  void setEvidence(const categoric::VariablePtr &var, const std::size_t value,
+                   const bool evidence_can_be_created = true);
+
+  void resetEvidences();
+
+  void addHidden(Node *node);
+
+private:
+  EvidenceContext context;
+};
+} // namespace EFG::strct
