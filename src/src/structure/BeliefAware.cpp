@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <EasyFactorGraph/structure/components/BeliefAware.h>
+#include <EasyFactorGraph/structure/BeliefAware.h>
 
 namespace EFG::strct {
 void BeliefAware::lazyBeliefPropagation(const PropagationKind &kind) {

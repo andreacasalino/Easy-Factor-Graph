@@ -34,6 +34,9 @@ public:
          const Distributions &...others)
       : Factor(pack_factors(first, second, others...)) {}
 
+protected:
+  Factor(const categoric::Group &vars, const CombinationRawValuesMapPtr &map);
+
 private:
   Factor(const std::vector<const Distribution *> &factors);
 

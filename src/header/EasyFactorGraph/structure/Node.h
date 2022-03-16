@@ -15,7 +15,7 @@ struct Connection {
   distribution::DistributionCnstPtr factor;
 
   // nullptr when the message is not already available
-  std::unique_ptr<distribution::DistributionCnstPtr> message2ThisNode;
+  std::unique_ptr<const distribution::Distribution> message2ThisNode;
 };
 
 struct Node {

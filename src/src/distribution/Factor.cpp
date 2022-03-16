@@ -184,4 +184,8 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
         }
       });
 }
+
+Factor::Factor(const categoric::Group &vars,
+               const CombinationRawValuesMapPtr &map)
+    : DistributionConcrete(std::make_shared<BasicEvaluator>(), vars, map) {}
 } // namespace EFG::distribution
