@@ -22,15 +22,20 @@ NodeInfo find_node(GraphState &state, Node &to_find) {
   return state.evidences.find(to_find.variable);
 }
 
-std::map<Node *, Connection>::iterator move_to_disabled(Node &subject,
-                                                        Node &to_disable) {
-  auto active_it = subject.activeConnections.find(&to_disable);
-  auto disable_it =
-      subject.disabledConnections
-          .emplace(&to_disable, Connection{active_it->second.factor, nullptr})
-          .first;
-  subject.activeConnections.erase(active_it);
-  return disable_it;
+void disable_connection(Node &nodeA, Node &nodeB) {
+  auto distribution = nodeA.activeConnections.find(&nodeB)->second.factor;
+  nodeA.activeConnections.erase(&nodeB);
+  nodeB.activeConnections.erase(&nodeA);
+  nodeA.disabledConnections[&nodeB] = Connection{distribution, nullptr};
+  nodeA.disabledConnections[&nodeA] = Connection{distribution, nullptr};
+}
+
+void enable_connection(Node &nodeA, Node &nodeB) {
+  auto distribution = nodeA.disabledConnections.find(&nodeB)->second.factor;
+  nodeA.disabledConnections.erase(&nodeB);
+  nodeB.disabledConnections.erase(&nodeA);
+  nodeA.activeConnections[&nodeB] = Connection{distribution, nullptr};
+  nodeA.activeConnections[&nodeA] = Connection{distribution, nullptr};
 }
 
 std::unique_ptr<const distribution::Distribution>

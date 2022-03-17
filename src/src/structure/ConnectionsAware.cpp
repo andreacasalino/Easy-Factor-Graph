@@ -50,17 +50,17 @@ void ConnectionsAware::addUnaryDistribution(
 
 namespace {
 void connect(const EFG::distribution::DistributionCnstPtr &binary_factor,
-             Node *A, Node *B) {
-  if (A->activeConnections.find(B) != A->activeConnections.end()) {
-    throw Error{A->variable->name(), " and ", B->variable->name(),
+             Node &A, Node &B) {
+  if (A.activeConnections.find(&B) != A.activeConnections.end()) {
+    throw Error{A.variable->name(), " and ", B.variable->name(),
                 " are already connected with a factor"};
   }
-  if (A->disabledConnections.find(B) != A->disabledConnections.end()) {
-    throw Error{A->variable->name(), " and ", B->variable->name(),
+  if (A.disabledConnections.find(&B) != A.disabledConnections.end()) {
+    throw Error{A.variable->name(), " and ", B.variable->name(),
                 " are already connected with a factor"};
   }
-  A->activeConnections.emplace(B, Connection{binary_factor, nullptr});
-  B->activeConnections.emplace(A, Connection{binary_factor, nullptr});
+  A.activeConnections.emplace(&B, Connection{binary_factor, nullptr});
+  B.activeConnections.emplace(&A, Connection{binary_factor, nullptr});
 }
 } // namespace
 
@@ -70,7 +70,7 @@ void ConnectionsAware::addBinaryDistribution(
   auto nodeA = findOrMakeNode(vars.front());
   auto nodeB = findOrMakeNode(vars.back());
 
-  connect(binary_factor, nodeA, nodeB);
+  connect(binary_factor, *nodeA, *nodeB);
   factorsAll.emplace(binary_factor);
 
   auto nodeA_info = find_node(*state, *nodeA);
@@ -82,13 +82,14 @@ void ConnectionsAware::addBinaryDistribution(
       std::get_if<std::vector<HiddenCluster>::iterator>(&nodeB_info);
   if ((nullptr != nodeA_as_hidden) && (nullptr != nodeB_as_hidden)) {
     // merge clusters
-    (*nodeA_as_hidden)->emplace(nodeB);
+    (*nodeA_as_hidden)
+        ->insert((*nodeB_as_hidden)->begin(), (*nodeB_as_hidden)->end());
     state->hidden_clusters.erase(*nodeB_as_hidden);
     return;
   }
 
-  auto disabledA_it = move_to_disabled(*nodeA, *nodeB);
-  auto disabledB_it = move_to_disabled(*nodeB, *nodeA);
+  disable_connection(*nodeA, *nodeB);
+
   auto *nodeA_as_evidence = std::get_if<Evidences::iterator>(&nodeA_info);
   auto *nodeB_as_evidence = std::get_if<Evidences::iterator>(&nodeB_info);
   if ((nullptr != nodeA_as_evidence) && (nullptr != nodeB_as_evidence)) {
@@ -97,13 +98,13 @@ void ConnectionsAware::addBinaryDistribution(
 
   if (nullptr == nodeA_as_hidden) {
     // nodeA is observation, nodeB is hidden
-    disabledB_it->second.message2ThisNode = make_evidence_message(
+    nodeB->disabledConnections[&nodeA].factor = make_evidence_message(
         binary_factor, nodeA->variable, (*nodeA_as_evidence)->second);
     return;
   }
 
   // nodeB is observation, nodeA is hidden
-  disabledA_it->second.message2ThisNode = make_evidence_message(
+  nodeA->disabledConnections[&nodeA].factor = make_evidence_message(
       binary_factor, nodeB->variable, (*nodeB_as_evidence)->second);
 }
 

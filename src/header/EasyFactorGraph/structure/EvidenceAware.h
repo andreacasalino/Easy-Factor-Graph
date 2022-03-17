@@ -10,16 +10,6 @@
 #include <EasyFactorGraph/structure/BeliefAware.h>
 #include <EasyFactorGraph/structure/GraphState.h>
 
-namespace std {
-template <> class hash<EFG::distribution::DistributionCnstPtr> {
-public:
-  std::size_t
-  operator()(const EFG::distribution::DistributionCnstPtr &subject) const {
-    return std::hash<const EFG::distribution::Distribution *>{}(subject.get());
-  };
-};
-} // namespace std
-
 namespace EFG::strct {
 class EvidenceAware : virtual public BeliefAware,
                       virtual private GraphStateAware {
@@ -30,17 +20,18 @@ public:
   std::unordered_set<categoric::VariablePtr> getObservedVariables() const;
 
   const Evidences &getEvidences() const { return state->evidences; };
-  const std::vector<HiddenCluster> &getHiddenClusters() const {
-    return state->hidden_clusters;
-  };
 
 protected:
   EvidenceAware() = default;
 
-  void setEvidence(Node *node, const std::size_t value,
-                   const bool evidence_can_be_created = true);
+  const std::vector<HiddenCluster> &getHiddenClusters() const {
+    return state->hidden_clusters;
+  };
 
-  void resetEvidence(Node *node);
+  void setEvidence(Node &node, const std::size_t value,
+                   const bool observation_should_prexist = true);
+
+  void resetEvidence(Node &node);
 
   void resetEvidences();
 };

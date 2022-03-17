@@ -9,6 +9,7 @@
 
 #include <EasyFactorGraph/distribution/Distribution.h>
 #include <list>
+#include <map>
 
 namespace EFG::strct {
 struct Connection {
@@ -18,11 +19,14 @@ struct Connection {
   std::unique_ptr<const distribution::Distribution> message2ThisNode;
 };
 
+struct Node;
+using Connections = std::map<Node *, Connection>;
+
 struct Node {
   categoric::VariablePtr variable;
   std::list<distribution::DistributionCnstPtr> unaryFactors;
-  std::map<Node *, Connection> activeConnections;
+  Connections activeConnections;
   // here message to this is the marginalized factor
-  std::map<Node *, Connection> disabledConnections;
+  Connections disabledConnections;
 };
 } // namespace EFG::strct
