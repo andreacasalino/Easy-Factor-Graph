@@ -22,7 +22,8 @@ public:
 } // namespace std
 
 namespace EFG::strct {
-class ConnectionsAware : virtual public BeliefAware {
+class ConnectionsAware : virtual public BeliefAware,
+                         virtual private GraphStateAware {
 public:
   virtual ~ConnectionsAware() = default;
 
@@ -39,7 +40,7 @@ public:
   categoric::VariablePtr findVariable(const std::string &name) const;
 
 protected:
-  ConnectionsAware(const GraphStatePtr &state) : state(state){};
+  ConnectionsAware() = default;
 
   void
   addDistribution(const EFG::distribution::DistributionCnstPtr &distribution);
@@ -60,7 +61,5 @@ private:
    the kind (exponential, const, non const)
    */
   std::unordered_set<EFG::distribution::DistributionCnstPtr> factorsAll;
-
-  GraphStatePtr state;
 };
 } // namespace EFG::strct

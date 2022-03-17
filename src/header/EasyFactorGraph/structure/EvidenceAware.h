@@ -21,7 +21,8 @@ public:
 } // namespace std
 
 namespace EFG::strct {
-class EvidenceAware : virtual public BeliefAware {
+class EvidenceAware : virtual public BeliefAware,
+                      virtual private GraphStateAware {
 public:
   virtual ~EvidenceAware() = default;
 
@@ -34,7 +35,7 @@ public:
   };
 
 protected:
-  EvidenceAware(const GraphStatePtr &state) : state(state){};
+  EvidenceAware() = default;
 
   void setEvidence(Node *node, const std::size_t value,
                    const bool evidence_can_be_created = true);
@@ -42,8 +43,5 @@ protected:
   void resetEvidence(Node *node);
 
   void resetEvidences();
-
-private:
-  GraphStatePtr state;
 };
 } // namespace EFG::strct

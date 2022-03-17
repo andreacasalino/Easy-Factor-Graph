@@ -21,6 +21,9 @@ NodeInfo find_node(GraphState &state, Node &to_find);
 std::map<Node *, Connection>::iterator move_to_disabled(Node &subject,
                                                         Node &to_disable);
 
+std::map<Node *, Connection>::iterator move_to_enabled(Node &subject,
+                                                       Node &to_enable);
+
 std::unique_ptr<const distribution::Distribution>
 make_evidence_message(const distribution::DistributionCnstPtr &binary_factor,
                       const categoric::VariablePtr &evidence_var,

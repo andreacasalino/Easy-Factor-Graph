@@ -41,5 +41,13 @@ struct GraphState {
   Nodes nodes;
 };
 
-using GraphStatePtr = std::shared_ptr<GraphState>;
+class GraphStateAware {
+public:
+  virtual ~GraphStateAware() = default;
+
+protected:
+  GraphStateAware() { state = std::make_shared<GraphState>(); };
+
+  std::shared_ptr<GraphState> state;
+};
 } // namespace EFG::strct
