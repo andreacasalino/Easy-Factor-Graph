@@ -26,4 +26,6 @@ std::unique_ptr<const distribution::Distribution>
 make_evidence_message(const distribution::DistributionCnstPtr &binary_factor,
                       const categoric::VariablePtr &evidence_var,
                       const std::size_t evidence);
+
+std::vector<HiddenCluster> split_cluster(const HiddenCluster &initial_cluster);
 } // namespace EFG::strct

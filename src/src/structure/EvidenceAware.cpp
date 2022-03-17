@@ -31,8 +31,10 @@ EvidenceAware::getObservedVariables() const {
 
 namespace {
 std::vector<HiddenCluster> remove_node(Node &node,
-                                       const HiddenCluster &cluster);
-}
+                                       const HiddenCluster &cluster){
+
+};
+} // namespace
 
 void EvidenceAware::setEvidence(Node &node, const std::size_t value,
                                 const bool observation_should_prexist) {
@@ -63,6 +65,7 @@ void EvidenceAware::setEvidence(Node &node, const std::size_t value,
       disable_connection(node, *connected_node);
     }
   }
+  resetBelief();
   for (auto &[connected_node, connection] : node.disabledConnections) {
     connected_node->disabledConnections[&node].factor =
         make_evidence_message(connection.factor, node.variable, value);
@@ -78,6 +81,7 @@ void EvidenceAware::resetEvidence(Node &node) {
   if (evidence_it == state->evidences.end()) {
     throw Error{node.variable->name(), " is not an evidence"};
   }
+  resetBelief();
   state->evidences.erase(evidence_it);
   for (const auto &[connected_node, connection] : node.disabledConnections) {
     enable_connection(node, *connected_node);
@@ -86,6 +90,10 @@ void EvidenceAware::resetEvidence(Node &node) {
 }
 
 void EvidenceAware::resetEvidences() {
+  if (state->evidences.empty()) {
+    return;
+  }
+  resetBelief();
   std::vector<Node *> nodes;
   nodes.reserve(state->evidences.size());
   for (const auto &[var, val] : state->evidences) {

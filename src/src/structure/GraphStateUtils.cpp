@@ -5,9 +5,10 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include "GraphStateUtils.h"
 #include <EasyFactorGraph/distribution/Factor.h>
 
-#include "GraphStateUtils.h"
+#include <algorithm>
 
 namespace EFG::strct {
 NodeInfo find_node(GraphState &state, Node &to_find) {
@@ -71,5 +72,65 @@ make_evidence_message(const distribution::DistributionCnstPtr &binary_factor,
   };
 
   return std::make_unique<EvidenceMessage>(hidden_var, map);
+}
+
+namespace {
+std::vector<HiddenCluster>::iterator
+find_connection(std::vector<HiddenCluster> &clusters, Node &to_explore) {
+  return std::find_if(clusters.begin(), clusters.end(),
+                      [&to_explore](const HiddenCluster &cluster) {
+                        return cluster.find(&to_explore) != cluster.end();
+                      });
+}
+
+struct ConnectionsResult {
+  std::vector<Node *> not_connected;
+  std::vector<std::vector<HiddenCluster>::iterator> existing_clusters;
+};
+ConnectionsResult find_connections(std::vector<HiddenCluster> &clusters,
+                                   Node &to_explore) {
+  ConnectionsResult result;
+  for (const auto &[node, connection] : to_explore.activeConnections) {
+    auto existing_cluster = find_connection(clusters, *node);
+    if (existing_cluster == clusters.end()) {
+      result.not_connected.push_back(node);
+    } else {
+      result.existing_clusters.push_back(existing_cluster);
+    }
+  }
+  return result;
+}
+} // namespace
+
+std::vector<HiddenCluster> split_cluster(const HiddenCluster &initial_cluster) {
+  if (initial_cluster.empty()) {
+    return {};
+  }
+  std::vector<HiddenCluster> result;
+  auto open = initial_cluster;
+  while (!open.empty()) {
+    auto *to_visit = *open.begin();
+    auto connections = find_connections(result, *to_visit);
+    open.erase(to_visit);
+    for (auto *node : connections.not_connected) {
+      open.erase(node);
+    }
+    HiddenCluster *recipient = nullptr;
+    if (connections.existing_clusters.empty()) {
+      recipient = &result.emplace_back();
+      recipient->emplace(to_visit);
+    } else {
+      recipient = &(*connections.existing_clusters.front());
+      recipient->emplace(to_visit);
+      for (std::size_t k = 1; k < connections.existing_clusters.size(); ++k) {
+        recipient->insert(connections.existing_clusters[k]->begin(),
+                          connections.existing_clusters[k]->end());
+        result.erase(connections.existing_clusters[k]);
+      }
+    }
+    recipient->insert(connections.not_connected.begin(),
+                      connections.not_connected.end());
+  }
+  return result;
 }
 } // namespace EFG::strct
