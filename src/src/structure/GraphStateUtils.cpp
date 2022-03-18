@@ -118,16 +118,15 @@ std::vector<HiddenCluster> split_cluster(const HiddenCluster &initial_cluster) {
     HiddenCluster *recipient = nullptr;
     if (connections.existing_clusters.empty()) {
       recipient = &result.emplace_back();
-      recipient->emplace(to_visit);
     } else {
       recipient = &(*connections.existing_clusters.front());
-      recipient->emplace(to_visit);
       for (std::size_t k = 1; k < connections.existing_clusters.size(); ++k) {
         recipient->insert(connections.existing_clusters[k]->begin(),
                           connections.existing_clusters[k]->end());
         result.erase(connections.existing_clusters[k]);
       }
     }
+    recipient->emplace(to_visit);
     recipient->insert(connections.not_connected.begin(),
                       connections.not_connected.end());
   }

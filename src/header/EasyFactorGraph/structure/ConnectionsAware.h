@@ -45,10 +45,10 @@ protected:
   void
   addDistribution(const EFG::distribution::DistributionCnstPtr &distribution);
 
-  const Nodes &getEvidences() const { return state->nodes; };
+  const Nodes &getNodes() const { return state->nodes; };
 
 private:
-  Node *findOrMakeNode(const categoric::VariablePtr &var);
+  Node &findOrMakeNode(const categoric::VariablePtr &var);
 
   void addUnaryDistribution(
       const EFG::distribution::DistributionCnstPtr &unary_factor);

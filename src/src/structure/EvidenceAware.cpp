@@ -31,8 +31,10 @@ EvidenceAware::getObservedVariables() const {
 
 namespace {
 std::vector<HiddenCluster> remove_node(Node &node,
-                                       const HiddenCluster &cluster){
-
+                                       const HiddenCluster &cluster) {
+  HiddenCluster cluster_modified = cluster;
+  cluster_modified.erase(&node);
+  return split_cluster(cluster_modified);
 };
 } // namespace
 
@@ -53,14 +55,12 @@ void EvidenceAware::setEvidence(Node &node, const std::size_t value,
       state->hidden_clusters.erase(info_as_hidden);
     } else {
       auto updated_clusters = remove_node(node, *info_as_hidden);
-      auto updated_clusters_it = updated_clusters.begin();
-      *info_as_hidden = std::move(*updated_clusters_it);
-      ++updated_clusters_it;
-      state->hidden_clusters.insert(state->hidden_clusters.end(),
-                                    updated_clusters_it,
-                                    updated_clusters.end());
+      *info_as_hidden = std::move(updated_clusters.front());
+      for (std::size_t k = 1; k < updated_clusters.size(); ++k) {
+        state->hidden_clusters.emplace_back(std::move(updated_clusters[k]));
+      }
     }
-    state->evidences.emplace(node.variable->name(), value).first;
+    state->evidences.emplace(node.variable->name(), value);
     for (const auto &[connected_node, connection] : node.activeConnections) {
       disable_connection(node, *connected_node);
     }
@@ -72,8 +72,12 @@ void EvidenceAware::setEvidence(Node &node, const std::size_t value,
   }
 }
 
-namespace {
-void add_node(Node &node, std::vector<HiddenCluster> &clusters);
+HiddenCluster EvidenceAware::gather_hidden() const {
+  HiddenCluster result;
+  for (const auto &cluster : state->hidden_clusters) {
+    result.insert(cluster.begin(), cluster.end());
+  }
+  return result;
 }
 
 void EvidenceAware::resetEvidence(Node &node) {
@@ -86,7 +90,9 @@ void EvidenceAware::resetEvidence(Node &node) {
   for (const auto &[connected_node, connection] : node.disabledConnections) {
     enable_connection(node, *connected_node);
   }
-  add_node(node, state->hidden_clusters);
+  auto hidden_nodes = gather_hidden();
+  hidden_nodes.emplace(&node);
+  state->hidden_clusters = split_cluster(hidden_nodes);
 }
 
 void EvidenceAware::resetEvidences() {
@@ -99,8 +105,8 @@ void EvidenceAware::resetEvidences() {
   for (const auto &[var, val] : state->evidences) {
     nodes.push_back(&state->nodes[var]);
   }
-  for (auto *node : nodes) {
-    resetEvidence(*node);
-  }
+  auto hidden_nodes = gather_hidden();
+  hidden_nodes.insert(nodes.begin(), nodes.end());
+  state->hidden_clusters = split_cluster(hidden_nodes);
 }
 } // namespace EFG::strct

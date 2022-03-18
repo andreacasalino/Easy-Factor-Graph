@@ -28,23 +28,24 @@ ConnectionsAware::findVariable(const std::string &name) const {
   return nodes_it->first;
 }
 
-Node *ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
+Node &ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
   auto nodes_it = state->nodes.find(var);
   if (nodes_it == state->nodes.end()) {
     nodes_it = state->nodes.emplace(var, Node{}).first;
+    nodes_it->second.variable = var;
     state->hidden_clusters.emplace_back().emplace(&nodes_it->second);
   } else if (nodes_it->first.get() != var.get()) {
     throw Error{"Trying to insert variable named: ", var->name(),
-                " multiple times"};
+                " multiple times with different VariablePtr"};
   }
-  return &nodes_it->second;
+  return nodes_it->second;
 }
 
 void ConnectionsAware::addUnaryDistribution(
     const EFG::distribution::DistributionCnstPtr &unary_factor) {
   const auto &vars = unary_factor->getVariables().getVariables();
   auto nodeA = findOrMakeNode(vars.front());
-  nodeA->unaryFactors.push_back(unary_factor);
+  nodeA.unaryFactors.push_back(unary_factor);
   factorsAll.emplace(unary_factor);
 }
 
@@ -70,25 +71,27 @@ void ConnectionsAware::addBinaryDistribution(
   auto nodeA = findOrMakeNode(vars.front());
   auto nodeB = findOrMakeNode(vars.back());
 
-  connect(binary_factor, *nodeA, *nodeB);
+  connect(binary_factor, nodeA, nodeB);
   factorsAll.emplace(binary_factor);
 
-  auto nodeA_info = find_node(*state, *nodeA);
-  auto nodeB_info = find_node(*state, *nodeB);
+  auto nodeA_info = find_node(*state, nodeA);
+  auto nodeB_info = find_node(*state, nodeB);
 
   auto *nodeA_as_hidden =
       std::get_if<std::vector<HiddenCluster>::iterator>(&nodeA_info);
   auto *nodeB_as_hidden =
       std::get_if<std::vector<HiddenCluster>::iterator>(&nodeB_info);
   if ((nullptr != nodeA_as_hidden) && (nullptr != nodeB_as_hidden)) {
-    // merge clusters
-    (*nodeA_as_hidden)
-        ->insert((*nodeB_as_hidden)->begin(), (*nodeB_as_hidden)->end());
-    state->hidden_clusters.erase(*nodeB_as_hidden);
+    if (*nodeA_as_hidden != *nodeB_as_hidden) {
+      // merge clusters
+      (*nodeA_as_hidden)
+          ->insert((*nodeB_as_hidden)->begin(), (*nodeB_as_hidden)->end());
+      state->hidden_clusters.erase(*nodeB_as_hidden);
+    }
     return;
   }
 
-  disable_connection(*nodeA, *nodeB);
+  disable_connection(nodeA, nodeB);
 
   auto *nodeA_as_evidence = std::get_if<Evidences::iterator>(&nodeA_info);
   auto *nodeB_as_evidence = std::get_if<Evidences::iterator>(&nodeB_info);
@@ -98,14 +101,14 @@ void ConnectionsAware::addBinaryDistribution(
 
   if (nullptr == nodeA_as_hidden) {
     // nodeA is observation, nodeB is hidden
-    nodeB->disabledConnections[&nodeA].factor = make_evidence_message(
-        binary_factor, nodeA->variable, (*nodeA_as_evidence)->second);
+    nodeB.disabledConnections[&nodeA].factor = make_evidence_message(
+        binary_factor, nodeA.variable, (*nodeA_as_evidence)->second);
     return;
   }
 
   // nodeB is observation, nodeA is hidden
-  nodeA->disabledConnections[&nodeA].factor = make_evidence_message(
-      binary_factor, nodeB->variable, (*nodeB_as_evidence)->second);
+  nodeA.disabledConnections[&nodeA].factor = make_evidence_message(
+      binary_factor, nodeB.variable, (*nodeB_as_evidence)->second);
 }
 
 void ConnectionsAware::addDistribution(
@@ -113,14 +116,13 @@ void ConnectionsAware::addDistribution(
   if (factorsAll.find(distribution) != factorsAll.end()) {
     throw Error{"Already inserted factor"};
   }
+  resetBelief();
   switch (distribution->getVariables().getVariables().size()) {
   case 1:
     addUnaryDistribution(distribution);
-    resetBelief();
     return;
   case 2:
     addBinaryDistribution(distribution);
-    resetBelief();
     return;
   default:
     break;

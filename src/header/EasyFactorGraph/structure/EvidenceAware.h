@@ -34,5 +34,8 @@ protected:
   void resetEvidence(Node &node);
 
   void resetEvidences();
+
+private:
+  HiddenCluster gather_hidden() const;
 };
 } // namespace EFG::strct
