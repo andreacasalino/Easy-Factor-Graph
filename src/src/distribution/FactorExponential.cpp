@@ -60,7 +60,7 @@ void FactorExponential::setWeight(float w) {
   static_cast<ExponentialEvaluator &>(getEvaluator_()).setWeight(w);
 }
 
-float FactorExponential::getWeight(float w) const {
+float FactorExponential::getWeight() const {
   return static_cast<const ExponentialEvaluator &>(getEvaluator()).getWeight(w);
 }
 } // namespace EFG::distribution

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/distribution/Distribution.h>
+#include <EasyFactorGraph/structure/ConnectionsAware.h>
 
 #include <unordered_set>
 
@@ -17,6 +18,23 @@ public:
   virtual ~DistributionsAware() = default;
 
 protected:
+  DistributionsAware() = default;
+
   std::unordered_set<distribution::DistributionCnstPtr> distributions;
+};
+
+class DistributionsReader : virtual private DistributionsAware {
+public:
+  const std::unordered_set<distribution::DistributionCnstPtr> &
+  getDistributions() const {
+    return distributions;
+  }
+};
+
+class DistributionsInserter : virtual public ConnectionsAware,
+                              virtual private DistributionsAware {
+public:
+  void
+  insertDistribution(const distribution::DistributionCnstPtr &distribution);
 };
 } // namespace EFG::strct

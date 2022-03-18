@@ -26,6 +26,6 @@ public:
    * images
    */
   void setWeight(float w);
-  float getWeight(float w) const;
+  float getWeight() const;
 };
 } // namespace EFG::distribution

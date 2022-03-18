@@ -5,16 +5,12 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#pragma once
-
 #include <EasyFactorGraph/structure/DistributionsAware.h>
 
 namespace EFG::strct {
-class DistributionsReader : virtual private DistributionsAware {
-public:
-  const std::unordered_set<distribution::DistributionCnstPtr> &
-  getDistributions() const {
-    return distributions;
-  }
-};
+void DistributionsInserter::insertDistribution(
+    const distribution::DistributionCnstPtr &distribution) {
+  addDistribution(distribution);
+  distributions.emplace(distribution);
+}
 } // namespace EFG::strct
