@@ -39,6 +39,26 @@ void enable_connection(Node &nodeA, Node &nodeB) {
   nodeA.activeConnections[&nodeA] = Connection{distribution, nullptr};
 }
 
+void update_dependencies(Node &node) {
+  std::set<const distribution::DistributionCnstPtr *> collection;
+  for (const auto &unary : node.unaryFactors) {
+    collection.emplace(unary.get());
+  }
+  for (auto &[connected_node, connection] : node.activeConnections) {
+    collection.emplace(connection.message2ThisNode.get());
+  }
+  for (auto &[connected_node, connection] : node.disabledConnections) {
+    collection.emplace(connection.message2ThisNode.get());
+  }
+  for (auto &[connected_node, connection] : node.activeConnections) {
+    collection.erase(connection.message2ThisNode.get());
+    connection.dependencies =
+        std::vector<const distribution::DistributionCnstPtr *>{
+            collection.begin(), collection.end()};
+    collection.emplace(connection.message2ThisNode.get());
+  }
+}
+
 std::unique_ptr<const distribution::Distribution>
 make_evidence_message(const distribution::DistributionCnstPtr &binary_factor,
                       const categoric::VariablePtr &evidence_var,

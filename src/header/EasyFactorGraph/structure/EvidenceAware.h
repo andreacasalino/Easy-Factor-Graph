@@ -31,9 +31,9 @@ protected:
   void setEvidence(Node &node, const std::size_t value,
                    const bool observation_should_prexist = true);
 
-  void resetEvidence(Node &node);
+  void removeEvidence(Node &node);
 
-  void resetEvidences();
+  void removeEvidences();
 
 private:
   HiddenCluster gather_hidden() const;

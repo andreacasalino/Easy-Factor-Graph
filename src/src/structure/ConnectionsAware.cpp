@@ -47,6 +47,7 @@ void ConnectionsAware::addUnaryDistribution(
   auto nodeA = findOrMakeNode(vars.front());
   nodeA.unaryFactors.push_back(unary_factor);
   factorsAll.emplace(unary_factor);
+  update_dependencies(nodeA);
 }
 
 namespace {
@@ -63,6 +64,16 @@ void connect(const EFG::distribution::DistributionCnstPtr &binary_factor,
   A.activeConnections.emplace(&B, Connection{binary_factor, nullptr});
   B.activeConnections.emplace(&A, Connection{binary_factor, nullptr});
 }
+
+class ScopedDependeciesUpdater {
+public:
+  ScopedDependeciesUpdater(Node &subject) : node(subject){};
+
+  ~ScopedDependeciesUpdater() { update_dependencies(node); };
+
+private:
+  Node &node;
+};
 } // namespace
 
 void ConnectionsAware::addBinaryDistribution(
@@ -73,6 +84,8 @@ void ConnectionsAware::addBinaryDistribution(
 
   connect(binary_factor, nodeA, nodeB);
   factorsAll.emplace(binary_factor);
+  ScopedDependeciesUpdater dep_updater_nodeA(nodeA);
+  ScopedDependeciesUpdater dep_updater_nodeB(nodeB);
 
   auto nodeA_info = find_node(*state, nodeA);
   auto nodeB_info = find_node(*state, nodeB);
@@ -101,18 +114,21 @@ void ConnectionsAware::addBinaryDistribution(
 
   if (nullptr == nodeA_as_hidden) {
     // nodeA is observation, nodeB is hidden
-    nodeB.disabledConnections[&nodeA].factor = make_evidence_message(
+    nodeB.disabledConnections[&nodeA].message2ThisNode = make_evidence_message(
         binary_factor, nodeA.variable, (*nodeA_as_evidence)->second);
     return;
   }
 
   // nodeB is observation, nodeA is hidden
-  nodeA.disabledConnections[&nodeA].factor = make_evidence_message(
+  nodeA.disabledConnections[&nodeA].message2ThisNode = make_evidence_message(
       binary_factor, nodeB.variable, (*nodeB_as_evidence)->second);
 }
 
 void ConnectionsAware::addDistribution(
     const EFG::distribution::DistributionCnstPtr &distribution) {
+  if (nullptr == distribution) {
+    throw Error{"null distribution can't be add"};
+  }
   if (factorsAll.find(distribution) != factorsAll.end()) {
     throw Error{"Already inserted factor"};
   }

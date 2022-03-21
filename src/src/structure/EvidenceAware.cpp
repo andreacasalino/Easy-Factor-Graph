@@ -36,6 +36,18 @@ std::vector<HiddenCluster> remove_node(Node &node,
   cluster_modified.erase(&node);
   return split_cluster(cluster_modified);
 };
+
+void gather_neighbourhood(std::set<Node *> &recipient, Node &subject) {
+  for (const auto &[connected, connection] : subject.activeConnections) {
+    recipient.emplace(connected);
+  }
+}
+
+void update_dependencies(const std::set<Node *> &subject) {
+  for (auto *node : subject) {
+    update_dependencies(*node);
+  }
+}
 } // namespace
 
 void EvidenceAware::setEvidence(Node &node, const std::size_t value,
@@ -70,6 +82,9 @@ void EvidenceAware::setEvidence(Node &node, const std::size_t value,
     connected_node->disabledConnections[&node].factor =
         make_evidence_message(connection.factor, node.variable, value);
   }
+  std::set<Node *> to_update;
+  gather_neighbourhood(to_update, node);
+  update_dependencies(to_update);
 }
 
 HiddenCluster EvidenceAware::gather_hidden() const {
@@ -80,7 +95,7 @@ HiddenCluster EvidenceAware::gather_hidden() const {
   return result;
 }
 
-void EvidenceAware::resetEvidence(Node &node) {
+void EvidenceAware::removeEvidence(Node &node) {
   auto evidence_it = state->evidences.find(node.variable);
   if (evidence_it == state->evidences.end()) {
     throw Error{node.variable->name(), " is not an evidence"};
@@ -93,9 +108,12 @@ void EvidenceAware::resetEvidence(Node &node) {
   auto hidden_nodes = gather_hidden();
   hidden_nodes.emplace(&node);
   state->hidden_clusters = split_cluster(hidden_nodes);
+  std::set<Node *> to_update = {&node};
+  gather_neighbourhood(to_update, node);
+  update_dependencies(to_update);
 }
 
-void EvidenceAware::resetEvidences() {
+void EvidenceAware::removeEvidences() {
   if (state->evidences.empty()) {
     return;
   }
@@ -108,5 +126,11 @@ void EvidenceAware::resetEvidences() {
   auto hidden_nodes = gather_hidden();
   hidden_nodes.insert(nodes.begin(), nodes.end());
   state->hidden_clusters = split_cluster(hidden_nodes);
+  std::set<Node *> to_update;
+  for (auto *node : nodes) {
+    gather_neighbourhood(to_update, *node);
+    to_update.emplace(node);
+  }
+  update_dependencies(to_update);
 }
 } // namespace EFG::strct
