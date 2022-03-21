@@ -48,5 +48,12 @@ protected:
   TunableClusters::const_iterator insertTunableDistribution(
       const FactorExponentialPtr &tunable_distribution,
       const categoric::VariablesSet &group_sharing_weigth);
+
+  void copyTunableDistribution(
+      const distribution::FactorExponential &tunable_distribution);
+
+  TunableClusters::const_iterator copyTunableDistribution(
+      const distribution::FactorExponential &tunable_distribution,
+      const categoric::VariablesSet &group_sharing_weigth);
 };
 } // namespace EFG::strct

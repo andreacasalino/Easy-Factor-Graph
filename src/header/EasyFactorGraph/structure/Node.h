@@ -12,14 +12,38 @@
 #include <map>
 
 namespace EFG::strct {
-struct Connection {
-  distribution::DistributionCnstPtr factor;
+struct Node;
+
+class Connection {
+public:
+  // this nullify the dependencies
+  Connection(Node &sender_node, Node &receiver_node);
+
+  // this nullify the dependencies
+  Connection(Connection &&o);
+  Connection &operator=(Connection &&o) = delete;
+
+  const distribution::DistributionCnstPtr factor;
+
+  const distribution::Distribution *getMessage() const {
+    return message2ThisNode.get();
+  }
+
+  using Dependencies = std::vector<distribution::DistributionCnstPtr>;
+  const Dependencies &getDependencies() const;
+
+  bool isUpdateMessagePossible() const;
+  float updateMessage() const;
+
+private:
+  Node &sender;
 
   // nullptr when the message is not already available
-  std::unique_ptr<const distribution::Distribution> message2ThisNode;
+  distribution::DistributionCnstPtr message2ThisNode;
+
+  std::unique_ptr<Dependencies> proxy_dependencies;
 };
 
-struct Node;
 using Connections = std::map<Node *, Connection>;
 
 struct Node {

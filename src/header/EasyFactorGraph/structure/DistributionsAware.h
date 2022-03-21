@@ -36,5 +36,7 @@ class DistributionsInserter : virtual public ConnectionsAware,
 public:
   void
   insertDistribution(const distribution::DistributionCnstPtr &distribution);
+
+  void copyDistribution(const distribution::Distribution &distribution);
 };
 } // namespace EFG::strct

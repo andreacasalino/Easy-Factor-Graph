@@ -21,6 +21,13 @@ public:
   float evaluate(const float &input) const final { return input; }
 };
 
+Factor::Factor(const Distribution &to_clone) : Factor(to_clone.getVariables()) {
+  auto &comb_map = getCombinationsMap_();
+  for (const auto &[comb, raw_val] : to_clone.getCombinationsMap()) {
+    comb_map.emplace(comb, to_clone.evaluate(raw_val));
+  }
+}
+
 Factor::Factor(const categoric::Group &vars)
     : DistributionConcrete(std::make_shared<BasicEvaluator>(), vars) {}
 
