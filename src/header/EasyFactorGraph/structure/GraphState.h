@@ -17,16 +17,22 @@
 namespace EFG::strct {
 using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t>;
 
+struct MessageAndDependencies {
+  categoric::VariablePtr sender;
+  Connection *connection;
+  distribution::DistributionCnstPtr static_merged_dependencies;
+  std::vector<const distribution::DistributionCnstPtr *> dynamic_dependencies;
+};
+
 /**
  * @brief Clusters of hidden node. Each cluster is a group of
  connected hidden nodes.
  * Nodes in different clusters are not currently connected (due to
  the model structure or the kind of evidences currently set)
  */
-using HiddenCluster = std::set<Node *>;
-struct EvidenceContext {
-  std::vector<HiddenCluster> hidden_clusters;
-  Evidences evidences;
+struct HiddenCluster {
+  std::set<Node *> nodes;
+  std::vector<MessageAndDependencies> messages;
 };
 
 /**

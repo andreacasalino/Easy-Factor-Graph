@@ -7,16 +7,14 @@
 
 #include <EasyFactorGraph/structure/BeliefPropagator.h>
 
-#include "Message.h"
+#include "BeliefPropagationUtils.h"
 
-#include <limits.h>
+#include <algorithm>
 #include <list>
-#include <math.h>
 #include <omp.h>
 
 namespace EFG::strct {
 namespace {
-constexpr float MAX_DIFF = std::numeric_limits<float>::max();
 
 void resetMessages(const std::vector<HiddenCluster> &clusters) {
   for (const auto &cluster : clusters) {
@@ -28,13 +26,27 @@ void resetMessages(const std::vector<HiddenCluster> &clusters) {
   }
 }
 
-float compute_message(Node &sender, Node &receiver);
+bool contains_nullptr(
+    const std::vector<const distribution::DistributionCnstPtr *> &subject) {
+  return std::find_if(subject.begin(), subject.end(),
+                      [](const distribution::DistributionCnstPtr *element) {
+                        return element->get() != nullptr;
+                      }) == subject.end();
+}
 
-bool message_passing(const std::vector<Node *> &cluster,
-                     const PropagationKind &kind);
+bool message_passing(HiddenCluster &cluster, const PropagationKind &kind) {
+  std::list<MessageAndDependencies *> open_set;
+  for (auto &message : cluster.messages) {
+    open_set.push_back(&message);
+  }
+  while (open_set.empty()) {
+    std::vector<MessageAndDependencies *> tasks;
+    throw 0; // TODO
+  }
+  return true;
+}
 
-bool loopy_propagation(const std::vector<Node *> &cluster,
-                       const PropagationKind &kind,
+bool loopy_propagation(HiddenCluster &cluster, const PropagationKind &kind,
                        const std::size_t max_iterations);
 } // namespace
 
@@ -48,11 +60,14 @@ BeliefPropagator::propagateBelief(const PropagationKind &kind) {
   PropagationResult result;
   result.was_completed = true;
   result.propagation_kind_done = kind;
-  for (const auto &cluster : getHiddenClusters()) {
-    if (messagePassing(cluster, kind)) {
+  for (auto &cluster : getHiddenClusters()) {
+    auto deps = compute_dependencies(cluster);
+    if (message_passing(cluster, kind)) {
       continue;
     }
-    if (!loopyPropagation(cluster, kind)) {
+    if (!loopy_propagation(
+            cluster, kind,
+            getPropagationContext().max_iterations_loopy_propagation)) {
       result.was_completed = false;
     }
   }

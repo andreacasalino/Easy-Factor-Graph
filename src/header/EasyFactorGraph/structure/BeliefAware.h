@@ -27,8 +27,10 @@ class BeliefAware {
 public:
   virtual ~BeliefAware() = default;
 
-  const PropagationContext &getContext() const { return context; }
-  void setContext(const PropagationContext &cntxt) { context = cntxt; };
+  const PropagationContext &getPropagationContext() const { return context; }
+  void setPropagationContext(const PropagationContext &cntxt) {
+    context = cntxt;
+  };
 
   bool hasPropagationResult() const { return nullptr != lastPropagation; }
   const PropagationResult &getLastPropagationResult() const {

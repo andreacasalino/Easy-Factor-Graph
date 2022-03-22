@@ -33,7 +33,8 @@ Node &ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
   if (nodes_it == state->nodes.end()) {
     nodes_it = state->nodes.emplace(var, Node{}).first;
     nodes_it->second.variable = var;
-    state->hidden_clusters.emplace_back().emplace(&nodes_it->second);
+    auto &added = state->hidden_clusters.emplace_back();
+    added.nodes.emplace(&nodes_it->second);
   } else if (nodes_it->first.get() != var.get()) {
     throw Error{"Trying to insert variable named: ", var->name(),
                 " multiple times with different VariablePtr"};
@@ -47,7 +48,6 @@ void ConnectionsAware::addUnaryDistribution(
   auto nodeA = findOrMakeNode(vars.front());
   nodeA.unaryFactors.push_back(unary_factor);
   factorsAll.emplace(unary_factor);
-  update_dependencies(nodeA);
 }
 
 namespace {
@@ -64,16 +64,6 @@ void connect(const EFG::distribution::DistributionCnstPtr &binary_factor,
   A.activeConnections.emplace(&B, Connection{binary_factor, nullptr});
   B.activeConnections.emplace(&A, Connection{binary_factor, nullptr});
 }
-
-class ScopedDependeciesUpdater {
-public:
-  ScopedDependeciesUpdater(Node &subject) : node(subject){};
-
-  ~ScopedDependeciesUpdater() { update_dependencies(node); };
-
-private:
-  Node &node;
-};
 } // namespace
 
 void ConnectionsAware::addBinaryDistribution(
@@ -84,8 +74,6 @@ void ConnectionsAware::addBinaryDistribution(
 
   connect(binary_factor, nodeA, nodeB);
   factorsAll.emplace(binary_factor);
-  ScopedDependeciesUpdater dep_updater_nodeA(nodeA);
-  ScopedDependeciesUpdater dep_updater_nodeB(nodeB);
 
   auto nodeA_info = find_node(*state, nodeA);
   auto nodeB_info = find_node(*state, nodeB);

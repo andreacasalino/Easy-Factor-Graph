@@ -13,11 +13,8 @@
 namespace EFG::strct {
 struct Connection {
   distribution::DistributionCnstPtr factor;
-
   // nullptr when the message is not already available
   distribution::DistributionCnstPtr message2ThisNode;
-
-  std::vector<const distribution::DistributionCnstPtr *> dependencies;
 };
 
 struct Node;
