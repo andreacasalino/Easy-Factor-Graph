@@ -10,16 +10,25 @@
 #include <EasyFactorGraph/distribution/Factor.h>
 
 namespace EFG::strct {
+Evidences::iterator find_evidence(GraphState &state, Node &to_find) {
+  return state.evidences.find(to_find.variable);
+}
+
+std::vector<HiddenCluster>::iterator find_hidden(GraphState &state,
+                                                 Node &to_find) {
+  return std::find_if(
+      state.hidden_clusters.begin(), state.hidden_clusters.end(),
+      [&to_find](HiddenCluster &cluster) {
+        return cluster.nodes.find(&to_find) != cluster.nodes.end();
+      });
+}
+
 NodeInfo find_node(GraphState &state, Node &to_find) {
-  auto hidden_clusters_it =
-      std::find_if(state.hidden_clusters.begin(), state.hidden_clusters.end(),
-                   [&to_find](HiddenCluster &cluster) {
-                     return cluster.nodes.find(&to_find) != cluster.nodes.end();
-                   });
+  auto hidden_clusters_it = find_hidden(state, to_find);
   if (hidden_clusters_it != state.hidden_clusters.end()) {
     return hidden_clusters_it;
   }
-  return state.evidences.find(to_find.variable);
+  return find_evidence(state, to_find);
 }
 
 void disable_connection(Node &nodeA, Node &nodeB) {
@@ -106,7 +115,7 @@ std::vector<NodeSet> compute_clusters_sets(const std::set<Node *> &nodes) {
   if (nodes.empty()) {
     return {};
   }
-  std::vector<std::set<Node *>> result;
+  std::vector<NodeSet> result;
   auto open = nodes;
   while (!open.empty()) {
     auto *to_visit = *open.begin();

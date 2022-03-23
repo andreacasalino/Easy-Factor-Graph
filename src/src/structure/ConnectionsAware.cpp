@@ -8,7 +8,10 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/structure/ConnectionsAware.h>
 
+#include "BeliefPropagationUtils.h"
 #include "GraphStateUtils.h"
+
+#include <algorithm>
 
 namespace EFG::strct {
 categoric::VariablesSet ConnectionsAware::getVariables() const {
@@ -48,6 +51,18 @@ void ConnectionsAware::addUnaryDistribution(
   auto nodeA = findOrMakeNode(vars.front());
   nodeA.unaryFactors.push_back(unary_factor);
   factorsAll.emplace(unary_factor);
+  // add this factor to the messages dependencies
+  auto cluster_it = find_hidden(*state, nodeA);
+  auto deps_it =
+      std::find_if(cluster_it->messages.begin(), cluster_it->messages.end(),
+                   [&nodeA](const MessageAndDependencies &element) {
+                     return element.sender.get() == nodeA.variable.get();
+                   });
+  if (deps_it != cluster_it->messages.end()) {
+    deps_it->static_merged_dependencies =
+        merge_unary_factors(std::vector<distribution::DistributionCnstPtr>{
+            deps_it->static_merged_dependencies, unary_factor});
+  }
 }
 
 namespace {
@@ -75,19 +90,17 @@ void ConnectionsAware::addBinaryDistribution(
   connect(binary_factor, nodeA, nodeB);
   factorsAll.emplace(binary_factor);
 
-  auto nodeA_info = find_node(*state, nodeA);
-  auto nodeB_info = find_node(*state, nodeB);
-
-  auto *nodeA_as_hidden =
-      std::get_if<std::vector<HiddenCluster>::iterator>(&nodeA_info);
-  auto *nodeB_as_hidden =
-      std::get_if<std::vector<HiddenCluster>::iterator>(&nodeB_info);
-  if ((nullptr != nodeA_as_hidden) && (nullptr != nodeB_as_hidden)) {
-    if (*nodeA_as_hidden != *nodeB_as_hidden) {
+  auto nodeA_as_hidden = find_hidden(*state, nodeA);
+  auto nodeB_as_hidden = find_hidden(*state, nodeB);
+  if ((nodeA_as_hidden != state->hidden_clusters.end()) &&
+      (nodeB_as_hidden != state->hidden_clusters.end())) {
+    if (nodeA_as_hidden != nodeB_as_hidden) {
       // merge clusters
-      (*nodeA_as_hidden)
-          ->insert((*nodeB_as_hidden)->begin(), (*nodeB_as_hidden)->end());
-      state->hidden_clusters.erase(*nodeB_as_hidden);
+      auto nodes = ;
+      nodeA_as_hidden->nodes.insert(nodeB_as_hidden->nodes.begin(),
+                                    nodeB_as_hidden->nodes.end());
+
+      state->hidden_clusters.erase(nodeB_as_hidden);
     }
     return;
   }

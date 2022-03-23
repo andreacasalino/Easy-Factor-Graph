@@ -7,23 +7,53 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/Node.h>
+#include <EasyFactorGraph/distribution/Distribution.h>
 
-#include <memory>
-#include <set>
+#include <map>
 #include <unordered_map>
 #include <vector>
 
 namespace EFG::strct {
-using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t>;
+template <typename T> using Proxy = std::unique_ptr<T>;
 
-struct MessageAndDependencies {
-  categoric::VariablePtr sender;
-  Connection *connection;
-  distribution::DistributionCnstPtr static_merged_dependencies;
-  std::vector<const distribution::DistributionCnstPtr *> dynamic_dependencies;
+struct Connection;
+struct HiddenNode {
+  categoric::VariablePtr variable;
+  distribution::DistributionCnstPtr unary_factors_contribution;
+  std::map<HiddenNode *, Connection> incoming_messages;
+  std::map<categoric::VariablePtr, distribution::DistributionCnstPtr>
+      evidences_contributions;
+  Proxy<distribution::DistributionCnstPtr> merged_contributions;
 };
 
+struct Connection {
+  // nullptr when the message is not already available
+  distribution::DistributionCnstPtr message;
+  // info for message computation
+  distribution::DistributionCnstPtr factor;
+};
+
+/**
+ * @brief The set of variables part of the model, with the
+ connectivity information
+ */
+using HiddenNodes = std::unordered_map<categoric::VariablePtr, HiddenNode>;
+
+struct EvidenceNode {
+  categoric::VariablePtr variable;
+  distribution::DistributionCnstPtr unary_factors_contribution;
+  std::size_t evidence;
+  std::map<categoric::VariablePtr, distribution::DistributionCnstPtr>
+      disabled_connections;
+};
+
+using Evidences = std::unordered_map<categoric::VariablePtr, EvidenceNode>;
+
+struct ConnectionAndDependencies {
+  Connection *connection;
+  HiddenNode *sender;
+  std::vector<Connection *> dependencies;
+};
 /**
  * @brief Clusters of hidden node. Each cluster is a group of
  connected hidden nodes.
@@ -31,20 +61,13 @@ struct MessageAndDependencies {
  the model structure or the kind of evidences currently set)
  */
 struct HiddenCluster {
-  std::set<Node *> nodes;
-  std::vector<MessageAndDependencies> messages;
+  HiddenNodes nodes;
+  Proxy<std::vector<ConnectionAndDependencies>> connectivity;
 };
 
-/**
- * @brief The set of variables part of the model, with the
- connectivity information
- */
-using Nodes = std::unordered_map<categoric::VariablePtr, Node>;
-
 struct GraphState {
-  Evidences evidences;
   std::vector<HiddenCluster> hidden_clusters;
-  Nodes nodes;
+  Evidences evidences;
 };
 
 class GraphStateAware {
