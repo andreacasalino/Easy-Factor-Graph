@@ -1,19 +1,19 @@
-/**
- * Author:    Andrea Casalino
- * Created:   01.01.2021
- *
- * report any bug to andrecasa91@gmail.com.
- **/
+// /**
+//  * Author:    Andrea Casalino
+//  * Created:   01.01.2021
+//  *
+//  * report any bug to andrecasa91@gmail.com.
+//  **/
 
-#pragma once
+// #pragma once
 
-#include <EasyFactorGraph/structure/EvidenceAware.h>
+// #include <EasyFactorGraph/structure/ConnectionsAware.h>
 
-#include <memory>
+// #include <memory>
 
-namespace EFG::strct {
-class BeliefPropagator : virtual public EvidenceAware {
-protected:
-  PropagationResult propagateBelief(const PropagationKind &kind) override;
-};
-} // namespace EFG::strct
+// namespace EFG::strct {
+// class BeliefPropagator : virtual public ConnectionsAware {
+// protected:
+//   PropagationResult propagateBelief(const PropagationKind &kind) override;
+// };
+// } // namespace EFG::strct

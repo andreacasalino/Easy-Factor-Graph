@@ -22,13 +22,14 @@ struct Connection;
 struct Node {
   categoric::VariablePtr variable;
 
+  // incoming messages
   std::map<Node *, Connection> active_connections;
 
   std::map<Node *, Connection> disabled_connections;
   std::vector<distribution::DistributionCnstPtr> unary_factors;
 
   Cache<const distribution::Distribution>
-      merged_contributions; // unary factors and marginalized evidences
+      merged_unaries; // unary factors and marginalized evidences
 };
 
 struct Connection {
@@ -43,7 +44,7 @@ using Nodes = std::unordered_map<categoric::VariablePtr, Node>;
 struct ConnectionAndDependencies {
   Connection *connection;
   Node *sender;
-  std::vector<Connection *> dependencies;
+  std::vector<const Connection *> dependencies;
 };
 /**
  * @brief Clusters of hidden node. Each cluster is a group of

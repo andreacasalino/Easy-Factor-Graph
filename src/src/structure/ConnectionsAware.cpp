@@ -8,8 +8,7 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/structure/ConnectionsAware.h>
 
-// #include "BeliefPropagationUtils.h"
-#include "GraphStateUtils.h"
+#include "Utils.h"
 
 #include <algorithm>
 
@@ -97,7 +96,7 @@ void ConnectionsAware::addUnaryDistribution(
       node_location,
       [&unary_factor](const HiddenNodeLocation &location) {
         location.node->unary_factors.push_back(unary_factor);
-        location.node->merged_contributions.reset();
+        location.node->merged_unaries.reset();
       },
       [&unary_factor](const EvidenceNodeLocation &location) {
         location.node->unary_factors.push_back(unary_factor);
@@ -111,11 +110,6 @@ void check_are_already_connected(Node &a, Node &b) {
     throw Error{a.variable->name(), " and ", b.variable->name(),
                 " are already connected"};
   }
-}
-
-void throw_already_connected(const categoric::VariablePtr &a,
-                             const categoric::VariablePtr &b) {
-  throw Error{a->name(), " and ", b->name(), " are already connected"};
 }
 } // namespace
 
@@ -136,10 +130,10 @@ void ConnectionsAware::addBinaryDistribution(
         node_hidden, Connection{nullptr, binary_factor});
     node_hidden->disabled_connections.emplace(
         node_evidence,
-        Connection{make_evidence_message(binary_factor, node_evidence->variable,
+        Connection{marginalized_evidence(binary_factor, node_evidence->variable,
                                          evidence.evidence->second),
                    binary_factor});
-    node_hidden->merged_contributions.reset();
+    node_hidden->merged_unaries.reset();
   };
 
   visit(

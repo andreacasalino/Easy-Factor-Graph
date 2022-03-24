@@ -51,6 +51,8 @@ protected:
     return state->clusters;
   };
 
+  std::vector<HiddenCluster> &getClusters_() { return state->clusters; };
+
 private:
   NodeLocation findOrMakeNode(const categoric::VariablePtr &var);
 
