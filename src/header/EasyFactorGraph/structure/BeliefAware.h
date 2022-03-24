@@ -7,10 +7,10 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/Node.h>
+#include <memory>
 
 namespace EFG::strct {
-enum PropagationKind { Sum, MAP };
+enum PropagationKind { SUM, MAP };
 
 struct PropagationContext {
   std::size_t max_iterations_loopy_propagation;
@@ -19,7 +19,7 @@ struct PropagationContext {
 
 struct PropagationResult {
   PropagationKind propagation_kind_done;
-  // std::size_t iterationsRequired;
+  // std::size_t iterations_required;
   bool was_completed;
 };
 

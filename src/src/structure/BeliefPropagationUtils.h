@@ -18,4 +18,8 @@ using MessageVariation = float;
 constexpr MessageVariation MAX_VARIATION = std::numeric_limits<float>::max();
 
 MessageVariation update_message(const MessageAndDependencies &subject);
+
+void update_merged_contributions(Node &subject);
+
+void update_connectivity(HiddenCluster &subject);
 } // namespace EFG::strct

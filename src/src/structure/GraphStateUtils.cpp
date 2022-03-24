@@ -9,45 +9,53 @@
 #include "BeliefPropagationUtils.h"
 #include <EasyFactorGraph/distribution/Factor.h>
 
+#include <algorithm>
+
 namespace EFG::strct {
-Evidences::iterator find_evidence(GraphState &state, Node &to_find) {
-  return state.evidences.find(to_find.variable);
-}
-
-std::vector<HiddenCluster>::iterator find_hidden(GraphState &state,
-                                                 Node &to_find) {
-  return std::find_if(
-      state.hidden_clusters.begin(), state.hidden_clusters.end(),
-      [&to_find](HiddenCluster &cluster) {
-        return cluster.nodes.find(&to_find) != cluster.nodes.end();
-      });
-}
-
-NodeInfo find_node(GraphState &state, Node &to_find) {
-  auto hidden_clusters_it = find_hidden(state, to_find);
-  if (hidden_clusters_it != state.hidden_clusters.end()) {
-    return hidden_clusters_it;
+std::vector<HiddenCluster>::iterator
+find_cluster(GraphState &state, const categoric::VariablePtr &variable) {
+  auto nodes_it = state.nodes.find(variable);
+  if (nodes_it == state.nodes.end()) {
+    return state.clusters.end();
   }
-  return find_evidence(state, to_find);
+  auto *node = &nodes_it->second;
+  return std::find_if(state.clusters.begin(), state.clusters.end(),
+                      [&node](const HiddenCluster &cluster) {
+                        return cluster.nodes.find(node) != cluster.nodes.end();
+                      });
 }
 
-void disable_connection(Node &nodeA, Node &nodeB) {
-  auto distribution = nodeA.activeConnections.find(&nodeB)->second.factor;
-  nodeA.activeConnections.erase(&nodeB);
-  nodeB.activeConnections.erase(&nodeA);
-  nodeA.disabledConnections[&nodeB] = Connection{distribution, nullptr};
-  nodeA.disabledConnections[&nodeA] = Connection{distribution, nullptr};
+std::optional<NodeLocation> find_node(GraphState &state,
+                                      const categoric::VariablePtr &variable) {
+  auto evidences_it = state.evidences.find(variable);
+  if (evidences_it != state.evidences.end()) {
+    return EvidenceNodeLocation{evidences_it, &state.nodes[variable]};
+  }
+  auto clusters_it = find_cluster(state, variable);
+  if (clusters_it != state.clusters.end()) {
+    return HiddenNodeLocation{clusters_it, &state.nodes[variable]};
+  }
+  return std::nullopt;
 }
 
-void enable_connection(Node &nodeA, Node &nodeB) {
-  auto distribution = nodeA.disabledConnections.find(&nodeB)->second.factor;
-  nodeA.disabledConnections.erase(&nodeB);
-  nodeB.disabledConnections.erase(&nodeA);
-  nodeA.activeConnections[&nodeB] = Connection{distribution, nullptr};
-  nodeA.activeConnections[&nodeA] = Connection{distribution, nullptr};
+void visit(const NodeLocation &to_visit,
+           std::function<void(const HiddenNodeLocation &)> hidden_case,
+           std::function<void(const EvidenceNodeLocation &)> evidence_case) {
+  struct Visitor {
+    std::function<void(const HiddenNodeLocation &)> hidden_case;
+    std::function<void(const EvidenceNodeLocation &)> evidence_case;
+
+    void operator()(const HiddenNodeLocation &info) const {
+      hidden_case(info);
+    };
+    void operator()(const EvidenceNodeLocation &info) const {
+      evidence_case(info);
+    };
+  };
+  std::visit(Visitor{hidden_case, evidence_case}, to_visit);
 }
 
-std::unique_ptr<const distribution::Distribution>
+distribution::DistributionCnstPtr
 make_evidence_message(const distribution::DistributionCnstPtr &binary_factor,
                       const categoric::VariablePtr &evidence_var,
                       const std::size_t evidence) {
@@ -79,43 +87,51 @@ make_evidence_message(const distribution::DistributionCnstPtr &binary_factor,
         : distribution::Factor(categoric::Group{var}, map){};
   };
 
-  return std::make_unique<EvidenceMessage>(hidden_var, map);
+  return std::make_shared<EvidenceMessage>(hidden_var, map);
 }
 
 namespace {
-using NodeSet = std::set<Node *>;
-
-std::vector<NodeSet>::iterator find_set(std::vector<NodeSet> &clusters,
-                                        Node &to_explore) {
+std::vector<std::set<Node *>>::const_iterator
+find_set(const std::vector<std::set<Node *>> &clusters, Node &to_find) {
   return std::find_if(clusters.begin(), clusters.end(),
-                      [&to_explore](const NodeSet &cluster) {
-                        return cluster.find(&to_explore) != cluster.end();
+                      [&to_find](const std::set<Node *> &cluster) {
+                        return cluster.find(&to_find) != cluster.end();
                       });
 }
 
 struct ConnectionsResult {
   std::vector<Node *> not_connected;
-  std::vector<std::vector<NodeSet>::iterator> existing_clusters;
+  std::set<std::size_t> existing_clusters;
 };
-ConnectionsResult find_connections(std::vector<NodeSet> &clusters,
-                                   Node &to_explore) {
+ConnectionsResult
+find_connections(const std::vector<std::set<Node *>> &clusters,
+                 Node &to_explore) {
   ConnectionsResult result;
-  for (const auto &[node, connection] : to_explore.activeConnections) {
+  for (const auto &[node, connection] : to_explore.active_connections) {
     auto existing_cluster = find_set(clusters, *node);
     if (existing_cluster == clusters.end()) {
       result.not_connected.push_back(node);
     } else {
-      result.existing_clusters.push_back(existing_cluster);
+      result.existing_clusters.emplace(
+          std::distance(clusters.begin(), existing_cluster));
     }
   }
   return result;
 }
 
-std::vector<NodeSet> compute_clusters_sets(const std::set<Node *> &nodes) {
+template <typename T>
+void erase(std::vector<T> &subject, const std::size_t pos) {
+  auto it = subject.begin();
+  std::advance(it, pos);
+  subject.erase(it);
+}
+
+std::vector<std::set<Node *>>
+compute_clusters_sets(const std::set<Node *> &nodes) {
   if (nodes.empty()) {
     return {};
   }
-  std::vector<NodeSet> result;
+  std::vector<std::set<Node *>> result;
   auto open = nodes;
   while (!open.empty()) {
     auto *to_visit = *open.begin();
@@ -128,48 +144,20 @@ std::vector<NodeSet> compute_clusters_sets(const std::set<Node *> &nodes) {
     if (connections.existing_clusters.empty()) {
       recipient = &result.emplace_back();
     } else {
-      recipient = &(*connections.existing_clusters.front());
-      for (std::size_t k = 1; k < connections.existing_clusters.size(); ++k) {
-        recipient->insert(connections.existing_clusters[k]->begin(),
-                          connections.existing_clusters[k]->end());
-        result.erase(connections.existing_clusters[k]);
+      auto existing_clusters_it = connections.existing_clusters.rbegin();
+      auto existing_clusters_end = connections.existing_clusters.rend();
+      --existing_clusters_end;
+      recipient = &result[*existing_clusters_end];
+      for (existing_clusters_it; existing_clusters_it != existing_clusters_end;
+           ++existing_clusters_it) {
+        auto &cluster = result[*existing_clusters_it];
+        recipient->insert(cluster.begin(), cluster.end());
+        erase(result, *existing_clusters_it);
       }
     }
     recipient->emplace(to_visit);
     recipient->insert(connections.not_connected.begin(),
                       connections.not_connected.end());
-  }
-  return result;
-}
-
-template <typename T> void erase(std::vector<T> &subject, const T &to_remove) {
-  subject.erase(std::find(subject.begin((), subject.end(), to_remove)));
-}
-
-std::vector<MessageAndDependencies>
-compute_dependencies(const std::set<Node *> &cluster) {
-  std::vector<MessageAndDependencies> result;
-  for (auto *sender : cluster) {
-    if (sender->activeConnections.empty()) {
-      continue;
-    }
-    MessageAndDependencies all_deps;
-    all_deps.sender = sender->variable;
-    auto static_factors = sender->unaryFactors;
-    for (const auto &[connected_node, connection] :
-         sender->disabledConnections) {
-      static_factors.push_back(connection.message2ThisNode);
-    }
-    all_deps.static_merged_dependencies = merge_unary_factors(static_factors);
-    for (const auto &[connected_node, connection] : sender->activeConnections) {
-      all_deps.dynamic_dependencies.push_back(&connection.message2ThisNode);
-    }
-    for (const auto &[connected_node, connection] : sender->activeConnections) {
-      result.push_back(all_deps);
-      result.back().connection =
-          &connected_node->activeConnections.find(sender)->second;
-      erase(result.back().dynamic_dependencies, &connection.message2ThisNode);
-    }
   }
   return result;
 }
@@ -182,7 +170,6 @@ std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes) {
   for (auto &set : sets) {
     auto &added = result.emplace_back();
     added.nodes = std::move(set);
-    added.messages = compute_dependencies(added.nodes);
   }
   return result;
 }

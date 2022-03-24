@@ -8,7 +8,7 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/structure/ConnectionsAware.h>
 
-#include "BeliefPropagationUtils.h"
+// #include "BeliefPropagationUtils.h"
 #include "GraphStateUtils.h"
 
 #include <algorithm>
@@ -16,7 +16,7 @@
 namespace EFG::strct {
 categoric::VariablesSet ConnectionsAware::getVariables() const {
   categoric::VariablesSet result;
-  for (const auto &[var, node] : state->nodes) {
+  for (const auto &[var, el] : state->nodes) {
     result.emplace(var);
   }
   return result;
@@ -29,100 +29,6 @@ ConnectionsAware::findVariable(const std::string &name) const {
     throw Error{name, " is an inexistent variable"};
   }
   return nodes_it->first;
-}
-
-Node &ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
-  auto nodes_it = state->nodes.find(var);
-  if (nodes_it == state->nodes.end()) {
-    nodes_it = state->nodes.emplace(var, Node{}).first;
-    nodes_it->second.variable = var;
-    auto &added = state->hidden_clusters.emplace_back();
-    added.nodes.emplace(&nodes_it->second);
-  } else if (nodes_it->first.get() != var.get()) {
-    throw Error{"Trying to insert variable named: ", var->name(),
-                " multiple times with different VariablePtr"};
-  }
-  return nodes_it->second;
-}
-
-void ConnectionsAware::addUnaryDistribution(
-    const EFG::distribution::DistributionCnstPtr &unary_factor) {
-  const auto &vars = unary_factor->getVariables().getVariables();
-  auto nodeA = findOrMakeNode(vars.front());
-  nodeA.unaryFactors.push_back(unary_factor);
-  factorsAll.emplace(unary_factor);
-  // add this factor to the messages dependencies
-  auto cluster_it = find_hidden(*state, nodeA);
-  auto deps_it =
-      std::find_if(cluster_it->messages.begin(), cluster_it->messages.end(),
-                   [&nodeA](const MessageAndDependencies &element) {
-                     return element.sender.get() == nodeA.variable.get();
-                   });
-  if (deps_it != cluster_it->messages.end()) {
-    deps_it->static_merged_dependencies =
-        merge_unary_factors(std::vector<distribution::DistributionCnstPtr>{
-            deps_it->static_merged_dependencies, unary_factor});
-  }
-}
-
-namespace {
-void connect(const EFG::distribution::DistributionCnstPtr &binary_factor,
-             Node &A, Node &B) {
-  if (A.activeConnections.find(&B) != A.activeConnections.end()) {
-    throw Error{A.variable->name(), " and ", B.variable->name(),
-                " are already connected with a factor"};
-  }
-  if (A.disabledConnections.find(&B) != A.disabledConnections.end()) {
-    throw Error{A.variable->name(), " and ", B.variable->name(),
-                " are already connected with a factor"};
-  }
-  A.activeConnections.emplace(&B, Connection{binary_factor, nullptr});
-  B.activeConnections.emplace(&A, Connection{binary_factor, nullptr});
-}
-} // namespace
-
-void ConnectionsAware::addBinaryDistribution(
-    const EFG::distribution::DistributionCnstPtr &binary_factor) {
-  const auto &vars = binary_factor->getVariables().getVariables();
-  auto nodeA = findOrMakeNode(vars.front());
-  auto nodeB = findOrMakeNode(vars.back());
-
-  connect(binary_factor, nodeA, nodeB);
-  factorsAll.emplace(binary_factor);
-
-  auto nodeA_as_hidden = find_hidden(*state, nodeA);
-  auto nodeB_as_hidden = find_hidden(*state, nodeB);
-  if ((nodeA_as_hidden != state->hidden_clusters.end()) &&
-      (nodeB_as_hidden != state->hidden_clusters.end())) {
-    if (nodeA_as_hidden != nodeB_as_hidden) {
-      // merge clusters
-      auto nodes = ;
-      nodeA_as_hidden->nodes.insert(nodeB_as_hidden->nodes.begin(),
-                                    nodeB_as_hidden->nodes.end());
-
-      state->hidden_clusters.erase(nodeB_as_hidden);
-    }
-    return;
-  }
-
-  disable_connection(nodeA, nodeB);
-
-  auto *nodeA_as_evidence = std::get_if<Evidences::iterator>(&nodeA_info);
-  auto *nodeB_as_evidence = std::get_if<Evidences::iterator>(&nodeB_info);
-  if ((nullptr != nodeA_as_evidence) && (nullptr != nodeB_as_evidence)) {
-    return;
-  }
-
-  if (nullptr == nodeA_as_hidden) {
-    // nodeA is observation, nodeB is hidden
-    nodeB.disabledConnections[&nodeA].message2ThisNode = make_evidence_message(
-        binary_factor, nodeA.variable, (*nodeA_as_evidence)->second);
-    return;
-  }
-
-  // nodeB is observation, nodeA is hidden
-  nodeA.disabledConnections[&nodeA].message2ThisNode = make_evidence_message(
-      binary_factor, nodeB.variable, (*nodeB_as_evidence)->second);
 }
 
 void ConnectionsAware::addDistribution(
@@ -145,5 +51,140 @@ void ConnectionsAware::addDistribution(
     break;
   }
   throw Error{"Factor with invalid number of variables"};
+}
+
+namespace {
+void check_is_same_variable(const categoric::VariablePtr &a,
+                            const categoric::VariablePtr &b) {
+  if (a.get() != b.get()) {
+    throw Error{"Trying to insert variable named: ", a->name(),
+                " multiple times with different VariablePtr"};
+  }
+}
+} // namespace
+
+NodeLocation
+ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
+  auto info = find_node(*state, var);
+  if (info) {
+    visit(
+        *info,
+        [&var](const HiddenNodeLocation &info) {
+          check_is_same_variable(var, info.node->variable);
+        },
+        [&var](const EvidenceNodeLocation &info) {
+          check_is_same_variable(var, info.node->variable);
+        });
+    return *info;
+  }
+  // create this node
+  auto *added = &state->nodes.emplace(var, Node{}).first->second;
+  added->variable = var;
+  HiddenNodeLocation result;
+  state->clusters.emplace_back().nodes.emplace(added);
+  result.cluster = state->clusters.end();
+  --result.cluster;
+  result.node = added;
+  return result;
+}
+
+void ConnectionsAware::addUnaryDistribution(
+    const EFG::distribution::DistributionCnstPtr &unary_factor) {
+  const auto &var = unary_factor->getVariables().getVariables().front();
+  auto node_location = findOrMakeNode(var);
+  factorsAll.emplace(unary_factor);
+  visit(
+      node_location,
+      [&unary_factor](const HiddenNodeLocation &location) {
+        location.node->unary_factors.push_back(unary_factor);
+        location.node->merged_contributions.reset();
+      },
+      [&unary_factor](const EvidenceNodeLocation &location) {
+        location.node->unary_factors.push_back(unary_factor);
+      });
+}
+
+namespace {
+void check_are_already_connected(Node &a, Node &b) {
+  if ((a.active_connections.find(&b) != a.active_connections.end()) ||
+      (a.disabled_connections.find(&b) != a.disabled_connections.end())) {
+    throw Error{a.variable->name(), " and ", b.variable->name(),
+                " are already connected"};
+  }
+}
+
+void throw_already_connected(const categoric::VariablePtr &a,
+                             const categoric::VariablePtr &b) {
+  throw Error{a->name(), " and ", b->name(), " are already connected"};
+}
+} // namespace
+
+void ConnectionsAware::addBinaryDistribution(
+    const EFG::distribution::DistributionCnstPtr &binary_factor) {
+  const auto &vars = binary_factor->getVariables().getVariables();
+  auto &varA = vars.front();
+  auto &varB = vars.back();
+  auto nodeA_location = findOrMakeNode(varA);
+  auto nodeB_location = findOrMakeNode(varB);
+
+  auto hybrid_insertion = [&](const HiddenNodeLocation &hidden,
+                              const EvidenceNodeLocation &evidence) {
+    auto *node_hidden = hidden.node;
+    auto *node_evidence = evidence.node;
+    check_are_already_connected(*node_hidden, *node_evidence);
+    node_evidence->disabled_connections.emplace(
+        node_hidden, Connection{nullptr, binary_factor});
+    node_hidden->disabled_connections.emplace(
+        node_evidence,
+        Connection{make_evidence_message(binary_factor, node_evidence->variable,
+                                         evidence.evidence->second),
+                   binary_factor});
+    node_hidden->merged_contributions.reset();
+  };
+
+  visit(
+      nodeA_location,
+      [&](const HiddenNodeLocation &hiddenA_location) {
+        visit(
+            nodeB_location,
+            [&](const HiddenNodeLocation &hiddenB_location) {
+              auto *nodeA = hiddenA_location.node;
+              auto *nodeB = hiddenB_location.node;
+              // both are hidden
+              check_are_already_connected(*nodeA, *nodeB);
+              nodeA->active_connections.emplace(
+                  nodeB, Connection{nullptr, binary_factor});
+              nodeB->active_connections.emplace(
+                  nodeA, Connection{nullptr, binary_factor});
+              hiddenA_location.cluster->connectivity.reset();
+              if (hiddenA_location.cluster != hiddenB_location.cluster) {
+                hiddenA_location.cluster->nodes.insert(
+                    hiddenB_location.cluster->nodes.begin(),
+                    hiddenB_location.cluster->nodes.end());
+                this->state->clusters.erase(hiddenB_location.cluster);
+              }
+            },
+            [&](const EvidenceNodeLocation &evidenceB_location) {
+              hybrid_insertion(hiddenA_location, evidenceB_location);
+            });
+      },
+      [&](const EvidenceNodeLocation &evidenceA_location) {
+        visit(
+            nodeB_location,
+            [&](const HiddenNodeLocation &hiddenB_location) {
+              hybrid_insertion(hiddenB_location, evidenceA_location);
+            },
+            [&](const EvidenceNodeLocation &evidenceB_location) {
+              auto *nodeA = evidenceA_location.node;
+              auto *nodeB = evidenceB_location.node;
+              // both are evidences
+              check_are_already_connected(*nodeA, *nodeB);
+              nodeA->disabled_connections.emplace(
+                  nodeB, Connection{nullptr, binary_factor});
+              nodeB->disabled_connections.emplace(
+                  nodeA, Connection{nullptr, binary_factor});
+            });
+      });
+  factorsAll.emplace(binary_factor);
 }
 } // namespace EFG::strct

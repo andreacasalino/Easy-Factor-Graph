@@ -45,10 +45,14 @@ protected:
   void
   addDistribution(const EFG::distribution::DistributionCnstPtr &distribution);
 
-  const Nodes &getNodes() const { return state->nodes; };
+  const Nodes &getNodes() const { return state->nodes; }
+
+  const std::vector<HiddenCluster> &getClusters() const {
+    return state->clusters;
+  };
 
 private:
-  Node &findOrMakeNode(const categoric::VariablePtr &var);
+  NodeLocation findOrMakeNode(const categoric::VariablePtr &var);
 
   void addUnaryDistribution(
       const EFG::distribution::DistributionCnstPtr &unary_factor);

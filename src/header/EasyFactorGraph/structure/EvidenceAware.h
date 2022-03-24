@@ -16,22 +16,19 @@ class EvidenceAware : virtual public BeliefAware,
 public:
   virtual ~EvidenceAware() = default;
 
-  std::unordered_set<categoric::VariablePtr> getHiddenVariables() const;
-  std::unordered_set<categoric::VariablePtr> getObservedVariables() const;
+  categoric::VariablesSet getHiddenVariables() const;
+  categoric::VariablesSet getObservedVariables() const;
 
   const Evidences &getEvidences() const { return state->evidences; };
 
 protected:
   EvidenceAware() = default;
 
-  const std::vector<HiddenCluster> &getHiddenClusters() const {
-    return state->hidden_clusters;
-  };
-
-  void setEvidence(Node &node, const std::size_t value,
+  void setEvidence(const categoric::VariablePtr &variable,
+                   const std::size_t value,
                    const bool observation_should_prexist = true);
 
-  void removeEvidence(Node &node);
+  void removeEvidence(const categoric::VariablePtr &variable);
 
   void removeEvidences();
 };

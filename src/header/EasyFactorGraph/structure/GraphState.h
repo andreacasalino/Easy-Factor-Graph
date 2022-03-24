@@ -10,20 +10,25 @@
 #include <EasyFactorGraph/distribution/Distribution.h>
 
 #include <map>
+#include <set>
 #include <unordered_map>
+#include <variant>
 #include <vector>
 
 namespace EFG::strct {
-template <typename T> using Proxy = std::unique_ptr<T>;
+template <typename T> using Cache = std::unique_ptr<T>;
 
 struct Connection;
-struct HiddenNode {
+struct Node {
   categoric::VariablePtr variable;
-  distribution::DistributionCnstPtr unary_factors_contribution;
-  std::map<HiddenNode *, Connection> incoming_messages;
-  std::map<categoric::VariablePtr, distribution::DistributionCnstPtr>
-      evidences_contributions;
-  Proxy<distribution::DistributionCnstPtr> merged_contributions;
+
+  std::map<Node *, Connection> active_connections;
+
+  std::map<Node *, Connection> disabled_connections;
+  std::vector<distribution::DistributionCnstPtr> unary_factors;
+
+  Cache<const distribution::Distribution>
+      merged_contributions; // unary factors and marginalized evidences
 };
 
 struct Connection {
@@ -33,25 +38,11 @@ struct Connection {
   distribution::DistributionCnstPtr factor;
 };
 
-/**
- * @brief The set of variables part of the model, with the
- connectivity information
- */
-using HiddenNodes = std::unordered_map<categoric::VariablePtr, HiddenNode>;
-
-struct EvidenceNode {
-  categoric::VariablePtr variable;
-  distribution::DistributionCnstPtr unary_factors_contribution;
-  std::size_t evidence;
-  std::map<categoric::VariablePtr, distribution::DistributionCnstPtr>
-      disabled_connections;
-};
-
-using Evidences = std::unordered_map<categoric::VariablePtr, EvidenceNode>;
+using Nodes = std::unordered_map<categoric::VariablePtr, Node>;
 
 struct ConnectionAndDependencies {
   Connection *connection;
-  HiddenNode *sender;
+  Node *sender;
   std::vector<Connection *> dependencies;
 };
 /**
@@ -61,12 +52,15 @@ struct ConnectionAndDependencies {
  the model structure or the kind of evidences currently set)
  */
 struct HiddenCluster {
-  HiddenNodes nodes;
-  Proxy<std::vector<ConnectionAndDependencies>> connectivity;
+  std::set<Node *> nodes;
+  Cache<std::vector<ConnectionAndDependencies>> connectivity;
 };
 
+using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t>;
+
 struct GraphState {
-  std::vector<HiddenCluster> hidden_clusters;
+  Nodes nodes;
+  std::vector<HiddenCluster> clusters;
   Evidences evidences;
 };
 
@@ -79,4 +73,16 @@ protected:
 
   std::shared_ptr<GraphState> state;
 };
+
+struct HiddenNodeLocation {
+  std::vector<HiddenCluster>::iterator cluster;
+  Node *node;
+};
+
+struct EvidenceNodeLocation {
+  Evidences::iterator evidence;
+  Node *node;
+};
+
+using NodeLocation = std::variant<HiddenNodeLocation, EvidenceNodeLocation>;
 } // namespace EFG::strct
