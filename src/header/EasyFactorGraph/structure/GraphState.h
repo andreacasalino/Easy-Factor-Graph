@@ -8,6 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/distribution/Distribution.h>
+#include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include <map>
 #include <set>
@@ -28,15 +29,16 @@ struct Node {
   std::map<Node *, Connection> disabled_connections;
   std::vector<distribution::DistributionCnstPtr> unary_factors;
 
-  Cache<const distribution::Distribution>
+  Cache<const distribution::UnaryFactor>
       merged_unaries; // unary factors and marginalized evidences
 };
 
 struct Connection {
-  // nullptr when the message is not already available
-  distribution::DistributionCnstPtr message;
   // info for message computation
   distribution::DistributionCnstPtr factor;
+
+  // nullptr when the message is not already available
+  std::unique_ptr<const distribution::UnaryFactor> message;
 };
 
 using Nodes = std::unordered_map<categoric::VariablePtr, Node>;

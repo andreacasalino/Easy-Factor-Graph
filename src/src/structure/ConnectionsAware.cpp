@@ -92,15 +92,13 @@ void ConnectionsAware::addUnaryDistribution(
   const auto &var = unary_factor->getVariables().getVariables().front();
   auto node_location = findOrMakeNode(var);
   factorsAll.emplace(unary_factor);
+  Node *node = nullptr;
   visit(
       node_location,
-      [&unary_factor](const HiddenNodeLocation &location) {
-        location.node->unary_factors.push_back(unary_factor);
-        location.node->merged_unaries.reset();
-      },
-      [&unary_factor](const EvidenceNodeLocation &location) {
-        location.node->unary_factors.push_back(unary_factor);
-      });
+      [&node](const HiddenNodeLocation &location) { node = location.node; },
+      [&node](const EvidenceNodeLocation &location) { node = location.node; });
+  node->unary_factors.push_back(unary_factor);
+  node->merged_unaries.reset();
 }
 
 namespace {
@@ -116,10 +114,8 @@ void check_are_already_connected(Node &a, Node &b) {
 void ConnectionsAware::addBinaryDistribution(
     const EFG::distribution::DistributionCnstPtr &binary_factor) {
   const auto &vars = binary_factor->getVariables().getVariables();
-  auto &varA = vars.front();
-  auto &varB = vars.back();
-  auto nodeA_location = findOrMakeNode(varA);
-  auto nodeB_location = findOrMakeNode(varB);
+  auto nodeA_location = findOrMakeNode(vars.front());
+  auto nodeB_location = findOrMakeNode(vars.back());
 
   auto hybrid_insertion = [&](const HiddenNodeLocation &hidden,
                               const EvidenceNodeLocation &evidence) {
@@ -127,12 +123,12 @@ void ConnectionsAware::addBinaryDistribution(
     auto *node_evidence = evidence.node;
     check_are_already_connected(*node_hidden, *node_evidence);
     node_evidence->disabled_connections.emplace(
-        node_hidden, Connection{nullptr, binary_factor});
+        node_hidden, Connection{binary_factor, nullptr});
     node_hidden->disabled_connections.emplace(
         node_evidence,
-        Connection{marginalized_evidence(binary_factor, node_evidence->variable,
-                                         evidence.evidence->second),
-                   binary_factor});
+        Connection{binary_factor,
+                   make_evidence(*binary_factor, node_evidence->variable,
+                                 evidence.evidence->second)});
     node_hidden->merged_unaries.reset();
   };
 
@@ -146,10 +142,7 @@ void ConnectionsAware::addBinaryDistribution(
               auto *nodeB = hiddenB_location.node;
               // both are hidden
               check_are_already_connected(*nodeA, *nodeB);
-              nodeA->active_connections.emplace(
-                  nodeB, Connection{nullptr, binary_factor});
-              nodeB->active_connections.emplace(
-                  nodeA, Connection{nullptr, binary_factor});
+              connect(*nodeA, *nodeB, binary_factor);
               hiddenA_location.cluster->connectivity.reset();
               if (hiddenA_location.cluster != hiddenB_location.cluster) {
                 hiddenA_location.cluster->nodes.insert(
@@ -174,9 +167,9 @@ void ConnectionsAware::addBinaryDistribution(
               // both are evidences
               check_are_already_connected(*nodeA, *nodeB);
               nodeA->disabled_connections.emplace(
-                  nodeB, Connection{nullptr, binary_factor});
+                  nodeB, Connection{binary_factor, nullptr});
               nodeB->disabled_connections.emplace(
-                  nodeA, Connection{nullptr, binary_factor});
+                  nodeA, Connection{binary_factor, nullptr});
             });
       });
   factorsAll.emplace(binary_factor);

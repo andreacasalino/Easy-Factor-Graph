@@ -24,10 +24,7 @@ void visit(const NodeLocation &to_visit,
            std::function<void(const HiddenNodeLocation &)> hidden_case,
            std::function<void(const EvidenceNodeLocation &)> evidence_case);
 
-distribution::DistributionCnstPtr
-marginalized_evidence(const distribution::DistributionCnstPtr &binary_factor,
-                      const categoric::VariablePtr &evidence_var,
-                      const std::size_t evidence);
+void connect(Node &a, Node &b, const distribution::DistributionCnstPtr &factor);
 
 std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes);
 

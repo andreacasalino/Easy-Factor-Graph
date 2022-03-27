@@ -45,26 +45,26 @@ void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
   EvidenceNodeLocation evidence_location;
   visit(
       *node_location,
-      [this, &observation_should_prexists](const HiddenNodeLocation &location) {
+      [this, &observation_should_prexist](const HiddenNodeLocation &location) {
         auto *node = location.node;
         if (observation_should_prexist) {
-          throw Error{"Variable ", location.node->variable->name(),
+          throw Error{"Variable ", node->variable->name(),
                       " can't be set as an evidence"};
         }
         for (const auto &[connected_node, connection] :
              node->active_connections) {
-          node->disabled_connections.emplace(
-              connected_node, Connection{nullptr, connection.factor});
-          connected_node->disabled_connections.emplace(
-              node, Connection{nullptr, connection.factor});
+          node->disabled_connections[connected_node].factor = connection.factor;
+          connected_node->disabled_connections[node].factor = connection.factor;
+          connected_node->active_connections.erase(node);
         }
+        node->active_connections.clear();
         // update clusters
         if (1 == location.cluster->nodes.size()) {
           this->state->clusters.erase(location.cluster);
         } else {
           auto nodes = location.cluster->nodes;
           this->state->clusters.erase(location.cluster);
-          nodes.erase(location.node);
+          nodes.erase(node);
           auto split_clusters = compute_clusters(nodes);
           for (auto &cluster : split_clusters) {
             this->state->clusters.emplace_back(std::move(cluster));
@@ -76,30 +76,27 @@ void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
       });
   auto *node = evidence_location.node;
   for (auto &[connected_node, connection] : node->disabled_connections) {
-    auto connection_it =
-        connected_node->disabled_connections.find(evidence_location.node);
-    connection_it->second.message = marginalized_evidence(
-        connection_it->second.factor, evidence_location.node->variable,
-        evidence_location.evidence->second);
+    auto connection_it = connected_node->disabled_connections.find(node);
+    connection_it->second.message =
+        make_evidence(*connection_it->second.factor, node->variable,
+                      evidence_location.evidence->second);
     connected_node->merged_unaries.reset();
   }
   resetBelief();
 }
 
 namespace {
-void re_connect(Node &a, std::set<Node *> &involved_nodes) {
-  a.merged_unaries.reset();
-  involved_nodes.emplace(&a);
-  for (const auto &[connected_node, connection] : a.disabled_connections) {
+void re_connect(Node &node, std::set<Node *> &involved_nodes) {
+  for (const auto &[connected_node, connection] : node.disabled_connections) {
     involved_nodes.emplace(connected_node);
-    a.active_connections.emplace(connected_node,
-                                 Connection{nullptr, connection.factor});
-    connected_node->active_connections.emplace(
-        &a, Connection{nullptr, connection.factor});
-    connected_node->disabled_connections.erase(&a);
+    node.active_connections[connected_node].factor = connection.factor;
+    connected_node->active_connections[&node].factor = connection.factor;
+    connected_node->disabled_connections.erase(&node);
     connected_node->merged_unaries.reset();
   }
-  a.disabled_connections.clear();
+  involved_nodes.emplace(&node);
+  node.merged_unaries.reset();
+  node.disabled_connections.clear();
 }
 
 void update_clusters(std::vector<HiddenCluster> &clusters,

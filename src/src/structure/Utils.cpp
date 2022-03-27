@@ -56,47 +56,12 @@ void visit(const NodeLocation &to_visit,
   std::visit(Visitor{hidden_case, evidence_case}, to_visit);
 }
 
-namespace {
-categoric::Group extract_evidence(const categoric::Group &vars,
-                                  const categoric::VariablePtr &evidence_var) {
-  auto soup = vars.getVariables();
-  if (evidence_var == soup.front()) {
-    return categoric::Group{soup.back()};
-  }
-  return categoric::Group{soup.front()};
-}
-
-class MarginalizedEvidence : public distribution::Factor {
-public:
-  MarginalizedEvidence(const distribution::DistributionCnstPtr &binary_factor,
-                       const categoric::VariablePtr &evidence_var,
-                       const std::size_t evidence)
-      : distribution::Factor(
-            extract_evidence(binary_factor->getVariables(), evidence_var)) {
-    auto &map = getCombinationsMap_();
-    std::size_t remaining_pos = 0;
-    std::size_t leaving_pos = 1;
-    if (getVariables().getVariables().front() == evidence_var) {
-      std::swap(remaining_pos, leaving_pos);
-    }
-    const auto &evaluator = binary_factor->getEvaluator();
-    for (const auto &[comb, val] : binary_factor->getCombinationsMap()) {
-      const auto &comb_data = comb.data();
-      if (comb_data[leaving_pos] == evidence) {
-        map.emplace(std::vector<std::size_t>{comb_data[remaining_pos]},
-                    evaluator.evaluate(val));
-      }
-    }
-  }
-};
-} // namespace
-
-distribution::DistributionCnstPtr
-marginalized_evidence(const distribution::DistributionCnstPtr &binary_factor,
-                      const categoric::VariablePtr &evidence_var,
-                      const std::size_t evidence) {
-  return std::make_shared<MarginalizedEvidence>(binary_factor, evidence_var,
-                                                evidence);
+void connect(Node &a, Node &b,
+             const distribution::DistributionCnstPtr &factor) {
+  a.active_connections[&b].factor = factor;
+  b.active_connections[&a].factor = factor;
+  a.disabled_connections.erase(&b);
+  b.disabled_connections.erase(&a);
 }
 
 namespace {
@@ -178,35 +143,24 @@ std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes) {
 }
 
 namespace {
-class UnaryMerged : public distribution::Factor {
-public:
-  UnaryMerged(
-      const std::vector<const distribution::Distribution *> &unary_factors)
-      : distribution::Factor(categoric::Group{
-            unary_factors.front()->getVariables().getVariables().front()}) {
-    auto &map = getCombinationsMap_();
-    auto &var = getVariables().getVariables().front();
-    float val;
-    const auto size = var->size();
-    for (std::size_t k = 0; k < size; ++k) {
-      categoric::Combination comb({k});
-      val = 1.f;
-      for (const auto *factor : unary_factors) {
-        val *= factor->evaluate(comb);
-      }
-      map.emplace(k, val);
+std::unique_ptr<const UnaryFactor> make_merged_factor(
+    const std::vector<const distribution::Distribution *> &unary_factors) {
+  const auto &var =
+      unary_factors.front()->getVariables().getVariables().front();
+  std::vector<float> values;
+  float val;
+  const auto size = var->size();
+  values.reserve(size);
+  for (std::size_t k = 0; k < size; ++k) {
+    categoric::Combination comb({k});
+    val = 1.f;
+    for (const auto *factor : unary_factors) {
+      val *= factor->evaluate(comb);
     }
+    values.push_back(val);
   }
-
-  UnaryMerged(const categoric::VariablePtr &var)
-      : distribution::Factor(categoric::Group{var}) {
-    auto &map = getCombinationsMap_();
-    const auto size = var->size();
-    for (std::size_t k = 0; k < size; ++k) {
-      map.emplace(k, 1.f);
-    }
-  }
-};
+  return std::make_unique<UnaryFactor>(var, values);
+}
 } // namespace
 
 void update_merged_unaries(Node &subject) {
@@ -218,10 +172,10 @@ void update_merged_unaries(Node &subject) {
     unary_factors.push_back(connection.message.get());
   }
   if (unary_factors.empty()) {
-    subject.merged_unaries = std::make_unique<UnaryMerged>(subject.variable);
+    subject.merged_unaries = std::make_unique<UnaryFactor>(subject.variable);
     return;
   }
-  subject.merged_unaries = std::make_unique<UnaryMerged>(unary_factors);
+  subject.merged_unaries = make_merged_factor(unary_factors);
 }
 
 void update_connectivity(HiddenCluster &subject) {
@@ -250,31 +204,26 @@ void update_connectivity(HiddenCluster &subject) {
 }
 
 bool can_update_message(const ConnectionAndDependencies &subject) {
-  for (const auto *dep : subject.dependencies) {
-    if (nullptr == dep->message) {
-      return false;
-    }
-  }
-  return true;
+  return std::find(subject.dependencies.begin(), subject.dependencies.end(),
+                   nullptr) == subject.dependencies.end();
 }
 
 namespace {
-class MessageSUM : public distribution::Factor {
+class MessageSUM : public UnaryFactor {
 public:
-  MessageSUM(const UnaryMerged &messages,
+  MessageSUM(const UnaryFactor &messages,
              const distribution::Distribution &binary_factor);
 };
 
 ////////// remember to normalize messages
 
-class MessageMAP : public distribution::Factor {
+class MessageMAP : public UnaryFactor {
 public:
-  MessageMAP(const UnaryMerged &messages,
+  MessageMAP(const UnaryFactor &messages,
              const distribution::Distribution &binary_factor);
 };
 
-float diff(const distribution::Distribution &a,
-           const distribution::Distribution &b) {
+float diff(const UnaryFactor &a, const UnaryFactor &b) {
   auto &map_a = a.getCombinationsMap();
   auto &map_b = b.getCombinationsMap();
   auto map_a_it = map_a.begin();
@@ -300,7 +249,7 @@ MessageVariation update_message(ConnectionAndDependencies &subject,
   for (const auto *dep : subject.dependencies) {
     unary_factors.push_back(dep->message.get());
   }
-  UnaryMerged unary_factors_merged(unary_factors);
+  auto unary_factors_merged = make_merged_factor(unary_factors);
   auto previous_message = subject.connection->message;
   switch (kind) {
   case SUM:
@@ -318,5 +267,3 @@ MessageVariation update_message(ConnectionAndDependencies &subject,
   return diff(*previous_message, *subject.connection->message);
 }
 } // namespace EFG::strct
-
-namespace EFG::distribution {} // namespace EFG::distribution
