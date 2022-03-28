@@ -45,6 +45,9 @@ protected:
   void
   addDistribution(const EFG::distribution::DistributionCnstPtr &distribution);
 
+  const GraphState &getGraphState() const { return *state; };
+  GraphState &getGraphState_() { return *state; };
+
   const Nodes &getNodes() const { return state->nodes; }
 
   const std::vector<HiddenCluster> &getClusters() const {

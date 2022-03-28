@@ -42,6 +42,18 @@ protected:
   Pool &getPool() { return *pool; }
   void setPoolSize(const std::size_t new_size);
 
+  class ScopedPoolActivator {
+  public:
+    ScopedPoolActivator(PoolAware &subject, const std::size_t new_size)
+        : subject(subject) {
+      subject.setPoolSize(new_size);
+    }
+    ~ScopedPoolActivator() { subject.resetPool(); }
+
+  private:
+    PoolAware &subject;
+  };
+
 private:
   std::unique_ptr<Pool> pool;
 };
