@@ -56,14 +56,6 @@ void visit(const NodeLocation &to_visit,
   std::visit(Visitor{hidden_case, evidence_case}, to_visit);
 }
 
-void connect(Node &a, Node &b,
-             const distribution::DistributionCnstPtr &factor) {
-  a.active_connections[&b].factor = factor;
-  b.active_connections[&a].factor = factor;
-  a.disabled_connections.erase(&b);
-  b.disabled_connections.erase(&a);
-}
-
 namespace {
 struct ConnectionsResult {
   std::vector<Node *> not_connected;
@@ -142,27 +134,6 @@ std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes) {
   return result;
 }
 
-namespace {
-std::unique_ptr<const UnaryFactor> make_merged_factor(
-    const std::vector<const distribution::Distribution *> &unary_factors) {
-  const auto &var =
-      unary_factors.front()->getVariables().getVariables().front();
-  std::vector<float> values;
-  float val;
-  const auto size = var->size();
-  values.reserve(size);
-  for (std::size_t k = 0; k < size; ++k) {
-    categoric::Combination comb({k});
-    val = 1.f;
-    for (const auto *factor : unary_factors) {
-      val *= factor->evaluate(comb);
-    }
-    values.push_back(val);
-  }
-  return std::make_unique<UnaryFactor>(var, values);
-}
-} // namespace
-
 void update_merged_unaries(Node &subject) {
   std::vector<const distribution::Distribution *> unary_factors;
   for (const auto &factor : subject.unary_factors) {
@@ -172,10 +143,10 @@ void update_merged_unaries(Node &subject) {
     unary_factors.push_back(connection.message.get());
   }
   if (unary_factors.empty()) {
-    subject.merged_unaries = std::make_unique<UnaryFactor>(subject.variable);
+    subject.merged_unaries = make_unary(subject.variable);
     return;
   }
-  subject.merged_unaries = make_merged_factor(unary_factors);
+  subject.merged_unaries = make_unary(unary_factors);
 }
 
 void update_connectivity(HiddenCluster &subject) {
@@ -204,26 +175,15 @@ void update_connectivity(HiddenCluster &subject) {
 }
 
 bool can_update_message(const ConnectionAndDependencies &subject) {
-  return std::find(subject.dependencies.begin(), subject.dependencies.end(),
-                   nullptr) == subject.dependencies.end();
+  return std::find_if(subject.dependencies.begin(), subject.dependencies.end(),
+                      [](const Connection *connection) {
+                        return connection->message == nullptr;
+                      }) == subject.dependencies.end();
 }
 
 namespace {
-class MessageSUM : public UnaryFactor {
-public:
-  MessageSUM(const UnaryFactor &messages,
-             const distribution::Distribution &binary_factor);
-};
-
-////////// remember to normalize messages
-
-class MessageMAP : public UnaryFactor {
-public:
-  MessageMAP(const UnaryFactor &messages,
-             const distribution::Distribution &binary_factor);
-};
-
-float diff(const UnaryFactor &a, const UnaryFactor &b) {
+float diff(const distribution::UnaryFactor &a,
+           const distribution::UnaryFactor &b) {
   auto &map_a = a.getCombinationsMap();
   auto &map_b = b.getCombinationsMap();
   auto map_a_it = map_a.begin();
@@ -231,34 +191,39 @@ float diff(const UnaryFactor &a, const UnaryFactor &b) {
   int diff;
   for (auto map_b_it = map_b.begin(); map_b_it != map_b.end();
        ++map_b_it, ++map_a_it) {
-    diff = static_cast<int>(map_a_it->first.data().front());
-    diff -= static_cast<int>(map_b_it->first.data().front());
+    diff = static_cast<int>(map_a_it->second);
+    diff -= static_cast<int>(map_b_it->second);
     result += abs(diff);
   }
   return result;
 }
 } // namespace
 
-MessageVariation update_message(ConnectionAndDependencies &subject,
-                                const PropagationKind &kind) {
+std::optional<MessageVariation>
+update_message(ConnectionAndDependencies &subject,
+               const PropagationKind &kind) {
   if (nullptr == subject.sender->merged_unaries) {
     update_merged_unaries(*subject.sender);
   }
   std::vector<const distribution::Distribution *> unary_factors = {
       subject.sender->merged_unaries.get()};
   for (const auto *dep : subject.dependencies) {
+    if (nullptr == dep->message) {
+      return std::nullopt;
+    }
     unary_factors.push_back(dep->message.get());
   }
-  auto unary_factors_merged = make_merged_factor(unary_factors);
-  auto previous_message = subject.connection->message;
+  distribution::UnaryFactor merged_unaries(unary_factors);
+  std::unique_ptr<const distribution::UnaryFactor> previous_message =
+      std::move(subject.connection->message);
   switch (kind) {
   case SUM:
-    subject.connection->message = std::make_shared<MessageSUM>(
-        unary_factors_merged, *subject.connection->factor);
+    subject.connection->message = make_message<distribution::MessageSUM>(
+        merged_unaries, *subject.connection->factor);
     break;
   case MAP:
-    subject.connection->message = std::make_shared<MessageMAP>(
-        unary_factors_merged, *subject.connection->factor);
+    subject.connection->message = make_message<distribution::MessageMAP>(
+        merged_unaries, *subject.connection->factor);
     break;
   }
   if (nullptr == previous_message) {

@@ -24,11 +24,13 @@ UnaryFactor::UnaryFactor(const categoric::VariablePtr &var)
   }
 }
 
-UnaryFactor::UnaryFactor(const std::vector<DistributionCnstPtr> &factors)
+UnaryFactor::UnaryFactor(
+    const std::vector<const distribution::Distribution *> &factors)
     : UnaryFactor(factors.front()->getVariables().getVariables().front()) {
-  for (const auto &factor : factors) {
+  for (const auto *factor : factors) {
     merge(*factor);
   }
+  normalize();
 }
 
 void UnaryFactor::merge(const Distribution &to_merge) {

@@ -9,13 +9,15 @@
 
 #include <EasyFactorGraph/distribution/Factor.h>
 
+#include <type_traits>
+
 namespace EFG::distribution {
 class UnaryFactor : public distribution::Factor {
 public:
   // all ones are assumed
   UnaryFactor(const categoric::VariablePtr &var);
 
-  UnaryFactor(const std::vector<DistributionCnstPtr> &factors);
+  UnaryFactor(const std::vector<const distribution::Distribution *> &factors);
 
   const categoric::VariablePtr &getVariable() const { return variable; }
 
@@ -32,24 +34,48 @@ private:
   categoric::VariablePtr variable;
 };
 
-class Message : public UnaryFactor {
-public:
-  Message(const Distribution &binary_factor, const UnaryFactor &unary_factor);
-
-  Message(const Distribution &binary_factor, const categoric::VariablePtr &var);
-};
-
 class Evidence : public UnaryFactor {
 public:
   Evidence(const Distribution &binary_factor,
            const categoric::VariablePtr &evidence_var,
            const std::size_t evidence);
 };
+
+class MessageSUM : public UnaryFactor {
+public:
+  MessageSUM(const UnaryFactor &merged_unaries,
+             const distribution::Distribution &binary_factor);
+};
+
+////////// remember to normalize messages
+
+class MessageMAP : public UnaryFactor {
+public:
+  MessageMAP(const UnaryFactor &merged_unaries,
+             const distribution::Distribution &binary_factor);
+};
+
 } // namespace EFG::distribution
 
 namespace EFG::strct {
+template <typename... Args>
+std::unique_ptr<distribution::UnaryFactor> make_unary(Args &&...args) {
+  return std::make_unique<distribution::UnaryFactor>(
+      std::forward<Args>(args)...);
+}
+
+template <typename MessageT>
+std::unique_ptr<MessageT>
+make_message(const distribution::UnaryFactor &merged_unaries,
+             const distribution::Distribution &binary_factor) {
+  static_assert(std::is_same<MessageT, distribution::MessageMAP>{}() ||
+                    std::is_same<MessageT, distribution::MessageSUM>{}(),
+                "not a valid Message type");
+  return std::make_unique<MessageT>(merged_unaries, binary_factor);
+}
+
 std::unique_ptr<distribution::Evidence>
 make_evidence(const distribution::Distribution &binary_factor,
               const categoric::VariablePtr &evidence_var,
               const std::size_t evidence);
-}
+} // namespace EFG::strct

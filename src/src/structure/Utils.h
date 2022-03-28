@@ -12,6 +12,7 @@
 
 #include <functional>
 #include <limits>
+#include <optional>
 
 namespace EFG::strct {
 std::vector<HiddenCluster>::iterator
@@ -23,8 +24,6 @@ std::optional<NodeLocation> find_node(GraphState &state,
 void visit(const NodeLocation &to_visit,
            std::function<void(const HiddenNodeLocation &)> hidden_case,
            std::function<void(const EvidenceNodeLocation &)> evidence_case);
-
-void connect(Node &a, Node &b, const distribution::DistributionCnstPtr &factor);
 
 std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes);
 
@@ -41,6 +40,6 @@ bool can_update_message(const ConnectionAndDependencies &subject);
 // throw when the computation is not possible
 // MAX_VARIATION that the message was computed and before was nullptr
 // any other number is the delta w.r.t, the previous message
-MessageVariation update_message(ConnectionAndDependencies &subject,
-                                const PropagationKind &kind);
+std::optional<MessageVariation>
+update_message(ConnectionAndDependencies &subject, const PropagationKind &kind);
 } // namespace EFG::strct

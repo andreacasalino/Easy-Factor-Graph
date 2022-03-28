@@ -1,19 +1,19 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #pragma once
+#pragma once
 
-// #include <EasyFactorGraph/structure/ConnectionsAware.h>
+#include <EasyFactorGraph/structure/ConnectionsAware.h>
+#include <EasyFactorGraph/structure/Pool.h>
 
-// #include <memory>
-
-// namespace EFG::strct {
-// class BeliefPropagator : virtual public ConnectionsAware {
-// protected:
-//   PropagationResult propagateBelief(const PropagationKind &kind) override;
-// };
-// } // namespace EFG::strct
+namespace EFG::strct {
+class BeliefPropagator : virtual public ConnectionsAware,
+                         virtual public PoolAware {
+protected:
+  PropagationResult propagateBelief(const PropagationKind &kind) override;
+};
+} // namespace EFG::strct

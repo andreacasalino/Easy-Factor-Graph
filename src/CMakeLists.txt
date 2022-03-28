@@ -23,12 +23,12 @@ target_include_directories(${PROJECT_SHORTNAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/train/handlers>
 )
 
-find_package(OpenMP)
+find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_SHORTNAME}
     PRIVATE
         XML-Parser
-	OpenMP::OpenMP_CXX
+        Threads::Threads
     PUBLIC
-	TrainingTools
+	      TrainingTools
 )
 

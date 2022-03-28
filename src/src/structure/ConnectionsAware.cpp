@@ -109,6 +109,14 @@ void check_are_already_connected(Node &a, Node &b) {
                 " are already connected"};
   }
 }
+
+void connect(Node &a, Node &b,
+             const distribution::DistributionCnstPtr &factor) {
+  a.active_connections[&b].factor = factor;
+  b.active_connections[&a].factor = factor;
+  a.disabled_connections.erase(&b);
+  b.disabled_connections.erase(&a);
+}
 } // namespace
 
 void ConnectionsAware::addBinaryDistribution(
