@@ -63,4 +63,13 @@ void FactorExponential::setWeight(float w) {
 float FactorExponential::getWeight() const {
   return static_cast<const ExponentialEvaluator &>(getEvaluator()).getWeight();
 }
+
+FactorExponential::FactorExponential(const FactorExponential &o)
+    : DistributionConcrete(
+          std::make_shared<ExponentialEvaluator>(o.getWeight()),
+          o.getVariables(),
+          std::make_shared<CombinationRawValuesMap>(o.getCombinationsMap())) {}
+
+FactorExponential::FactorExponential(FactorExponential &&o)
+    : DistributionConcrete(std::move(o)) {}
 } // namespace EFG::distribution

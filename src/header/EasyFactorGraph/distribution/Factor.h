@@ -25,6 +25,9 @@ class Factor : public DistributionConcrete, public DistributionSetter {
 public:
   Factor(const Distribution &to_clone);
 
+  Factor(const Factor &o);
+  Factor(Factor &&o);
+
   Factor(const categoric::Group &vars);
 
   Factor(const categoric::Group &vars, const UseSimpleCorrelation &);

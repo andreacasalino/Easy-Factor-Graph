@@ -43,9 +43,9 @@ void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
     throw Error{variable->name(), " is a non existing variable"};
   }
   EvidenceNodeLocation evidence_location;
-  visit(
+  visit_location(
       *node_location,
-      [this, &observation_should_prexist](const HiddenNodeLocation &location) {
+      [&](const HiddenNodeLocation &location) {
         auto *node = location.node;
         if (observation_should_prexist) {
           throw Error{"Variable ", node->variable->name(),
@@ -70,6 +70,8 @@ void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
             this->state->clusters.emplace_back(std::move(cluster));
           }
         }
+        evidence_location = EvidenceNodeLocation{
+            this->state->evidences.emplace(node->variable, value).first, node};
       },
       [&evidence_location](const EvidenceNodeLocation &location) {
         evidence_location = location;

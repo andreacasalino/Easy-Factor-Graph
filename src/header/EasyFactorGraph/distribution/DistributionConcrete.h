@@ -14,6 +14,10 @@ using CombinationRawValuesMapPtr = std::shared_ptr<CombinationRawValuesMap>;
 
 class DistributionConcrete : virtual public Distribution {
 public:
+  DistributionConcrete(const DistributionConcrete &o) = delete;
+  DistributionConcrete &operator==(const DistributionConcrete &) = delete;
+  DistributionConcrete &operator==(DistributionConcrete &&) = delete;
+
   CombinationFinder
   makeFinder(const categoric::VariablesSoup &bigger_group) const final;
 
@@ -28,6 +32,8 @@ public:
   };
 
 protected:
+  DistributionConcrete(DistributionConcrete &&o);
+
   DistributionConcrete(const EvaluatorPtr &evaluator,
                        const categoric::Group &vars);
 

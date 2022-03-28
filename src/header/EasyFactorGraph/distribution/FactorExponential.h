@@ -20,6 +20,9 @@ public:
   FactorExponential(const Factor &factor);
   FactorExponential(const Factor &factor, const float weigth);
 
+  FactorExponential(const FactorExponential &o);
+  FactorExponential(FactorExponential &&o);
+
   /**
    * @brief sets the weight used by teh exponential function converting the
    raw

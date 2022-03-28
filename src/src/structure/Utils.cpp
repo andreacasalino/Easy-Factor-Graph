@@ -39,9 +39,10 @@ std::optional<NodeLocation> find_node(GraphState &state,
   return std::nullopt;
 }
 
-void visit(const NodeLocation &to_visit,
-           std::function<void(const HiddenNodeLocation &)> hidden_case,
-           std::function<void(const EvidenceNodeLocation &)> evidence_case) {
+void visit_location(
+    const NodeLocation &to_visit,
+    std::function<void(const HiddenNodeLocation &)> hidden_case,
+    std::function<void(const EvidenceNodeLocation &)> evidence_case) {
   struct Visitor {
     std::function<void(const HiddenNodeLocation &)> hidden_case;
     std::function<void(const EvidenceNodeLocation &)> evidence_case;
@@ -158,8 +159,7 @@ void update_connectivity(HiddenCluster &subject) {
       continue;
     }
     std::set<Connection *> all_dependencies;
-    for (const auto &[receiver, incoming_connection] :
-         sender->active_connections) {
+    for (auto &[receiver, incoming_connection] : sender->active_connections) {
       all_dependencies.emplace(&incoming_connection);
     }
     for (auto &[receiver, incoming_connection] : sender->active_connections) {

@@ -90,6 +90,10 @@ void Pool::parallelFor(const std::vector<Task> &tasks) {
 
 PoolAware::PoolAware() { resetPool(); }
 
+PoolAware::~PoolAware() = default;
+
+void PoolAware::resetPool() { pool = std::make_unique<Pool>(1); }
+
 void PoolAware::setPoolSize(const std::size_t new_size) {
   if (new_size == pool->size()) {
     return;

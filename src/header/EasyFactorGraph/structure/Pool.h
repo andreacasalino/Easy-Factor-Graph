@@ -32,12 +32,12 @@ private:
 
 class PoolAware {
 public:
-  virtual ~PoolAware() = default;
+  virtual ~PoolAware();
 
 protected:
   PoolAware();
 
-  void resetPool() { pool = std::make_unique<Pool>(1); }
+  void resetPool();
 
   Pool &getPool() { return *pool; }
   void setPoolSize(const std::size_t new_size);

@@ -21,9 +21,10 @@ find_cluster(GraphState &state, const categoric::VariablePtr &variable);
 std::optional<NodeLocation> find_node(GraphState &state,
                                       const categoric::VariablePtr &variable);
 
-void visit(const NodeLocation &to_visit,
-           std::function<void(const HiddenNodeLocation &)> hidden_case,
-           std::function<void(const EvidenceNodeLocation &)> evidence_case);
+void visit_location(
+    const NodeLocation &to_visit,
+    std::function<void(const HiddenNodeLocation &)> hidden_case,
+    std::function<void(const EvidenceNodeLocation &)> evidence_case);
 
 std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes);
 

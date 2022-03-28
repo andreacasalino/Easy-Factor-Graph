@@ -66,7 +66,7 @@ NodeLocation
 ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
   auto info = find_node(*state, var);
   if (info) {
-    visit(
+    visit_location(
         *info,
         [&var](const HiddenNodeLocation &info) {
           check_is_same_variable(var, info.node->variable);
@@ -93,7 +93,7 @@ void ConnectionsAware::addUnaryDistribution(
   auto node_location = findOrMakeNode(var);
   factorsAll.emplace(unary_factor);
   Node *node = nullptr;
-  visit(
+  visit_location(
       node_location,
       [&node](const HiddenNodeLocation &location) { node = location.node; },
       [&node](const EvidenceNodeLocation &location) { node = location.node; });
@@ -140,10 +140,10 @@ void ConnectionsAware::addBinaryDistribution(
     node_hidden->merged_unaries.reset();
   };
 
-  visit(
+  visit_location(
       nodeA_location,
       [&](const HiddenNodeLocation &hiddenA_location) {
-        visit(
+        visit_location(
             nodeB_location,
             [&](const HiddenNodeLocation &hiddenB_location) {
               auto *nodeA = hiddenA_location.node;
@@ -164,7 +164,7 @@ void ConnectionsAware::addBinaryDistribution(
             });
       },
       [&](const EvidenceNodeLocation &evidenceA_location) {
-        visit(
+        visit_location(
             nodeB_location,
             [&](const HiddenNodeLocation &hiddenB_location) {
               hybrid_insertion(hiddenB_location, evidenceA_location);

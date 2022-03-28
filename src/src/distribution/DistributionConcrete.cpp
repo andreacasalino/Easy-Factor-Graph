@@ -10,6 +10,12 @@
 #include <EasyFactorGraph/distribution/DistributionConcrete.h>
 
 namespace EFG::distribution {
+DistributionConcrete::DistributionConcrete(DistributionConcrete &&o)
+    : DistributionConcrete(o.evaluator, o.variables, o.combinations_map) {
+  o.evaluator.reset();
+  o.combinations_map.reset();
+}
+
 DistributionConcrete::DistributionConcrete(const EvaluatorPtr &evaluator,
                                            const categoric::Group &vars)
     : variables(vars), evaluator(evaluator) {

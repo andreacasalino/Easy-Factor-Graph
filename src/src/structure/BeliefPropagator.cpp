@@ -79,7 +79,7 @@ public:
 
 private:
   MessageVariation max_variation = 0;
-  std::mutex max_variation_mtx;
+  mutable std::mutex max_variation_mtx;
 };
 
 bool has_locked_dependency(const ConnectionAndDependencies &subject,
@@ -163,7 +163,7 @@ PropagationResult
 BeliefPropagator::propagateBelief(const PropagationKind &kind) {
   if (hasPropagationResult() &&
       (kind == getLastPropagationResult().propagation_kind_done)) {
-    return;
+    return getLastPropagationResult();
   }
   auto &clusters = getClusters_();
   resetMessages(clusters);

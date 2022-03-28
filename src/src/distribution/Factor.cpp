@@ -21,6 +21,11 @@ public:
   float evaluate(const float &input) const final { return input; }
 };
 
+namespace {
+static const std::shared_ptr<BasicEvaluator> BASIC_EVALUATOR =
+    std::make_shared<BasicEvaluator>();
+}
+
 Factor::Factor(const Distribution &to_clone) : Factor(to_clone.getVariables()) {
   auto &comb_map = getCombinationsMap_();
   for (const auto &[comb, raw_val] : to_clone.getCombinationsMap()) {
@@ -29,7 +34,7 @@ Factor::Factor(const Distribution &to_clone) : Factor(to_clone.getVariables()) {
 }
 
 Factor::Factor(const categoric::Group &vars)
-    : DistributionConcrete(std::make_shared<BasicEvaluator>(), vars) {}
+    : DistributionConcrete(BASIC_EVALUATOR, vars) {}
 
 namespace {
 void check_all_same_size(const categoric::VariablesSoup &vars) {
@@ -194,5 +199,12 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
 
 Factor::Factor(const categoric::Group &vars,
                const CombinationRawValuesMapPtr &map)
-    : DistributionConcrete(std::make_shared<BasicEvaluator>(), vars, map) {}
+    : DistributionConcrete(BASIC_EVALUATOR, vars, map) {}
+
+Factor::Factor(const Factor &o)
+    : DistributionConcrete(
+          BASIC_EVALUATOR, o.getVariables(),
+          std::make_shared<CombinationRawValuesMap>(o.getCombinationsMap())) {}
+
+Factor::Factor(Factor &&o) : DistributionConcrete(std::move(o)) {}
 } // namespace EFG::distribution
