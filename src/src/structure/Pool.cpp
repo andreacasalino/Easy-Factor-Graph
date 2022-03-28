@@ -46,7 +46,7 @@ Pool::Worker::Worker(const std::size_t threads_numb,
     : threads_numb(threads_numb), thread_id(thread_id) {
   worker_ = std::thread{[this]() {
     while (this->life) {
-      std::scoped_lock(this->tasks_mtx);
+      std::scoped_lock lock(this->tasks_mtx);
       if (nullptr != this->tasks) {
         this->is_busy = true;
         process(*this->tasks, this->threads_numb, this->thread_id);
@@ -63,7 +63,7 @@ Pool::Worker::~Worker() {
 }
 
 void Pool::Worker::dispatch(const Tasks &tasks) {
-  std::scoped_lock(this->tasks_mtx);
+  std::scoped_lock lock(this->tasks_mtx);
   this->tasks = &tasks;
 }
 
