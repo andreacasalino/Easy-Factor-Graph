@@ -76,27 +76,39 @@ void UnaryFactor::normalize() {
 }
 
 namespace {
-categoric::VariablePtr
-get_remaining(const Distribution &binary_factor,
-              const categoric::VariablePtr &evidence_var) {
+categoric::VariablePtr get_other_var(const Distribution &binary_factor,
+                                     const categoric::VariablePtr &var) {
+  if (2 != binary_factor.getVariables().getVariables().size()) {
+    throw Error{"invalid binary factor"};
+  }
   const auto &vars = binary_factor.getVariables().getVariables();
-  if (vars.front() == evidence_var) {
+  if (vars.front() == var) {
     return vars.back();
   }
   return vars.front();
+}
+
+void get_positions(const Distribution &binary_factor,
+                   const categoric::VariablePtr &unary_factor_var,
+                   std::size_t &unary_factor_var_pos,
+                   std::size_t &other_var_pos) {
+  unary_factor_var_pos = 0;
+  other_var_pos = 1;
+  if (binary_factor.getVariables().getVariables().back().get() ==
+      unary_factor_var.get()) {
+    std::swap(unary_factor_var_pos, other_var_pos);
+  }
 }
 } // namespace
 
 Evidence::Evidence(const Distribution &binary_factor,
                    const categoric::VariablePtr &evidence_var,
                    const std::size_t evidence)
-    : UnaryFactor(get_remaining(binary_factor, evidence_var),
+    : UnaryFactor(get_other_var(binary_factor, evidence_var),
                   DONT_FILL_DOMAIN_TAG) {
-  std::size_t pos_evidence = 0;
-  std::size_t pos_hidden = 1;
-  if (binary_factor.getVariables().getVariables().back() == evidence_var) {
-    std::swap(pos_evidence, pos_hidden);
-  }
+  std::size_t pos_evidence;
+  std::size_t pos_hidden;
+  get_positions(binary_factor, getVariable(), pos_hidden, pos_evidence);
   auto &map = getCombinationsMap_();
   const auto &eval = binary_factor.getEvaluator();
   for (const auto &[comb, val] : binary_factor.getCombinationsMap()) {
@@ -108,6 +120,66 @@ Evidence::Evidence(const Distribution &binary_factor,
     }
   }
 }
+
+namespace {
+void fill_message(
+    const UnaryFactor &merged_unaries,
+    const distribution::Distribution &binary_factor,
+    distribution::CombinationRawValuesMap &recipient,
+    const std::function<float(const std::vector<float> &)> &reduction) {
+  std::size_t message_var_pos;
+  std::size_t sender_var_pos;
+  get_positions(binary_factor, merged_unaries.getVariable(), message_var_pos,
+                sender_var_pos);
+  std::vector<float> values;
+  auto to_eliminate =
+      binary_factor.getVariables().getVariables()[sender_var_pos];
+  for (const auto &[comb, val] : merged_unaries.getCombinationsMap()) {
+    values.clear();
+    for (std::size_t sender_comb = 0; sender_comb < to_eliminate->size();
+         ++sender_comb) {
+      std::vector<std::size_t> binary_factor_comb;
+      binary_factor_comb.resize(2);
+      binary_factor_comb[sender_var_pos] = sender_comb;
+      binary_factor_comb[message_var_pos] = comb.data().front();
+      values.push_back(val * binary_factor.evaluate(categoric::Combination{
+                                 std::move(binary_factor_comb)}));
+    }
+    recipient.emplace(comb, reduction(values));
+  }
+}
+} // namespace
+
+MessageSUM::MessageSUM(const UnaryFactor &merged_unaries,
+                       const distribution::Distribution &binary_factor)
+    : UnaryFactor(get_other_var(binary_factor, merged_unaries.getVariable()),
+                  DONT_FILL_DOMAIN_TAG) {
+  fill_message(merged_unaries, binary_factor, getCombinationsMap_(),
+               [](const std::vector<float> &values) {
+                 float result = 0;
+                 for (const auto &val : values) {
+                   result += val;
+                 }
+                 return result;
+               });
+}
+
+MessageMAP::MessageMAP(const UnaryFactor &merged_unaries,
+                       const distribution::Distribution &binary_factor)
+    : UnaryFactor(get_other_var(binary_factor, merged_unaries.getVariable()),
+                  DONT_FILL_DOMAIN_TAG) {
+  fill_message(merged_unaries, binary_factor, getCombinationsMap_(),
+               [](const std::vector<float> &values) {
+                 float result = values.front();
+                 for (const auto &val : values) {
+                   if (val > result) {
+                     result = val;
+                   }
+                 }
+                 return result;
+               });
+}
+
 } // namespace EFG::distribution
 
 namespace EFG::strct {
