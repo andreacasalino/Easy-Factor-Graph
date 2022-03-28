@@ -19,7 +19,7 @@ public:
   }
 
   void setWeight(float w) { weigth = w; };
-  float getWeight(float w) const { return weigth; };
+  float getWeight() const { return weigth; };
 
 private:
   float weigth;
@@ -61,6 +61,6 @@ void FactorExponential::setWeight(float w) {
 }
 
 float FactorExponential::getWeight() const {
-  return static_cast<const ExponentialEvaluator &>(getEvaluator()).getWeight(w);
+  return static_cast<const ExponentialEvaluator &>(getEvaluator()).getWeight();
 }
 } // namespace EFG::distribution

@@ -14,7 +14,6 @@ enum PropagationKind { SUM, MAP };
 
 struct PropagationContext {
   std::size_t max_iterations_loopy_propagation;
-  std::size_t threads_to_use;
 };
 
 struct PropagationResult {

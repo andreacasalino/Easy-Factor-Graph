@@ -68,7 +68,8 @@ TunableClusters::const_iterator
 DistributionsTunableInserter::copyTunableDistribution(
     const distribution::FactorExponential &tunable_distribution,
     const categoric::VariablesSet &group_sharing_weigth) {
-  insertTunableDistribution(std::make_shared<distribution::FactorExponential>(),
-                            group_sharing_weigth);
+  return insertTunableDistribution(
+      std::make_shared<distribution::FactorExponential>(),
+      group_sharing_weigth);
 }
 } // namespace EFG::strct
