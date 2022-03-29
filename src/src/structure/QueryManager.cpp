@@ -108,51 +108,66 @@ std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
   return result;
 }
 
-// distribution::factor::cnst::Factor
-// QueryManager::getJointMarginalDistribution(
-//     const std::set<std::string> &subgroup) {
-//   std::set<Node *> hiddenGroup;
-//   std::list<distribution::factor::cnst::IndicatorFactor> indicators;
-//   std::for_each(subgroup.begin(), subgroup.end(), [&](const std::string
-//   &name) {
-//     auto itN = this->nodes.find(categoric::makeVariable(2, name));
-//     if (itN == this->nodes.end()) {
-//       throw Error("non existent variable");
-//     }
-//     auto itOb = this->evidences.find(itN->first);
-//     if (itOb == this->evidences.end()) {
-//       // hidden
-//       hiddenGroup.emplace(&itN->second);
-//     } else {
-//       indicators.emplace_back(itN->first, itOb->second);
-//     }
-//   });
+namespace {
+class SubgraphFactor : public distribution::Factor {
+public:
+  SubgraphFactor(
+      const std::vector<const distribution::Distribution *> &contributions)
+      : distribution::Factor(contributions) {}
+};
+} // namespace
 
-//   this->propagateBelief(PropagationKind::Sum);
+std::unique_ptr<distribution::Distribution>
+QueryManager::getJointMarginalDistribution(
+    const std::unordered_set<std::string> &subgroup,
+    const std::size_t threads) {
+  {
+    ScopedPoolActivator activator(*this, threads);
+    propagateBelief(SUM);
+  }
+  std::map<Node *, NodeLocation> subgroup_locations;
+  for (const auto &var_name : subgroup) {
+    auto location = locate(var_name);
+    if (!location) {
+      throw_inexistent_var(var_name);
+    }
+    Node *node = nullptr;
+    visit_location(
+        *location,
+        [&node](const HiddenNodeLocation &location) { node = location.node; },
+        [&node](const EvidenceNodeLocation &location) {
+          node = location.node;
+        });
+    subgroup_locations[node] = *location;
+  }
 
-//   // gather hidden variables factors
-//   std::set<const distribution::Distribution *> toMerge;
-//   {
-//     std::for_each(hiddenGroup.begin(), hiddenGroup.end(),
-//                   [&toMerge, &hiddenGroup](const Node *n) {
-//                     gatherUnaries(toMerge, *n);
-//                     for (auto c = n->activeConnections.begin();
-//                          c != n->activeConnections.end(); ++c) {
-//                       if (hiddenGroup.find(c->first) == hiddenGroup.end()) {
-//                         // connection to node outside of the subgraph
-//                         toMerge.emplace(c->second.message2This.get());
-//                       } else {
-//                         // connection to node inside of the subgraph
-//                         toMerge.emplace(c->second.factor.get());
-//                       }
-//                     }
-//                   });
-//   }
-//   std::for_each(
-//       indicators.begin(), indicators.end(),
-//       [&toMerge](const distribution::factor::cnst::IndicatorFactor &i) {
-//         toMerge.emplace(&i);
-//       });
-//   return distribution::factor::cnst::Factor(toMerge);
-// }
+  std::set<const distribution::Distribution *> contributions;
+  std::vector<distribution::Indicator> indicators;
+  for (const auto &[node, location] : subgroup_locations) {
+    visit_location(
+        location,
+        [&](const HiddenNodeLocation &location) {
+          contributions.emplace(location.node->merged_unaries.get());
+          for (const auto &[connected_node, connection] :
+               location.node->active_connections) {
+            auto subgroup_locations_it =
+                subgroup_locations.find(connected_node);
+            if (subgroup_locations_it == subgroup_locations.end()) {
+              contributions.emplace(connection.message.get());
+            } else {
+              contributions.emplace(connection.factor.get());
+            }
+          }
+        },
+        [&](const EvidenceNodeLocation &location) {
+          auto &added = indicators.emplace_back(location.node->variable,
+                                                location.evidence->second);
+          contributions.emplace(&added);
+        });
+  }
+
+  return std::make_unique<SubgraphFactor>(
+      std::vector<const distribution::Distribution *>{contributions.begin(),
+                                                      contributions.end()});
+}
 } // namespace EFG::strct

@@ -29,7 +29,7 @@ public:
    * described by the passed variables.
    * @throw when some of the passed variable names are not found
    */
-  distribution::Factor
+  std::unique_ptr<distribution::Distribution>
   getJointMarginalDistribution(const std::unordered_set<std::string> &subgroup,
                                const std::size_t threads = 1);
 

@@ -42,9 +42,9 @@ public:
 protected:
   Factor(const categoric::Group &vars, const CombinationRawValuesMapPtr &map);
 
-private:
   Factor(const std::vector<const Distribution *> &factors);
 
+private:
   template <typename... Distributions>
   static std::vector<const Distribution *>
   pack_factors(const Distributions &...factors) {
