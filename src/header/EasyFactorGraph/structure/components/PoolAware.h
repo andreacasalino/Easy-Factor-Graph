@@ -12,7 +12,8 @@
 #include <vector>
 
 namespace EFG::strct {
-using Task = std::function<void()>;
+using Task = std::function<void(const std::size_t)>; // the processing thread id
+                                                     // is passed
 using Tasks = std::vector<Task>;
 
 class Pool {

@@ -36,7 +36,7 @@ namespace {
 void process(const Tasks &subject, const std::size_t threads_numb,
              const std::size_t thread_id) {
   for (std::size_t k = thread_id; k < subject.size(); k += threads_numb) {
-    subject[k]();
+    subject[k](thread_id);
   }
 }
 } // namespace
