@@ -13,32 +13,6 @@
 #include <math.h>
 
 namespace EFG::strct {
-std::vector<HiddenCluster>::iterator
-find_cluster(GraphState &state, const categoric::VariablePtr &variable) {
-  auto nodes_it = state.nodes.find(variable);
-  if (nodes_it == state.nodes.end()) {
-    return state.clusters.end();
-  }
-  auto *node = &nodes_it->second;
-  return std::find_if(state.clusters.begin(), state.clusters.end(),
-                      [&node](const HiddenCluster &cluster) {
-                        return cluster.nodes.find(node) != cluster.nodes.end();
-                      });
-}
-
-std::optional<NodeLocation> find_node(GraphState &state,
-                                      const categoric::VariablePtr &variable) {
-  auto evidences_it = state.evidences.find(variable);
-  if (evidences_it != state.evidences.end()) {
-    return EvidenceNodeLocation{evidences_it, &state.nodes[variable]};
-  }
-  auto clusters_it = find_cluster(state, variable);
-  if (clusters_it != state.clusters.end()) {
-    return HiddenNodeLocation{clusters_it, &state.nodes[variable]};
-  }
-  return std::nullopt;
-}
-
 void visit_location(
     const NodeLocation &to_visit,
     std::function<void(const HiddenNodeLocation &)> hidden_case,

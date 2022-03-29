@@ -7,20 +7,14 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/BeliefAware.h>
-#include <EasyFactorGraph/structure/GraphState.h>
+#include <EasyFactorGraph/structure/components/BeliefAware.h>
+#include <EasyFactorGraph/structure/components/StateAware.h>
 
 #include <functional>
 #include <limits>
 #include <optional>
 
 namespace EFG::strct {
-std::vector<HiddenCluster>::iterator
-find_cluster(GraphState &state, const categoric::VariablePtr &variable);
-
-std::optional<NodeLocation> find_node(GraphState &state,
-                                      const categoric::VariablePtr &variable);
-
 void visit_location(
     const NodeLocation &to_visit,
     std::function<void(const HiddenNodeLocation &)> hidden_case,

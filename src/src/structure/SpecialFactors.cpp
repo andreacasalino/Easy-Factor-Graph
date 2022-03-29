@@ -180,6 +180,13 @@ MessageMAP::MessageMAP(const UnaryFactor &merged_unaries,
                });
 }
 
+Indicator::Indicator(const categoric::VariablePtr &var, const std::size_t value)
+    : UnaryFactor(var) {
+  if (value >= var->size()) {
+    throw Error{"Invalid indicator factor"};
+  }
+  getCombinationsMap_().emplace(std::vector<std::size_t>{value}, 1);
+}
 } // namespace EFG::distribution
 
 namespace EFG::strct {

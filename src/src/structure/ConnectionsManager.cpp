@@ -6,31 +6,14 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
-#include <EasyFactorGraph/structure/ConnectionsAware.h>
+#include <EasyFactorGraph/structure/ConnectionsManager.h>
 
 #include "Utils.h"
 
 #include <algorithm>
 
 namespace EFG::strct {
-categoric::VariablesSet ConnectionsAware::getVariables() const {
-  categoric::VariablesSet result;
-  for (const auto &[var, el] : state->nodes) {
-    result.emplace(var);
-  }
-  return result;
-}
-
-categoric::VariablePtr
-ConnectionsAware::findVariable(const std::string &name) const {
-  auto nodes_it = state->nodes.find(categoric::make_variable(2, name));
-  if (nodes_it == state->nodes.end()) {
-    throw Error{name, " is an inexistent variable"};
-  }
-  return nodes_it->first;
-}
-
-void ConnectionsAware::addDistribution(
+void ConnectionsManager::addDistribution(
     const EFG::distribution::DistributionCnstPtr &distribution) {
   if (nullptr == distribution) {
     throw Error{"null distribution can't be add"};
@@ -42,14 +25,15 @@ void ConnectionsAware::addDistribution(
   switch (distribution->getVariables().getVariables().size()) {
   case 1:
     addUnaryDistribution(distribution);
-    return;
+    break;
   case 2:
     addBinaryDistribution(distribution);
-    return;
+    break;
   default:
+    throw Error{"Factor with invalid number of variables"};
     break;
   }
-  throw Error{"Factor with invalid number of variables"};
+  factorsAll.emplace(distribution);
 }
 
 namespace {
@@ -63,8 +47,8 @@ void check_is_same_variable(const categoric::VariablePtr &a,
 } // namespace
 
 NodeLocation
-ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
-  auto info = find_node(*state, var);
+ConnectionsManager::findOrMakeNode(const categoric::VariablePtr &var) {
+  auto info = locate(var);
   if (info) {
     visit_location(
         *info,
@@ -77,21 +61,21 @@ ConnectionsAware::findOrMakeNode(const categoric::VariablePtr &var) {
     return *info;
   }
   // create this node
-  auto *added = &state->nodes.emplace(var, Node{}).first->second;
+  auto &state = getState_();
+  auto *added = &state.nodes.emplace(var, Node{}).first->second;
   added->variable = var;
   HiddenNodeLocation result;
-  state->clusters.emplace_back().nodes.emplace(added);
-  result.cluster = state->clusters.end();
+  state.clusters.emplace_back().nodes.emplace(added);
+  result.cluster = state.clusters.end();
   --result.cluster;
   result.node = added;
   return result;
 }
 
-void ConnectionsAware::addUnaryDistribution(
+void ConnectionsManager::addUnaryDistribution(
     const EFG::distribution::DistributionCnstPtr &unary_factor) {
   const auto &var = unary_factor->getVariables().getVariables().front();
   auto node_location = findOrMakeNode(var);
-  factorsAll.emplace(unary_factor);
   Node *node = nullptr;
   visit_location(
       node_location,
@@ -119,7 +103,7 @@ void connect(Node &a, Node &b,
 }
 } // namespace
 
-void ConnectionsAware::addBinaryDistribution(
+void ConnectionsManager::addBinaryDistribution(
     const EFG::distribution::DistributionCnstPtr &binary_factor) {
   const auto &vars = binary_factor->getVariables().getVariables();
   auto nodeA_location = findOrMakeNode(vars.front());
@@ -156,7 +140,7 @@ void ConnectionsAware::addBinaryDistribution(
                 hiddenA_location.cluster->nodes.insert(
                     hiddenB_location.cluster->nodes.begin(),
                     hiddenB_location.cluster->nodes.end());
-                this->state->clusters.erase(hiddenB_location.cluster);
+                this->getState_().clusters.erase(hiddenB_location.cluster);
               }
             },
             [&](const EvidenceNodeLocation &evidenceB_location) {
@@ -180,6 +164,5 @@ void ConnectionsAware::addBinaryDistribution(
                   nodeA, Connection{binary_factor, nullptr});
             });
       });
-  factorsAll.emplace(binary_factor);
 }
 } // namespace EFG::strct

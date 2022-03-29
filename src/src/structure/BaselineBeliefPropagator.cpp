@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <EasyFactorGraph/structure/BeliefPropagator.h>
+#include <EasyFactorGraph/structure/BaselineBeliefPropagator.h>
 
 #include "Utils.h"
 
@@ -159,30 +159,26 @@ bool loopy_propagation(HiddenCluster &cluster,
 }
 } // namespace
 
-PropagationResult
-BeliefPropagator::propagateBelief(const PropagationKind &kind) {
-  if (hasPropagationResult() &&
-      (kind == getLastPropagationResult().propagation_kind_done)) {
-    return getLastPropagationResult();
-  }
-  auto &clusters = getClusters_();
-  resetMessages(clusters);
+PropagationResult BaselineBeliefPropagator::propagateBelief(
+    std::vector<HiddenCluster> &subject, const PropagationKind &kind,
+    const PropagationContext &context, Pool &pool) {
+  resetMessages(subject);
   PropagationResult result;
   result.was_completed = true;
   result.propagation_kind_done = kind;
-  for (auto &cluster : clusters) {
+  throw 0; // set also iterations
+  for (auto &cluster : subject) {
     if (nullptr == cluster.connectivity) {
       update_connectivity(cluster);
     }
-    if (message_passing(cluster, kind, getPool())) {
+    if (message_passing(cluster, kind, pool)) {
       continue;
     }
-    if (!loopy_propagation(
-            cluster,
-            LoopyPropagationContext{
-                kind, getPropagationContext().max_iterations_loopy_propagation,
-                DEFAULT_VARIATION_TOLLERANCE},
-            getPool())) {
+    if (!loopy_propagation(cluster,
+                           LoopyPropagationContext{
+                               kind, context.max_iterations_loopy_propagation,
+                               DEFAULT_VARIATION_TOLLERANCE},
+                           pool)) {
       result.was_completed = false;
     }
   }

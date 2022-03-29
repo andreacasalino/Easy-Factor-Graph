@@ -6,7 +6,7 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
-#include <EasyFactorGraph/structure/Pool.h>
+#include <EasyFactorGraph/structure/components/PoolAware.h>
 
 #include <atomic>
 #include <mutex>

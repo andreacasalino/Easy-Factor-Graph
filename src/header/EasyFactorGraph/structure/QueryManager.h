@@ -7,15 +7,12 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/BeliefAware.h>
-#include <EasyFactorGraph/structure/ConnectionsAware.h>
-#include <EasyFactorGraph/structure/EvidenceAware.h>
-#include <EasyFactorGraph/structure/Pool.h>
+#include <EasyFactorGraph/structure/components/BeliefAware.h>
+#include <EasyFactorGraph/structure/components/PoolAware.h>
 
 namespace EFG::strct {
-class QueryHandler : virtual public BeliefAware,
-                     virtual public ConnectionsAware,
-                     virtual public EvidenceAware,
+class QueryManager : virtual public StateAware,
+                     virtual public BeliefAware,
                      virtual public PoolAware {
 public:
   /**

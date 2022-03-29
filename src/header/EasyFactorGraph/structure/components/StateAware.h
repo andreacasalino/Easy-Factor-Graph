@@ -11,10 +11,9 @@
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include <map>
+#include <optional>
 #include <set>
-#include <unordered_map>
 #include <variant>
-#include <vector>
 
 namespace EFG::strct {
 template <typename T> using Cache = std::unique_ptr<T>;
@@ -67,16 +66,6 @@ struct GraphState {
   Evidences evidences;
 };
 
-class GraphStateAware {
-public:
-  virtual ~GraphStateAware() = default;
-
-protected:
-  GraphStateAware() { state = std::make_shared<GraphState>(); };
-
-  std::shared_ptr<GraphState> state;
-};
-
 struct HiddenNodeLocation {
   std::vector<HiddenCluster>::iterator cluster;
   Node *node;
@@ -88,4 +77,35 @@ struct EvidenceNodeLocation {
 };
 
 using NodeLocation = std::variant<HiddenNodeLocation, EvidenceNodeLocation>;
+
+class StateAware {
+public:
+  virtual ~StateAware() = default;
+
+  categoric::VariablesSet getHiddenVariables() const;
+  categoric::VariablesSet getObservedVariables() const;
+
+  const Evidences &getEvidences() const { return getState().evidences; };
+
+  /**
+   * @return all the variables (hidden or observed) in the model
+   */
+  categoric::VariablesSet getVariables() const;
+
+  categoric::VariablePtr findVariable(const std::string &name) const;
+
+protected:
+  StateAware() = default;
+
+  const GraphState &getState() const { return state; }
+  GraphState &getState_() { return state; }
+
+  std::optional<NodeLocation> locate(const categoric::VariablePtr &var) const;
+  std::optional<NodeLocation> locate(const std::string &var_name) const {
+    return locate(findVariable(var_name));
+  }
+
+private:
+  mutable GraphState state;
+};
 } // namespace EFG::strct

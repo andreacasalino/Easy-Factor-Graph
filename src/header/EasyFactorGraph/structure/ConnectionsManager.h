@@ -7,9 +7,8 @@
 
 #pragma once
 
-#include <EasyFactorGraph/distribution/Distribution.h>
-#include <EasyFactorGraph/structure/BeliefAware.h>
-#include <EasyFactorGraph/structure/GraphState.h>
+#include <EasyFactorGraph/structure/components/BeliefAware.h>
+#include <EasyFactorGraph/structure/components/StateAware.h>
 
 namespace std {
 template <> class hash<EFG::distribution::DistributionCnstPtr> {
@@ -22,39 +21,17 @@ public:
 } // namespace std
 
 namespace EFG::strct {
-class ConnectionsAware : virtual public BeliefAware,
-                         virtual private GraphStateAware {
+class ConnectionsManager : virtual public StateAware,
+                           virtual public BeliefAware {
 public:
-  virtual ~ConnectionsAware() = default;
-
   const std::unordered_set<EFG::distribution::DistributionCnstPtr> &
   getAllFactors() const {
     return this->factorsAll;
   };
 
-  /**
-   * @return all the variables (hidden or observed) in the model
-   */
-  categoric::VariablesSet getVariables() const;
-
-  categoric::VariablePtr findVariable(const std::string &name) const;
-
 protected:
-  ConnectionsAware() = default;
-
   void
   addDistribution(const EFG::distribution::DistributionCnstPtr &distribution);
-
-  const GraphState &getGraphState() const { return *state; };
-  GraphState &getGraphState_() { return *state; };
-
-  const Nodes &getNodes() const { return state->nodes; }
-
-  const std::vector<HiddenCluster> &getClusters() const {
-    return state->clusters;
-  };
-
-  std::vector<HiddenCluster> &getClusters_() { return state->clusters; };
 
 private:
   NodeLocation findOrMakeNode(const categoric::VariablePtr &var);

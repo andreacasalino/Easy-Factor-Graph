@@ -55,6 +55,10 @@ public:
              const distribution::Distribution &binary_factor);
 };
 
+class Indicator : public UnaryFactor {
+public:
+  Indicator(const categoric::VariablePtr &var, const std::size_t value);
+};
 } // namespace EFG::distribution
 
 namespace EFG::strct {

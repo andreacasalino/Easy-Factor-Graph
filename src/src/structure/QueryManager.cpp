@@ -5,7 +5,9 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <EasyFactorGraph/structure/QueryHandler.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/structure/QueryManager.h>
+#include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include "Utils.h"
 
@@ -22,7 +24,16 @@ distribution::UnaryFactor gather_incoming_messages(Node &subject) {
   return distribution::UnaryFactor{messages};
 }
 
-std::vector<float> merged_values(const NodeLocation &location) {
+std::vector<float> zeros(const std::size_t size) {
+  std::vector<float> result;
+  result.reserve(size);
+  for (std::size_t k = 0; k < size; ++k) {
+    result.push_back(0);
+  }
+  return result;
+}
+
+std::vector<float> get_marginal_distribution(const NodeLocation &location) {
   std::vector<float> result;
   visit_location(
       location,
@@ -36,24 +47,23 @@ std::vector<float> merged_values(const NodeLocation &location) {
   return result;
 }
 
-std::vector<float> zeros(const std::size_t size) {
-  std::vector<float> result;
-  result.reserve(size);
-  for (std::size_t k = 0; k < size; ++k) {
-    result.push_back(0);
-  }
-  return result;
+void throw_inexistent_var(const std::string &var) {
+  throw Error{var, " is a not part of the graph"};
 }
 } // namespace
 
 std::vector<float>
-QueryHandler::getMarginalDistribution(const std::string &var,
+QueryManager::getMarginalDistribution(const std::string &var,
                                       const std::size_t threads) {
   {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(SUM);
   }
-  return merged_values(*find_node(getGraphState_(), findVariable(var)));
+  auto location = locate(var);
+  if (!location) {
+    throw_inexistent_var(var);
+  }
+  return get_marginal_distribution(*location);
 }
 
 namespace {
@@ -68,17 +78,21 @@ std::size_t find_max(const std::vector<float> &values) {
 }
 } // namespace
 
-std::size_t QueryHandler::getMAP(const std::string &var,
+std::size_t QueryManager::getMAP(const std::string &var,
                                  const std::size_t threads) {
   {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(MAP);
   }
-  auto values = merged_values(*find_node(getGraphState_(), findVariable(var)));
+  auto location = locate(var);
+  if (!location) {
+    throw_inexistent_var(var);
+  }
+  auto values = get_marginal_distribution(*location);
   return find_max(values);
 }
 
-std::vector<size_t> QueryHandler::getHiddenSetMAP(const std::size_t threads) {
+std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
   {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(MAP);
@@ -86,15 +100,16 @@ std::vector<size_t> QueryHandler::getHiddenSetMAP(const std::size_t threads) {
   auto vars = getHiddenVariables();
   std::vector<size_t> result;
   result.reserve(vars.size());
+  auto &nodes = getState_().nodes;
   for (const auto &var : vars) {
-    auto values = merged_values(*find_node(getGraphState_(), var));
+    auto values = gather_incoming_messages(nodes[var]).getProbabilities();
     result.push_back(find_max(values));
   }
   return result;
 }
 
 // distribution::factor::cnst::Factor
-// QueryHandler::getJointMarginalDistribution(
+// QueryManager::getJointMarginalDistribution(
 //     const std::set<std::string> &subgroup) {
 //   std::set<Node *> hiddenGroup;
 //   std::list<distribution::factor::cnst::IndicatorFactor> indicators;

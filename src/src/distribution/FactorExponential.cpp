@@ -18,7 +18,7 @@ public:
     return expf(weigth * input);
   }
 
-  void setWeight(float w) { weigth = w; };
+  void setWeight(const float w) { weigth = w; };
   float getWeight() const { return weigth; };
 
 private:

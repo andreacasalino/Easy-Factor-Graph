@@ -6,39 +6,20 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
-#include <EasyFactorGraph/structure/EvidenceAware.h>
+#include <EasyFactorGraph/structure/EvidenceManager.h>
 
 #include "Utils.h"
 
 #include <algorithm>
 
 namespace EFG::strct {
-categoric::VariablesSet EvidenceAware::getHiddenVariables() const {
-  categoric::VariablesSet result;
-  for (const auto &cluster : state->clusters) {
-    for (auto *node : cluster.nodes) {
-      result.emplace(node->variable);
-    }
-  }
-  return result;
-}
-
-categoric::VariablesSet EvidenceAware::getObservedVariables() const {
-  categoric::VariablesSet result;
-  for (const auto &[var, val] : state->evidences) {
-    result.emplace(var);
-  }
-  return result;
-}
-
-void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
-                                const std::size_t value,
-                                const bool observation_should_prexist) {
+void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
+                                 const std::size_t value) {
   if (variable->size() >= value) {
     throw Error{std::to_string(value), " is an invalid evidence for variable ",
                 variable->name()};
   }
-  auto node_location = find_node(*state, variable);
+  auto node_location = locate(variable);
   if (std::nullopt == node_location) {
     throw Error{variable->name(), " is a non existing variable"};
   }
@@ -47,10 +28,6 @@ void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
       *node_location,
       [&](const HiddenNodeLocation &location) {
         auto *node = location.node;
-        if (observation_should_prexist) {
-          throw Error{"Variable ", node->variable->name(),
-                      " can't be set as an evidence"};
-        }
         for (const auto &[connected_node, connection] :
              node->active_connections) {
           node->disabled_connections[connected_node].factor = connection.factor;
@@ -59,19 +36,20 @@ void EvidenceAware::setEvidence(const categoric::VariablePtr &variable,
         }
         node->active_connections.clear();
         // update clusters
+        auto &state = this->getState_();
         if (1 == location.cluster->nodes.size()) {
-          this->state->clusters.erase(location.cluster);
+          state.clusters.erase(location.cluster);
         } else {
           auto nodes = location.cluster->nodes;
-          this->state->clusters.erase(location.cluster);
+          state.clusters.erase(location.cluster);
           nodes.erase(node);
           auto split_clusters = compute_clusters(nodes);
           for (auto &cluster : split_clusters) {
-            this->state->clusters.emplace_back(std::move(cluster));
+            state.clusters.emplace_back(std::move(cluster));
           }
         }
         evidence_location = EvidenceNodeLocation{
-            this->state->evidences.emplace(node->variable, value).first, node};
+            state.evidences.emplace(node->variable, value).first, node};
       },
       [&evidence_location](const EvidenceNodeLocation &location) {
         evidence_location = location;
@@ -120,28 +98,30 @@ void update_clusters(std::vector<HiddenCluster> &clusters,
 }
 } // namespace
 
-void EvidenceAware::removeEvidence(const categoric::VariablePtr &variable) {
-  auto evidence_it = state->evidences.find(variable);
-  if (evidence_it == state->evidences.end()) {
+void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
+  auto &state = getState_();
+  auto evidence_it = state.evidences.find(variable);
+  if (evidence_it == state.evidences.end()) {
     throw Error{variable->name(), " is not an evidence"};
   }
   resetBelief();
-  state->evidences.erase(evidence_it);
+  state.evidences.erase(evidence_it);
   std::set<Node *> involved_nodes;
-  re_connect(state->nodes[variable], involved_nodes);
-  update_clusters(state->clusters, involved_nodes);
+  re_connect(state.nodes[variable], involved_nodes);
+  update_clusters(state.clusters, involved_nodes);
 }
 
-void EvidenceAware::removeEvidences() {
-  if (state->evidences.empty()) {
+void EvidenceRemover::removeEvidences() {
+  auto &state = getState_();
+  if (state.evidences.empty()) {
     return;
   }
   resetBelief();
   std::set<Node *> involved_nodes;
-  for (const auto &[var, val] : state->evidences) {
-    re_connect(state->nodes[var], involved_nodes);
+  for (const auto &[var, val] : state.evidences) {
+    re_connect(state.nodes[var], involved_nodes);
   }
-  state->evidences.clear();
-  update_clusters(state->clusters, involved_nodes);
+  state.evidences.clear();
+  update_clusters(state.clusters, involved_nodes);
 }
 } // namespace EFG::strct
