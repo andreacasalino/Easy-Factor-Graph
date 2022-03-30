@@ -40,14 +40,15 @@ CombinationFinder::CombinationFinder(
     const CombinationRawValuesMapPtr &combinations_map,
     const categoric::VariablesSoup &distribution_group,
     const categoric::VariablesSoup &bigger_group)
-    : indices_in_bigger_group(get_indices(distribution_group, bigger_group)) {
+    : bigger_group_size(bigger_group.size()),
+      indices_in_bigger_group(get_indices(distribution_group, bigger_group)) {
   this->evaluator = evaluator;
   this->combinations_map = combinations_map;
 }
 
 CombinationFinder::Result
 CombinationFinder::find(const categoric::Combination &comb) const {
-  if (comb.data().size() != indices_in_bigger_group.size()) {
+  if (comb.data().size() != bigger_group_size) {
     throw Error{"Invalid to combination"};
   }
   auto it = std::find_if(

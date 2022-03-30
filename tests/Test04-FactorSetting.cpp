@@ -11,113 +11,54 @@ TEST(DistributionSetting, replaceGroup) {
   VariablesSoup groupXY = {make_variable(3, "X"), make_variable(2, "Y")};
   VariablesSoup groupXYbis = {make_variable(2, "X"), make_variable(4, "Y")};
 
-  factor::modif::Factor factor(groupAB);
-  factor.replaceGroup(Group(groupXY));
-  ASSERT_THROW(factor.replaceGroup(Group(groupXYbis)), EFG::Error);
+  distribution::Factor factor(categoric::Group{groupAB});
+  factor.replaceVariables(groupXY);
+  ASSERT_THROW(factor.replaceVariables(groupXYbis), EFG::Error);
 }
 
-class FactorTest : public ::testing::Test, public factor::modif::Factor {
-public:
-  FactorTest()
-      : factor::modif::Factor(std::set<VariablePtr>{make_variable(3, "A"),
-                                                    make_variable(4, "B"),
-                                                    make_variable(2, "C")}){};
-};
-
-TEST_F(FactorTest, setImages) {
-  std::vector<std::size_t> combRaw;
-  float val;
-  {
-    combRaw = {1, 2, 1};
-    val = 2.f;
-    Combination comb(combRaw.data(), combRaw.size());
-    std::size_t valuesSize = this->values->size();
-    this->setImageRaw(comb, val);
-    EXPECT_EQ(valuesSize + 1, this->values->size());
-    EXPECT_EQ(this->values->find(comb)->second, val);
-  }
-  {
-    combRaw = {0, 0, 0};
-    val = 3.5f;
-    Combination comb(combRaw.data(), combRaw.size());
-    std::size_t valuesSize = this->values->size();
-    this->setImageRaw(comb, val);
-    EXPECT_EQ(valuesSize + 1, this->values->size());
-    EXPECT_EQ(this->values->find(comb)->second, val);
-  }
-  {
-    combRaw = {2, 3, 0};
-    val = 1.f;
-    Combination comb(combRaw.data(), combRaw.size());
-    std::size_t valuesSize = this->values->size();
-    this->setImageRaw(comb, val);
-    EXPECT_EQ(valuesSize + 1, this->values->size());
-    EXPECT_EQ(this->values->find(comb)->second, val);
-  }
-
-  {
-    combRaw = {1, 1, 1};
-    val = -5.f;
-    Combination comb(combRaw.data(), combRaw.size());
-    std::size_t valuesSize = this->values->size();
-    ASSERT_THROW(this->setImageRaw(comb, val), Error);
-  }
+distribution::Factor make_factor_test() {
+  VariablesSoup group = {make_variable(3, "A"), make_variable(4, "B"),
+                         make_variable(2, "C")};
+  return distribution::Factor{Group{group}};
 }
 
-TEST_F(FactorTest, fillDomain) {
-  std::map<Combination, float> initialCombinations;
-
-  std::vector<std::size_t> combRaw;
-  {
-    combRaw = {1, 2, 1};
-    initialCombinations.emplace(Combination(combRaw.data(), combRaw.size()),
-                                1.f);
-  }
-  {
-    combRaw = {0, 0, 0};
-    initialCombinations.emplace(Combination(combRaw.data(), combRaw.size()),
-                                0.5f);
-  }
-  {
-    combRaw = {2, 3, 0};
-    initialCombinations.emplace(Combination(combRaw.data(), combRaw.size()),
-                                2.3f);
-  }
-
-  for (auto it = initialCombinations.begin(); it != initialCombinations.end();
-       ++it) {
-    this->values->emplace(it->first, it->second);
-  }
-
-  this->fillDomain();
-  EXPECT_EQ(this->values->size(), this->group->size());
-
-  for (auto it = this->values->begin(); it != this->values->end(); ++it) {
-    auto itInitial = initialCombinations.find(it->first);
-    if (itInitial != initialCombinations.end()) {
-      EXPECT_EQ(it->second, itInitial->second);
-    } else {
-      EXPECT_EQ(it->second, 0.f);
-    }
-  }
+void set_image_raw(distribution::Factor &subject,
+                   std::vector<std::size_t> &&to_add, const float value) {
+  Combination comb(std::move(to_add));
+  const std::size_t initial_map_size = subject.getCombinationsMap().size();
+  subject.setImageRaw(comb, value);
+  EXPECT_EQ(subject.evaluate(comb), value);
+  EXPECT_EQ(initial_map_size + 1, subject.getCombinationsMap().size());
 }
 
-TEST_F(FactorTest, setAllImagesRaw) {
+TEST(DistributionSetting, setImages) {
+  auto factor = make_factor_test();
+
+  set_image_raw(factor, {1, 2, 1}, 2.f);
+  set_image_raw(factor, {0, 0, 0}, 3.5f);
+  set_image_raw(factor, {2, 3, 0}, 1.f);
+  set_image_raw(factor, {1, 1, 1}, 0.5f);
+  ASSERT_THROW(set_image_raw(factor, {1, 0, 1}, -2.5f), Error);
+}
+
+TEST(DistributionSetting, setAllImagesRaw) {
+  auto factor = make_factor_test();
+
   float val = 2.f;
-  this->setAllImagesRaw(val);
-  EXPECT_EQ(this->values->size(), this->group->size());
-  for (auto it = this->values->begin(); it != this->values->end(); ++it) {
-    EXPECT_EQ(it->second, val);
+  factor.setAllImagesRaw(val);
+  EXPECT_EQ(factor.getCombinationsMap().size(), factor.getVariables().size());
+  for (const auto &[comb, comb_val] : factor.getCombinationsMap()) {
+    EXPECT_EQ(val, comb_val);
   }
 
   val = 3.5f;
-  this->setAllImagesRaw(val);
-  EXPECT_EQ(this->values->size(), this->group->size());
-  for (auto it = this->values->begin(); it != this->values->end(); ++it) {
-    EXPECT_EQ(it->second, val);
+  factor.setAllImagesRaw(val);
+  EXPECT_EQ(factor.getCombinationsMap().size(), factor.getVariables().size());
+  for (const auto &[comb, comb_val] : factor.getCombinationsMap()) {
+    EXPECT_EQ(val, comb_val);
   }
 
-  ASSERT_THROW(this->setAllImagesRaw(-1.f), Error);
+  ASSERT_THROW(factor.setAllImagesRaw(-1.f), Error);
 }
 
 int main(int argc, char *argv[]) {
