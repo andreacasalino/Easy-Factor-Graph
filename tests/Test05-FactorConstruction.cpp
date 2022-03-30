@@ -1,142 +1,141 @@
-#include <CombinationCompare.h>
-#include <Error.h>
-#include <categoric/Range.h>
-#include <distribution/DistributionIterator.h>
-#include <distribution/factor/modifiable/Factor.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/distribution/Factor.h>
+
 #include <gtest/gtest.h>
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 
-class FactorCorrelationTest : public ::testing::Test,
-                              public factor::modif::Factor {
-protected:
-  FactorCorrelationTest(bool corrOrAnti)
-      : factor::modif::Factor(std::set<VariablePtr>{makeVariable(4, "A"),
-                                                    makeVariable(4, "B"),
-                                                    makeVariable(4, "C")},
-                              corrOrAnti){};
-};
-
-class SimpleCorrelationTest : public FactorCorrelationTest {
-public:
-  SimpleCorrelationTest() : FactorCorrelationTest(true){};
-};
-TEST_F(SimpleCorrelationTest, simpleCorrelation) {
-  std::size_t varSize = (*this->group->getVariables().begin())->size();
-  EXPECT_EQ(this->values->size(), varSize);
-  std::vector<std::size_t> vals(this->group->getVariables().size(), 0);
-  for (auto it = this->values->begin(); it != this->values->end(); ++it) {
-    test::compare(Combination(vals.data(), vals.size()), it->first);
-    EXPECT_EQ(it->second, 1.f);
-    for (std::size_t k = 0; k < vals.size(); ++k) {
-      ++vals[k];
-    }
+distribution::Factor make_correlating_factor(const bool correlation_kind) {
+  VariablesSoup group = {make_variable(4, "A"), make_variable(4, "B"),
+                         make_variable(4, "C")};
+  if (correlation_kind) {
+    return distribution::Factor{Group{group}, USE_SIMPLE_CORRELATION_TAG};
   }
+  return distribution::Factor{Group{group}, USE_SIMPLE_ANTI_CORRELATION_TAG};
 }
 
-class SimpleAntiCorrelationTest : public FactorCorrelationTest {
-public:
-  SimpleAntiCorrelationTest() : FactorCorrelationTest(false){};
-};
-TEST_F(SimpleAntiCorrelationTest, simpleAntiCorrelation) {
-  std::size_t varSize = (*this->group->getVariables().begin())->size();
-  EXPECT_EQ(this->values->size(), this->group->size() - varSize);
-  std::vector<std::size_t> vals(this->group->getVariables().size(), 0);
-  for (auto it = this->values->begin(); it != this->values->end(); ++it) {
-    EXPECT_EQ(it->second, 1.f);
-  }
-  for (std::size_t v = 0; v < varSize; ++v) {
-    EXPECT_EQ(this->values->end(),
-              this->values->find(Combination(vals.data(), vals.size())));
-    for (std::size_t k = 0; k < vals.size(); ++k) {
-      ++vals[k];
+bool all_equals_values(const Combination &comb) {
+  const auto &data = comb.data();
+  for (const auto &val : data) {
+    if (val != data.front()) {
+      return false;
     }
   }
+  return true;
 }
 
-TEST(ConstFactor, mergeDistributions) {
-  float val1 = 2.f, val2 = 0.5f;
-
-  factor::modif::Factor distrAC(std::set<categoric::VariablePtr>(
-      {makeVariable(2, "A"), makeVariable(2, "C")}));
-  distrAC.setAllImagesRaw(val1);
-  factor::modif::Factor distrBC(std::set<categoric::VariablePtr>(
-      {makeVariable(2, "B"), makeVariable(2, "C")}));
-  distrBC.setAllImagesRaw(val2);
-
-  factor::modif::Factor distrABC(&distrAC, &distrBC);
-  EXPECT_EQ(3, distrABC.getGroup().getVariables().size());
-  {
-    auto it = distrABC.getGroup().getVariables().begin();
-    EXPECT_EQ(std::string("A"), (*it)->name());
-    ++it;
-    EXPECT_EQ(std::string("B"), (*it)->name());
-    ++it;
-    EXPECT_EQ(std::string("C"), (*it)->name());
-  }
-
-  std::size_t numberValues = 0;
-  auto it = distrABC.getIterator();
-  iterator::forEach(it, [&](const DistributionIterator &it) {
-    EXPECT_EQ(it.getImage(), val1 * val2);
-    ++numberValues;
+TEST(DistributionMaking, simple_correlation) {
+  auto factor = make_correlating_factor(true);
+  categoric::GroupRange range(factor.getVariables());
+  for_each_combination(range, [&factor](const Combination &comb) {
+    if (all_equals_values(comb)) {
+      EXPECT_EQ(1.f, factor.evaluate(comb));
+    } else {
+      EXPECT_EQ(0, factor.evaluate(comb));
+    }
   });
-  EXPECT_EQ(numberValues, distrABC.getGroup().size());
 }
 
-TEST(ConstFactor, marginalization) {
-  VariablePtr A = makeVariable(2, "A");
-  VariablePtr B = makeVariable(3, "B");
-  VariablePtr C = makeVariable(2, "C");
-  VariablePtr D = makeVariable(3, "D");
-
-  factor::modif::Factor distrABCD(
-      std::set<categoric::VariablePtr>({A, B, C, D}));
-  std::set<VariablePtr> groupBD = {B, D};
-
-  std::vector<std::size_t> vals;
-
-  Range rangeBD(groupBD);
-
-  {
-    iterator::forEach(rangeBD, [&vals, &distrABCD](const Range &rangeBD) {
-      vals = std::vector<std::size_t>{1, rangeBD.get().data()[0], 1,
-                                      rangeBD.get().data()[1]};
-      distrABCD.setImageRaw(Combination(vals.data(), vals.size()), 1.f);
-    });
-  }
-
-  {
-    // marginalization A=0, C=1
-    vals = {0, 1};
-    factor::cnst::Factor distrBD(distrABCD,
-                                 Combination(vals.data(), vals.size()), {A, C});
-    rangeBD.reset();
-    iterator::forEach(rangeBD, [&distrBD](const Range &rangeBD) {
-      EXPECT_EQ(distrBD.find(rangeBD.get()), 0.f);
-    });
-  }
-
-  {
-    // marginalization A=1, C=1
-    vals = {1, 1};
-    factor::cnst::Factor distrBD(distrABCD,
-                                 Combination(vals.data(), vals.size()), {A, C});
-    rangeBD.reset();
-    iterator::forEach(rangeBD, [&distrBD](const Range &rangeBD) {
-      EXPECT_EQ(distrBD.find(rangeBD.get()), 1.f);
-    });
-  }
+TEST(DistributionMaking, simple_anti_correlation) {
+  auto factor = make_correlating_factor(false);
+  categoric::GroupRange range(factor.getVariables());
+  for_each_combination(range, [&factor](const Combination &comb) {
+    if (all_equals_values(comb)) {
+      EXPECT_EQ(0, factor.evaluate(comb));
+    } else {
+      EXPECT_EQ(1.f, factor.evaluate(comb));
+    }
+  });
 }
 
-TEST(ConstFactor, importFromFile) {
-  factor::cnst::Factor factor(
-      std::set<VariablePtr>{makeVariable(2, "A"), makeVariable(2, "B")},
-      std::string(TEST_FOLDER) + std::string("FactorDescription"));
-}
+// TEST(DistributionMaking, mergeDistributions) {
+//   float val1 = 2.f, val2 = 0.5f;
 
-// add test on factor merging
+//   factor::modif::Factor distrAC(std::set<categoric::VariablePtr>(
+//       {makeVariable(2, "A"), makeVariable(2, "C")}));
+//   distrAC.setAllImagesRaw(val1);
+//   factor::modif::Factor distrBC(std::set<categoric::VariablePtr>(
+//       {makeVariable(2, "B"), makeVariable(2, "C")}));
+//   distrBC.setAllImagesRaw(val2);
+
+//   factor::modif::Factor distrABC(&distrAC, &distrBC);
+//   EXPECT_EQ(3, distrABC.getGroup().getVariables().size());
+//   {
+//     auto it = distrABC.getGroup().getVariables().begin();
+//     EXPECT_EQ(std::string("A"), (*it)->name());
+//     ++it;
+//     EXPECT_EQ(std::string("B"), (*it)->name());
+//     ++it;
+//     EXPECT_EQ(std::string("C"), (*it)->name());
+//   }
+
+//   std::size_t numberValues = 0;
+//   auto it = distrABC.getIterator();
+//   iterator::forEach(it, [&](const DistributionIterator &it) {
+//     EXPECT_EQ(it.getImage(), val1 * val2);
+//     ++numberValues;
+//   });
+//   EXPECT_EQ(numberValues, distrABC.getGroup().size());
+// }
+
+// TEST(DistributionMaking, marginalization) {
+//   VariablePtr A = makeVariable(2, "A");
+//   VariablePtr B = makeVariable(3, "B");
+//   VariablePtr C = makeVariable(2, "C");
+//   VariablePtr D = makeVariable(3, "D");
+
+//   factor::modif::Factor distrABCD(
+//       std::set<categoric::VariablePtr>({A, B, C, D}));
+//   std::set<VariablePtr> groupBD = {B, D};
+
+//   std::vector<std::size_t> vals;
+
+//   Range rangeBD(groupBD);
+
+//   {
+//     iterator::forEach(rangeBD, [&vals, &distrABCD](const Range &rangeBD) {
+//       vals = std::vector<std::size_t>{1, rangeBD.get().data()[0], 1,
+//                                       rangeBD.get().data()[1]};
+//       distrABCD.setImageRaw(Combination(vals.data(), vals.size()), 1.f);
+//     });
+//   }
+
+//   {
+//     // marginalization A=0, C=1
+//     vals = {0, 1};
+//     factor::cnst::Factor distrBD(distrABCD,
+//                                  Combination(vals.data(), vals.size()), {A,
+//                                  C});
+//     rangeBD.reset();
+//     iterator::forEach(rangeBD, [&distrBD](const Range &rangeBD) {
+//       EXPECT_EQ(distrBD.find(rangeBD.get()), 0.f);
+//     });
+//   }
+
+//   {
+//     // marginalization A=1, C=1
+//     vals = {1, 1};
+//     factor::cnst::Factor distrBD(distrABCD,
+//                                  Combination(vals.data(), vals.size()), {A,
+//                                  C});
+//     rangeBD.reset();
+//     iterator::forEach(rangeBD, [&distrBD](const Range &rangeBD) {
+//       EXPECT_EQ(distrBD.find(rangeBD.get()), 1.f);
+//     });
+//   }
+// }
+
+// TEST(DistributionMaking, importFromFile) {
+//   factor::cnst::Factor factor(
+//       std::set<VariablePtr>{makeVariable(2, "A"), makeVariable(2, "B")},
+//       std::string(TEST_FOLDER) + std::string("FactorDescription"));
+// }
+
+// ////////////////////////////////////////
+// // add test on factor merging
+// ////////////////////////////////////////
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);

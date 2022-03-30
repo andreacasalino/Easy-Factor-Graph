@@ -84,6 +84,9 @@ Factor::Factor(const categoric::Group &vars, const UseSimpleAntiCorrelation &)
   for (std::size_t k = 0; k < getVariables().getVariables().front()->size();
        ++k) {
     auto buffer_copy = buffer;
+    for (auto &buffer_val : buffer_copy) {
+      buffer_val = k;
+    }
     setImageRaw(categoric::Combination{std::move(buffer_copy)}, 0);
   }
 }
