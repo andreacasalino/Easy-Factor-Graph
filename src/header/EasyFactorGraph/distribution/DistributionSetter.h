@@ -30,5 +30,7 @@ public:
   void setAllImagesRaw(const float &value);
 
   void clear() { getCombinationsMap_().clear(); };
+
+  void importCombiantionsFromFile(const std::string &file_name);
 };
 } // namespace EFG::distribution

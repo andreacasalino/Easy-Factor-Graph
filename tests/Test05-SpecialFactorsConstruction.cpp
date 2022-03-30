@@ -62,19 +62,22 @@ TEST(DistributionMaking, mergeDistributions) {
 
   distribution::Factor distrABC(distrAC, distrBC);
   EXPECT_EQ(3, distrABC.getVariables().getVariables().size());
-  const auto &distrABC_group = distrABC.getVariables().getVariablesSet();
-  EXPECT_TRUE(distrABC_group.find(make_variable(2, "A")) !=
-              distrABC_group.end());
-  EXPECT_TRUE(distrABC_group.find(make_variable(2, "B")) !=
-              distrABC_group.end());
-  EXPECT_TRUE(distrABC_group.find(make_variable(2, "C")) !=
-              distrABC_group.end());
+  {
+    auto it = distrABC.getGroup().getVariables().begin();
+    EXPECT_EQ(std::string("A"), (*it)->name());
+    ++it;
+    EXPECT_EQ(std::string("B"), (*it)->name());
+    ++it;
+    EXPECT_EQ(std::string("C"), (*it)->name());
+  }
 
-  GroupRange range(distrABC.getVariables());
-  EXPECT_EQ(distrABC.getVariables().size(), 2 * 2 * 2);
-  for_each_combination(range, [&](const Combination &comb) {
-    EXPECT_EQ(distrABC.evaluate(comb), val1 * val2);
-  });
+  // std::size_t numberValues = 0;
+  // auto it = distrABC.getIterator();
+  // iterator::forEach(it, [&](const DistributionIterator &it) {
+  //   EXPECT_EQ(it.getImage(), val1 * val2);
+  //   ++numberValues;
+  // });
+  // EXPECT_EQ(numberValues, distrABC.getGroup().size());
 }
 
 // TEST(DistributionMaking, marginalization) {
