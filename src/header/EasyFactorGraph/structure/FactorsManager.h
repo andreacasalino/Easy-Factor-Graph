@@ -12,13 +12,13 @@
 namespace EFG::strct {
 class FactorsAware : virtual public ConnectionsManager {
 public:
-  const std::unordered_set<distribution::DistributionCnstPtr> &
+  const UnorderedSet<const distribution::Distribution> &
   getConstFactors() const {
     return const_factors;
   }
 
 protected:
-  std::unordered_set<distribution::DistributionCnstPtr> const_factors;
+  UnorderedSet<const distribution::Distribution> const_factors;
 };
 
 class FactorsAdder : public FactorsAware {

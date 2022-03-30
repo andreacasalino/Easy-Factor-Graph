@@ -95,11 +95,11 @@ namespace {
 categoric::Group
 gather_variables(const std::vector<const Distribution *> &factors) {
   categoric::VariablesSet vars;
-  for (const auto &factor : factors) {
+  for (const auto *factor : factors) {
     for (const auto &var : factor->getVariables().getVariablesSet()) {
       auto vars_it = vars.find(var);
       if (vars_it == vars.end()) {
-        vars.emplace(*vars_it);
+        vars.emplace(var);
       } else if (vars_it->get() != var.get()) {
         throw Error{
             var->name(),

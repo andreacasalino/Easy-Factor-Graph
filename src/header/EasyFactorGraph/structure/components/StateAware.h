@@ -40,7 +40,9 @@ struct Connection {
   std::unique_ptr<const distribution::UnaryFactor> message;
 };
 
-using Nodes = std::unordered_map<categoric::VariablePtr, Node>;
+using Nodes = std::unordered_map<categoric::VariablePtr, Node,
+                                 categoric::VariablePtrHasher,
+                                 categoric::VariablePtrComparator>;
 
 struct ConnectionAndDependencies {
   Connection *connection;
@@ -58,7 +60,9 @@ struct HiddenCluster {
   Cache<std::vector<ConnectionAndDependencies>> connectivity;
 };
 
-using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t>;
+using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t,
+                                     categoric::VariablePtrHasher,
+                                     categoric::VariablePtrComparator>;
 
 struct GraphState {
   Nodes nodes;

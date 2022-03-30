@@ -24,12 +24,8 @@ public:
    */
   Variable(const std::size_t &size, const std::string &name);
 
-  inline bool operator==(const Variable &o) const {
-    return (this->Size == o.Size) && (this->Name == o.Name);
-  };
-
-  inline std::size_t size() const { return this->Size; };
-  inline const std::string &name() const { return this->Name; };
+  std::size_t size() const { return this->Size; };
+  const std::string &name() const { return this->Name; };
 
 protected:
   const size_t Size;
@@ -40,19 +36,3 @@ using VariablePtr = std::shared_ptr<Variable>;
 
 VariablePtr make_variable(const std::size_t &size, const std::string &name);
 } // namespace EFG::categoric
-
-#include <functional>
-
-namespace std {
-template <> struct hash<EFG::categoric::Variable> {
-  std::size_t operator()(const EFG::categoric::Variable &v) const {
-    return hash<string>()(v.name());
-  }
-};
-
-template <> struct hash<EFG::categoric::VariablePtr> {
-  std::size_t operator()(const EFG::categoric::VariablePtr &v) const {
-    return std::hash<EFG::categoric::Variable>()(*v);
-  }
-};
-} // namespace std

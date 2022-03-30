@@ -8,6 +8,8 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
+#include <functional>
+
 namespace EFG::distribution {
 const UnaryFactor::DontFillDomainTag UnaryFactor::DONT_FILL_DOMAIN_TAG =
     UnaryFactor::DontFillDomainTag{};
