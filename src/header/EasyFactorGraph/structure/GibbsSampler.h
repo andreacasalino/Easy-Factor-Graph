@@ -30,6 +30,6 @@ public:
    */
   std::vector<categoric::Combination>
   getHiddenSetSamples(const SamplesGenerationContext &context,
-                      const std::size_t threads = 1) const;
+                      const std::size_t threads = 1);
 };
 } // namespace EFG::strct

@@ -109,7 +109,7 @@ std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes) {
   return result;
 }
 
-void update_merged_unaries(Node &subject) {
+std::vector<const distribution::Distribution *> gather_unaries(Node &subject) {
   std::vector<const distribution::Distribution *> unary_factors;
   for (const auto &factor : subject.unary_factors) {
     unary_factors.push_back(factor.get());
@@ -117,6 +117,12 @@ void update_merged_unaries(Node &subject) {
   for (auto &[node, connection] : subject.disabled_connections) {
     unary_factors.push_back(connection.message.get());
   }
+  return unary_factors;
+}
+
+void update_merged_unaries(Node &subject) {
+  std::vector<const distribution::Distribution *> unary_factors =
+      gather_unaries(subject);
   if (unary_factors.empty()) {
     subject.merged_unaries = make_unary(subject.variable);
     return;
