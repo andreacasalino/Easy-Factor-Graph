@@ -53,11 +53,13 @@ TEST(DistributionMaking, simple_anti_correlation) {
 TEST(DistributionMaking, mergeDistributions) {
   float val1 = 2.f, val2 = 0.5f;
 
-  distribution::Factor distrAC(
-      Group{{make_variable(2, "A"), make_variable(2, "C")}});
+  auto varA = make_variable(2, "A");
+  auto varB = make_variable(2, "B");
+  auto varC = make_variable(2, "C");
+
+  distribution::Factor distrAC(Group{{varA, varC}});
   distrAC.setAllImagesRaw(val1);
-  distribution::Factor distrBC(
-      Group{{make_variable(2, "B"), make_variable(2, "C")}});
+  distribution::Factor distrBC(Group{{varB, varC}});
   distrBC.setAllImagesRaw(val2);
 
   distribution::Factor distrABC(distrAC, distrBC);

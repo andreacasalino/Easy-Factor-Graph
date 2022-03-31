@@ -96,7 +96,7 @@ categoric::Group
 gather_variables(const std::vector<const Distribution *> &factors) {
   categoric::VariablesSet vars;
   for (const auto *factor : factors) {
-    for (const auto &var : factor->getVariables().getVariablesSet()) {
+    for (const auto &var : factor->getVariables().getVariables()) {
       auto vars_it = vars.find(var);
       if (vars_it == vars.end()) {
         vars.emplace(var);
