@@ -79,53 +79,6 @@ TEST(DistributionMaking, mergeDistributions) {
   });
 }
 
-// TEST(DistributionMaking, marginalization) {
-//   VariablePtr A = makeVariable(2, "A");
-//   VariablePtr B = makeVariable(3, "B");
-//   VariablePtr C = makeVariable(2, "C");
-//   VariablePtr D = makeVariable(3, "D");
-
-//   factor::modif::Factor distrABCD(
-//       std::set<categoric::VariablePtr>({A, B, C, D}));
-//   std::set<VariablePtr> groupBD = {B, D};
-
-//   std::vector<std::size_t> vals;
-
-//   Range rangeBD(groupBD);
-
-//   {
-//     iterator::forEach(rangeBD, [&vals, &distrABCD](const Range &rangeBD) {
-//       vals = std::vector<std::size_t>{1, rangeBD.get().data()[0], 1,
-//                                       rangeBD.get().data()[1]};
-//       distrABCD.setImageRaw(Combination(vals.data(), vals.size()), 1.f);
-//     });
-//   }
-
-//   {
-//     // marginalization A=0, C=1
-//     vals = {0, 1};
-//     factor::cnst::Factor distrBD(distrABCD,
-//                                  Combination(vals.data(), vals.size()), {A,
-//                                  C});
-//     rangeBD.reset();
-//     iterator::forEach(rangeBD, [&distrBD](const Range &rangeBD) {
-//       EXPECT_EQ(distrBD.find(rangeBD.get()), 0.f);
-//     });
-//   }
-
-//   {
-//     // marginalization A=1, C=1
-//     vals = {1, 1};
-//     factor::cnst::Factor distrBD(distrABCD,
-//                                  Combination(vals.data(), vals.size()), {A,
-//                                  C});
-//     rangeBD.reset();
-//     iterator::forEach(rangeBD, [&distrBD](const Range &rangeBD) {
-//       EXPECT_EQ(distrBD.find(rangeBD.get()), 1.f);
-//     });
-//   }
-// }
-
 // TEST(DistributionMaking, importFromFile) {
 //   factor::cnst::Factor factor(
 //       std::set<VariablePtr>{makeVariable(2, "A"), makeVariable(2, "B")},

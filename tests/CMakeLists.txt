@@ -33,7 +33,7 @@ MakeTest(Test04-FactorSetting)
 MakeTest(Test05-FactorConstruction)
 MakeTest(Test05-SpecialFactorsConstruction)
 
-# MakeTest(Test06-Insertions)
+MakeTest(Test06-Insertions)
 
 # MakeTest(Test07-Evidences)
 
