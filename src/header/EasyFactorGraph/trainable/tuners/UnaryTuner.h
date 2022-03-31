@@ -11,8 +11,8 @@
 // #include <train/handlers/BaseHandler.h>
 // #include <structure/Node.h>
 
-// namespace EFG::train::handler {
-//     class UnaryHandler : public BaseHandler {
+// namespace EFG::train {
+//     class UnaryTuner: public BaseHandler {
 //     public:
 //         UnaryHandler(strct::Node& node,
 //         std::shared_ptr<distribution::factor::modif::FactorExponential>
