@@ -8,6 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/distribution/Distribution.h>
+#include <EasyFactorGraph/misc/SmartMap.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include <map>
@@ -40,9 +41,7 @@ struct Connection {
   std::unique_ptr<const distribution::UnaryFactor> message;
 };
 
-using Nodes = std::unordered_map<categoric::VariablePtr, Node,
-                                 categoric::VariablePtrHasher,
-                                 categoric::VariablePtrComparator>;
+using Nodes = SmartMap<categoric::Variable, Node>;
 
 struct ConnectionAndDependencies {
   Connection *connection;
@@ -60,9 +59,7 @@ struct HiddenCluster {
   Cache<std::vector<ConnectionAndDependencies>> connectivity;
 };
 
-using Evidences = std::unordered_map<categoric::VariablePtr, std::size_t,
-                                     categoric::VariablePtrHasher,
-                                     categoric::VariablePtrComparator>;
+using Evidences = SmartMap<categoric::Variable, std::size_t>;
 
 struct GraphState {
   Nodes nodes;

@@ -11,27 +11,10 @@
 #include <EasyFactorGraph/structure/components/StateAware.h>
 
 namespace EFG::strct {
-template <typename T> struct SharedPtrHasher {
-  std::size_t operator()(const std::shared_ptr<T> &subject) const {
-    return std::hash<const T *>{}(subject.get());
-  }
-};
-
-template <typename T> struct SharedPtrComparator {
-  std::size_t operator()(const std::shared_ptr<T> &a,
-                         const std::shared_ptr<T> &b) const {
-    return a.get() == b.get();
-  }
-};
-
-template <typename T>
-using UnorderedSet = std::unordered_set<std::shared_ptr<T>, SharedPtrHasher<T>,
-                                        SharedPtrComparator<T>>;
-
 class ConnectionsManager : virtual public StateAware,
                            virtual public BeliefAware {
 public:
-  const UnorderedSet<const distribution::Distribution> &getAllFactors() const {
+  const std::set<distribution::DistributionCnstPtr> &getAllFactors() const {
     return this->factorsAll;
   };
 
@@ -52,6 +35,6 @@ private:
    * @brief a register storing ALL the factors in the model, no matter
    the kind (exponential, const, non const)
    */
-  UnorderedSet<const distribution::Distribution> factorsAll;
+  std::set<distribution::DistributionCnstPtr> factorsAll;
 };
 } // namespace EFG::strct

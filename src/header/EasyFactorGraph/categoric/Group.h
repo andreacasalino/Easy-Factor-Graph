@@ -8,26 +8,14 @@
 #pragma once
 
 #include <EasyFactorGraph/categoric/Variable.h>
+#include <EasyFactorGraph/misc/SmartSet.h>
 
-#include <unordered_map>
-#include <unordered_set>
 #include <vector>
 
 namespace EFG::categoric {
 using VariablesSoup = std::vector<VariablePtr>;
 
-struct VariablePtrHasher {
-  std::size_t operator()(const VariablePtr &subject) const {
-    return std::hash<std::string>{}(subject->name());
-  }
-};
-struct VariablePtrComparator {
-  std::size_t operator()(const VariablePtr &a, const VariablePtr &b) const {
-    return a->name() == b->name();
-  }
-};
-using VariablesSet =
-    std::unordered_set<VariablePtr, VariablePtrHasher, VariablePtrComparator>;
+using VariablesSet = SmartSet<Variable>;
 
 VariablesSet to_vars_set(const VariablesSoup &soup);
 
