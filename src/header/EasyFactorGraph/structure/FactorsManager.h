@@ -21,11 +21,9 @@ protected:
   std::unordered_set<distribution::DistributionCnstPtr> const_factors;
 };
 
-class FactorsAdder : public FactorsAware {
+class FactorsAdder : virtual public FactorsAware {
 public:
   void addConstFactor(const distribution::DistributionCnstPtr &factor);
   void copyConstFactor(const distribution::Distribution &factor);
 };
-
-void absorb();
 } // namespace EFG::strct

@@ -35,7 +35,7 @@ protected:
   std::vector<TunerPtr> tuners;
 };
 
-class FactorsTunableAdder : public FactorsTunableAware {
+class FactorsTunableAdder : virtual public FactorsTunableAware {
 public:
   void addConstFactor(const FactorExponentialPtr &factor,
                       const std::optional<categoric::VariablesSet>
@@ -52,10 +52,6 @@ protected:
   addTuner(train::TunerPtr tuner,
            const std::optional<categoric::VariablesSet> &group_sharing_weight);
 };
-
-// void absorb();
-
-// void absorb_by_copy();
 
 /**
  * @param sets equal to 1 the weight of all the tunable clusters

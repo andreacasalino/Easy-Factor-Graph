@@ -7,25 +7,21 @@
 
 #pragma once
 
-// #include <io/FilePath.h>
-// #include <structure/BeliefPropagator.h>
-// #include <structure/EvidenceChanger.h>
-// #include <structure/EvidenceSetter.h>
-// #include <structure/GibbsSampler.h>
-// #include <structure/InsertTunableCapable.h>
-// #include <structure/QueryHandler.h>
-// #include <train/Trainable.h>
-
 #include <EasyFactorGraph/structure/EvidenceManager.h>
+#include <EasyFactorGraph/structure/FactorsAdder.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
 
 namespace EFG::model {
-class ConditionalRandomField : protected strct::EvidenceSetter,
-                               protected strct::FactorsTunableAdder,
-                               public strct::GibbsSampler,
-                               public strct::QueryManager {
+class RandomField : protected strct::EvidenceSetter,
+                    protected strct::EvidenceRemover,
+                    virtual public FactorsAware,
+                    public strct::FactorsAdder,
+                    virtual public FactorsTunableAware,
+                    public strct::FactorsTunableAdder,
+                    public strct::GibbsSampler,
+                    public strct::QueryManager {
 public:
   ConditionalRandomField() = delete;
 

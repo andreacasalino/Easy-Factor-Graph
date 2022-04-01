@@ -8,6 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/structure/EvidenceManager.h>
+#include <EasyFactorGraph/structure/FactorsAdder.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
@@ -15,9 +16,11 @@
 namespace EFG::model {
 class RandomField : public strct::EvidenceSetter,
                     public strct::EvidenceRemover,
+                    public strct::FactorsAdder,
                     public strct::FactorsTunableAdder,
                     public strct::GibbsSampler,
                     public strct::QueryManager {
+public:
   RandomField() = default;
 
   //   template <typename Model> explicit RandomField(const Model &o) {
