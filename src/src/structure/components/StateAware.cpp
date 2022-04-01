@@ -28,6 +28,13 @@ categoric::VariablePtr StateAware::findVariable(const std::string &name) const {
   return nodes_it->first;
 }
 
+categoric::VariablesSet StateAware::getAllVariables() const {
+  auto result = getHiddenVariables();
+  auto obs = getObservedVariables();
+  result.insert(obs.begin(), obs.end());
+  return result;
+}
+
 categoric::VariablesSet StateAware::getHiddenVariables() const {
   categoric::VariablesSet result;
   for (const auto &cluster : getState().clusters) {

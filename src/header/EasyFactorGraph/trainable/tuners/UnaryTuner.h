@@ -1,28 +1,25 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #ifndef EFG_TRAIN_HANDLER_UNARY_H
-// #define EFG_TRAIN_HANDLER_UNARY_H
+#pragma once
 
-// #include <train/handlers/BaseHandler.h>
-// #include <structure/Node.h>
+#include <EasyFactorGraph/structure/components/StateAware.h>
+#include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 
-// namespace EFG::train {
-//     class UnaryTuner: public BaseHandler {
-//     public:
-//         UnaryHandler(strct::Node& node,
-//         std::shared_ptr<distribution::factor::modif::FactorExponential>
-//         factor);
+namespace EFG::train {
+class UnaryTuner : public BaseTuner {
+public:
+  UnaryTuner(strct::Node &node,
+             const std::shared_ptr<distribution::FactorExponential> &factor,
+             const categoric::VariablesSoup &variables_in_model);
 
-//         float getGradientBeta() final;
+  float getGradientBeta() final;
 
-//     protected:
-//         strct::Node* node;
-//     };
-// }
-
-// #endif
+protected:
+  strct::Node &node;
+};
+} // namespace EFG::train

@@ -83,6 +83,8 @@ class StateAware {
 public:
   virtual ~StateAware() = default;
 
+  categoric::VariablesSet getAllVariables() const;
+
   categoric::VariablesSet getHiddenVariables() const;
   categoric::VariablesSet getObservedVariables() const;
 
