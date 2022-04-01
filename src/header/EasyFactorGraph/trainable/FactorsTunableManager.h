@@ -27,8 +27,8 @@ public:
   std::vector<float> getWeights() const;
   void setWeights(const std::vector<float> &weights);
 
-  std::vector<float>
-  getWeightsGradient(const TrainSet::Iterator &train_set_combinations);
+  virtual std::vector<float>
+  getWeightsGradient(const TrainSet::Iterator &train_set_combinations) = 0;
 
 protected:
   std::unordered_set<FactorExponentialPtr> tunable_factors;
