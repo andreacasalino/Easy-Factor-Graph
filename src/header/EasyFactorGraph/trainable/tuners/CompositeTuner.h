@@ -22,6 +22,8 @@ public:
   float getGradientAlpha() final;
   float getGradientBeta() final;
   void setWeight(const float &w) final;
+  float getWeight() const final { return elements.front()->getWeight(); };
+  bool isHereGroup(const categoric::VariablesSet &group) const final;
 
   void addElement(TunerPtr element);
 

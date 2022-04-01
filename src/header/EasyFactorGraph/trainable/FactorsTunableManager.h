@@ -1,61 +1,64 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #pragma once
+#pragma once
 
-// #include <EasyFactorGraph/distribution/FactorExponential.h>
-// #include <EasyFactorGraph/structure/ConnectionsManager.h>
+#include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/trainable/tuners/Tuner.h>
 
-// namespace EFG::strct {
-// class FactorsAware : virtual public ConnectionsManager {
-// public:
-//   const std::unordered_set<distribution::DistributionCnstPtr> &
-//   getConstFactors() const {
-//     return const_factors;
-//   }
+#include <optional>
 
-// protected:
-//   std::unordered_set<distribution::DistributionCnstPtr> const_factors;
-// };
+namespace EFG::train {
+using FactorExponentialPtr = std::shared_ptr<distribution::FactorExponential>;
 
-// class FactorsAdder : public FactorsAware {
-// public:
-//   void addConstFactor(const distribution::DistributionCnstPtr &factor);
-//   void copyConstFactor(const distribution::Distribution &factor);
-// };
+class FactorsTunableAware : virtual public strct::ConnectionsManager {
+public:
+  // comment that belief propagation will be not invalidate if weights are
+  // changed outside
+  const std::unordered_set<FactorExponentialPtr> &getTunableFactors() const {
+    return tunable_factors;
+  }
 
-// using FactorExponentialPtr =
-// std::shared_ptr<distribution::FactorExponential>; using
-// FactorExponentialCnstPtr =
-//     std::shared_ptr<const distribution::FactorExponential>;
+  std::vector<float> getWeights() const;
+  void setWeights(const std::vector<float> &weights);
 
-// class WeightTuner;
-// struct TunableCluster {
-//   std::unique_ptr<WeightTuner> tuner;
-//   std::vector<FactorExponentialCnstPtr> factors;
-// };
+  std::vector<float>
+  getWeightsGradient(const TrainSet::Iterator &train_set_combinations);
 
-// class FactorsTunableAware : virtual public ConnectionsManager {
-// public:
-//   const std::vector<TunableCluster> &getTunableFactors() const {
-//     return tunable_clusters;
-//   }
+protected:
+  std::unordered_set<FactorExponentialPtr> tunable_factors;
+  std::vector<TunerPtr> tuners;
+};
 
-// protected:
-//   std::vector<TunableCluster> tunable_clusters;
-// };
+class FactorsTunableAdder : public FactorsTunableAware {
+public:
+  void addConstFactor(const FactorExponentialPtr &factor,
+                      const std::optional<categoric::VariablesSet>
+                          &group_sharing_weight = std::nullopt);
 
-// class FactorsAdder : public FactorsAware {
-// public:
-//   void addConstFactor(const FactorExponentialCnstPtr &factor);
-//   void copyConstFactor(const distribution::FactorExponential &factor);
-// };
+  void copyConstFactor(const distribution::FactorExponential &factor,
+                       const std::optional<categoric::VariablesSet>
+                           &group_sharing_weight = std::nullopt);
+
+protected:
+  virtual TunerPtr makeTuner(const FactorExponentialPtr &factor);
+
+  void
+  addTuner(train::TunerPtr tuner,
+           const std::optional<categoric::VariablesSet> &group_sharing_weight);
+};
 
 // void absorb();
 
 // void absorb_by_copy();
-// } // namespace EFG::strct
+
+/**
+ * @param sets equal to 1 the weight of all the tunable clusters
+ */
+void set_ones(FactorsTunableAware &subject);
+} // namespace EFG::train

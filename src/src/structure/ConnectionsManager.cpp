@@ -62,6 +62,7 @@ ConnectionsManager::findOrMakeNode(const categoric::VariablePtr &var) {
   }
   // create this node
   auto &state = getState_();
+  state.variables.push_back(var);
   auto *added = &state.nodes.emplace(var, Node{}).first->second;
   added->variable = var;
   HiddenNodeLocation result;

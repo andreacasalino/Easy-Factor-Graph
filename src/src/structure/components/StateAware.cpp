@@ -11,14 +11,6 @@
 #include <algorithm>
 
 namespace EFG::strct {
-categoric::VariablesSet StateAware::getVariables() const {
-  categoric::VariablesSet result;
-  for (const auto &[var, el] : getState().nodes) {
-    result.emplace(var);
-  }
-  return result;
-}
-
 categoric::VariablePtr StateAware::findVariable(const std::string &name) const {
   const auto &nodes = getState().nodes;
   auto nodes_it = nodes.find(categoric::make_variable(2, name));
@@ -26,13 +18,6 @@ categoric::VariablePtr StateAware::findVariable(const std::string &name) const {
     throw Error{name, " is an inexistent variable"};
   }
   return nodes_it->first;
-}
-
-categoric::VariablesSet StateAware::getAllVariables() const {
-  auto result = getHiddenVariables();
-  auto obs = getObservedVariables();
-  result.insert(obs.begin(), obs.end());
-  return result;
 }
 
 categoric::VariablesSet StateAware::getHiddenVariables() const {

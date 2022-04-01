@@ -62,6 +62,7 @@ struct HiddenCluster {
 using Evidences = SmartMap<categoric::Variable, std::size_t>;
 
 struct GraphState {
+  categoric::VariablesSoup variables;
   Nodes nodes;
   std::vector<HiddenCluster> clusters;
   Evidences evidences;
@@ -83,17 +84,14 @@ class StateAware {
 public:
   virtual ~StateAware() = default;
 
-  categoric::VariablesSet getAllVariables() const;
+  const categoric::VariablesSoup &getAllVariables() const {
+    return state.variables;
+  }
 
   categoric::VariablesSet getHiddenVariables() const;
   categoric::VariablesSet getObservedVariables() const;
 
   const Evidences &getEvidences() const { return getState().evidences; };
-
-  /**
-   * @return all the variables (hidden or observed) in the model
-   */
-  categoric::VariablesSet getVariables() const;
 
   categoric::VariablePtr findVariable(const std::string &name) const;
 

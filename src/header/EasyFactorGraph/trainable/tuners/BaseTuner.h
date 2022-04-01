@@ -19,6 +19,10 @@ public:
 
   float getGradientAlpha() final { return gradientAlpha; };
   void setWeight(const float &w) final { factor->setWeight(w); }
+  float getWeight() const final { return factor->getWeight(); };
+  bool isHereGroup(const categoric::VariablesSet &group) const final {
+    return factor->getVariables().getVariablesSet() == group;
+  }
 
 protected:
   BaseTuner(const std::shared_ptr<distribution::FactorExponential> &factor,

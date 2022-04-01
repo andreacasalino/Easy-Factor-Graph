@@ -8,6 +8,8 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/trainable/tuners/CompositeTuner.h>
 
+#include <algorithm>
+
 namespace EFG::train {
 CompositeTuner::CompositeTuner(TunerPtr elementA, TunerPtr elementB) {
   addElement(std::move(elementA));
@@ -48,5 +50,12 @@ void CompositeTuner::setWeight(const float &w) {
   for (auto &element : elements) {
     element->setWeight(w);
   }
+}
+
+bool CompositeTuner::isHereGroup(const categoric::VariablesSet &group) const {
+  return std::find_if(elements.begin(), elements.end(),
+                      [&group](const TunerPtr &element) {
+                        return element->isHereGroup(group);
+                      }) != elements.end();
 }
 } // namespace EFG::train

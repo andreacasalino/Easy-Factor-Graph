@@ -25,28 +25,39 @@ BinaryTuner::BinaryTuner(
 }
 
 float BinaryTuner::getGradientBeta() {
-  std::unique_ptr<distribution::UnaryFactor> merged_a;
+  std::vector<float> merged_a;
   {
     std::vector<const distribution::Distribution *> unaries = {
         nodeA.merged_unaries.get()};
     for (const auto &[connected_node, connection] : nodeA.active_connections) {
       unaries.push_back(connection.message.get());
     }
-    merged_a = std::make_unique<distribution::UnaryFactor>(unaries);
+    merged_a = distribution::UnaryFactor{unaries}.getProbabilities();
   }
-  std::unique_ptr<distribution::UnaryFactor> merged_b;
+
+  std::vector<float> merged_b;
   {
     std::vector<const distribution::Distribution *> unaries = {
         nodeB.merged_unaries.get()};
     for (const auto &[connected_node, connection] : nodeB.active_connections) {
       unaries.push_back(connection.message.get());
     }
-    merged_b = std::make_unique<distribution::UnaryFactor>(unaries);
+    merged_b = distribution::UnaryFactor{unaries}.getProbabilities();
   }
 
-  throw 0; // are we sure the order of the variables in the merged factor is the
-           // same of the original binary factor?
-  return dotProduct(
-      distribution::Factor{getFactor(), merged_a, merged_b}.getProbabilities());
+  std::vector<float> probs;
+  const auto &eval = getFactor().getEvaluator();
+  probs.reserve(getFactor().getCombinationsMap().size());
+  float probs_coeff = 0;
+  for (const auto &[comb, val] : getFactor().getCombinationsMap()) {
+    const auto &data = comb.data();
+    probs.push_back(eval.evaluate(val) * merged_a[data[0]] * merged_b[data[1]]);
+    probs_coeff += probs.back();
+  }
+  probs_coeff = 1.f / probs_coeff;
+  for (auto &val : probs) {
+    val *= 1.f / probs_coeff;
+  }
+  return dotProduct(probs);
 }
 } // namespace EFG::train

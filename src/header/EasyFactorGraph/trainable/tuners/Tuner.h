@@ -20,7 +20,11 @@ public:
 
   virtual float getGradientAlpha() = 0;
   virtual float getGradientBeta() = 0;
+
   virtual void setWeight(const float &w) = 0;
+  virtual float getWeight() const = 0;
+
+  virtual bool isHereGroup(const categoric::VariablesSet &group) const = 0;
 
 protected:
   Tuner() = default;
