@@ -70,6 +70,8 @@ public:
     }
   }
 
+  std::size_t size() const;
+
 private:
   std::shared_ptr<const std::vector<categoric::Combination>> combinations;
   std::optional<std::vector<std::size_t>> positions;

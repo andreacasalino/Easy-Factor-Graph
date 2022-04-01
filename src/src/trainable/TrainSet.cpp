@@ -51,4 +51,11 @@ TrainSet::Iterator TrainSet::makeIterator() const {
 TrainSet::Iterator TrainSet::makeSubSetIterator(const float &percentage) const {
   return Iterator{*this, percentage};
 }
+
+std::size_t TrainSet::Iterator::size() const {
+  if (std::nullopt == positions) {
+    return positions->size();
+  }
+  return combinations->size();
+}
 } // namespace EFG::train

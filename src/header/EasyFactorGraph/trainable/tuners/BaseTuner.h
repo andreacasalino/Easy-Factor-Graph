@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <EasyFactorGraph/distribution/CombinationFinder.h>
 #include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/trainable/tuners/Tuner.h>
 
@@ -20,11 +21,18 @@ public:
   void setWeight(const float &w) final { factor->setWeight(w); }
 
 protected:
-  BaseHandler(const std::shared_ptr<distribution::FactorExponential> &factor);
+  BaseTuner(const std::shared_ptr<distribution::FactorExponential> &factor,
+            const categoric::VariablesSoup &variables_in_model);
 
   float dotProduct(const std::vector<float> &prob) const;
 
+  const distribution::FactorExponential &getFactor() const { return *factor; }
+
+private:
   std::shared_ptr<distribution::FactorExponential> factor;
-  float gradientAlpha = 0.f;
+
+  const TrainSet::Iterator *train_set_iterator = nullptr;
+  const distribution::CombinationFinder finder;
+  float gradientAlpha = 0;
 };
 } // namespace EFG::train
