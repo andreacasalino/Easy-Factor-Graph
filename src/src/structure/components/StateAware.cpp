@@ -12,12 +12,15 @@
 
 namespace EFG::strct {
 categoric::VariablePtr StateAware::findVariable(const std::string &name) const {
-  const auto &nodes = getState().nodes;
-  auto nodes_it = nodes.find(categoric::make_variable(2, name));
-  if (nodes_it == nodes.end()) {
+  auto variables_it =
+      std::find_if(state.variables.begin(), state.variables.end(),
+                   [&name](const categoric::VariablePtr &var) {
+                     return var->name() == name;
+                   });
+  if (variables_it == state.variables.end()) {
     throw Error{name, " is an inexistent variable"};
   }
-  return nodes_it->first;
+  return *variables_it;
 }
 
 categoric::VariablesSet StateAware::getHiddenVariables() const {

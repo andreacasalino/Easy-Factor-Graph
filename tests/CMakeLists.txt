@@ -40,7 +40,7 @@ MakeTest(Test05-SpecialFactorsConstruction)
 
 MakeTest(Test06-Insertions)
 
-# MakeTest(Test07-Evidences)
+MakeTest(Test07-Evidences)
 
 # MakeTest(Test08-BeliefPropagation)
 

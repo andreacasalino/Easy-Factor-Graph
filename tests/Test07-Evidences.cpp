@@ -1,27 +1,37 @@
+#include <algorithm>
 #include <gtest/gtest.h>
-#include <model/Graph.h>
 #include <sstream>
+
+#include <EasyFactorGraph/structure/EvidenceManager.h>
+#include <EasyFactorGraph/structure/FactorsManager.h>
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
-using namespace EFG::model;
+using namespace EFG::strct;
 
-class GraphTest 
-: public ::testing::Test
-, public model::Graph { 
+class EvidenceTest : public ::testing::Test,
+                     public EvidenceSetter,
+                     public EvidenceRemover,
+                     protected FactorsAdder {
 public:
-  GraphTest() = default;
+  EvidenceTest() = default;
 
-protected: 
+protected:
+  VariablesSoup uVars;
+  VariablesSoup mVars;
+  VariablesSoup lVars;
+
   void SetUp() override {
-    auto connect = [this](const VariablePtr& a, const VariablePtr& b){
-      this->insert(std::make_shared<factor::cnst::Factor>(std::set<VariablePtr>{a, b} , true));
+    auto connect = [this](const VariablePtr &a, const VariablePtr &b) {
+      DistributionCnstPtr factor = std::make_shared<Factor>(
+          Group{VariablesSoup{a, b}}, USE_SIMPLE_CORRELATION_TAG);
+      addConstFactor(factor);
     };
 
-    auto createVariable = [](const std::string& name, std::size_t id){
+    auto createVariable = [](const std::string &name, std::size_t id) {
       std::stringstream s;
       s << name << id;
-      return makeVariable(2, s.str());
+      return make_variable(2, s.str());
     };
 
     this->uVars.reserve(3);
@@ -34,103 +44,85 @@ protected:
     connect(this->uVars.back(), this->mVars.back());
     connect(this->lVars.back(), this->mVars.back());
 
-    for(std::size_t k=1; k<3; ++k) {
+    for (std::size_t k = 1; k < 3; ++k) {
       std::size_t s = this->mVars.size();
       this->uVars.push_back(createVariable("A", k));
       this->mVars.push_back(createVariable("M", k));
       this->lVars.push_back(createVariable("L", k));
       connect(this->uVars.back(), this->mVars.back());
       connect(this->lVars.back(), this->mVars.back());
-      connect(this->uVars[s-1], this->mVars.back());
-      connect(this->lVars[s-1], this->mVars.back());
+      connect(this->uVars[s - 1], this->mVars.back());
+      connect(this->lVars[s - 1], this->mVars.back());
     }
   }
 
-  bool clusterExists(const std::set<VariablePtr>& vars) {
-    std::set<strct::Node*> cluster;
-    for (auto it = vars.begin(); it!=vars.end(); ++it) {
-      cluster.emplace(&this->nodes.find(*it)->second);
-    }
-    for(auto itCl = this->hidden.clusters.begin(); itCl != this->hidden.clusters.end(); ++itCl) {
-      if(*itCl == cluster) {
-        return true;
+  bool clusterExists(const VariablesSet &vars) {
+    std::set<strct::Node *> nodes;
+    {
+      for (const auto &var : vars) {
+        auto nodes_it = getState_().nodes.find(var);
+        if (nodes_it == getState_().nodes.end()) {
+          throw Error{nodes_it->first->name(),
+                      " is not part of the hidden clusters"};
+        }
+        nodes.emplace(&nodes_it->second);
       }
     }
-    return false;
+    return std::find_if(getState().clusters.begin(), getState().clusters.end(),
+                        [&nodes](const HiddenCluster &cluster) {
+                          return cluster.nodes == nodes;
+                        }) != getState().clusters.end();
   };
-
-  void compare(const std::map<std::string, std::size_t>& ob) {
-    EXPECT_EQ(ob.size(), this->evidences.size());
-    auto itob = ob.begin();
-    for(auto it = this->evidences.begin(); it!=this->evidences.end(); ++it) {
-      EXPECT_EQ(it->first->name(), itob->first);
-      EXPECT_EQ(it->second, itob->second);
-      ++itob;
-    }
-  };
-
-  std::vector<VariablePtr> uVars;
-  std::vector<VariablePtr> mVars;
-  std::vector<VariablePtr> lVars;
 };
 
-TEST_F(GraphTest, resetEvidences1) {
-  std::map<std::string, std::size_t> ob = {{"M0" , 0}};
+TEST_F(EvidenceTest, evidenceAddition) {
+  setEvidence(mVars[1], 0);
+  clusterExists(VariablesSet{uVars[0], mVars[0], lVars[0]});
+  clusterExists(VariablesSet{uVars[2], mVars[2], lVars[2], uVars[1], lVars[1]});
+  {
+    Evidences expected;
+    expected.emplace(mVars[1], 0);
+    EXPECT_EQ(getEvidences(), expected);
+  }
 
-  this->resetEvidences(ob);
-  this->compare(ob);
-  EXPECT_EQ(this->hidden.clusters.size(), 1);
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[0], this->lVars[0],
-                                                        this->uVars[1], this->mVars[1], this->lVars[1],
-                                                        this->uVars[2], this->mVars[2], this->lVars[2]}));
+  setEvidence(mVars[2], 1);
+  clusterExists(VariablesSet{uVars[0], mVars[0], lVars[0]});
+  clusterExists(VariablesSet{uVars[2], mVars[2], lVars[2]});
+  clusterExists(VariablesSet{uVars[1]});
+  clusterExists(VariablesSet{lVars[1]});
+  {
+    Evidences expected;
+    expected.emplace(mVars[1], 0);
+    expected.emplace(mVars[2], 1);
+    EXPECT_EQ(getEvidences(), expected);
+  }
 }
 
-TEST_F(GraphTest, resetEvidences2) {
-  std::map<std::string, std::size_t> ob = {{"M1" , 0}};
+TEST_F(EvidenceTest, evidenceSingleReset) {
+  setEvidence(mVars[1], 0);
+  setEvidence(mVars[2], 0);
 
-  this->resetEvidences(ob);
-  this->compare(ob);
-  EXPECT_EQ(this->hidden.clusters.size(), 2);
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[0], this->mVars[0], this->lVars[0]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[2], this->mVars[2], this->lVars[2], this->uVars[1], this->lVars[1]}));
+  removeEvidence(mVars[2]);
+  clusterExists(VariablesSet{uVars[0], mVars[0], lVars[0]});
+  clusterExists(VariablesSet{uVars[2], mVars[2], lVars[2], uVars[1], lVars[1]});
+  {
+    Evidences expected;
+    expected.emplace(mVars[1], 0);
+    EXPECT_EQ(getEvidences(), expected);
+  }
+
+  removeEvidence(mVars[1]);
+  clusterExists(
+      VariablesSet{getAllVariables().begin(), getAllVariables().end()});
+  EXPECT_EQ(getEvidences(), Evidences{});
 }
 
-TEST_F(GraphTest, resetEvidences3) {
-  std::map<std::string, std::size_t> ob = {{"M0" , 1}, {"M1" , 0}};
-
-  this->resetEvidences(ob);
-  this->compare(ob);
-  EXPECT_EQ(this->hidden.clusters.size(), 3);
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[2], this->mVars[2], this->lVars[2], this->uVars[1], this->lVars[1]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[0]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->lVars[0]}));
-}
-
-TEST_F(GraphTest, addEvidence) {
-  this->resetEvidences({{"M0" , 0}});
-  this->addEvidence("M1" , 1);
-
-  this->compare({{"M0" , 0}, {"M1" , 1}});
-  EXPECT_EQ(this->hidden.clusters.size(), 3);
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[2], this->mVars[2], this->lVars[2], this->uVars[1], this->lVars[1]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[0]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->lVars[0]}));
-
-  ASSERT_THROW(this->addEvidence("M1" , 1), Error);
-}
-
-TEST_F(GraphTest, setEvidences) {
-  this->resetEvidences({{"M0" , 1}, {"M1" , 0}});
-
-  this->setEvidences({1,1});
-  this->compare({{"M0" , 1}, {"M1" , 1}});
-  EXPECT_EQ(this->hidden.clusters.size(), 3);
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[2], this->mVars[2], this->lVars[2], this->uVars[1], this->lVars[1]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->uVars[0]}));
-  EXPECT_TRUE(this->clusterExists(std::set<VariablePtr>{this->lVars[0]}));
-
-  ASSERT_THROW(this->setEvidences({0}), Error);
-  ASSERT_THROW(this->setEvidences({10,10}), Error);
+TEST_F(EvidenceTest, evidenceTotalReset) {
+  setEvidence(mVars[1], 0);
+  setEvidence(mVars[2], 0);
+  removeEvidences();
+  EXPECT_EQ(getEvidences(), Evidences{});
+  ASSERT_THROW(removeEvidence(mVars[2]), Error);
 }
 
 int main(int argc, char *argv[]) {
