@@ -14,8 +14,7 @@
 namespace EFG::train {
 class BaseTuner : public Tuner {
 public:
-  void setTrainSetIterator(const TrainSet::Iterator &iter,
-                           const categoric::VariablesSet &vars) final;
+  void setTrainSetIterator(const TrainSet::Iterator &iter) final;
 
   float getGradientAlpha() final { return gradientAlpha; };
   void setWeight(const float &w) final { factor->setWeight(w); }

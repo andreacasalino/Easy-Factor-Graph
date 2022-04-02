@@ -23,10 +23,9 @@ void CompositeTuner::addElement(TunerPtr element) {
   elements.emplace_back(std::move(element));
 }
 
-void CompositeTuner::setTrainSetIterator(const TrainSet::Iterator &iter,
-                                         const categoric::VariablesSet &vars) {
+void CompositeTuner::setTrainSetIterator(const TrainSet::Iterator &iter) {
   for (auto &element : elements) {
-    element->setTrainSetIterator(iter, vars);
+    element->setTrainSetIterator(iter);
   }
 }
 

@@ -13,8 +13,7 @@ BaseTuner::BaseTuner(
     const categoric::VariablesSoup &variables_in_model)
     : factor(factor), finder(factor->makeFinder(variables_in_model)) {}
 
-void BaseTuner::setTrainSetIterator(const TrainSet::Iterator &iter,
-                                    const categoric::VariablesSet &vars) {
+void BaseTuner::setTrainSetIterator(const TrainSet::Iterator &iter) {
   if (&iter == train_set_iterator) {
     return;
   }

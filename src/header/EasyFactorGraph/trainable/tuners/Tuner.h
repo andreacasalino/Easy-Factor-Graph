@@ -15,8 +15,7 @@ class Tuner {
 public:
   virtual ~Tuner() = default;
 
-  virtual void setTrainSetIterator(const TrainSet::Iterator &iter,
-                                   const categoric::VariablesSet &vars) = 0;
+  virtual void setTrainSetIterator(const TrainSet::Iterator &iter) = 0;
 
   virtual float getGradientAlpha() = 0;
   virtual float getGradientBeta() = 0;

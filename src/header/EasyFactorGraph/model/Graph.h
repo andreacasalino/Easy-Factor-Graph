@@ -8,7 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/structure/FactorsAdder.h>
+#include <EasyFactorGraph/structure/FactorsManager.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 

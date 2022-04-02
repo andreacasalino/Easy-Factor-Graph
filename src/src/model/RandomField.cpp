@@ -1,61 +1,33 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #include <model/RandomField.h>
-// #include <algorithm>
+#include <EasyFactorGraph/model/RandomField.h>
 
-// namespace EFG::model {
-//     void
-//     RandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential>
-//     toInsert) {
-//         this->InsertTunableCapable::insertTunable(toInsert);
-//         this->insertHandler(toInsert);
-//     }
+namespace EFG::model {
+std::vector<float> RandomField::getWeightsGradient(
+    const train::TrainSet::Iterator &train_set_combinations) {
+  throw 0; // decide what to do to set the pool
+  if (!getEvidences().empty()) {
+    removeEvidences();
+  }
+  propagateBelief(strct::SUM);
+  std::vector<float> result;
+  strct::Tasks tasks;
+  result.reserve(tuners.size());
+  for (auto &tuner : tuners) {
+    auto &receiver = result.emplace_back();
+    tasks.emplace_back([&receiver = receiver, &tuner = tuner,
+                        &train_set_combinations](const std::size_t) {
+      tuner->setTrainSetIterator(train_set_combinations);
+      receiver = tuner->getGradientAlpha() - tuner->getGradientBeta();
+    });
+  }
+  getPool().parallelFor(tasks);
+  return result;
+}
 
-//     void
-//     RandomField::insertTunable(std::shared_ptr<distribution::factor::modif::FactorExponential>
-//     toInsert, const std::set<categoric::VariablePtr>& potentialSharingWeight)
-//     {
-//         this->InsertTunableCapable::insertTunable(toInsert,
-//         potentialSharingWeight); this->insertHandler(toInsert);
-//     }
-
-//     std::vector<float> RandomField::getGradient(train::TrainSetPtr trainSet)
-//     {
-//         this->Trainable::setTrainSet(trainSet);
-//         if (!this->evidences.empty()) {
-//             this->resetEvidences({});
-//         }
-//         this->lastPropagation.reset();
-//         std::vector<float> grad;
-//         grad.resize(this->handlers.size());
-//         std::size_t pos = 0;
-//         this->propagateBelief(strct::PropagationKind::Sum);
-// #ifdef THREAD_POOL_ENABLED
-//         if (nullptr != this->threadPool) {
-//             std::for_each(this->handlers.begin(), this->handlers.end(),
-//             [this, &grad, &pos](train::TrainHandlerPtr& h) {
-//                 train::TrainHandler* pt = h.get();
-//                 this->threadPool->push([pt, pos, &grad]() { grad[pos] =
-//                 pt->getGradientAlpha() - pt->getGradientBeta(); });
-//                 ++pos;
-//             });
-//             this->threadPool->wait();
-//         }
-//         else {
-// #endif
-//             std::for_each(this->handlers.begin(), this->handlers.end(),
-//             [&grad, &pos](train::TrainHandlerPtr& h) {
-//                 grad[pos] = h->getGradientAlpha() - h->getGradientBeta();
-//                 ++pos;
-//             });
-// #ifdef THREAD_POOL_ENABLED
-//         }
-// #endif
-//         return grad;
-//     }
-// }
+} // namespace EFG::model

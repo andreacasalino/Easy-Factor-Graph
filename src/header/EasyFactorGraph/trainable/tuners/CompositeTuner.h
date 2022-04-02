@@ -16,8 +16,7 @@ class CompositeTuner : public Tuner {
 public:
   CompositeTuner(TunerPtr elementA, TunerPtr elementB);
 
-  void setTrainSetIterator(const TrainSet::Iterator &iter,
-                           const categoric::VariablesSet &vars) final;
+  void setTrainSetIterator(const TrainSet::Iterator &iter) final;
 
   float getGradientAlpha() final;
   float getGradientBeta() final;
