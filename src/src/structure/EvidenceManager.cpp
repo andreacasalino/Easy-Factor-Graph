@@ -15,7 +15,7 @@
 namespace EFG::strct {
 void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
                                  const std::size_t value) {
-  if (variable->size() >= value) {
+  if (variable->size() <= value) {
     throw Error{std::to_string(value), " is an invalid evidence for variable ",
                 variable->name()};
   }
@@ -79,7 +79,7 @@ void re_connect(Node &node, std::set<Node *> &involved_nodes) {
   node.disabled_connections.clear();
 }
 
-void update_clusters(std::vector<HiddenCluster> &clusters,
+void update_clusters(HiddenClusters &clusters,
                      std::set<Node *> &involved_nodes) {
   for (auto *node : involved_nodes) {
     auto clusters_it =

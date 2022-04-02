@@ -12,7 +12,7 @@
 namespace EFG::strct {
 class BaselineBeliefPropagator : public BeliePropagationStrategy {
 public:
-  PropagationResult propagateBelief(std::vector<HiddenCluster> &subject,
+  PropagationResult propagateBelief(HiddenClusters &subject,
                                     const PropagationKind &kind,
                                     const PropagationContext &context,
                                     Pool &pool) final;

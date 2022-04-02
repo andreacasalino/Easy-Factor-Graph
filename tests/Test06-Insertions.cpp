@@ -16,15 +16,12 @@ protected:
     EXPECT_FALSE(hasPropagationResult());
     const auto &state = getState();
     EXPECT_TRUE(state.evidences.empty());
-
-    EXPECT_EQ(state.clusters.size(), 1);
     EXPECT_EQ(state.nodes.size(), state.variables.size());
-
-    std::set<Node *> expected_nodes;
-    for (auto &[var, node] : getState_().nodes) {
-      expected_nodes.emplace(&node);
+    std::size_t hidden_nodes_numb = 0;
+    for (const auto &cluster : state.clusters) {
+      hidden_nodes_numb += cluster.nodes.size();
     }
-    EXPECT_EQ(state.clusters.front().nodes, expected_nodes);
+    EXPECT_EQ(hidden_nodes_numb, state.nodes.size());
   };
 
   void checkVariables(const VariablesSet &vars) {
@@ -76,6 +73,8 @@ TEST_F(FactorsManagerTest, insertFactorShared) {
 
   EXPECT_EQ(getAllFactors().size(), 1);
   EXPECT_EQ(getConstFactors().size(), 1);
+
+  EXPECT_EQ(*getAllFactors().begin(), to_insert);
   EXPECT_EQ(*getConstFactors().begin(), to_insert);
 }
 
@@ -124,6 +123,7 @@ TEST_F(FactorsTunableManagerTest, insertTunableFactorShared) {
   EXPECT_EQ(getConstFactors().size(), 0);
   EXPECT_EQ(getTunableFactors().size(), 1);
   EXPECT_EQ(tuners.size(), 1);
+  EXPECT_EQ(*getAllFactors().begin(), to_insert);
   EXPECT_EQ(*getTunableFactors().begin(), to_insert);
 }
 

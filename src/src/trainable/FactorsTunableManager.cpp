@@ -96,6 +96,7 @@ void FactorsTunableAdder::addTunableFactor(
   addDistribution(factor);
   auto tuner = makeTuner(factor);
   addTuner(std::move(tuner), group_sharing_weight);
+  tunable_factors.emplace(factor);
 }
 
 void FactorsTunableAdder::copyTunableFactor(

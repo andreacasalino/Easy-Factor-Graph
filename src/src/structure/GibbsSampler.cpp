@@ -53,7 +53,7 @@ struct SamplerNode {
   std::vector<SamplerConnection> connections;
   std::vector<const distribution::Distribution *> static_unaries;
 };
-std::vector<SamplerNode> make_nodes(const std::vector<HiddenCluster> &clusters,
+std::vector<SamplerNode> make_nodes(const HiddenClusters &clusters,
                                     std::vector<std::size_t> &recipient) {
   std::size_t nodes_size = 0;
   for (const auto &cluster : clusters) {

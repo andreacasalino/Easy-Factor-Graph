@@ -11,6 +11,7 @@
 #include <EasyFactorGraph/misc/SmartMap.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
+#include <list>
 #include <map>
 #include <optional>
 #include <set>
@@ -61,15 +62,17 @@ struct HiddenCluster {
 
 using Evidences = SmartMap<categoric::Variable, std::size_t>;
 
+using HiddenClusters = std::list<HiddenCluster>;
+
 struct GraphState {
   categoric::VariablesSoup variables;
   Nodes nodes;
-  std::vector<HiddenCluster> clusters;
+  HiddenClusters clusters;
   Evidences evidences;
 };
 
 struct HiddenNodeLocation {
-  std::vector<HiddenCluster>::iterator cluster;
+  HiddenClusters::iterator cluster;
   Node *node;
 };
 

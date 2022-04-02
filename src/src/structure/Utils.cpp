@@ -17,18 +17,17 @@ void visit_location(
     const NodeLocation &to_visit,
     std::function<void(const HiddenNodeLocation &)> hidden_case,
     std::function<void(const EvidenceNodeLocation &)> evidence_case) {
-  struct Visitor {
-    std::function<void(const HiddenNodeLocation &)> hidden_case;
-    std::function<void(const EvidenceNodeLocation &)> evidence_case;
-
-    void operator()(const HiddenNodeLocation &info) const {
-      hidden_case(info);
-    };
-    void operator()(const EvidenceNodeLocation &info) const {
-      evidence_case(info);
-    };
-  };
-  std::visit(Visitor{hidden_case, evidence_case}, to_visit);
+  const auto *as_hidden = std::get_if<HiddenNodeLocation>(&to_visit);
+  if (nullptr != as_hidden) {
+    hidden_case(*as_hidden);
+    return;
+  }
+  const auto *as_evidence = std::get_if<EvidenceNodeLocation>(&to_visit);
+  if (nullptr != as_evidence) {
+    evidence_case(*as_evidence);
+    return;
+  }
+  throw Error{"Empty location can't be visited"};
 }
 
 namespace {

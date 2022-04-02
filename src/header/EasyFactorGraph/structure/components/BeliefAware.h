@@ -29,7 +29,7 @@ class BeliePropagationStrategy {
 public:
   virtual ~BeliePropagationStrategy() = default;
 
-  virtual PropagationResult propagateBelief(std::vector<HiddenCluster> &subject,
+  virtual PropagationResult propagateBelief(HiddenClusters &subject,
                                             const PropagationKind &kind,
                                             const PropagationContext &context,
                                             Pool &pool) = 0;

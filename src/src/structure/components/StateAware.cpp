@@ -51,7 +51,7 @@ StateAware::locate(const categoric::VariablePtr &variable) const {
     }
   }
   if (nullptr == node) {
-    throw Error{variable->name(), " is non existing in this graph"};
+    return std::nullopt;
   }
   auto evidences_it = state.evidences.find(variable);
   if (evidences_it != state.evidences.end()) {
@@ -62,9 +62,6 @@ StateAware::locate(const categoric::VariablePtr &variable) const {
                    [&node](const HiddenCluster &element) {
                      return element.nodes.find(node) != element.nodes.end();
                    });
-  if (clusters_it != state.clusters.end()) {
-    return HiddenNodeLocation{clusters_it, node};
-  }
-  return std::nullopt;
+  return HiddenNodeLocation{clusters_it, node};
 }
 } // namespace EFG::strct

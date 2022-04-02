@@ -14,7 +14,7 @@
 
 namespace EFG::strct {
 namespace {
-void resetMessages(const std::vector<HiddenCluster> &clusters) {
+void resetMessages(const HiddenClusters &clusters) {
   for (const auto &cluster : clusters) {
     for (auto *node : cluster.nodes) {
       for (auto &[connected_node, connection] : node->active_connections) {
@@ -152,7 +152,7 @@ bool loopy_propagation(HiddenCluster &cluster,
 } // namespace
 
 PropagationResult BaselineBeliefPropagator::propagateBelief(
-    std::vector<HiddenCluster> &subject, const PropagationKind &kind,
+    HiddenClusters &subject, const PropagationKind &kind,
     const PropagationContext &context, Pool &pool) {
   resetMessages(subject);
   PropagationResult result;
