@@ -90,7 +90,7 @@ TunerPtr FactorsTunableAdder::makeTuner(const FactorExponentialPtr &factor) {
   throw Error{"Invalid tunable factor"};
 }
 
-void FactorsTunableAdder::addConstFactor(
+void FactorsTunableAdder::addTunableFactor(
     const FactorExponentialPtr &factor,
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
   addDistribution(factor);
@@ -98,11 +98,11 @@ void FactorsTunableAdder::addConstFactor(
   addTuner(std::move(tuner), group_sharing_weight);
 }
 
-void FactorsTunableAdder::copyConstFactor(
+void FactorsTunableAdder::copyTunableFactor(
     const distribution::FactorExponential &factor,
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
   auto cloned = std::make_shared<distribution::FactorExponential>(factor);
-  addConstFactor(cloned, group_sharing_weight);
+  addTunableFactor(cloned, group_sharing_weight);
 }
 
 void set_ones(FactorsTunableAware &subject) {

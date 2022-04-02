@@ -10,16 +10,19 @@
 #include <EasyFactorGraph/categoric/Combination.h>
 
 #include <fstream>
+#include <memory>
 
 namespace EFG::io {
-std::ifstream make_stream(const std::string &file_name);
+using IStream = std::unique_ptr<std::ifstream>;
+
+IStream make_stream(const std::string &file_name);
 
 template <typename Predicate>
-void for_each_line(std::ifstream &stream, const Predicate &pred) {
+void for_each_line(IStream &stream, const Predicate &pred) {
   std::string line;
-  while (!stream.eof()) {
+  while (!stream->eof()) {
     line.clear();
-    std::getline(stream, line);
+    std::getline(*stream, line);
     pred(line);
   }
 }

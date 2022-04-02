@@ -79,16 +79,6 @@ TEST(DistributionMaking, mergeDistributions) {
   });
 }
 
-// TEST(DistributionMaking, importFromFile) {
-//   factor::cnst::Factor factor(
-//       std::set<VariablePtr>{makeVariable(2, "A"), makeVariable(2, "B")},
-//       std::string(TEST_FOLDER) + std::string("FactorDescription"));
-// }
-
-// ////////////////////////////////////////
-// // add test on factor merging
-// ////////////////////////////////////////
-
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

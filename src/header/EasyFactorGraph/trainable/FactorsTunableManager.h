@@ -37,13 +37,13 @@ protected:
 
 class FactorsTunableAdder : virtual public FactorsTunableAware {
 public:
-  void addConstFactor(const FactorExponentialPtr &factor,
-                      const std::optional<categoric::VariablesSet>
-                          &group_sharing_weight = std::nullopt);
+  void addTunableFactor(const FactorExponentialPtr &factor,
+                        const std::optional<categoric::VariablesSet>
+                            &group_sharing_weight = std::nullopt);
 
-  void copyConstFactor(const distribution::FactorExponential &factor,
-                       const std::optional<categoric::VariablesSet>
-                           &group_sharing_weight = std::nullopt);
+  void copyTunableFactor(const distribution::FactorExponential &factor,
+                         const std::optional<categoric::VariablesSet>
+                             &group_sharing_weight = std::nullopt);
 
 protected:
   virtual TunerPtr makeTuner(const FactorExponentialPtr &factor);

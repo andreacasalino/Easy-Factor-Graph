@@ -66,6 +66,9 @@ void update_combination_buffer(std::vector<std::size_t> &buffer,
 
 Factor::Factor(const categoric::Group &vars, const UseSimpleCorrelation &)
     : Factor(vars) {
+  if (1 == vars.size()) {
+    throw Error{"Only 1 variable can't make a correlation"};
+  }
   check_all_same_size(vars.getVariables());
   auto buffer = make_combination_buffer(getVariables().getVariables().size());
   for (std::size_t k = 0; k < getVariables().getVariables().front()->size();
@@ -78,6 +81,9 @@ Factor::Factor(const categoric::Group &vars, const UseSimpleCorrelation &)
 
 Factor::Factor(const categoric::Group &vars, const UseSimpleAntiCorrelation &)
     : Factor(vars) {
+  if (1 == vars.size()) {
+    throw Error{"Only 1 variable can't make a correlation"};
+  }
   check_all_same_size(vars.getVariables());
   auto buffer = make_combination_buffer(getVariables().getVariables().size());
   setAllImagesRaw(1.f);

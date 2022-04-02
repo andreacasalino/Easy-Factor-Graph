@@ -5,18 +5,23 @@ include(FetchContent)
 FetchContent_Declare(
   googletest
   GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG        main
+  GIT_TAG        f2d71f0be2ff2230789cfaf37d4c4f38db5b1c7c
 )
 FetchContent_MakeAvailable(googletest)
-
-add_subdirectory(Utils)
 
 function(MakeTest NAME)
 add_executable(${NAME} ${NAME}.cpp)
 
 target_link_libraries(${NAME}
 PUBLIC
-	Test-Utils
+  gtest
+  EFG
+)
+
+target_compile_definitions(${NAME} 
+PUBLIC
+	-D TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/"
+	-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/../samples/"
 )
 
 install(TARGETS ${NAME})

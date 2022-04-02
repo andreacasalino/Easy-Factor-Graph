@@ -61,6 +61,24 @@ TEST(DistributionSetting, setAllImagesRaw) {
   ASSERT_THROW(factor.setAllImagesRaw(-1.f), Error);
 }
 
+#include <EasyFactorGraph/io/FactorImporter.h>
+
+TEST(DistributionSetting, importFromFile) {
+  // 2,2,4
+  categoric::VariablesSoup vars = {make_variable(2, "A"), make_variable(2, "B"),
+                                   make_variable(4, "C")};
+  distribution::Factor factor_ABC(categoric::Group{vars});
+  const std::string file_name =
+      std::string(TEST_FOLDER) + std::string("FactorDescription");
+  io::import_values(factor_ABC, file_name);
+
+  EXPECT_EQ(factor_ABC.getCombinationsMap().size(), 4);
+  EXPECT_LE(abs(factor_ABC.evaluate(Combination{{0, 1, 1}}) - 2.f), 0.01f);
+  EXPECT_LE(abs(factor_ABC.evaluate(Combination{{0, 0, 0}}) - 3.f), 0.01f);
+  EXPECT_LE(abs(factor_ABC.evaluate(Combination{{1, 1, 3}}) - 2.5f), 0.01f);
+  EXPECT_LE(abs(factor_ABC.evaluate(Combination{{1, 0, 2}}) - 1.4f), 0.01f);
+}
+
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
