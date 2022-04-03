@@ -1,45 +1,39 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #ifndef EFG_IO_EXPORTER_H
-// #define EFG_IO_EXPORTER_H
+#pragma once
 
-// #include <structure/components/EvidenceAware.h>
-// #include <structure/components/StructureAware.h>
-// #include <structure/components/StructureTunableAware.h>
-// #include <Error.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/structure/EvidenceManager.h>
+#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/trainable/FactorsTunableManager.h>
 
-// namespace EFG::io {
-//     class Exporter {
-//     protected:
-//         Exporter() = default;
+namespace EFG::io {
+struct AwarePtrs {
+  strct::StateAware *as_structure_aware;
+  strct::FactorsAware *as_factors_const_aware;
+  train::FactorsTunableAware *as_factors_tunable_aware;
+};
 
-//         template<typename Model>
-//         static std::tuple<const strct::EvidenceAware*, const
-//         strct::StructureAware*, const strct::StructureTunableAware*>
-//         getComponents(const Model& model) {
-//             const strct::EvidenceAware* evidences = dynamic_cast<const
-//             strct::EvidenceAware*>(&model); if (nullptr == evidences) {
-//                 throw Error("the model should be evidence aware");
-//             }
+template <typename Model> AwarePtrs getComponents(Model &model) {
+  return AwarePtrs{dynamic_cast<strct::StateAware *>(&model),
+                   dynamic_cast<strct::FactorsAware *>(&model),
+                   dynamic_cast<train::FactorsTunableAware *>(&model)};
+};
 
-//             const strct::StructureAware* structure = dynamic_cast<const
-//             strct::StructureAware*>(&model); if (nullptr == structure) {
-//                 throw Error("the model should be at least structure aware");
-//             }
-//             return std::make_tuple(evidences, structure, dynamic_cast<const
-//             strct::StructureTunableAware*>(&model));
-//         };
+class Exporter {
+public:
+  virtual ~Exporter() = default;
 
-//         virtual void exportComponents(const std::string& filePath, const
-//         std::string& modelName, const std::tuple<const strct::EvidenceAware*,
-//         const strct::StructureAware*, const strct::StructureTunableAware*>&
-//         components) = 0;
-//     };
-// }
+protected:
+  Exporter() = default;
 
-// #endif
+  virtual void exportComponents(const std::string &filePath,
+                                const std::string &modelName,
+                                const AwarePtrs &subject) = 0;
+};
+} // namespace EFG::io

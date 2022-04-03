@@ -1,40 +1,36 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #ifndef EFG_IO_IMPORTER_H
-// #define EFG_IO_IMPORTER_H
+#pragma once
 
-// #include <structure/InsertCapable.h>
-// #include <structure/InsertTunableCapable.h>
-// #include <Error.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/trainable/FactorsTunableManager.h>
 
-// namespace EFG::io {
-//     class Importer {
-//     protected:
-//         Importer() = default;
+namespace EFG::io {
+struct AdderPtrs {
+  strct::FactorsAdder *as_factors_const_adder;
+  train::FactorsTunableAdder *as_factors_tunable_adder;
+};
 
-//         template<typename Model>
-//         static std::pair<strct::InsertCapable*, strct::InsertTunableCapable*>
-//         getComponents(Model& model) {
-//             strct::InsertCapable* structure =
-//             dynamic_cast<strct::InsertCapable*>(&model); if (nullptr ==
-//             structure) {
-//                 throw Error("the model should be at least structure insert
-//                 capable");
-//             }
-//             return std::make_pair(structure,
-//             dynamic_cast<strct::InsertTunableCapable*>(&model));
-//         };
+template <typename Model> AdderPtrs getComponents(Model &model) {
+  return AdderPtrs{dynamic_cast<strct::FactorsAdder *>(&model),
+                   dynamic_cast<train::FactorsTunableAdder *>(&model)};
+};
 
-//         virtual std::map<std::string, std::size_t> importComponents(const
-//         std::string& filePath, const std::string& fileName, const
-//         std::pair<strct::InsertCapable*, strct::InsertTunableCapable*>&
-//         components) = 0;
-//     };
-// }
+class Importer {
+public:
+  virtual ~Importer() = default;
 
-// #endif
+protected:
+  Importer() = default;
+
+  virtual std::unordered_map<std::string, std::size_t>
+  importComponents(const std::string &filePath, const std::string &fileName,
+                   const AdderPtrs &subject) = 0;
+};
+} // namespace EFG::io
