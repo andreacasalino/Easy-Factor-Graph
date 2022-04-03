@@ -16,6 +16,16 @@ CompositeTuner::CompositeTuner(TunerPtr elementA, TunerPtr elementB) {
   addElement(std::move(elementB));
 }
 
+std::vector<FactorExponentialPtr> CompositeTuner::getFactors() const {
+  std::vector<FactorExponentialPtr> result;
+  for (const auto &tuner : elements) {
+    for (const auto &factor : tuner->getFactors()) {
+      result.push_back(factor);
+    }
+  }
+  return result;
+}
+
 void CompositeTuner::addElement(TunerPtr element) {
   if (nullptr == element) {
     throw Error{"null tuner"};

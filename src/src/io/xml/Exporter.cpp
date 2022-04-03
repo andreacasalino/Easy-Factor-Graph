@@ -5,6 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/io/xml/Exporter.h>
 
 #include <XML-Parser/Tag.h>
@@ -35,6 +36,12 @@ xmlPrs::Tag &printPotential(const distribution::Distribution &distr,
   return pot_tag;
 };
 
+xmlPrs::Tag &printExpPotential(const distribution::FactorExponential &distr,
+                               xmlPrs::Tag &recipient) {
+  auto &pot_tag = printPotential(distr, recipient);
+  pot_tag.getAttributes().emplace("weight", std::to_string(distr.getWeight()));
+  return pot_tag;
+}
 } // namespace
 
 void Exporter::exportComponents(const std::string &filePath,
@@ -64,67 +71,29 @@ void Exporter::exportComponents(const std::string &filePath,
   // const factors
   for (const auto &const_factor :
        subject.as_factors_const_aware->getConstFactors()) {
-    auto &factor_tag = printPotential(*const_factor, exp_root);
     std::shared_ptr<const distribution::FactorExponential> as_const_exp_factor =
         std::dynamic_pointer_cast<const distribution::FactorExponential,
                                   const distribution::Distribution>(
             const_factor);
-    if (nullptr != as_const_exp_factor) {
-      factor_tag.getAttributes().emplace(
-          "weight", std::to_string(as_const_exp_factor->getWeight()));
+    if (nullptr == as_const_exp_factor) {
+      printPotential(*const_factor, exp_root);
+    } else {
+      auto &factor_tag = printExpPotential(*as_const_exp_factor, exp_root);
       factor_tag.getAttributes().emplace("tunability", "N");
     }
   }
   if (nullptr != subject.as_factors_tunable_aware) {
     // tunable factors
-    // for (const auto &cluster :
-    //      subject.as_factors_tunable_aware->getTunableFactors()) {
-    // }
+    for (const auto &cluster :
+         subject.as_factors_tunable_aware->getTunableClusters()) {
+      const auto &front_factor = *cluster.front();
+      printExpPotential(front_factor, exp_root);
+      for (std::size_t k = 1; k < cluster.size(); ++k) {
+        auto &factor_tag = printExpPotential(*cluster[k], exp_root);
+        printGroup(front_factor.getVariables(), factor_tag["Share"]);
+      }
+    }
   }
-
-  //   // exp const factors
-  //   auto factorsExp = std::get<1>(components)->getConstFactorsExp();
-  //   std::for_each(
-  //       factorsExp.begin(), factorsExp.end(),
-  //       [&exp_root](
-  //           const
-  //           std::shared_ptr<distribution::factor::cnst::FactorExponential>
-  //               &f) {
-  //         auto &temp = printPotential(*f, exp_root);
-  //         temp.getAttributes().emplace("weight",
-  //         std::to_string(f->getWeight()));
-  //         temp.getAttributes().emplace("tunability", "N");
-  //       });
-  //   if (nullptr != std::get<2>(components)) {
-  //     // exp tunable factors
-  //     auto factorsExp = std::get<2>(components)->getFactorsExp();
-  //     std::for_each(
-  //         factorsExp.begin(), factorsExp.end(),
-  //         [&exp_root](
-  //             const std::vector<std::shared_ptr<
-  //                 distribution::factor::modif::FactorExponential>> &cluster)
-  //                 {
-  //           auto itCl = cluster.begin();
-  //           auto &temp = printPotential(**itCl, exp_root);
-  //           temp.getAttributes().emplace("weight",
-  //                                        std::to_string((*itCl)->getWeight()));
-  //           const auto &varsFront = (*itCl)->getGroup();
-  //           ++itCl;
-  //           std::for_each(
-  //               itCl, cluster.end(),
-  //               [&exp_root,
-  //                &varsFront](const std::shared_ptr<
-  //                            distribution::factor::modif::FactorExponential>
-  //                            &f) {
-  //                 auto &temp = printPotential(*f, exp_root);
-  //                 temp.getAttributes().emplace("weight",
-  //                                              std::to_string(f->getWeight()));
-  //                 auto &shareTag = temp.addNested("Share");
-  //                 printGroup(varsFront, shareTag);
-  //               });
-  //         });
-  //   }
-
   auto stream = make_out_stream(filePath);
   exp_root.print(*stream);
 }

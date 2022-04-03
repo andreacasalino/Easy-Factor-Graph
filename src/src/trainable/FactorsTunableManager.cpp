@@ -16,6 +16,16 @@
 #include <algorithm>
 
 namespace EFG::train {
+std::vector<std::vector<FactorExponentialPtr>>
+FactorsTunableAware::getTunableClusters() const {
+  std::vector<std::vector<FactorExponentialPtr>> result;
+  result.reserve(tuners.size());
+  for (const auto &tuner : tuners) {
+    result.push_back(tuner->getFactors());
+  }
+  return result;
+}
+
 std::vector<float> FactorsTunableAware::getWeights() const {
   std::vector<float> result;
   result.reserve(tuners.size());

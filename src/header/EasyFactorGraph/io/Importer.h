@@ -29,7 +29,7 @@ public:
 protected:
   Importer() = default;
 
-  virtual std::unordered_map<std::string, std::size_t>
+  virtual std::unordered_set<std::string>
   importComponents(const std::string &filePath, const std::string &fileName,
                    const AdderPtrs &subject) = 0;
 };

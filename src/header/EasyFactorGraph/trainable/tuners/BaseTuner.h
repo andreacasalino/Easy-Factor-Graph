@@ -8,12 +8,15 @@
 #pragma once
 
 #include <EasyFactorGraph/distribution/CombinationFinder.h>
-#include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/trainable/tuners/Tuner.h>
 
 namespace EFG::train {
 class BaseTuner : public Tuner {
 public:
+  std::vector<FactorExponentialPtr> getFactors() const final {
+    return {factor};
+  }
+
   void setTrainSetIterator(const TrainSet::Iterator &iter) final;
 
   float getGradientAlpha() final { return gradientAlpha; };
@@ -24,7 +27,7 @@ public:
   }
 
 protected:
-  BaseTuner(const std::shared_ptr<distribution::FactorExponential> &factor,
+  BaseTuner(const FactorExponentialPtr &factor,
             const categoric::VariablesSoup &variables_in_model);
 
   float dotProduct(const std::vector<float> &prob) const;
@@ -32,7 +35,7 @@ protected:
   const distribution::FactorExponential &getFactor() const { return *factor; }
 
 private:
-  std::shared_ptr<distribution::FactorExponential> factor;
+  FactorExponentialPtr factor;
 
   const TrainSet::Iterator *train_set_iterator = nullptr;
   const distribution::CombinationFinder finder;

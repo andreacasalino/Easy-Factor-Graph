@@ -14,6 +14,8 @@
 namespace EFG::train {
 class CompositeTuner : public Tuner {
 public:
+  std::vector<FactorExponentialPtr> getFactors() const final;
+
   CompositeTuner(TunerPtr elementA, TunerPtr elementB);
 
   void setTrainSetIterator(const TrainSet::Iterator &iter) final;

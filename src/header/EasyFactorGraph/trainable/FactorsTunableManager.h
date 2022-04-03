@@ -7,15 +7,12 @@
 
 #pragma once
 
-#include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/structure/FactorsManager.h>
 #include <EasyFactorGraph/trainable/tuners/Tuner.h>
 
 #include <optional>
 
 namespace EFG::train {
-using FactorExponentialPtr = std::shared_ptr<distribution::FactorExponential>;
-
 class FactorsTunableAware : virtual public strct::ConnectionsManager {
 public:
   // comment that belief propagation will be not invalidate if weights are
@@ -23,6 +20,8 @@ public:
   const std::unordered_set<FactorExponentialPtr> &getTunableFactors() const {
     return tunable_factors;
   }
+
+  std::vector<std::vector<FactorExponentialPtr>> getTunableClusters() const;
 
   std::vector<float> getWeights() const;
   void setWeights(const std::vector<float> &weights);

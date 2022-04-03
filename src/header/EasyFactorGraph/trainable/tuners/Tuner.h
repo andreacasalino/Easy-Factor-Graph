@@ -8,12 +8,17 @@
 #pragma once
 
 #include <EasyFactorGraph/categoric/Group.h>
+#include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/trainable/TrainSet.h>
 
 namespace EFG::train {
+using FactorExponentialPtr = std::shared_ptr<distribution::FactorExponential>;
+
 class Tuner {
 public:
   virtual ~Tuner() = default;
+
+  virtual std::vector<FactorExponentialPtr> getFactors() const = 0;
 
   virtual void setTrainSetIterator(const TrainSet::Iterator &iter) = 0;
 
