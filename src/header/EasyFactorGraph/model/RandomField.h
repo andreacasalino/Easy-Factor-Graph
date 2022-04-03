@@ -23,14 +23,30 @@ class RandomField : public strct::EvidenceSetter,
 public:
   RandomField() = default;
 
-  //   template <typename Model> explicit RandomField(const Model &o) {
-  //     this->absorbModel(o);
-  //   };
-
-  //   RandomField(const RandomField &o) { this->absorbModel(o, true); };
+  RandomField(const RandomField &o) { absorb(o, true); };
   RandomField &operator=(const RandomField &) = delete;
 
   std::vector<float> getWeightsGradient(
       const train::TrainSet::Iterator &train_set_combinations) final;
+
+  template <typename Model>
+  void absorb(const Model &to_absorb, const bool copy) {
+    {
+      const strct::FactorsAware *model =
+          dynamic_cast<const strct::FactorsAware *>(&to_absorb);
+      if (nullptr != model) {
+        const auto &factors = model->getConstFactors();
+        absorbConstFactors(factors.begin(), factors.end(), copy);
+      }
+    }
+    {
+      const train::FactorsTunableAware *model =
+          dynamic_cast<const train::FactorsTunableAware *>(&to_absorb);
+      if (nullptr != model) {
+        const auto &factors = model->getTunableFactors();
+        absorbTunableFactors(factors.begin(), factors.end(), copy);
+      }
+    }
+  }
 };
 } // namespace EFG::model

@@ -45,6 +45,21 @@ public:
                          const std::optional<categoric::VariablesSet>
                              &group_sharing_weight = std::nullopt);
 
+  template <typename FactorExponentialIt>
+  void absorbTunableFactors(const FactorExponentialIt &begin,
+                            const FactorExponentialIt &end, const bool copy) {
+    for (auto it = begin; it != end; ++it) {
+      try {
+        if (copy) {
+          copyTunableFactor(**it);
+        } else {
+          addTunableFactor(*it);
+        }
+      } catch (...) {
+      }
+    }
+  }
+
 protected:
   virtual TunerPtr makeTuner(const FactorExponentialPtr &factor);
 

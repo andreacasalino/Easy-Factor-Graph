@@ -24,11 +24,9 @@ class Graph : public strct::EvidenceSetter,
 public:
   Graph() = default;
 
-  //   template <typename Model> explicit Graph(const Model &o) {
-  //     this->absorbModel(o);
-  //   };
-
-  //   Graph(const Graph &o) { this->absorbModel(o, true); };
+  Graph(const Graph &o) { absorb(o, true); };
   Graph &operator=(const Graph &) = delete;
+
+  void absorb(const strct::ConnectionsManager &to_absorb, const bool copy);
 };
 } // namespace EFG::model

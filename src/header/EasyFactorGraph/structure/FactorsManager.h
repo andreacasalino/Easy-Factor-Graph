@@ -25,5 +25,20 @@ class FactorsAdder : virtual public FactorsAware {
 public:
   void addConstFactor(const distribution::DistributionCnstPtr &factor);
   void copyConstFactor(const distribution::Distribution &factor);
+
+  template <typename DistributionIt>
+  void absorbConstFactors(const DistributionIt &begin,
+                          const DistributionIt &end, const bool copy) {
+    for (auto it = begin; it != end; ++it) {
+      try {
+        if (copy) {
+          copyConstFactor(**it);
+        } else {
+          addConstFactor(*it);
+        }
+      } catch (...) {
+      }
+    }
+  }
 };
 } // namespace EFG::strct
