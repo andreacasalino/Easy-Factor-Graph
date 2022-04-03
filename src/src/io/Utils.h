@@ -14,8 +14,10 @@
 
 namespace EFG::io {
 using IStream = std::unique_ptr<std::ifstream>;
+IStream make_in_stream(const std::string &file_name);
 
-IStream make_stream(const std::string &file_name);
+using OStream = std::unique_ptr<std::ofstream>;
+OStream make_out_stream(const std::string &file_name);
 
 template <typename Predicate>
 void for_each_line(IStream &stream, const Predicate &pred) {

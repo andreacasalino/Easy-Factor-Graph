@@ -14,7 +14,7 @@
 
 namespace EFG::io {
 train::TrainSet import_train_set(const std::string &file_name) {
-  auto stream = make_stream(file_name);
+  auto stream = make_in_stream(file_name);
   std::vector<categoric::Combination> combinations;
   std::size_t line_numb = 0;
   for_each_line(stream, [&combinations, &line_numb](const std::string &line) {

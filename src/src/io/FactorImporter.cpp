@@ -16,7 +16,7 @@ namespace EFG::io {
 
 void import_values(distribution::Factor &recipient,
                    const std::string &file_name) {
-  auto stream = make_stream(file_name);
+  auto stream = make_in_stream(file_name);
   recipient.clear();
   const std::size_t values_size =
       recipient.getVariables().getVariables().size() + 1;

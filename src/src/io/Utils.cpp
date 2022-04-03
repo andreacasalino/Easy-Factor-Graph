@@ -9,13 +9,24 @@
 #include <EasyFactorGraph/Error.h>
 
 namespace EFG::io {
-using IStream = std::unique_ptr<std::ifstream>;
-
-IStream make_stream(const std::string &file_name) {
-  IStream stream = std::make_unique<std::ifstream>(file_name);
+namespace {
+template <typename T>
+void check_stream(const T &stream, const std::string &file_name) {
   if (!stream->is_open()) {
     throw Error{file_name, " is a non valid file"};
   }
+}
+} // namespace
+
+IStream make_in_stream(const std::string &file_name) {
+  IStream stream = std::make_unique<std::ifstream>(file_name);
+  check_stream(stream, file_name);
+  return stream;
+}
+
+OStream make_out_stream(const std::string &file_name) {
+  OStream stream = std::make_unique<std::ofstream>(file_name);
+  check_stream(stream, file_name);
   return stream;
 }
 
