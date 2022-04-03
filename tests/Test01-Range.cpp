@@ -9,7 +9,7 @@ using namespace EFG::categoric;
 #include <algorithm>
 #include <list>
 
-TEST_CASE("testing for_each", "range") {
+TEST_CASE("testing for_each", "[range]") {
   VariablePtr A = make_variable(2, "A");
   VariablePtr B = make_variable(2, "B");
 
@@ -34,7 +34,7 @@ all_combinations_in_range(GroupRange &range) {
 }
 } // namespace
 
-TEST_CASE("testing for_each_combination", "range") {
+TEST_CASE("testing for_each_combination", "[range]") {
   SECTION("small binary group") {
     GroupRange rangeAB({make_variable(2, "A"), make_variable(2, "B")});
     CHECK(all_combinations_in_range(rangeAB) ==
