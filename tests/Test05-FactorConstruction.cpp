@@ -1,85 +1,79 @@
-// #include <EasyFactorGraph/Error.h>
-// #include <EasyFactorGraph/categoric/GroupRange.h>
-// #include <EasyFactorGraph/distribution/Factor.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <gtest/gtest.h>
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/distribution/Factor.h>
 
-// distribution::Factor make_correlating_factor(const bool correlation_kind) {
-//   VariablesSoup group = {make_variable(4, "A"), make_variable(4, "B"),
-//                          make_variable(4, "C")};
-//   if (correlation_kind) {
-//     return distribution::Factor{Group{group}, USE_SIMPLE_CORRELATION_TAG};
-//   }
-//   return distribution::Factor{Group{group}, USE_SIMPLE_ANTI_CORRELATION_TAG};
-// }
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
 
-// bool all_equals_values(const Combination &comb) {
-//   const auto &data = comb.data();
-//   for (const auto &val : data) {
-//     if (val != data.front()) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
+namespace {
+bool all_equals_values(const Combination &comb) {
+  const auto &data = comb.data();
+  for (const auto &val : data) {
+    if (val != data.front()) {
+      return false;
+    }
+  }
+  return true;
+}
+} // namespace
 
-// TEST(DistributionMaking, simple_correlation) {
-//   auto factor = make_correlating_factor(true);
-//   categoric::GroupRange range(factor.getVariables());
-//   for_each_combination(range, [&factor](const Combination &comb) {
-//     if (all_equals_values(comb)) {
-//       EXPECT_EQ(1.f, factor.evaluate(comb));
-//     } else {
-//       EXPECT_EQ(0, factor.evaluate(comb));
-//     }
-//   });
-// }
+TEST_CASE("correlating factors", "[factor]") {
+  Group group(VariablesSoup{make_variable(4, "A"), make_variable(4, "B"),
+                            make_variable(4, "C")});
 
-// TEST(DistributionMaking, simple_anti_correlation) {
-//   auto factor = make_correlating_factor(false);
-//   categoric::GroupRange range(factor.getVariables());
-//   for_each_combination(range, [&factor](const Combination &comb) {
-//     if (all_equals_values(comb)) {
-//       EXPECT_EQ(0, factor.evaluate(comb));
-//     } else {
-//       EXPECT_EQ(1.f, factor.evaluate(comb));
-//     }
-//   });
-// }
+  SECTION("correlating factor") {
+    Factor factor(group, USE_SIMPLE_CORRELATION_TAG);
+    categoric::GroupRange range(factor.getVariables());
+    for_each_combination(range, [&factor](const Combination &comb) {
+      if (all_equals_values(comb)) {
+        CHECK(1.f == factor.evaluate(comb));
+      } else {
+        CHECK(0 == factor.evaluate(comb));
+      }
+    });
+  }
 
-// TEST(DistributionMaking, mergeDistributions) {
-//   float val1 = 2.f, val2 = 0.5f;
+  SECTION("anti correlating factor") {
+    Factor factor(group, USE_SIMPLE_ANTI_CORRELATION_TAG);
+    categoric::GroupRange range(factor.getVariables());
+    for_each_combination(range, [&factor](const Combination &comb) {
+      if (all_equals_values(comb)) {
+        CHECK(0 == factor.evaluate(comb));
+      } else {
+        CHECK(1.f == factor.evaluate(comb));
+      }
+    });
+  }
+}
 
-//   auto varA = make_variable(2, "A");
-//   auto varB = make_variable(2, "B");
-//   auto varC = make_variable(2, "C");
+TEST_CASE("merge factors", "[factor]") {
+  const float val1 = 1.5f;
+  const float val2 = 3.2f;
 
-//   distribution::Factor distrAC(Group{{varA, varC}});
-//   distrAC.setAllImagesRaw(val1);
-//   distribution::Factor distrBC(Group{{varB, varC}});
-//   distrBC.setAllImagesRaw(val2);
+  auto varA = make_variable(2, "A");
+  auto varB = make_variable(2, "B");
+  auto varC = make_variable(2, "C");
 
-//   distribution::Factor distrABC(distrAC, distrBC);
-//   EXPECT_EQ(3, distrABC.getVariables().getVariables().size());
-//   const auto &distrABC_group = distrABC.getVariables().getVariablesSet();
-//   EXPECT_TRUE(distrABC_group.find(make_variable(2, "A")) !=
-//               distrABC_group.end());
-//   EXPECT_TRUE(distrABC_group.find(make_variable(2, "B")) !=
-//               distrABC_group.end());
-//   EXPECT_TRUE(distrABC_group.find(make_variable(2, "C")) !=
-//               distrABC_group.end());
+  distribution::Factor distrAC(Group{{varA, varC}});
+  distrAC.setAllImagesRaw(val1);
+  distribution::Factor distrBC(Group{{varB, varC}});
+  distrBC.setAllImagesRaw(val2);
 
-//   GroupRange range(distrABC.getVariables());
-//   EXPECT_EQ(distrABC.getVariables().size(), 2 * 2 * 2);
-//   for_each_combination(range, [&](const Combination &comb) {
-//     EXPECT_EQ(distrABC.evaluate(comb), val1 * val2);
-//   });
-// }
+  distribution::Factor distrABC(distrAC, distrBC);
+  REQUIRE(3 == distrABC.getVariables().getVariables().size());
 
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+  const auto &distrABC_group = distrABC.getVariables().getVariablesSet();
+  REQUIRE(distrABC_group.find(make_variable(2, "A")) != distrABC_group.end());
+  REQUIRE(distrABC_group.find(make_variable(2, "B")) != distrABC_group.end());
+  REQUIRE(distrABC_group.find(make_variable(2, "C")) != distrABC_group.end());
+
+  GroupRange range(distrABC.getVariables());
+  REQUIRE(distrABC.getVariables().size() == 2 * 2 * 2);
+  for_each_combination(range, [&](const Combination &comb) {
+    CHECK(distrABC.evaluate(comb) == val1 * val2);
+  });
+}
