@@ -1,134 +1,145 @@
-// #include <algorithm>
-// #include <gtest/gtest.h>
-// #include <sstream>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <EasyFactorGraph/structure/EvidenceManager.h>
-// #include <EasyFactorGraph/structure/FactorsManager.h>
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
-// using namespace EFG::strct;
+#include <algorithm>
+#include <sstream>
 
-// class EvidenceTest : public ::testing::Test,
-//                      public EvidenceSetter,
-//                      public EvidenceRemover,
-//                      protected FactorsAdder {
-// public:
-//   EvidenceTest() = default;
+#include <EasyFactorGraph/structure/EvidenceManager.h>
+#include <EasyFactorGraph/structure/FactorsManager.h>
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
+using namespace EFG::strct;
 
-// protected:
-//   VariablesSoup uVars;
-//   VariablesSoup mVars;
-//   VariablesSoup lVars;
+namespace {
+class EvidenceTest : public EvidenceSetter,
+                     public EvidenceRemover,
+                     protected FactorsAdder {
+public:
+  VariablesSoup uVars;
+  VariablesSoup mVars;
+  VariablesSoup lVars;
 
-//   void SetUp() override {
-//     auto connect = [this](const VariablePtr &a, const VariablePtr &b) {
-//       DistributionCnstPtr factor = std::make_shared<Factor>(
-//           Group{VariablesSoup{a, b}}, USE_SIMPLE_CORRELATION_TAG);
-//       addConstFactor(factor);
-//     };
+  EvidenceTest() {
+    auto connect = [this](const VariablePtr &a, const VariablePtr &b) {
+      DistributionCnstPtr factor = std::make_shared<Factor>(
+          Group{VariablesSoup{a, b}}, USE_SIMPLE_CORRELATION_TAG);
+      addConstFactor(factor);
+    };
 
-//     auto createVariable = [](const std::string &name, std::size_t id) {
-//       std::stringstream s;
-//       s << name << id;
-//       return make_variable(2, s.str());
-//     };
+    auto createVariable = [](const std::string &name, std::size_t id) {
+      std::stringstream s;
+      s << name << id;
+      return make_variable(2, s.str());
+    };
 
-//     this->uVars.reserve(3);
-//     this->mVars.reserve(4);
-//     this->lVars.reserve(3);
+    this->uVars.reserve(3);
+    this->mVars.reserve(4);
+    this->lVars.reserve(3);
 
-//     this->uVars.push_back(createVariable("A", 0));
-//     this->mVars.push_back(createVariable("M", 0));
-//     this->lVars.push_back(createVariable("L", 0));
-//     connect(this->uVars.back(), this->mVars.back());
-//     connect(this->lVars.back(), this->mVars.back());
+    this->uVars.push_back(createVariable("A", 0));
+    this->mVars.push_back(createVariable("M", 0));
+    this->lVars.push_back(createVariable("L", 0));
+    connect(this->uVars.back(), this->mVars.back());
+    connect(this->lVars.back(), this->mVars.back());
 
-//     for (std::size_t k = 1; k < 3; ++k) {
-//       std::size_t s = this->mVars.size();
-//       this->uVars.push_back(createVariable("A", k));
-//       this->mVars.push_back(createVariable("M", k));
-//       this->lVars.push_back(createVariable("L", k));
-//       connect(this->uVars.back(), this->mVars.back());
-//       connect(this->lVars.back(), this->mVars.back());
-//       connect(this->uVars[s - 1], this->mVars.back());
-//       connect(this->lVars[s - 1], this->mVars.back());
-//     }
-//   }
+    for (std::size_t k = 1; k < 3; ++k) {
+      std::size_t s = this->mVars.size();
+      this->uVars.push_back(createVariable("A", k));
+      this->mVars.push_back(createVariable("M", k));
+      this->lVars.push_back(createVariable("L", k));
+      connect(this->uVars.back(), this->mVars.back());
+      connect(this->lVars.back(), this->mVars.back());
+      connect(this->uVars[s - 1], this->mVars.back());
+      connect(this->lVars[s - 1], this->mVars.back());
+    }
+  };
 
-//   bool clusterExists(const VariablesSet &vars) {
-//     std::set<strct::Node *> nodes;
-//     {
-//       for (const auto &var : vars) {
-//         auto nodes_it = getState_().nodes.find(var);
-//         if (nodes_it == getState_().nodes.end()) {
-//           throw Error{nodes_it->first->name(),
-//                       " is not part of the hidden clusters"};
-//         }
-//         nodes.emplace(&nodes_it->second);
-//       }
-//     }
-//     return std::find_if(getState().clusters.begin(),
-//     getState().clusters.end(),
-//                         [&nodes](const HiddenCluster &cluster) {
-//                           return cluster.nodes == nodes;
-//                         }) != getState().clusters.end();
-//   };
-// };
+  void clusterExists(const VariablesSet &vars) {
+    std::set<strct::Node *> nodes;
+    {
+      for (const auto &var : vars) {
+        auto nodes_it = getState_().nodes.find(var);
+        if (nodes_it == getState_().nodes.end()) {
+          throw Error{nodes_it->first->name(),
+                      " is not part of the hidden clusters"};
+        }
+        nodes.emplace(&nodes_it->second);
+      }
+    }
+    if (std::find_if(getState().clusters.begin(), getState().clusters.end(),
+                     [&nodes](const HiddenCluster &cluster) {
+                       return cluster.nodes == nodes;
+                     }) == getState().clusters.end()) {
+      std::stringstream stream;
+      stream << "Hidden cluster: <";
+      for (const auto &var : vars) {
+        stream << ' ' << var->name();
+      }
+      stream << '>';
+      stream << " was not found";
+      throw Error{stream.str()};
+    }
+  };
+};
+} // namespace
 
-// TEST_F(EvidenceTest, evidenceAddition) {
-//   setEvidence(mVars[1], 0);
-//   clusterExists(VariablesSet{uVars[0], mVars[0], lVars[0]});
-//   clusterExists(VariablesSet{uVars[2], mVars[2], lVars[2], uVars[1],
-//   lVars[1]});
-//   {
-//     Evidences expected;
-//     expected.emplace(mVars[1], 0);
-//     EXPECT_EQ(getEvidences(), expected);
-//   }
+TEST_CASE("testing evidence managing", "[evidence]") {
+  EvidenceTest model;
 
-//   setEvidence(mVars[2], 1);
-//   clusterExists(VariablesSet{uVars[0], mVars[0], lVars[0]});
-//   clusterExists(VariablesSet{uVars[2], mVars[2], lVars[2]});
-//   clusterExists(VariablesSet{uVars[1]});
-//   clusterExists(VariablesSet{lVars[1]});
-//   {
-//     Evidences expected;
-//     expected.emplace(mVars[1], 0);
-//     expected.emplace(mVars[2], 1);
-//     EXPECT_EQ(getEvidences(), expected);
-//   }
-// }
+  SECTION("evidence addition") {
+    model.setEvidence(model.mVars[1], 0);
+    model.clusterExists(
+        VariablesSet{model.uVars[0], model.mVars[0], model.lVars[0]});
+    model.clusterExists(VariablesSet{model.uVars[2], model.mVars[2],
+                                     model.lVars[2], model.uVars[1],
+                                     model.lVars[1]});
+    {
+      Evidences expected;
+      expected.emplace(model.mVars[1], 0);
+      CHECK(model.getEvidences() == expected);
+    }
 
-// TEST_F(EvidenceTest, evidenceSingleReset) {
-//   setEvidence(mVars[1], 0);
-//   setEvidence(mVars[2], 0);
+    model.setEvidence(model.mVars[2], 1);
+    model.clusterExists(
+        VariablesSet{model.uVars[0], model.mVars[0], model.lVars[0]});
+    model.clusterExists(
+        VariablesSet{model.uVars[2], model.mVars[2], model.lVars[2]});
+    model.clusterExists(VariablesSet{model.uVars[1]});
+    model.clusterExists(VariablesSet{model.lVars[1]});
+    {
+      Evidences expected;
+      expected.emplace(model.mVars[1], 0);
+      expected.emplace(model.mVars[2], 1);
+      CHECK(model.getEvidences() == expected);
+    }
+  }
 
-//   removeEvidence(mVars[2]);
-//   clusterExists(VariablesSet{uVars[0], mVars[0], lVars[0]});
-//   clusterExists(VariablesSet{uVars[2], mVars[2], lVars[2], uVars[1],
-//   lVars[1]});
-//   {
-//     Evidences expected;
-//     expected.emplace(mVars[1], 0);
-//     EXPECT_EQ(getEvidences(), expected);
-//   }
+  model.setEvidence(model.mVars[1], 0);
+  model.setEvidence(model.mVars[2], 0);
 
-//   removeEvidence(mVars[1]);
-//   clusterExists(
-//       VariablesSet{getAllVariables().begin(), getAllVariables().end()});
-//   EXPECT_EQ(getEvidences(), Evidences{});
-// }
+  SECTION("evidence individual reset") {
+    model.removeEvidence(model.mVars[2]);
+    model.clusterExists(
+        VariablesSet{model.uVars[0], model.mVars[0], model.lVars[0]});
+    model.clusterExists(VariablesSet{model.uVars[2], model.mVars[2],
+                                     model.lVars[2], model.uVars[1],
+                                     model.lVars[1]});
+    {
+      Evidences expected;
+      expected.emplace(model.mVars[1], 0);
+      CHECK(model.getEvidences() == expected);
+    }
 
-// TEST_F(EvidenceTest, evidenceTotalReset) {
-//   setEvidence(mVars[1], 0);
-//   setEvidence(mVars[2], 0);
-//   removeEvidences();
-//   EXPECT_EQ(getEvidences(), Evidences{});
-//   ASSERT_THROW(removeEvidence(mVars[2]), Error);
-// }
+    model.removeEvidence(model.mVars[1]);
+    model.clusterExists(VariablesSet{model.getAllVariables().begin(),
+                                     model.getAllVariables().end()});
+    CHECK(model.getEvidences().empty());
+  }
 
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+  SECTION("evidence total reset") {
+    model.removeEvidences();
+    CHECK(model.getEvidences().empty());
+    CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error);
+  }
+}
