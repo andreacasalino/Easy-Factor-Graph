@@ -1,88 +1,67 @@
-// #include <EasyFactorGraph/Error.h>
-// #include <EasyFactorGraph/distribution/Factor.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <gtest/gtest.h>
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/distribution/Factor.h>
 
-// TEST(DistributionSetting, replaceGroup) {
-//   VariablesSoup groupAB = {make_variable(3, "A"), make_variable(2, "B")};
-//   VariablesSoup groupXY = {make_variable(3, "X"), make_variable(2, "Y")};
-//   VariablesSoup groupXYbis = {make_variable(2, "X"), make_variable(4, "Y")};
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
 
-//   distribution::Factor factor(categoric::Group{groupAB});
-//   factor.replaceVariables(groupXY);
-//   ASSERT_THROW(factor.replaceVariables(groupXYbis), EFG::Error);
-// }
+namespace {
+bool set_image_raw(distribution::Factor &subject,
+                   std::vector<std::size_t> &&to_add, const float value) {
+  Combination comb(std::move(to_add));
+  const std::size_t initial_map_size = subject.getCombinationsMap().size();
+  subject.setImageRaw(comb, value);
+  if (subject.evaluate(comb) != value) {
+    return false;
+  }
+  return (initial_map_size + 1) == subject.getCombinationsMap().size();
+}
+} // namespace
 
-// distribution::Factor make_factor_test() {
-//   VariablesSoup group = {make_variable(3, "A"), make_variable(4, "B"),
-//                          make_variable(2, "C")};
-//   return distribution::Factor{Group{group}};
-// }
+TEST_CASE("operations on factor", "[factor]") {
+  Factor factor(Group{
+      {make_variable(3, "A"), make_variable(4, "B"), make_variable(2, "C")}});
 
-// void set_image_raw(distribution::Factor &subject,
-//                    std::vector<std::size_t> &&to_add, const float value) {
-//   Combination comb(std::move(to_add));
-//   const std::size_t initial_map_size = subject.getCombinationsMap().size();
-//   subject.setImageRaw(comb, value);
-//   EXPECT_EQ(subject.evaluate(comb), value);
-//   EXPECT_EQ(initial_map_size + 1, subject.getCombinationsMap().size());
-// }
+  SECTION("set individual combination") {
+    CHECK(set_image_raw(factor, {1, 2, 1}, 2.f));
+    CHECK(set_image_raw(factor, {0, 0, 0}, 3.5f));
+    CHECK(set_image_raw(factor, {2, 3, 0}, 1.f));
+    CHECK(set_image_raw(factor, {1, 1, 1}, 0.5f));
 
-// TEST(DistributionSetting, setImages) {
-//   auto factor = make_factor_test();
+    CHECK_THROWS_AS(set_image_raw(factor, {1, 0, 1}, -2.5f), Error);
+  }
 
-//   set_image_raw(factor, {1, 2, 1}, 2.f);
-//   set_image_raw(factor, {0, 0, 0}, 3.5f);
-//   set_image_raw(factor, {2, 3, 0}, 1.f);
-//   set_image_raw(factor, {1, 1, 1}, 0.5f);
-//   ASSERT_THROW(set_image_raw(factor, {1, 0, 1}, -2.5f), Error);
-// }
+  SECTION("set all combinations at once") {
+    auto value_to_set = GENERATE(2.f, 3.5f);
+    factor.setAllImagesRaw(value_to_set);
+    CHECK(factor.getCombinationsMap().size() == factor.getVariables().size());
+    for (const auto &[comb, comb_val] : factor.getCombinationsMap()) {
+      CHECK(value_to_set == comb_val);
+    }
 
-// TEST(DistributionSetting, setAllImagesRaw) {
-//   auto factor = make_factor_test();
+    CHECK_THROWS_AS(factor.setAllImagesRaw(-1.5f), Error);
+  }
+}
 
-//   float val = 2.f;
-//   factor.setAllImagesRaw(val);
-//   EXPECT_EQ(factor.getCombinationsMap().size(),
-//   factor.getVariables().size()); for (const auto &[comb, comb_val] :
-//   factor.getCombinationsMap()) {
-//     EXPECT_EQ(val, comb_val);
-//   }
+#include <EasyFactorGraph/io/FactorImporter.h>
+#include <math.h>
 
-//   val = 3.5f;
-//   factor.setAllImagesRaw(val);
-//   EXPECT_EQ(factor.getCombinationsMap().size(),
-//   factor.getVariables().size()); for (const auto &[comb, comb_val] :
-//   factor.getCombinationsMap()) {
-//     EXPECT_EQ(val, comb_val);
-//   }
+TEST_CASE("import from file", "[factor]") {
+  // 2,2,4
+  categoric::VariablesSoup vars = {make_variable(2, "A"), make_variable(2, "B"),
+                                   make_variable(4, "C")};
+  distribution::Factor factor_ABC(categoric::Group{vars});
+  const std::string file_name =
+      std::string(TEST_FOLDER) + std::string("FactorDescription");
 
-//   ASSERT_THROW(factor.setAllImagesRaw(-1.f), Error);
-// }
+  io::import_values(factor_ABC, file_name);
 
-// #include <EasyFactorGraph/io/FactorImporter.h>
-
-// TEST(DistributionSetting, importFromFile) {
-//   // 2,2,4
-//   categoric::VariablesSoup vars = {make_variable(2, "A"), make_variable(2,
-//   "B"),
-//                                    make_variable(4, "C")};
-//   distribution::Factor factor_ABC(categoric::Group{vars});
-//   const std::string file_name =
-//       std::string(TEST_FOLDER) + std::string("FactorDescription");
-//   io::import_values(factor_ABC, file_name);
-
-//   EXPECT_EQ(factor_ABC.getCombinationsMap().size(), 4);
-//   EXPECT_LE(abs(factor_ABC.evaluate(Combination{{0, 1, 1}}) - 2.f), 0.01f);
-//   EXPECT_LE(abs(factor_ABC.evaluate(Combination{{0, 0, 0}}) - 3.f), 0.01f);
-//   EXPECT_LE(abs(factor_ABC.evaluate(Combination{{1, 1, 3}}) - 2.5f), 0.01f);
-//   EXPECT_LE(abs(factor_ABC.evaluate(Combination{{1, 0, 2}}) - 1.4f), 0.01f);
-// }
-
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+  REQUIRE(factor_ABC.getCombinationsMap().size() == 4);
+  CHECK(abs(factor_ABC.evaluate(Combination{{0, 1, 1}}) - 2.f) <= 0.01f);
+  CHECK(abs(factor_ABC.evaluate(Combination{{0, 0, 0}}) - 3.f) <= 0.01f);
+  CHECK(abs(factor_ABC.evaluate(Combination{{1, 1, 3}}) - 2.5f) <= 0.01f);
+  CHECK(abs(factor_ABC.evaluate(Combination{{1, 0, 2}}) - 1.4f) <= 0.01f);
+}
