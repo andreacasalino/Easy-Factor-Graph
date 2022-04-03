@@ -31,6 +31,15 @@ const std::string &access_attribute(const xmlPrs::Tag &subject,
   return *attr;
 }
 
+template <typename K, typename V, typename Predicate>
+void for_each_key(const std::unordered_multimap<K, V> &subject, const K &key,
+                  const Predicate &pred) {
+  auto range = subject.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    pred(it->second);
+  }
+}
+
 categoric::VariablePtr findVariable(const std::string &name,
                                     const categoric::VariablesSet &variables) {
   auto itV = variables.find(categoric::make_variable(2, name));
@@ -42,18 +51,15 @@ categoric::VariablePtr findVariable(const std::string &name,
 
 categoric::Group importGroup(const xmlPrs::Tag &tag,
                              const categoric::VariablesSet &variables) {
-  auto vars = tag.getAttributes().equal_range("var");
-  if ((std::distance(vars.first, vars.second) != 1) &&
-      (std::distance(vars.first, vars.second) != 2)) {
+  categoric::VariablesSoup group;
+  for_each_key(tag.getAttributes(), xmlPrs::Name{"var"},
+               [&variables, &group](const std::string &name) {
+                 group.push_back(findVariable(name, variables));
+               });
+  if ((group.size() != 1) && (group.size() != 2)) {
     throw Error("only unary or binary factor are supported");
   }
-  auto itV = vars.first;
-  categoric::Group group(findVariable(itV->second, variables));
-  ++itV;
-  for (itV; itV != vars.second; ++itV) {
-    group.add(findVariable(itV->second, variables));
-  }
-  return group;
+  return categoric::Group{group};
 };
 
 std::shared_ptr<distribution::Factor>
@@ -83,18 +89,18 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
     return result;
   }
 
-  auto comb_range = tag.getNested().equal_range("Distr_val");
-  for (auto comb_it = comb_range.first; comb_it != comb_range.second;
-       ++comb_it) {
-    std::vector<std::size_t> combination;
-    auto v_range = comb_it->second->getAttributes().equal_range("v");
-    for (auto v_it = v_range.first; v_it != v_range.second; ++v_it) {
-      combination.push_back(std::atoi(v_it->second.c_str()));
-    }
-    const float val = static_cast<float>(
-        std::atof(access_attribute(*comb_it->second, "D").c_str()));
-    result->setImageRaw(categoric::Combination{std::move(combination)}, val);
-  }
+  for_each_key(tag.getNested(), xmlPrs::Name{"Distr_val"},
+               [&result](const xmlPrs::TagPtr &comb) {
+                 std::vector<std::size_t> combination;
+                 for_each_key(comb->getAttributes(), xmlPrs::Name{"v"},
+                              [&combination](const std::string &var) {
+                                combination.push_back(std::atoi(var.c_str()));
+                              });
+                 const float val = static_cast<float>(
+                     std::atof(access_attribute(*comb, "D").c_str()));
+                 result->setImageRaw(
+                     categoric::Combination{std::move(combination)}, val);
+               });
 
   return result;
 };
@@ -134,65 +140,62 @@ Importer::importComponents(const std::string &filePath,
   // import variables
   categoric::VariablesSet variables;
   std::unordered_set<std::string> evidences;
-  {
-    auto var_range = parsed_root.getNested().equal_range("Variable");
-    for (auto var_it = var_range.first; var_it != var_range.second; ++var_it) {
-      const auto &name = access_attribute(*var_it->second, "name");
-      const auto &size = access_attribute(*var_it->second, "Size");
-      auto new_var = categoric::make_variable(std::atoi(size.c_str()), name);
-      if (variables.find(new_var) != variables.end()) {
-        throw Error{name, " is a multiple times specified variable"};
-      }
-      variables.emplace(new_var);
-      const auto *obs_flag = try_access_attribute(*var_it->second, "flag");
-      if ((nullptr != obs_flag) && (*obs_flag == "O")) {
-        evidences.emplace(name);
-      }
-    }
-  }
+  for_each_key(parsed_root.getNested(), xmlPrs::Name{"Variable"},
+               [&variables, &evidences](const xmlPrs::TagPtr &var) {
+                 const auto &name = access_attribute(*var, "name");
+                 const auto &size = access_attribute(*var, "Size");
+                 auto new_var =
+                     categoric::make_variable(std::atoi(size.c_str()), name);
+                 if (variables.find(new_var) != variables.end()) {
+                   throw Error{name, " is a multiple times specified variable"};
+                 }
+                 variables.emplace(new_var);
+                 const auto *obs_flag = try_access_attribute(*var, "flag");
+                 if ((nullptr != obs_flag) && (*obs_flag == "O")) {
+                   evidences.emplace(name);
+                 }
+               });
   // import potentials
-  {
-    auto factor_range = parsed_root.getNested().equal_range("Potential");
-    for (auto factor_it = factor_range.first; factor_it != factor_range.second;
-         ++factor_it) {
-      auto distribution =
-          importDistribution(filePath, *factor_it->second, variables);
+  for_each_key(
+      parsed_root.getNested(), xmlPrs::Name{"Potential"},
+      [&filePath, &variables, &subject](const xmlPrs::TagPtr &factor) {
+        auto distribution = importDistribution(filePath, *factor, variables);
 
-      struct Visitor {
-        const AdderPtrs &subject;
-        const xmlPrs::Tag &tag;
-        const categoric::VariablesSet &variables;
+        struct Visitor {
+          const AdderPtrs &subject;
+          const xmlPrs::Tag &tag;
+          const categoric::VariablesSet &variables;
 
-        void operator()(const std::shared_ptr<distribution::FactorExponential>
-                            &factor) const {
-          if (nullptr == subject.as_factors_tunable_adder) {
-            subject.as_factors_const_adder->addConstFactor(factor);
-            return;
-          }
-          std::optional<categoric::VariablesSet> group_sharing_weight =
-              std::nullopt;
-          auto share_tag_it = tag.getNested().find("Share");
-          if (share_tag_it != tag.getNested().end()) {
-            auto &group = group_sharing_weight.emplace();
-            auto it_var_range =
-                share_tag_it->second->getAttributes().equal_range("var");
-            for (auto it_var = it_var_range.first;
-                 it_var != it_var_range.second; ++it_var) {
-              group.emplace(findVariable(it_var->second, variables));
+          void operator()(const std::shared_ptr<distribution::FactorExponential>
+                              &factor) const {
+            if (nullptr == subject.as_factors_tunable_adder) {
+              subject.as_factors_const_adder->addConstFactor(factor);
+              return;
             }
+            std::optional<categoric::VariablesSet> group_sharing_weight =
+                std::nullopt;
+            auto share_tag_it = tag.getNested().find("Share");
+            if (share_tag_it != tag.getNested().end()) {
+              auto &group = group_sharing_weight.emplace();
+              for_each_key(share_tag_it->second->getAttributes(),
+                           xmlPrs::Name{"var"},
+                           [&group, &variables = this->variables](
+                               const std::string &name) {
+                             group.emplace(findVariable(name, variables));
+                           });
+            }
+            subject.as_factors_tunable_adder->addTunableFactor(
+                factor, group_sharing_weight);
           }
-          subject.as_factors_tunable_adder->addTunableFactor(
-              factor, group_sharing_weight);
-        }
 
-        void operator()(const distribution::DistributionCnstPtr &factor) const {
-          subject.as_factors_const_adder->addConstFactor(factor);
-        }
-      };
-      Visitor visitor = Visitor{subject, *factor_it->second, variables};
-      std::visit(visitor, distribution);
-    }
-  }
+          void
+          operator()(const distribution::DistributionCnstPtr &factor) const {
+            subject.as_factors_const_adder->addConstFactor(factor);
+          }
+        };
+        Visitor visitor = Visitor{subject, *factor, variables};
+        std::visit(visitor, distribution);
+      });
   return evidences;
 }
 } // namespace EFG::io::xml
