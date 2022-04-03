@@ -1,190 +1,226 @@
-// #include <gtest/gtest.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <EasyFactorGraph/structure/FactorsManager.h>
-// #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
-// using namespace EFG::strct;
-// using namespace EFG::train;
+#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/trainable/FactorsTunableManager.h>
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
+using namespace EFG::strct;
+using namespace EFG::train;
 
-// class Checker : virtual public ConnectionsManager {
-// protected:
-//   Checker() = default;
+namespace {
+#define THROW_IF_TRUE(EXPRESSION, REASON)                                      \
+  if (EXPRESSION) {                                                            \
+    throw Error{REASON};                                                       \
+  }
 
-//   void checkPostInsertion() {
-//     EXPECT_FALSE(hasPropagationResult());
-//     const auto &state = getState();
-//     EXPECT_TRUE(state.evidences.empty());
-//     EXPECT_EQ(state.nodes.size(), state.variables.size());
-//     std::size_t hidden_nodes_numb = 0;
-//     for (const auto &cluster : state.clusters) {
-//       hidden_nodes_numb += cluster.nodes.size();
-//     }
-//     EXPECT_EQ(hidden_nodes_numb, state.nodes.size());
-//   };
+#define THROW_IF_FALSE(EXPRESSION, REASON) THROW_IF_TRUE(!EXPRESSION, REASON)
 
-//   void checkVariables(const VariablesSet &vars) {
-//     const auto &nodes = getState().nodes;
-//     for (const auto &var : vars) {
-//       if (nodes.find(var) == nodes.end()) {
-//         throw Error{var->name(), " is a not found variable"};
-//       }
-//     }
-//   }
-// };
+class Checker : virtual public ConnectionsManager {
+public:
+  void checkPostInsertion() {
+    THROW_IF_TRUE(hasPropagationResult(),
+                  "Expected to not have propagation result");
+    const auto &state = getState();
+    THROW_IF_FALSE(state.evidences.empty(), "Expected to have no evidences");
 
-// class FactorsManagerTest : public ::testing::Test,
-//                            public Checker,
-//                            public FactorsAdder {
-// public:
-//   FactorsManagerTest() = default;
-// };
+    THROW_IF_FALSE(
+        state.nodes.size() == state.variables.size(),
+        "number of nodes expected to be equal to number of variables");
+    std::size_t hidden_nodes_numb = 0;
+    for (const auto &cluster : state.clusters) {
+      hidden_nodes_numb += cluster.nodes.size();
+    }
+    THROW_IF_FALSE(
+        hidden_nodes_numb == state.nodes.size(),
+        "number of hidden nodes expected to be equal to total number of nodes");
+  };
 
-// bool have_same_values(const Distribution &a, const Distribution &b) {
-//   return (a.getVariables().getVariables() == b.getVariables().getVariables())
-//   &&
-//          (a.getCombinationsMap() == b.getCombinationsMap());
-// }
+  void checkVariables(const VariablesSet &vars) {
+    const auto &nodes = getState().nodes;
+    for (const auto &var : vars) {
+      if (nodes.find(var) == nodes.end()) {
+        throw Error{var->name(), " is a not found variable"};
+      }
+    }
+  }
 
-// TEST_F(FactorsManagerTest, insertFactorCopy) {
-//   auto A = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   distribution::Factor to_insert(Group{VariablesSoup{A, B}},
-//                                  USE_SIMPLE_CORRELATION_TAG);
+protected:
+  Checker() = default;
+};
 
-//   copyConstFactor(to_insert);
-//   checkPostInsertion();
-//   checkVariables(to_insert.getVariables().getVariablesSet());
+class FactorsManagerTest : public Checker, public FactorsAdder {
+public:
+  FactorsManagerTest() = default;
+};
 
-//   EXPECT_EQ(getAllFactors().size(), 1);
-//   EXPECT_EQ(getConstFactors().size(), 1);
-//   EXPECT_TRUE(have_same_values(**getConstFactors().begin(), to_insert));
-// }
+bool have_same_values(const Distribution &a, const Distribution &b) {
+  return (a.getVariables().getVariables() == b.getVariables().getVariables()) &&
+         (a.getCombinationsMap() == b.getCombinationsMap());
+}
+} // namespace
 
-// TEST_F(FactorsManagerTest, insertFactorShared) {
-//   auto A = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   std::shared_ptr<Factor> to_insert = std::make_shared<Factor>(
-//       Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+TEST_CASE("const factors insertion", "[insertion][const]") {
+  auto A = make_variable(2, "A");
+  auto B = make_variable(2, "B");
 
-//   addConstFactor(to_insert);
-//   checkPostInsertion();
-//   checkVariables(to_insert->getVariables().getVariablesSet());
+  FactorsManagerTest model;
 
-//   EXPECT_EQ(getAllFactors().size(), 1);
-//   EXPECT_EQ(getConstFactors().size(), 1);
+  SECTION("by copy") {
+    distribution::Factor to_insert(Group{VariablesSoup{A, B}},
+                                   USE_SIMPLE_CORRELATION_TAG);
 
-//   EXPECT_EQ(*getAllFactors().begin(), to_insert);
-//   EXPECT_EQ(*getConstFactors().begin(), to_insert);
-// }
+    model.copyConstFactor(to_insert);
+    model.checkPostInsertion();
+    model.checkVariables(to_insert.getVariables().getVariablesSet());
 
-// class FactorsTunableManagerTest : public ::testing::Test,
-//                                   public Checker,
-//                                   public FactorsAdder,
-//                                   public FactorsTunableAdder {
-// public:
-//   FactorsTunableManagerTest() = default;
+    CHECK(model.getAllFactors().size() == 1);
+    CHECK(model.getConstFactors().size() == 1);
+    CHECK(have_same_values(**model.getAllFactors().begin(), to_insert));
+    CHECK(have_same_values(**model.getConstFactors().begin(), to_insert));
+  }
 
-//   virtual std::vector<float>
-//   getWeightsGradient(const TrainSet::Iterator &train_set_combinations) final
-//   {
-//     return {};
-//   }
-// };
+  SECTION("by sharing") {
+    std::shared_ptr<Factor> to_insert = std::make_shared<Factor>(
+        Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
 
-// TEST_F(FactorsTunableManagerTest, insertTunableFactorCopy) {
-//   auto A = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   distribution::FactorExponential to_insert(distribution::Factor{
-//       Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
+    model.addConstFactor(to_insert);
+    model.checkPostInsertion();
+    model.checkVariables(to_insert->getVariables().getVariablesSet());
 
-//   copyTunableFactor(to_insert);
-//   checkPostInsertion();
-//   checkVariables(to_insert.getVariables().getVariablesSet());
+    CHECK(model.getAllFactors().size() == 1);
+    CHECK(model.getConstFactors().size() == 1);
 
-//   EXPECT_EQ(getAllFactors().size(), 1);
-//   EXPECT_EQ(getConstFactors().size(), 0);
-//   EXPECT_EQ(getTunableFactors().size(), 1);
-//   EXPECT_EQ(tuners.size(), 1);
-//   EXPECT_TRUE(have_same_values(**getTunableFactors().begin(), to_insert));
-// }
+    CHECK(*model.getAllFactors().begin() == to_insert);
+    CHECK(*model.getConstFactors().begin() == to_insert);
+  }
+}
 
-// TEST_F(FactorsTunableManagerTest, insertTunableFactorShared) {
-//   auto A = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   std::shared_ptr<distribution::FactorExponential> to_insert =
-//       std::make_shared<distribution::FactorExponential>(distribution::Factor{
-//           Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
+namespace {
+class FactorsTunableManagerTest : public Checker,
+                                  public FactorsAdder,
+                                  public FactorsTunableAdder {
+public:
+  FactorsTunableManagerTest() = default;
 
-//   addTunableFactor(to_insert);
-//   checkPostInsertion();
-//   checkVariables(to_insert->getVariables().getVariablesSet());
+  virtual std::vector<float>
+  getWeightsGradient(const TrainSet::Iterator &train_set_combinations) final {
+    return {};
+  }
 
-//   EXPECT_EQ(getAllFactors().size(), 1);
-//   EXPECT_EQ(getConstFactors().size(), 0);
-//   EXPECT_EQ(getTunableFactors().size(), 1);
-//   EXPECT_EQ(tuners.size(), 1);
-//   EXPECT_EQ(*getAllFactors().begin(), to_insert);
-//   EXPECT_EQ(*getTunableFactors().begin(), to_insert);
-// }
+  const std::vector<TunerPtr> &getTuners() const { return tuners; }
 
-// TEST_F(FactorsTunableManagerTest, insertTunableFactorCopy_multiple) {
-//   auto A = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   auto C = make_variable(2, "C");
-//   auto D = make_variable(2, "D");
-//   distribution::FactorExponential factor_AB(distribution::Factor{
-//       Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
-//   distribution::Factor factor_BC(Group{VariablesSoup{B, C}},
-//                                  USE_SIMPLE_CORRELATION_TAG);
-//   distribution::FactorExponential factor_D(
-//       distribution::Factor{Group{VariablesSoup{D}}});
+  const GraphState &accessState() const { return getState(); }
+};
+} // namespace
 
-//   copyTunableFactor(factor_AB);
-//   copyTunableFactor(factor_BC);
-//   copyTunableFactor(factor_D);
-//   checkVariables(VariablesSet{A, B, C, D});
+TEST_CASE("tunable factors insertion", "[insertion][tunable]") {
+  auto A = make_variable(2, "A");
+  auto B = make_variable(2, "B");
 
-//   EXPECT_EQ(getAllFactors().size(), 1);
-//   EXPECT_EQ(getConstFactors().size(), 1);
-//   EXPECT_EQ(getTunableFactors().size(), 2);
-//   EXPECT_EQ(tuners.size(), 2);
+  FactorsTunableManagerTest model;
 
-//   const auto &state = getState();
-//   EXPECT_EQ(state.clusters.size(), 2);
-//   EXPECT_TRUE(state.clusters.front().nodes.size() == 3 ||
-//               state.clusters.back().nodes.size() == 3);
-//   EXPECT_TRUE(state.clusters.front().nodes.size() == 1 ||
-//               state.clusters.back().nodes.size() == 1);
-// }
+  SECTION("by copy") {
+    distribution::FactorExponential to_insert(distribution::Factor{
+        Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
 
-// TEST_F(FactorsManagerTest, refuseInsertionOverSameVariables) {
-//   auto A = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   DistributionCnstPtr to_insert1 = std::make_shared<Factor>(
-//       Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
-//   DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
-//       Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+    model.copyTunableFactor(to_insert);
+    model.checkPostInsertion();
+    model.checkVariables(to_insert.getVariables().getVariablesSet());
 
-//   addConstFactor(to_insert1);
-//   ASSERT_THROW(addConstFactor(to_insert2), Error);
-// }
+    CHECK(model.getAllFactors().size() == 1);
+    CHECK(model.getConstFactors().size() == 0);
+    CHECK(model.getTunableFactors().size() == 1);
+    CHECK(model.getTuners().size() == 1);
+    CHECK(have_same_values(**model.getAllFactors().begin(), to_insert));
+    CHECK(have_same_values(**model.getTunableFactors().begin(), to_insert));
+  }
 
-// TEST_F(FactorsManagerTest, refuseInsertionBadVariable) {
-//   auto A1 = make_variable(2, "A");
-//   auto A2 = make_variable(2, "A");
-//   auto B = make_variable(2, "B");
-//   DistributionCnstPtr to_insert1 = std::make_shared<Factor>(
-//       Group{VariablesSoup{A1, B}}, USE_SIMPLE_CORRELATION_TAG);
-//   DistributionCnstPtr to_insert2 =
-//       std::make_shared<Factor>(Group{VariablesSoup{A2}});
+  SECTION("by sharing") {
+    std::shared_ptr<distribution::FactorExponential> to_insert =
+        std::make_shared<distribution::FactorExponential>(distribution::Factor{
+            Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
 
-//   addConstFactor(to_insert1);
-//   ASSERT_THROW(addConstFactor(to_insert2), Error);
-// }
+    model.addTunableFactor(to_insert);
+    model.checkPostInsertion();
+    model.checkVariables(to_insert->getVariables().getVariablesSet());
 
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+    CHECK(model.getAllFactors().size() == 1);
+    CHECK(model.getConstFactors().size() == 0);
+    CHECK(model.getTunableFactors().size() == 1);
+    CHECK(model.getTuners().size() == 1);
+    CHECK(*model.getAllFactors().begin() == to_insert);
+    CHECK(*model.getTunableFactors().begin() == to_insert);
+  }
+}
+
+TEST_CASE("tunable factors multiple insertions", "[insertion][tunable]") {
+  auto A = make_variable(2, "A");
+  auto B = make_variable(2, "B");
+  auto C = make_variable(2, "C");
+  auto D = make_variable(2, "D");
+
+  FactorsTunableManagerTest model;
+
+  distribution::FactorExponential factor_AB(distribution::Factor{
+      Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
+  distribution::Factor factor_BC(Group{VariablesSoup{B, C}},
+                                 USE_SIMPLE_CORRELATION_TAG);
+  distribution::FactorExponential factor_D(
+      distribution::Factor{Group{VariablesSoup{D}}});
+
+  model.copyTunableFactor(factor_AB);
+  model.copyTunableFactor(factor_BC);
+  model.copyTunableFactor(factor_D);
+  model.checkVariables(VariablesSet{A, B, C, D});
+
+  CHECK(model.getAllFactors().size() == 1);
+  CHECK(model.getConstFactors().size() == 1);
+  CHECK(model.getTunableFactors().size() == 2);
+  CHECK(model.getTuners().size() == 2);
+
+  const auto &state = model.accessState();
+  CHECK(state.clusters.size() == 2);
+  CHECK((state.clusters.front().nodes.size() == 3 ||
+         state.clusters.back().nodes.size() == 3));
+  CHECK((state.clusters.front().nodes.size() == 1 ||
+         state.clusters.back().nodes.size() == 1));
+}
+
+TEST_CASE("check bad factor insertions are refused", "[insertion][bad]") {
+  auto A = make_variable(2, "A");
+  auto B = make_variable(2, "B");
+
+  FactorsTunableManagerTest model;
+
+  DistributionCnstPtr to_insert1 = std::make_shared<Factor>(
+      Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+  model.addConstFactor(to_insert1);
+
+  SECTION("factor connecting same variables") {
+    DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
+        Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+
+    CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error);
+  }
+
+  SECTION("factor referring to a bad variable") {
+    auto A_bis = make_variable(2, "A");
+
+    SECTION("bad unary factor") {
+      DistributionCnstPtr to_insert2 =
+          std::make_shared<Factor>(Group{VariablesSoup{A_bis}});
+
+      CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error);
+    }
+
+    SECTION("bad binary factor") {
+      auto C = make_variable(2, "C");
+      DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
+          Group{VariablesSoup{A_bis, C}}, USE_SIMPLE_CORRELATION_TAG);
+
+      CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error);
+    }
+  }
+}
