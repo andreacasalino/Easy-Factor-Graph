@@ -15,6 +15,15 @@
 
 namespace EFG::io::xml {
 namespace {
+xmlPrs::Tag &printVariable(const categoric::VariablePtr &var,
+                           xmlPrs::Tag &recipient) {
+  auto &var_tag = recipient.addNested("Variable");
+  auto &attributes = var_tag.getAttributes();
+  attributes.emplace("name", var->name());
+  attributes.emplace("Size", std::to_string(var->size()));
+  return var_tag;
+}
+
 void printGroup(const categoric::Group &group, xmlPrs::Tag &recipient) {
   auto &attributes = recipient.getAttributes();
   for (const auto &var : group.getVariables()) {
@@ -57,17 +66,13 @@ void Exporter::exportComponents(const File &filePath,
   // hidden set
   for (const auto &hidden_var :
        subject.as_structure_aware->getHiddenVariables()) {
-    auto &temp = exp_root.addNested("Variable");
-    temp.getAttributes().emplace("name", hidden_var->name());
-    temp.getAttributes().emplace("Size", std::to_string(hidden_var->size()));
+    printVariable(hidden_var, exp_root);
   }
   // evidence set
   for (const auto &[evidence_var, evidence_val] :
        subject.as_structure_aware->getEvidences()) {
-    auto &temp = exp_root.addNested("Variable");
-    temp.getAttributes().emplace("name", evidence_var->name());
-    temp.getAttributes().emplace("Size", std::to_string(evidence_var->size()));
-    temp.getAttributes().emplace("flag", "O");
+    auto &var_tag = printVariable(evidence_var, exp_root);
+    var_tag.getAttributes().emplace("flag", "O");
   }
   // const factors
   for (const auto &const_factor :

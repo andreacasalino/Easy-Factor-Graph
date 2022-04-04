@@ -109,10 +109,15 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
   return result;
 };
 
-std::variant<std::shared_ptr<distribution::FactorExponential>,
-             distribution::DistributionCnstPtr>
-importDistribution(const std::string &prefix, const xmlPrs::Tag &tag,
-                   const categoric::VariablesSet &variables) {
+struct FactorAndSharingGroup {
+  std::shared_ptr<distribution::FactorExponential> factor;
+  std::optional<categoric::VariablesSet> sharing_group;
+};
+using PotentialToInsert =
+    std::variant<distribution::DistributionCnstPtr, FactorAndSharingGroup>;
+PotentialToInsert importPotential(const std::string &prefix,
+                                  const xmlPrs::Tag &tag,
+                                  const categoric::VariablesSet &variables) {
   auto shape = importFactor(prefix, tag, variables);
   const auto *w = try_access_attribute(tag, "weight");
   if (nullptr == w) {
@@ -120,14 +125,21 @@ importDistribution(const std::string &prefix, const xmlPrs::Tag &tag,
   }
 
   const auto *tunab = try_access_attribute(tag, "tunability");
-  if (nullptr == tunab) {
-    distribution::DistributionCnstPtr result =
-        std::make_shared<distribution::FactorExponential>(
-            *shape, static_cast<float>(std::atof(w->c_str())));
+  if ((nullptr != tunab) && (*tunab == "Y")) {
+    FactorAndSharingGroup result;
+    result.factor = std::make_shared<distribution::FactorExponential>(
+        *shape, static_cast<float>(std::atof(w->c_str())));
+    auto share_tag_it = tag.getNested().find("Share");
+    if (share_tag_it != tag.getNested().end()) {
+      result.sharing_group.emplace(
+          importGroup(*share_tag_it->second, variables).getVariablesSet());
+    }
     return result;
   }
-  return std::make_shared<distribution::FactorExponential>(
-      *shape, static_cast<float>(std::atof(w->c_str())));
+  distribution::DistributionCnstPtr result =
+      std::make_shared<distribution::FactorExponential>(
+          *shape, static_cast<float>(std::atof(w->c_str())));
+  return result;
 };
 } // namespace
 
@@ -158,47 +170,38 @@ Importer::importComponents(const File &filePath, const AdderPtrs &subject) {
                  }
                });
   // import potentials
+  std::vector<FactorAndSharingGroup> tunable_sharing_group;
   for_each_key(
       parsed_root.getNested(), xmlPrs::Name{"Potential"},
-      [&filePath, &variables, &subject](const xmlPrs::TagPtr &factor) {
-        auto distribution =
-            importDistribution(filePath.parent_str(), *factor, variables);
+      [&filePath, &variables, &subject,
+       &tunable_sharing_group](const xmlPrs::TagPtr &factor) {
+        auto to_insert =
+            importPotential(filePath.parent_str(), *factor, variables);
 
-        struct Visitor {
-          const AdderPtrs &subject;
-          const xmlPrs::Tag &tag;
-          const categoric::VariablesSet &variables;
+        auto *as_const_distr =
+            std::get_if<distribution::DistributionCnstPtr>(&to_insert);
+        if (nullptr != as_const_distr) {
+          subject.as_factors_const_adder->addConstFactor(*as_const_distr);
+          return;
+        }
 
-          void operator()(const std::shared_ptr<distribution::FactorExponential>
-                              &factor) const {
-            if (nullptr == subject.as_factors_tunable_adder) {
-              subject.as_factors_const_adder->addConstFactor(factor);
-              return;
-            }
-            std::optional<categoric::VariablesSet> group_sharing_weight =
-                std::nullopt;
-            auto share_tag_it = tag.getNested().find("Share");
-            if (share_tag_it != tag.getNested().end()) {
-              auto &group = group_sharing_weight.emplace();
-              for_each_key(share_tag_it->second->getAttributes(),
-                           xmlPrs::Name{"var"},
-                           [&group, &variables = this->variables](
-                               const std::string &name) {
-                             group.emplace(findVariable(name, variables));
-                           });
-            }
-            subject.as_factors_tunable_adder->addTunableFactor(
-                factor, group_sharing_weight);
-          }
+        auto &as_tunable = std::get<FactorAndSharingGroup>(to_insert);
+        if (nullptr == subject.as_factors_tunable_adder) {
+          subject.as_factors_const_adder->addConstFactor(as_tunable.factor);
+          return;
+        }
 
-          void
-          operator()(const distribution::DistributionCnstPtr &factor) const {
-            subject.as_factors_const_adder->addConstFactor(factor);
-          }
-        };
-        Visitor visitor = Visitor{subject, *factor, variables};
-        std::visit(visitor, distribution);
+        if (as_tunable.sharing_group == std::nullopt) {
+          subject.as_factors_tunable_adder->addTunableFactor(as_tunable.factor);
+          return;
+        }
+
+        tunable_sharing_group.push_back(as_tunable);
       });
+  for (const auto &tunable : tunable_sharing_group) {
+    subject.as_factors_tunable_adder->addTunableFactor(tunable.factor,
+                                                       tunable.sharing_group);
+  }
   return evidences;
 }
 } // namespace EFG::io::xml
