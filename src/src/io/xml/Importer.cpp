@@ -72,21 +72,24 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
   if (nullptr != corr) {
     if (*corr == "T") {
       return std::make_shared<distribution::Factor>(
-          group.getVariables(), distribution::USE_SIMPLE_CORRELATION_TAG);
+          categoric::Group{group.getVariables()},
+          distribution::USE_SIMPLE_CORRELATION_TAG);
     }
     if (*corr == "F") {
       return std::make_shared<distribution::Factor>(
-          group.getVariables(), distribution::USE_SIMPLE_ANTI_CORRELATION_TAG);
+          categoric::Group{group.getVariables()},
+          distribution::USE_SIMPLE_ANTI_CORRELATION_TAG);
     }
     throw Error("invalid option for Correlation");
   }
 
   std::shared_ptr<distribution::Factor> result =
-      std::make_shared<distribution::Factor>(group.getVariables());
+      std::make_shared<distribution::Factor>(
+          categoric::Group{group.getVariables()});
 
   const auto *source = try_access_attribute(tag, "Source");
   if (nullptr != source) {
-    result->importCombiantionsFromFile(prefix + "/" + *source);
+    result->importCombiantionsFromFile(prefix + *source);
     return result;
   }
 
@@ -129,10 +132,8 @@ importDistribution(const std::string &prefix, const xmlPrs::Tag &tag,
 } // namespace
 
 std::unordered_set<std::string>
-Importer::importComponents(const std::string &filePath,
-                           const std::string &fileName,
-                           const AdderPtrs &subject) {
-  auto maybe_parsed_root = xmlPrs::parse_xml(filePath + "/" + fileName);
+Importer::importComponents(const File &filePath, const AdderPtrs &subject) {
+  auto maybe_parsed_root = xmlPrs::parse_xml(filePath.str());
   auto maybe_parsed_error = std::get_if<xmlPrs::Error>(&maybe_parsed_root);
   if (nullptr != maybe_parsed_error) {
     throw *maybe_parsed_error;
@@ -160,7 +161,8 @@ Importer::importComponents(const std::string &filePath,
   for_each_key(
       parsed_root.getNested(), xmlPrs::Name{"Potential"},
       [&filePath, &variables, &subject](const xmlPrs::TagPtr &factor) {
-        auto distribution = importDistribution(filePath, *factor, variables);
+        auto distribution =
+            importDistribution(filePath.parent_str(), *factor, variables);
 
         struct Visitor {
           const AdderPtrs &subject;

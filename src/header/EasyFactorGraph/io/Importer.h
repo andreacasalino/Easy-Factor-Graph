@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/io/File.h>
 #include <EasyFactorGraph/structure/FactorsManager.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
 
@@ -30,7 +30,6 @@ protected:
   Importer() = default;
 
   virtual std::unordered_set<std::string>
-  importComponents(const std::string &filePath, const std::string &fileName,
-                   const AdderPtrs &subject) = 0;
+  importComponents(const File &filePath, const AdderPtrs &subject) = 0;
 };
 } // namespace EFG::io

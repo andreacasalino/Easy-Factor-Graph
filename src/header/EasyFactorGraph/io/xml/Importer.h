@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <EasyFactorGraph/io/FilePath.h>
 #include <EasyFactorGraph/io/Importer.h>
 
 namespace EFG::io::xml {
@@ -26,15 +25,13 @@ public:
    */
   template <typename Model>
   static std::unordered_map<std::string, std::size_t>
-  importFromXml(Model &model, const FilePath &filePath) {
-    return Importer().importComponents(
-        filePath.getPath(), filePath.getFileName(), getComponents(model));
+  importFromXml(Model &model, const File &filePath) {
+    return Importer().importComponents(filePath, getComponents(model));
   };
 
 private:
   std::unordered_set<std::string>
-  importComponents(const std::string &filePath, const std::string &fileName,
-                   const AdderPtrs &subject) final;
+  importComponents(const File &filePath, const AdderPtrs &subject) final;
 };
 } // namespace EFG::io::xml
 #endif
