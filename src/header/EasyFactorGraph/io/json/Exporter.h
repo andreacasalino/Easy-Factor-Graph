@@ -1,3 +1,5 @@
+#ifdef EFG_JSON_IO
+
 // /**
 //  * Author:    Andrea Casalino
 //  * Created:   01.01.2021
@@ -5,8 +7,7 @@
 //  * report any bug to andrecasa91@gmail.com.
 //  **/
 
-// #ifndef EFG_IO_JSON_EXPORTER_H
-// #define EFG_IO_JSON_EXPORTER_H
+#pragma once
 
 // #include <io/Exporter.h>
 
@@ -33,5 +34,4 @@
 //         components) final;
 //     };
 // }
-
-// #endif
+#endif

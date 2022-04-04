@@ -1,3 +1,4 @@
+#ifdef EFG_XML_IO
 /**
  * Author:    Andrea Casalino
  * Created:   01.01.2021
@@ -36,3 +37,4 @@ private:
                    const AdderPtrs &subject) final;
 };
 } // namespace EFG::io::xml
+#endif

@@ -1,3 +1,4 @@
+#ifdef EFG_XML_IO
 /**
  * Author:    Andrea Casalino
  * Created:   01.01.2021
@@ -199,3 +200,4 @@ Importer::importComponents(const std::string &filePath,
   return evidences;
 }
 } // namespace EFG::io::xml
+#endif

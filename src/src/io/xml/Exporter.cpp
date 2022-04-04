@@ -1,3 +1,4 @@
+#ifdef EFG_XML_IO
 /**
  * Author:    Andrea Casalino
  * Created:   01.01.2021
@@ -98,3 +99,4 @@ void Exporter::exportComponents(const std::string &filePath,
   exp_root.print(*stream);
 }
 } // namespace EFG::io::xml
+#endif
