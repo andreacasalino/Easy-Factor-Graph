@@ -8,6 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/io/File.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
 #include <EasyFactorGraph/structure/FactorsManager.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
@@ -32,8 +33,8 @@ public:
 protected:
   Exporter() = default;
 
-  virtual void exportComponents(const std::string &filePath,
-                                const std::string &modelName,
+  virtual void exportComponents(const File &filePath,
+                                const std::string &model_name,
                                 const AwarePtrs &subject) = 0;
 };
 } // namespace EFG::io

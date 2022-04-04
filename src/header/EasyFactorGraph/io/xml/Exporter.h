@@ -26,8 +26,7 @@ public:
   };
 
 private:
-  void exportComponents(const std::string &filePath,
-                        const std::string &modelName,
+  void exportComponents(const File &filePath, const std::string &model_name,
                         const AwarePtrs &subject) final;
 };
 } // namespace EFG::io::xml

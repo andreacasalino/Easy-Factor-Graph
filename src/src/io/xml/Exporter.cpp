@@ -45,14 +45,14 @@ xmlPrs::Tag &printExpPotential(const distribution::FactorExponential &distr,
 }
 } // namespace
 
-void Exporter::exportComponents(const std::string &filePath,
-                                const std::string &modelName,
+void Exporter::exportComponents(const File &filePath,
+                                const std::string &model_name,
                                 const AwarePtrs &subject) {
-  xmlPrs::Root exp_root(modelName);
-  if (modelName.empty()) {
-    exp_root.setName("graphical-model");
+  xmlPrs::Root exp_root(model_name);
+  if (model_name.empty()) {
+    exp_root.setName("EFG-model");
   } else {
-    exp_root.setName(modelName);
+    exp_root.setName(model_name);
   }
   // hidden set
   for (const auto &hidden_var :
@@ -95,7 +95,7 @@ void Exporter::exportComponents(const std::string &filePath,
       }
     }
   }
-  auto stream = make_out_stream(filePath);
+  auto stream = make_out_stream(filePath.str());
   exp_root.print(*stream);
 }
 } // namespace EFG::io::xml
