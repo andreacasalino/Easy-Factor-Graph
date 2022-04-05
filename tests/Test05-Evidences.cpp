@@ -56,21 +56,15 @@ public:
   };
 
   void clusterExists(const VariablesSet &vars) {
-    std::set<strct::Node *> nodes;
-    {
-      for (const auto &var : vars) {
-        auto nodes_it = getState_().nodes.find(var);
-        if (nodes_it == getState_().nodes.end()) {
-          throw Error{nodes_it->first->name(),
-                      " is not part of the hidden clusters"};
-        }
-        nodes.emplace(&nodes_it->second);
+    std::vector<VariablesSet> clusters_as_vars;
+    for (const auto &cluster : getState().clusters) {
+      auto &set = clusters_as_vars.emplace_back();
+      for (const auto *node : cluster.nodes) {
+        set.emplace(node->variable);
       }
     }
-    if (std::find_if(getState().clusters.begin(), getState().clusters.end(),
-                     [&nodes](const HiddenCluster &cluster) {
-                       return cluster.nodes == nodes;
-                     }) == getState().clusters.end()) {
+    if (std::find(clusters_as_vars.begin(), clusters_as_vars.end(), vars) ==
+        clusters_as_vars.end()) {
       std::stringstream stream;
       stream << "Hidden cluster: <";
       for (const auto &var : vars) {
