@@ -14,7 +14,7 @@ namespace {
 std::vector<std::size_t>
 get_indices(const categoric::VariablesSoup &distribution_group,
             const categoric::VariablesSoup &bigger_group) {
-  if (distribution_group.size() >= bigger_group.size()) {
+  if (distribution_group.size() > bigger_group.size()) {
     throw Error{"Invalid group to build a CombinationFinder"};
   }
   std::vector<std::size_t> result;

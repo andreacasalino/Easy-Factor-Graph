@@ -86,14 +86,15 @@ strct::Node *extract_node(const strct::NodeLocation &location) {
 
 TunerPtr FactorsTunableAdder::makeTuner(const FactorExponentialPtr &factor) {
   auto vars = getAllVariables();
+  const auto &factor_vars = factor->getVariables().getVariables();
   switch (factor->getVariables().getVariables().size()) {
   case 1: {
-    auto *node = extract_node(*locate(vars.front()));
+    auto *node = extract_node(*locate(factor_vars.front()));
     return std::make_unique<UnaryTuner>(*node, factor, vars);
   }
   case 2: {
-    auto *nodeA = extract_node(*locate(vars.front()));
-    auto *nodeB = extract_node(*locate(vars.back()));
+    auto *nodeA = extract_node(*locate(factor_vars.front()));
+    auto *nodeB = extract_node(*locate(factor_vars.back()));
     return std::make_unique<BinaryTuner>(*nodeA, *nodeB, factor, vars);
   }
   }

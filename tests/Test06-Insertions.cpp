@@ -61,7 +61,7 @@ bool have_same_values(const Distribution &a, const Distribution &b) {
 }
 } // namespace
 
-TEST_CASE("const factors insertion", "[insertion][const]") {
+TEST_CASE("const factors insertion", "[insertion]") {
   auto A = make_variable(2, "A");
   auto B = make_variable(2, "B");
 
@@ -115,7 +115,7 @@ public:
 };
 } // namespace
 
-TEST_CASE("tunable factors insertion", "[insertion][tunable]") {
+TEST_CASE("tunable factors insertion", "[insertion]") {
   auto A = make_variable(2, "A");
   auto B = make_variable(2, "B");
 
@@ -155,7 +155,7 @@ TEST_CASE("tunable factors insertion", "[insertion][tunable]") {
   }
 }
 
-TEST_CASE("tunable factors multiple insertions", "[insertion][tunable]") {
+TEST_CASE("tunable factors multiple insertions", "[insertion]") {
   auto A = make_variable(2, "A");
   auto B = make_variable(2, "B");
   auto C = make_variable(2, "C");
@@ -171,11 +171,11 @@ TEST_CASE("tunable factors multiple insertions", "[insertion][tunable]") {
       distribution::Factor{Group{VariablesSoup{D}}});
 
   model.copyTunableFactor(factor_AB);
-  model.copyTunableFactor(factor_BC);
+  model.copyConstFactor(factor_BC);
   model.copyTunableFactor(factor_D);
   model.checkVariables(VariablesSet{A, B, C, D});
 
-  CHECK(model.getAllFactors().size() == 1);
+  CHECK(model.getAllFactors().size() == 3);
   CHECK(model.getConstFactors().size() == 1);
   CHECK(model.getTunableFactors().size() == 2);
   CHECK(model.getTuners().size() == 2);
@@ -188,7 +188,7 @@ TEST_CASE("tunable factors multiple insertions", "[insertion][tunable]") {
          state.clusters.back().nodes.size() == 1));
 }
 
-TEST_CASE("check bad factor insertions are refused", "[insertion][bad]") {
+TEST_CASE("check bad factor insertions are refused", "[insertion]") {
   auto A = make_variable(2, "A");
   auto B = make_variable(2, "B");
 
