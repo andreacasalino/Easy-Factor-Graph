@@ -26,8 +26,17 @@ endif()
 
 option(BUILD_EFG_JSON_CONVERTER "Compile features supporting conversion from and to json files" OFF)
 if(BUILD_EFG_JSON_CONVERTER)
-  ## fecth nlhomann TODO
-  ## link nlhomann TODO
+  message(STATUS "fetching nlohmann json")
+  include(FetchContent)
+  FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG        7194245a314d142a5560f6906a87f7c67ebbcf2e
+  )
+  FetchContent_MakeAvailable(nlohmann_json)
+  target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
+    nlohmann_json::nlohmann_json
+  )
   target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC
     EFG_JSON_IO=1
   )
