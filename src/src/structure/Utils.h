@@ -20,7 +20,7 @@ void visit_location(
     std::function<void(const HiddenNodeLocation &)> hidden_case,
     std::function<void(const EvidenceNodeLocation &)> evidence_case);
 
-std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes);
+HiddenClusters compute_clusters(const std::set<Node *> &nodes);
 
 std::vector<const distribution::Distribution *> gather_unaries(Node &subject);
 

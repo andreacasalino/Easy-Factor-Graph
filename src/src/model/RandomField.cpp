@@ -12,7 +12,7 @@ std::vector<float> RandomField::getWeightsGradient(
     const train::TrainSet::Iterator &train_set_combinations) {
   throw 0; // decide what to do to set the pool
   if (!getEvidences().empty()) {
-    removeEvidences();
+    removeAllEvidences();
   }
   propagateBelief(strct::SUM);
   std::vector<float> result;

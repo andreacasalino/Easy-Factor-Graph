@@ -22,6 +22,13 @@ class EvidenceRemover : virtual public StateAware, virtual public BeliefAware {
 public:
   void removeEvidence(const categoric::VariablePtr &variable);
 
-  void removeEvidences();
+  void removeEvidences(const categoric::VariablesSet &variables);
+
+  void removeAllEvidences();
+
+private:
+  void removeEvidence_(const categoric::VariablePtr &variable);
+
+  void resetState();
 };
 } // namespace EFG::strct

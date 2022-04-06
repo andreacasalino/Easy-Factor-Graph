@@ -65,40 +65,7 @@ void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
   resetBelief();
 }
 
-namespace {
-void re_connect(Node &node, std::set<Node *> &involved_nodes) {
-  for (const auto &[connected_node, connection] : node.disabled_connections) {
-    involved_nodes.emplace(connected_node);
-    node.active_connections[connected_node].factor = connection.factor;
-    connected_node->active_connections[&node].factor = connection.factor;
-    connected_node->disabled_connections.erase(&node);
-    connected_node->merged_unaries.reset();
-  }
-  involved_nodes.emplace(&node);
-  node.merged_unaries.reset();
-  node.disabled_connections.clear();
-}
-
-void update_clusters(HiddenClusters &clusters,
-                     std::set<Node *> &involved_nodes) {
-  for (auto *node : involved_nodes) {
-    auto clusters_it =
-        std::find_if(clusters.begin(), clusters.end(),
-                     [&node](const HiddenCluster &element) {
-                       return element.nodes.find(node) != element.nodes.end();
-                     });
-    if (clusters_it != clusters.end()) {
-      clusters.erase(clusters_it);
-    }
-  }
-  auto new_clusters = compute_clusters(involved_nodes);
-  for (auto &cluster : new_clusters) {
-    clusters.emplace_back(std::move(cluster));
-  }
-}
-} // namespace
-
-void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
+void EvidenceRemover::removeEvidence_(const categoric::VariablePtr &variable) {
   auto &state = getState_();
   auto evidence_it = state.evidences.find(variable);
   if (evidence_it == state.evidences.end()) {
@@ -106,22 +73,49 @@ void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
   }
   resetBelief();
   state.evidences.erase(evidence_it);
-  std::set<Node *> involved_nodes;
-  re_connect(state.nodes[variable], involved_nodes);
-  update_clusters(state.clusters, involved_nodes);
+  auto &node = state.nodes[variable];
+  for (const auto &[connected_node, connection] : node.disabled_connections) {
+    node.active_connections[connected_node].factor = connection.factor;
+    connected_node->active_connections[&node].factor = connection.factor;
+    connected_node->disabled_connections.erase(&node);
+    connected_node->merged_unaries.reset();
+  }
+  node.merged_unaries.reset();
+  node.disabled_connections.clear();
 }
 
-void EvidenceRemover::removeEvidences() {
-  auto &state = getState_();
-  if (state.evidences.empty()) {
+void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
+  removeEvidence_(variable);
+  resetState();
+}
+
+void EvidenceRemover::removeEvidences(
+    const categoric::VariablesSet &variables) {
+  if (variables.empty()) {
     return;
   }
-  resetBelief();
-  std::set<Node *> involved_nodes;
-  for (const auto &[var, val] : state.evidences) {
-    re_connect(state.nodes[var], involved_nodes);
+  for (const auto &variable : variables) {
+    removeEvidence_(variable);
   }
-  state.evidences.clear();
-  update_clusters(state.clusters, involved_nodes);
+  resetState();
+}
+
+void EvidenceRemover::removeAllEvidences() {
+  const auto &state = getState();
+  while (!state.evidences.empty()) {
+    removeEvidence_(state.evidences.begin()->first);
+  }
+  resetState();
+}
+
+void EvidenceRemover::resetState() {
+  auto &state = getState_();
+  std::set<Node *> nodes;
+  for (auto &[var, node] : state.nodes) {
+    if (state.evidences.find(var) == state.evidences.end()) {
+      nodes.emplace(&node);
+    }
+  }
+  state.clusters = compute_clusters(nodes);
 }
 } // namespace EFG::strct

@@ -31,49 +31,52 @@ void visit_location(
 }
 
 namespace {
-struct ConnectionsResult {
-  std::vector<Node *> not_connected;
-  std::set<std::size_t> existing_clusters;
+using ClustersRaw = std::list<std::set<Node *>>;
+
+struct ClustersRawIteratorComparer {
+  bool operator()(const ClustersRaw::const_iterator &a,
+                  const ClustersRaw::const_iterator &b) const {
+    return &(*a) < &(*b);
+  }
 };
-ConnectionsResult
-find_connections(const std::vector<std::set<Node *>> &clusters,
-                 Node &to_explore) {
+
+using ClustersRawIterators =
+    std::set<ClustersRaw::const_iterator, ClustersRawIteratorComparer>;
+
+struct ConnectionsResult {
+  std::vector<Node *> not_part_of_current_clusters;
+  ClustersRawIterators existing_clusters;
+};
+ConnectionsResult find_connections(const ClustersRaw &clusters,
+                                   Node &to_explore) {
   ConnectionsResult result;
-  for (const auto &[node, connection] : to_explore.active_connections) {
-    auto existing_cluster =
-        std::find_if(clusters.begin(), clusters.end(),
-                     [&to_explore](const std::set<Node *> &cluster) {
-                       return cluster.find(&to_explore) != cluster.end();
-                     });
+  for (const auto &[connected_node, connection] :
+       to_explore.active_connections) {
+    auto existing_cluster = std::find_if(
+        clusters.begin(), clusters.end(),
+        [&connected_node = connected_node](const std::set<Node *> &cluster) {
+          return cluster.find(connected_node) != cluster.end();
+        });
     if (existing_cluster == clusters.end()) {
-      result.not_connected.push_back(node);
-    } else {
-      result.existing_clusters.emplace(
-          std::distance(clusters.begin(), existing_cluster));
+      result.not_part_of_current_clusters.push_back(connected_node);
+      continue;
     }
+    result.existing_clusters.emplace(existing_cluster);
   }
   return result;
 }
 
-template <typename T>
-void erase(std::vector<T> &subject, const std::size_t pos) {
-  auto it = subject.begin();
-  std::advance(it, pos);
-  subject.erase(it);
-}
-
-std::vector<std::set<Node *>>
-compute_clusters_sets(const std::set<Node *> &nodes) {
+ClustersRaw compute_clusters_sets(const std::set<Node *> &nodes) {
   if (nodes.empty()) {
     return {};
   }
-  std::vector<std::set<Node *>> result;
+  ClustersRaw result;
   auto open = nodes;
   while (!open.empty()) {
     auto *to_visit = *open.begin();
     auto connections = find_connections(result, *to_visit);
     open.erase(to_visit);
-    for (auto *node : connections.not_connected) {
+    for (auto *node : connections.not_part_of_current_clusters) {
       open.erase(node);
     }
     std::set<Node *> *recipient = nullptr;
@@ -81,26 +84,24 @@ compute_clusters_sets(const std::set<Node *> &nodes) {
       recipient = &result.emplace_back();
     } else {
       std::set<Node *> new_cluster;
-      for (auto clusters_it = connections.existing_clusters.rbegin();
-           clusters_it != connections.existing_clusters.rend(); ++clusters_it) {
-        new_cluster.insert(result[*clusters_it].begin(),
-                           result[*clusters_it].end());
-        erase(result, *clusters_it);
+      for (const auto &existing_cluster_it : connections.existing_clusters) {
+        new_cluster.insert(existing_cluster_it->begin(),
+                           existing_cluster_it->end());
+        result.erase(existing_cluster_it);
       }
       recipient = &result.emplace_back(std::move(new_cluster));
     }
     recipient->emplace(to_visit);
-    recipient->insert(connections.not_connected.begin(),
-                      connections.not_connected.end());
+    recipient->insert(connections.not_part_of_current_clusters.begin(),
+                      connections.not_part_of_current_clusters.end());
   }
   return result;
 }
 } // namespace
 
-std::vector<HiddenCluster> compute_clusters(const std::set<Node *> &nodes) {
+HiddenClusters compute_clusters(const std::set<Node *> &nodes) {
   auto sets = compute_clusters_sets(nodes);
-  std::vector<HiddenCluster> result;
-  result.reserve(sets.size());
+  HiddenClusters result;
   for (auto &set : sets) {
     auto &added = result.emplace_back();
     added.nodes = std::move(set);
