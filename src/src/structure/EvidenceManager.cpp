@@ -103,7 +103,8 @@ void EvidenceRemover::removeEvidences(
 void EvidenceRemover::removeAllEvidences() {
   const auto &state = getState();
   while (!state.evidences.empty()) {
-    removeEvidence_(state.evidences.begin()->first);
+    auto var = state.evidences.begin()->first;
+    removeEvidence_(var);
   }
   resetState();
 }

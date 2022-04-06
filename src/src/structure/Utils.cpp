@@ -67,15 +67,15 @@ ConnectionsResult find_connections(const ClustersRaw &clusters,
 }
 
 ClustersRaw compute_clusters_sets(const std::set<Node *> &nodes) {
-  if (nodes.empty()) {
-    return {};
-  }
   ClustersRaw result;
+  if (nodes.empty()) {
+    return result;
+  }
   auto open = nodes;
   while (!open.empty()) {
     auto *to_visit = *open.begin();
     auto connections = find_connections(result, *to_visit);
-    open.erase(to_visit);
+    open.erase(open.begin());
     for (auto *node : connections.not_part_of_current_clusters) {
       open.erase(node);
     }

@@ -24,8 +24,8 @@ public:
    importing
    */
   template <typename Model>
-  static std::unordered_map<std::string, std::size_t>
-  importFromXml(Model &model, const File &filePath) {
+  static std::unordered_set<std::string> importFromXml(Model &model,
+                                                       const File &filePath) {
     return Importer().importComponents(filePath, getComponents(model));
   };
 
