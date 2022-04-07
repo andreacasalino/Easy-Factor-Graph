@@ -1,7 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
+
+#include <math.h>
 
 using namespace EFG;
 using namespace EFG::categoric;
@@ -48,8 +51,6 @@ TEST_CASE("Unary factor", "[factor][special]") {
   }
 }
 
-TEST_CASE("Evidence", "[factor][special]") {}
-
 TEST_CASE("Indicator", "[factor][special]") {
   auto var = make_variable(3, "A");
   Indicator factor(var, 1);
@@ -61,8 +62,65 @@ TEST_CASE("Indicator", "[factor][special]") {
   CHECK(factor.getCombinationsMap() == expected_map);
 }
 
-TEST_CASE("Message", "[factor][special]") {
-  SECTION("SUM") {}
+namespace {
+FactorExponential make_exp_test_factor(const float w) {
+  Group group = {make_variable(2, "A"), make_variable(2, "B")};
+  return FactorExponential{Factor{group, USE_SIMPLE_CORRELATION_TAG}, w};
+}
+} // namespace
 
-  SECTION("MAP") {}
+TEST_CASE("Evidence", "[factor][special]") {
+  const float w = 1.3f;
+  auto factor = make_exp_test_factor(w);
+
+  Evidence evidence(factor, factor.getVariables().getVariables()[0], 1);
+
+  const auto &map = evidence.getCombinationsMap();
+  REQUIRE(map.size() == 2);
+  CombinationRawValuesMap expected_map;
+  expected_map.emplace(std::vector<std::size_t>{0}, 1.f);
+  expected_map.emplace(std::vector<std::size_t>{1}, 1.f + exp(w));
+  CHECK(factor.getCombinationsMap() == expected_map);
+}
+
+TEST_CASE("Message", "[factor][special]") {
+  const float w = 1.3f;
+  const float g = 0.6f;
+
+  auto factor_AB = make_exp_test_factor(w);
+  auto A = factor_AB.getVariables().getVariables().front();
+  auto B = factor_AB.getVariables().getVariables().back();
+
+  Factor shape_A(Group{A});
+  shape_A.setImageRaw(std::vector<std::size_t>{0}, 0.5f);
+  shape_A.setImageRaw(std::vector<std::size_t>{1}, 1.f);
+  FactorExponential factor_A(shape_A, g);
+
+  SECTION("SUM") {
+    MessageSUM message(UnaryFactor{{&factor_A}}, factor_AB);
+
+    const auto &map = message.getCombinationsMap();
+    REQUIRE(message.getVariable().get() == B.get());
+    REQUIRE(map.size() == 2);
+    CombinationRawValuesMap expected_map;
+    expected_map.emplace(std::vector<std::size_t>{0},
+                         exp(w) * exp(0.5f * g) + exp(g));
+    expected_map.emplace(std::vector<std::size_t>{1},
+                         exp(0.5f * g) + exp(w) * exp(g));
+    CHECK(message.getCombinationsMap() == expected_map);
+  }
+
+  SECTION("MAP") {
+    MessageMAP message(UnaryFactor{{&factor_A}}, factor_AB);
+
+    const auto &map = message.getCombinationsMap();
+    REQUIRE(message.getVariable().get() == B.get());
+    REQUIRE(map.size() == 2);
+    CombinationRawValuesMap expected_map;
+    expected_map.emplace(std::vector<std::size_t>{0},
+                         std::max(exp(w) * exp(0.5f * g), exp(g)));
+    expected_map.emplace(std::vector<std::size_t>{1},
+                         std::max(exp(0.5f * g), exp(w) * exp(g)));
+    CHECK(message.getCombinationsMap() == expected_map);
+  }
 }

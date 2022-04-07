@@ -23,6 +23,7 @@ public:
 
   void merge(const Distribution &to_merge);
 
+  // check if this is actually used to normalized cached merged unaries
   void normalize();
 
 protected:
@@ -46,8 +47,6 @@ public:
   MessageSUM(const UnaryFactor &merged_unaries,
              const distribution::Distribution &binary_factor);
 };
-
-////////// remember to normalize messages
 
 class MessageMAP : public UnaryFactor {
 public:
