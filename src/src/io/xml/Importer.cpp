@@ -6,6 +6,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
 
 #include <XML-Parser/Parser.h>
@@ -89,7 +90,7 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
 
   const auto *source = try_access_attribute(tag, "Source");
   if (nullptr != source) {
-    result->importCombiantionsFromFile(prefix + *source);
+    import_values(*result, prefix + "/" + *source);
     return result;
   }
 

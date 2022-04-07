@@ -41,9 +41,4 @@ void DistributionSetter::setAllImagesRaw(const float &value) {
                          map[comb] = value;
                        });
 }
-
-void DistributionSetter::importCombiantionsFromFile(
-    const std::string &file_name) {
-  throw 0; // move to IO library
-}
 } // namespace EFG::distribution

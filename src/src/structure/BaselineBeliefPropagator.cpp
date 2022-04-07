@@ -158,14 +158,20 @@ PropagationResult BaselineBeliefPropagator::propagateBelief(
   PropagationResult result;
   result.was_completed = true;
   result.propagation_kind_done = kind;
-  throw 0; // set also iterations
   for (auto &cluster : subject) {
     if (nullptr == cluster.connectivity) {
       update_connectivity(cluster);
     }
     if (message_passing(cluster, kind, pool)) {
+      auto &cluster_info = result.structure_found.emplace_back();
+      cluster_info.tree_or_loopy_graph = true;
+      cluster_info.size = cluster.nodes.size();
       continue;
     }
+
+    auto &cluster_info = result.structure_found.emplace_back();
+    cluster_info.tree_or_loopy_graph = false;
+    cluster_info.size = cluster.nodes.size();
     if (!loopy_propagation(cluster,
                            LoopyPropagationContext{
                                kind, context.max_iterations_loopy_propagation,

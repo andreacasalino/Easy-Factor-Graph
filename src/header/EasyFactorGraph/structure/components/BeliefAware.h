@@ -19,10 +19,17 @@ struct PropagationContext {
   std::size_t max_iterations_loopy_propagation;
 };
 
+struct ClusterInfo {
+  bool tree_or_loopy_graph;
+  std::size_t size; // number of involved nodes
+};
+
 struct PropagationResult {
   PropagationKind propagation_kind_done;
-  std::size_t iterations_required;
+
   bool was_completed;
+
+  std::vector<ClusterInfo> structure_found;
 };
 
 class BeliePropagationStrategy {

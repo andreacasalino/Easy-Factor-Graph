@@ -5,12 +5,21 @@
 #include <EasyFactorGraph/model/Graph.h>
 
 #include <math.h>
+#include <sstream>
+
 using namespace EFG;
 using namespace EFG::model;
+using namespace EFG::strct;
 using namespace EFG::io;
 using namespace EFG::categoric;
 
 namespace {
+std::string make_file_path(const std::string &file_name) {
+  std::stringstream stream;
+  stream << SAMPLE_FOLDER << "Sample03-BeliefPropagation-B/" << file_name;
+  return stream.str();
+}
+
 std::vector<float>
 normalize_distribution(const std::vector<float> &distribution) {
   float sum = 0;
@@ -72,17 +81,52 @@ public:
                                       threshold);
   }
 };
+
+bool are_equal(const ClusterInfo &a, const ClusterInfo &b) {
+  return (a.size == b.size) && (a.tree_or_loopy_graph == b.tree_or_loopy_graph);
+}
+
+bool are_equal(const std::vector<ClusterInfo> &a,
+               const std::vector<ClusterInfo> &b) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  for (std::size_t k = 0; k < a.size(); ++k) {
+    if (!are_equal(a[k], b[k])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool are_equal(const PropagationResult &a, const PropagationResult &b) {
+  return (a.propagation_kind_done == b.propagation_kind_done) &&
+         (a.was_completed == b.was_completed) &&
+         are_equal(a.structure_found, b.structure_found);
+}
 } // namespace
 
 TEST_CASE("simple poly tree", "[propagation]") {
-  TestModels model("graph_1.xml");
+  TestModels model(make_file_path("graph_1.xml"));
 
   float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
+
+  REQUIRE_FALSE(model.hasPropagationResult());
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
   CHECK(model.checkMarginals(
       "A", {(a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e))}));
+  REQUIRE(model.hasPropagationResult());
+  {
+    const auto &propagation_result = model.getLastPropagationResult();
+    strct::PropagationResult propagation_expected;
+    propagation_expected.propagation_kind_done = PropagationKind::SUM;
+    propagation_expected.was_completed = true;
+    propagation_expected.structure_found =
+        std::vector<ClusterInfo>{ClusterInfo{true, 4}};
+    REQUIRE(are_equal(propagation_expected, propagation_result));
+  }
   REQUIRE(model.araAllMessagesComputed());
   CHECK(model.checkMarginals("B", {(g + e), (1 + g * e)}));
   CHECK(model.checkMarginals(
@@ -91,6 +135,16 @@ TEST_CASE("simple poly tree", "[propagation]") {
 
   // D=1
   model.setEvidence(model.findVariable("D"), 1);
+  REQUIRE(model.hasPropagationResult());
+  {
+    const auto &propagation_result = model.getLastPropagationResult();
+    strct::PropagationResult propagation_expected;
+    propagation_expected.propagation_kind_done = PropagationKind::SUM;
+    propagation_expected.was_completed = true;
+    propagation_expected.structure_found =
+        std::vector<ClusterInfo>{ClusterInfo{true, 3}, ClusterInfo{true, 1}};
+    REQUIRE(are_equal(propagation_expected, propagation_result));
+  }
   REQUIRE(model.araAllMessagesComputed());
   CHECK(model.checkMarginals("A", {a + g, 1.f + a * g}));
   CHECK(model.checkMarginals("B", {1.f, g}));
@@ -99,7 +153,7 @@ TEST_CASE("simple poly tree", "[propagation]") {
 }
 
 TEST_CASE("complex poly tree", "[propagation]") {
-  TestModels model("graph_2.xml");
+  TestModels model(make_file_path("graph_2.xml"));
   model.setEvidence(model.findVariable("v1"), 1);
   model.setEvidence(model.findVariable("v2"), 1);
   model.setEvidence(model.findVariable("v3"), 1);
@@ -123,7 +177,7 @@ TEST_CASE("complex poly tree", "[propagation]") {
 }
 
 TEST_CASE("simple loopy tree", "[propagation]") {
-  TestModels model("graph_3.xml");
+  TestModels model(make_file_path("graph_3.xml"));
 
   float M = expf(1.f);
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
@@ -133,6 +187,16 @@ TEST_CASE("simple loopy tree", "[propagation]") {
   model.setEvidence(model.findVariable("E"), 1);
   CHECK(model.checkMarginals(
       "D", {3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2)}, 0.045f));
+  REQUIRE(model.hasPropagationResult());
+  {
+    const auto &propagation_result = model.getLastPropagationResult();
+    strct::PropagationResult propagation_expected;
+    propagation_expected.propagation_kind_done = PropagationKind::SUM;
+    propagation_expected.was_completed = true;
+    propagation_expected.structure_found =
+        std::vector<ClusterInfo>{ClusterInfo{false, 4}};
+    REQUIRE(are_equal(propagation_expected, propagation_result));
+  }
   REQUIRE(model.araAllMessagesComputed());
   CHECK(model.checkMarginals("C", {M_alfa, M_beta}, 0.045f));
   CHECK(model.checkMarginals("B", {M_alfa, M_beta}, 0.045f));
@@ -141,7 +205,7 @@ TEST_CASE("simple loopy tree", "[propagation]") {
 }
 
 TEST_CASE("complex loopy tree", "[propagation]") {
-  TestModels model("graph_4.xml");
+  TestModels model(make_file_path("graph_4.xml"));
 
   model.setEvidence(model.findVariable("v1"), 1);
 
@@ -195,6 +259,8 @@ TEST_CASE("MAPTest", "[propagation]") {
     auto model = make_chain_model(0.1f, 1.f);
     std::vector<std::size_t> mapExpected = {1, 1, 1, 1};
     CHECK(mapExpected == model.getHiddenSetMAP());
+    CHECK(model.getLastPropagationResult().propagation_kind_done ==
+          PropagationKind::MAP);
   }
 
   SECTION("strong weight for evidences") {
