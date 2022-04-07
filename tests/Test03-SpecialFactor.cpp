@@ -29,7 +29,7 @@ bool almost_equal(const CombinationRawValuesMap &a,
 }
 } // namespace
 
-TEST_CASE("Unary factor", "[factor][special]") {
+TEST_CASE("Unary factor", "[factor-special]") {
   SECTION("ones from single variable") {
     auto var = make_variable(3, "A");
     UnaryFactor factor(var);
@@ -68,7 +68,7 @@ TEST_CASE("Unary factor", "[factor][special]") {
   }
 }
 
-TEST_CASE("Indicator", "[factor][special]") {
+TEST_CASE("Indicator", "[factor-special]") {
   auto var = make_variable(3, "A");
   Indicator factor(var, 1);
 
@@ -86,7 +86,7 @@ FactorExponential make_exp_test_factor(const float w) {
 }
 } // namespace
 
-TEST_CASE("Evidence", "[factor][special]") {
+TEST_CASE("Evidence", "[factor-special]") {
   const float w = 1.3f;
   auto factor = make_exp_test_factor(w);
 
@@ -100,7 +100,7 @@ TEST_CASE("Evidence", "[factor][special]") {
   CHECK(almost_equal(evidence.getCombinationsMap(), expected_map));
 }
 
-TEST_CASE("Message", "[factor][special]") {
+TEST_CASE("Message", "[factor-special]") {
   const float w = 1.3f;
   const float g = 0.6f;
 

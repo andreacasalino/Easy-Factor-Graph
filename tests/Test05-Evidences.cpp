@@ -56,14 +56,18 @@ public:
   };
 
   void clusterExists(const VariablesSet &vars) {
-    std::vector<VariablesSet> clusters_as_vars;
+    std::set<Variable *> to_find;
+    for (const auto &var : vars) {
+      to_find.emplace(var.get());
+    }
+    std::vector<std::set<Variable *>> clusters_as_vars;
     for (const auto &cluster : getState().clusters) {
       auto &set = clusters_as_vars.emplace_back();
       for (const auto *node : cluster.nodes) {
-        set.emplace(node->variable);
+        set.emplace(node->variable.get());
       }
     }
-    if (std::find(clusters_as_vars.begin(), clusters_as_vars.end(), vars) ==
+    if (std::find(clusters_as_vars.begin(), clusters_as_vars.end(), to_find) ==
         clusters_as_vars.end()) {
       std::stringstream stream;
       stream << "Hidden cluster: <";
@@ -135,27 +139,28 @@ TEST_CASE("evidence individual reset", "[evidence]") {
   CHECK(model.getEvidences().empty());
 }
 
-// TEST_CASE("evidence group reset", "[evidence]") {
-//   EvidenceTest model;
+TEST_CASE("evidence group reset", "[evidence]") {
+  EvidenceTest model;
 
-//   model.setEvidence(model.mVars[1], 0);
-//   model.setEvidence(model.mVars[2], 0);
+  model.setEvidence(model.mVars[1], 0);
+  model.setEvidence(model.mVars[2], 0);
 
-//   model.removeEvidences(VariablesSet{model.mVars[1], model.mVars[2]});
-//   model.clusterExists(VariablesSet{model.getAllVariables().begin(),
-//                                    model.getAllVariables().end()});
-//   CHECK(model.getEvidences().empty());
-// }
+  model.removeEvidences(VariablesSet{model.mVars[1], model.mVars[2]});
+  model.clusterExists(VariablesSet{model.getAllVariables().begin(),
+                                   model.getAllVariables().end()});
+  CHECK(model.getEvidences().empty());
+}
 
-// TEST_CASE("evidence total reset", "[evidence]") {
-//   EvidenceTest model;
+TEST_CASE("evidence total reset", "[evidence]") {
+  EvidenceTest model;
 
-//   model.setEvidence(model.mVars[1], 0);
-//   model.setEvidence(model.mVars[2], 0);
+  model.setEvidence(model.mVars[1], 0);
+  model.setEvidence(model.mVars[2], 0);
 
-//   model.removeAllEvidences();
-//   model.clusterExists(VariablesSet{model.getAllVariables().begin(),
-//                                    model.getAllVariables().end()});
-//   CHECK(model.getEvidences().empty());
-//   CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error);
-// }
+  model.removeAllEvidences();
+  model.clusterExists(VariablesSet{model.getAllVariables().begin(),
+                                   model.getAllVariables().end()});
+  CHECK(model.getEvidences().empty());
+  // CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error); // TODO find
+  // a way to make it work
+}

@@ -43,13 +43,9 @@ struct ClustersRawIteratorComparer {
 using ClustersRawIterators =
     std::set<ClustersRaw::const_iterator, ClustersRawIteratorComparer>;
 
-struct ConnectionsResult {
-  std::vector<Node *> not_part_of_current_clusters;
-  ClustersRawIterators existing_clusters;
-};
-ConnectionsResult find_connections(const ClustersRaw &clusters,
-                                   Node &to_explore) {
-  ConnectionsResult result;
+ClustersRawIterators find_connections(const ClustersRaw &clusters,
+                                      Node &to_explore) {
+  ClustersRawIterators result;
   for (const auto &[connected_node, connection] :
        to_explore.active_connections) {
     auto existing_cluster = std::find_if(
@@ -57,34 +53,23 @@ ConnectionsResult find_connections(const ClustersRaw &clusters,
         [&connected_node = connected_node](const std::set<Node *> &cluster) {
           return cluster.find(connected_node) != cluster.end();
         });
-    if (existing_cluster == clusters.end()) {
-      result.not_part_of_current_clusters.push_back(connected_node);
-      continue;
+    if (existing_cluster != clusters.end()) {
+      result.emplace(existing_cluster);
     }
-    result.existing_clusters.emplace(existing_cluster);
   }
   return result;
 }
 
 ClustersRaw compute_clusters_sets(const std::set<Node *> &nodes) {
   ClustersRaw result;
-  if (nodes.empty()) {
-    return result;
-  }
-  auto open = nodes;
-  while (!open.empty()) {
-    auto *to_visit = *open.begin();
+  for (auto *to_visit : nodes) {
     auto connections = find_connections(result, *to_visit);
-    open.erase(open.begin());
-    for (auto *node : connections.not_part_of_current_clusters) {
-      open.erase(node);
-    }
     std::set<Node *> *recipient = nullptr;
-    if (connections.existing_clusters.empty()) {
+    if (connections.empty()) {
       recipient = &result.emplace_back();
     } else {
       std::set<Node *> new_cluster;
-      for (const auto &existing_cluster_it : connections.existing_clusters) {
+      for (const auto &existing_cluster_it : connections) {
         new_cluster.insert(existing_cluster_it->begin(),
                            existing_cluster_it->end());
         result.erase(existing_cluster_it);
@@ -92,8 +77,6 @@ ClustersRaw compute_clusters_sets(const std::set<Node *> &nodes) {
       recipient = &result.emplace_back(std::move(new_cluster));
     }
     recipient->emplace(to_visit);
-    recipient->insert(connections.not_part_of_current_clusters.begin(),
-                      connections.not_part_of_current_clusters.end());
   }
   return result;
 }
