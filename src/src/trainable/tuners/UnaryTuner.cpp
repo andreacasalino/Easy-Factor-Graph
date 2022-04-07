@@ -19,7 +19,7 @@ float UnaryTuner::getGradientBeta() {
   std::vector<const distribution::Distribution *> unaries = {
       node.merged_unaries.get()};
   for (const auto &[connected_node, connection] : node.active_connections) {
-    unaries.push_back(connection.message.get());
+    unaries.push_back(connection->message.get());
   }
   distribution::UnaryFactor merged(unaries);
   return dotProduct(merged.getProbabilities());

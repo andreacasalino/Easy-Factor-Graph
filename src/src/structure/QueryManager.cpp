@@ -16,7 +16,7 @@ namespace {
 distribution::UnaryFactor gather_incoming_messages(Node &subject) {
   std::vector<const distribution::Distribution *> messages;
   for (const auto &[connected_node, message] : subject.active_connections) {
-    messages.push_back(message.message.get());
+    messages.push_back(message->message.get());
   }
   if (messages.empty()) {
     return distribution::UnaryFactor{subject.variable};
@@ -102,7 +102,7 @@ std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
   result.reserve(vars.size());
   auto &nodes = getState_().nodes;
   for (const auto &var : vars) {
-    auto values = gather_incoming_messages(nodes[var]).getProbabilities();
+    auto values = gather_incoming_messages(*nodes[var]).getProbabilities();
     result.push_back(find_max(values));
   }
   return result;
@@ -153,9 +153,9 @@ QueryManager::getJointMarginalDistribution(
             auto subgroup_locations_it =
                 subgroup_locations.find(connected_node);
             if (subgroup_locations_it == subgroup_locations.end()) {
-              contributions.emplace(connection.message.get());
+              contributions.emplace(connection->message.get());
             } else {
-              contributions.emplace(connection.factor.get());
+              contributions.emplace(connection->factor.get());
             }
           }
         },

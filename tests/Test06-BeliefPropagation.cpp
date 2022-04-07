@@ -63,7 +63,7 @@ public:
       for (const auto *node : cluster.nodes) {
         for (const auto &[connected_node, connection] :
              node->active_connections) {
-          if (connection.message == nullptr) {
+          if (connection->message == nullptr) {
             return false;
           }
         }

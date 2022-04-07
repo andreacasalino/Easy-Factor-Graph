@@ -30,8 +30,7 @@ void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
         auto *node = location.node;
         for (const auto &[connected_node, connection] :
              node->active_connections) {
-          node->disabled_connections[connected_node].factor = connection.factor;
-          connected_node->disabled_connections[node].factor = connection.factor;
+          disable_connection(*node, *connected_node, connection->factor);
           connected_node->active_connections.erase(node);
         }
         node->active_connections.clear();
@@ -57,8 +56,8 @@ void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
   auto *node = evidence_location.node;
   for (auto &[connected_node, connection] : node->disabled_connections) {
     auto connection_it = connected_node->disabled_connections.find(node);
-    connection_it->second.message =
-        make_evidence(*connection_it->second.factor, node->variable,
+    connection_it->second->message =
+        make_evidence(*connection_it->second->factor, node->variable,
                       evidence_location.evidence->second);
     connected_node->merged_unaries.reset();
   }
@@ -73,10 +72,9 @@ void EvidenceRemover::removeEvidence_(const categoric::VariablePtr &variable) {
   }
   resetBelief();
   state.evidences.erase(evidence_it);
-  auto &node = state.nodes[variable];
+  auto &node = *state.nodes[variable].get();
   for (const auto &[connected_node, connection] : node.disabled_connections) {
-    node.active_connections[connected_node].factor = connection.factor;
-    connected_node->active_connections[&node].factor = connection.factor;
+    activate_connection(node, *connected_node, connection->factor);
     connected_node->disabled_connections.erase(&node);
     connected_node->merged_unaries.reset();
   }
@@ -114,7 +112,7 @@ void EvidenceRemover::resetState() {
   std::set<Node *> nodes;
   for (auto &[var, node] : state.nodes) {
     if (state.evidences.find(var) == state.evidences.end()) {
-      nodes.emplace(&node);
+      nodes.emplace(node.get());
     }
   }
   state.clusters = compute_clusters(nodes);

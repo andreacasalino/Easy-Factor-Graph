@@ -18,7 +18,7 @@ void resetMessages(const HiddenClusters &clusters) {
   for (const auto &cluster : clusters) {
     for (auto *node : cluster.nodes) {
       for (auto &[connected_node, connection] : node->active_connections) {
-        connection.message.reset();
+        connection->message.reset();
       }
     }
   }

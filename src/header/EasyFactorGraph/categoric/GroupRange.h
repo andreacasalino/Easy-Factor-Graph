@@ -41,8 +41,8 @@ public:
 
   GroupRange(const GroupRange &o);
 
-  const pointer operator->() const { return data->combination.get(); }
-  const reference operator*() const { return *data->combination; }
+  pointer operator->() const { return data->combination.get(); }
+  reference operator*() const { return *data->combination.get(); }
 
   /**
    * @brief Make the object to point to the next element in the joint domain.

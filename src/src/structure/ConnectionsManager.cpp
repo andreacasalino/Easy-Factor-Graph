@@ -22,6 +22,7 @@ void ConnectionsManager::addDistribution(
     throw Error{"Already inserted factor"};
   }
   resetBelief();
+
   switch (distribution->getVariables().getVariables().size()) {
   case 1:
     addUnaryDistribution(distribution);
@@ -33,6 +34,7 @@ void ConnectionsManager::addDistribution(
     throw Error{"Factor with invalid number of variables"};
     break;
   }
+
   factorsAll.emplace(distribution);
 }
 
@@ -63,7 +65,8 @@ ConnectionsManager::findOrMakeNode(const categoric::VariablePtr &var) {
   // create this node
   auto &state = getState_();
   state.variables.push_back(var);
-  auto *added = &state.nodes.emplace(var, Node{}).first->second;
+  auto *added =
+      state.nodes.emplace(var, std::make_unique<Node>()).first->second.get();
   added->variable = var;
   HiddenNodeLocation result;
   state.clusters.emplace_back().nodes.emplace(added);
@@ -94,14 +97,6 @@ void check_are_already_connected(Node &a, Node &b) {
                 " are already connected"};
   }
 }
-
-void connect(Node &a, Node &b,
-             const distribution::DistributionCnstPtr &factor) {
-  a.active_connections[&b].factor = factor;
-  b.active_connections[&a].factor = factor;
-  a.disabled_connections.erase(&b);
-  b.disabled_connections.erase(&a);
-}
 } // namespace
 
 void ConnectionsManager::addBinaryDistribution(
@@ -115,13 +110,9 @@ void ConnectionsManager::addBinaryDistribution(
     auto *node_hidden = hidden.node;
     auto *node_evidence = evidence.node;
     check_are_already_connected(*node_hidden, *node_evidence);
-    node_evidence->disabled_connections.emplace(
-        node_hidden, Connection{binary_factor, nullptr});
-    node_hidden->disabled_connections.emplace(
-        node_evidence,
-        Connection{binary_factor,
-                   make_evidence(*binary_factor, node_evidence->variable,
-                                 evidence.evidence->second)});
+    disable_connection(*node_hidden, *node_hidden, binary_factor);
+    node_hidden->disabled_connections[node_evidence]->message = make_evidence(
+        *binary_factor, node_evidence->variable, evidence.evidence->second);
     node_hidden->merged_unaries.reset();
   };
 
@@ -135,7 +126,7 @@ void ConnectionsManager::addBinaryDistribution(
               auto *nodeB = hiddenB_location.node;
               // both are hidden
               check_are_already_connected(*nodeA, *nodeB);
-              connect(*nodeA, *nodeB, binary_factor);
+              activate_connection(*nodeA, *nodeB, binary_factor);
               hiddenA_location.cluster->connectivity.reset();
               if (hiddenA_location.cluster != hiddenB_location.cluster) {
                 hiddenA_location.cluster->nodes.insert(
@@ -159,10 +150,7 @@ void ConnectionsManager::addBinaryDistribution(
               auto *nodeB = evidenceB_location.node;
               // both are evidences
               check_are_already_connected(*nodeA, *nodeB);
-              nodeA->disabled_connections.emplace(
-                  nodeB, Connection{binary_factor, nullptr});
-              nodeB->disabled_connections.emplace(
-                  nodeA, Connection{binary_factor, nullptr});
+              disable_connection(*nodeA, *nodeB, binary_factor);
             });
       });
 }

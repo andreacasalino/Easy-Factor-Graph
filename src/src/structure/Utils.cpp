@@ -109,13 +109,33 @@ HiddenClusters compute_clusters(const std::set<Node *> &nodes) {
   return result;
 }
 
+void activate_connection(Node &a, Node &b,
+                         const distribution::DistributionCnstPtr &factor) {
+  a.active_connections.erase(&b);
+  b.active_connections.erase(&a);
+  a.active_connections.emplace(&b, std::make_unique<Connection>())
+      .first->second->factor = factor;
+  b.active_connections.emplace(&a, std::make_unique<Connection>())
+      .first->second->factor = factor;
+}
+
+void disable_connection(Node &a, Node &b,
+                        const distribution::DistributionCnstPtr &factor) {
+  a.disabled_connections.erase(&b);
+  b.disabled_connections.erase(&a);
+  a.disabled_connections.emplace(&b, std::make_unique<Connection>())
+      .first->second->factor = factor;
+  b.disabled_connections.emplace(&a, std::make_unique<Connection>())
+      .first->second->factor = factor;
+}
+
 std::vector<const distribution::Distribution *> gather_unaries(Node &subject) {
   std::vector<const distribution::Distribution *> unary_factors;
   for (const auto &factor : subject.unary_factors) {
     unary_factors.push_back(factor.get());
   }
   for (auto &[node, connection] : subject.disabled_connections) {
-    unary_factors.push_back(connection.message.get());
+    unary_factors.push_back(connection->message.get());
   }
   return unary_factors;
 }
@@ -140,16 +160,16 @@ void update_connectivity(HiddenCluster &subject) {
     }
     std::set<Connection *> all_dependencies;
     for (auto &[receiver, incoming_connection] : sender->active_connections) {
-      all_dependencies.emplace(&incoming_connection);
+      all_dependencies.emplace(incoming_connection.get());
     }
     for (auto &[receiver, incoming_connection] : sender->active_connections) {
       auto deps = all_dependencies;
-      deps.erase(&incoming_connection);
+      deps.erase(incoming_connection.get());
       auto &added = connectivity.emplace_back();
       added.sender = sender;
       added.dependencies =
           std::vector<const Connection *>{deps.begin(), deps.end()};
-      added.connection = &receiver->active_connections[sender];
+      added.connection = receiver->active_connections[sender].get();
     }
   }
 }

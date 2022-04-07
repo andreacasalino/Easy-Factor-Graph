@@ -47,7 +47,7 @@ StateAware::locate(const categoric::VariablePtr &variable) const {
   {
     auto nodes_it = state.nodes.find(variable);
     if (nodes_it != state.nodes.end()) {
-      node = &nodes_it->second;
+      node = nodes_it->second.get();
     }
   }
   if (nullptr == node) {

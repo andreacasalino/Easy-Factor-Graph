@@ -135,27 +135,27 @@ TEST_CASE("evidence individual reset", "[evidence]") {
   CHECK(model.getEvidences().empty());
 }
 
-TEST_CASE("evidence group reset", "[evidence]") {
-  EvidenceTest model;
+// TEST_CASE("evidence group reset", "[evidence]") {
+//   EvidenceTest model;
 
-  model.setEvidence(model.mVars[1], 0);
-  model.setEvidence(model.mVars[2], 0);
+//   model.setEvidence(model.mVars[1], 0);
+//   model.setEvidence(model.mVars[2], 0);
 
-  model.removeEvidences(VariablesSet{model.mVars[1], model.mVars[2]});
-  model.clusterExists(VariablesSet{model.getAllVariables().begin(),
-                                   model.getAllVariables().end()});
-  CHECK(model.getEvidences().empty());
-}
+//   model.removeEvidences(VariablesSet{model.mVars[1], model.mVars[2]});
+//   model.clusterExists(VariablesSet{model.getAllVariables().begin(),
+//                                    model.getAllVariables().end()});
+//   CHECK(model.getEvidences().empty());
+// }
 
-TEST_CASE("evidence total reset", "[evidence]") {
-  EvidenceTest model;
+// TEST_CASE("evidence total reset", "[evidence]") {
+//   EvidenceTest model;
 
-  model.setEvidence(model.mVars[1], 0);
-  model.setEvidence(model.mVars[2], 0);
+//   model.setEvidence(model.mVars[1], 0);
+//   model.setEvidence(model.mVars[2], 0);
 
-  model.removeAllEvidences();
-  model.clusterExists(VariablesSet{model.getAllVariables().begin(),
-                                   model.getAllVariables().end()});
-  CHECK(model.getEvidences().empty());
-  CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error);
-}
+//   model.removeAllEvidences();
+//   model.clusterExists(VariablesSet{model.getAllVariables().begin(),
+//                                    model.getAllVariables().end()});
+//   CHECK(model.getEvidences().empty());
+//   CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error);
+// }

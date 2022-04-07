@@ -80,11 +80,12 @@ std::vector<SamplerNode> make_nodes(const HiddenClusters &clusters,
     for (const auto &[connected_node, connection] :
          sampler_node.node->active_connections) {
       auto &added = sampler_node.connections.emplace_back();
-      added.factor = connection.factor;
-      auto result_it = std::find_if(result.begin(), result.end(),
-                                    [&connected_node](const SamplerNode &node) {
-                                      return node.node == connected_node;
-                                    });
+      added.factor = connection->factor;
+      auto result_it = std::find_if(
+          result.begin(), result.end(),
+          [&connected_node = connected_node](const SamplerNode &node) {
+            return node.node == connected_node;
+          });
       added.sender = &(*result_it);
     }
   }

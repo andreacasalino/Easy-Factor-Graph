@@ -25,9 +25,9 @@ struct Node {
   categoric::VariablePtr variable;
 
   // incoming messages
-  std::map<Node *, Connection> active_connections;
+  std::map<Node *, std::unique_ptr<Connection>> active_connections;
 
-  std::map<Node *, Connection> disabled_connections;
+  std::map<Node *, std::unique_ptr<Connection>> disabled_connections;
   std::vector<distribution::DistributionCnstPtr> unary_factors;
 
   Cache<const distribution::UnaryFactor>
@@ -42,7 +42,7 @@ struct Connection {
   std::unique_ptr<const distribution::UnaryFactor> message;
 };
 
-using Nodes = SmartMap<categoric::Variable, Node>;
+using Nodes = SmartMap<categoric::Variable, std::unique_ptr<Node>>;
 
 struct ConnectionAndDependencies {
   Connection *connection;
@@ -97,6 +97,11 @@ public:
   const Evidences &getEvidences() const { return getState().evidences; };
 
   categoric::VariablePtr findVariable(const std::string &name) const;
+
+  StateAware(const StateAware &) = delete;
+  StateAware &operator=(const StateAware &) = delete;
+  StateAware(StateAware &&) = delete;
+  StateAware &operator=(StateAware &&) = delete;
 
 protected:
   StateAware() = default;

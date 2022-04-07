@@ -136,8 +136,7 @@ private:
 
 class SparseTrivialFinder {
 public:
-  SparseTrivialFinder(const Distribution &subject)
-      : distribution(distribution) {}
+  SparseTrivialFinder(const Distribution &subject) : distribution(subject) {}
 
   float get(const categoric::Combination &comb) const {
     return distribution.evaluate(comb);

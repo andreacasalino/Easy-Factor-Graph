@@ -22,6 +22,11 @@ void visit_location(
 
 HiddenClusters compute_clusters(const std::set<Node *> &nodes);
 
+void activate_connection(Node &a, Node &b,
+                         const distribution::DistributionCnstPtr &factor);
+void disable_connection(Node &a, Node &b,
+                        const distribution::DistributionCnstPtr &factor);
+
 std::vector<const distribution::Distribution *> gather_unaries(Node &subject);
 
 void update_merged_unaries(Node &subject);

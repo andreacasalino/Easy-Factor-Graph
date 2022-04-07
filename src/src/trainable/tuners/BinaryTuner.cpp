@@ -30,7 +30,7 @@ float BinaryTuner::getGradientBeta() {
     std::vector<const distribution::Distribution *> unaries = {
         nodeA.merged_unaries.get()};
     for (const auto &[connected_node, connection] : nodeA.active_connections) {
-      unaries.push_back(connection.message.get());
+      unaries.push_back(connection->message.get());
     }
     merged_a = distribution::UnaryFactor{unaries}.getProbabilities();
   }
@@ -40,7 +40,7 @@ float BinaryTuner::getGradientBeta() {
     std::vector<const distribution::Distribution *> unaries = {
         nodeB.merged_unaries.get()};
     for (const auto &[connected_node, connection] : nodeB.active_connections) {
-      unaries.push_back(connection.message.get());
+      unaries.push_back(connection->message.get());
     }
     merged_b = distribution::UnaryFactor{unaries}.getProbabilities();
   }
