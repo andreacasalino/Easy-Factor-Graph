@@ -134,20 +134,22 @@ void fill_message(
   get_positions(binary_factor, merged_unaries.getVariable(), message_var_pos,
                 sender_var_pos);
   std::vector<float> values;
-  auto to_eliminate =
-      binary_factor.getVariables().getVariables()[sender_var_pos];
-  for (const auto &[comb, val] : merged_unaries.getCombinationsMap()) {
+  const auto recipient_var =
+      binary_factor.getVariables().getVariables()[message_var_pos];
+  for (std::size_t recipient_comb = 0; recipient_comb < recipient_var->size();
+       ++recipient_comb) {
     values.clear();
-    for (std::size_t sender_comb = 0; sender_comb < to_eliminate->size();
-         ++sender_comb) {
+    for (const auto &[sender_comb, sender_val] :
+         merged_unaries.getCombinationsMap()) {
       std::vector<std::size_t> binary_factor_comb;
       binary_factor_comb.resize(2);
-      binary_factor_comb[sender_var_pos] = sender_comb;
-      binary_factor_comb[message_var_pos] = comb.data().front();
-      values.push_back(val * binary_factor.evaluate(categoric::Combination{
-                                 std::move(binary_factor_comb)}));
+      binary_factor_comb[sender_var_pos] = sender_comb.data().front();
+      binary_factor_comb[message_var_pos] = recipient_comb;
+      values.push_back(sender_val *
+                       binary_factor.evaluate(std::move(binary_factor_comb)));
     }
-    recipient.emplace(comb, reduction(values));
+    recipient.emplace(std::vector<std::size_t>{recipient_comb},
+                      reduction(values));
   }
 }
 } // namespace
@@ -183,11 +185,12 @@ MessageMAP::MessageMAP(const UnaryFactor &merged_unaries,
 }
 
 Indicator::Indicator(const categoric::VariablePtr &var, const std::size_t value)
-    : UnaryFactor(var) {
+    : UnaryFactor(var, DONT_FILL_DOMAIN_TAG) {
   if (value >= var->size()) {
     throw Error{"Invalid indicator factor"};
   }
-  getCombinationsMap_().emplace(std::vector<std::size_t>{value}, 1);
+  setAllImagesRaw(0);
+  getCombinationsMap_()[std::vector<std::size_t>{value}] = 1;
 }
 } // namespace EFG::distribution
 
