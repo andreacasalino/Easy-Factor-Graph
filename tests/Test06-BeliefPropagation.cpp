@@ -91,8 +91,11 @@ bool are_equal(const std::vector<ClusterInfo> &a,
   if (a.size() != b.size()) {
     return false;
   }
-  for (std::size_t k = 0; k < a.size(); ++k) {
-    if (!are_equal(a[k], b[k])) {
+  for (const auto &a_element : a) {
+    if (std::find_if(b.begin(), b.end(),
+                     [&a_element](const ClusterInfo &b_element) {
+                       return are_equal(a_element, b_element);
+                     }) == b.end()) {
       return false;
     }
   }
@@ -133,9 +136,12 @@ TEST_CASE("simple poly tree", "[propagation]") {
       "C", {(b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e))}));
   CHECK(model.checkMarginals("D", {1.f, e}));
 
+  model.removeAllEvidences();
+  REQUIRE_FALSE(model.hasPropagationResult());
+
   // D=1
   model.setEvidence(model.findVariable("D"), 1);
-  REQUIRE(model.hasPropagationResult());
+  CHECK(model.checkMarginals("A", {a + g, 1.f + a * g}));
   {
     const auto &propagation_result = model.getLastPropagationResult();
     strct::PropagationResult propagation_expected;
@@ -146,7 +152,6 @@ TEST_CASE("simple poly tree", "[propagation]") {
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
   REQUIRE(model.araAllMessagesComputed());
-  CHECK(model.checkMarginals("A", {a + g, 1.f + a * g}));
   CHECK(model.checkMarginals("B", {1.f, g}));
   CHECK(model.checkMarginals("C", {b + g, 1.f + b * g}));
   CHECK(model.checkMarginals("E", {1.f, e}));

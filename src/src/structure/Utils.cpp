@@ -148,7 +148,8 @@ void update_connectivity(HiddenCluster &subject) {
     for (auto &[receiver, incoming_connection] : sender->active_connections) {
       auto &added = connectivity.emplace_back();
       added.sender = sender;
-      added.connection = receiver->active_connections[sender].get();
+      added.connection =
+          receiver->active_connections.find(sender)->second.get();
       auto deps = all_dependencies;
       deps.erase(incoming_connection.get());
       added.dependencies =

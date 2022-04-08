@@ -41,10 +41,10 @@ bool message_passing(HiddenCluster &cluster, const PropagationKind &kind,
     auto open_it = open.begin();
     while (open_it != open.end()) {
       if (can_update_message(**open_it)) {
-        open_it = open.erase(open_it);
-        to_process.emplace_back([&task = **open_it, &kind](const std::size_t) {
-          update_message(task, kind);
+        to_process.emplace_back([task = *open_it, &kind](const std::size_t) {
+          update_message(*task, kind);
         });
+        open_it = open.erase(open_it);
       } else {
         ++open_it;
       }

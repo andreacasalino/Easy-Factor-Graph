@@ -44,7 +44,9 @@ void process(const Tasks &subject, const std::size_t threads_numb,
 Pool::Worker::Worker(const std::size_t threads_numb,
                      const std::size_t thread_id)
     : threads_numb(threads_numb), thread_id(thread_id) {
-  worker_ = std::thread{[this]() {
+  std::atomic_bool not_started = true;
+  worker_ = std::thread{[this, &not_started]() {
+    not_started = false;
     while (this->life) {
       std::scoped_lock lock(this->tasks_mtx);
       if (nullptr != this->tasks) {
@@ -55,6 +57,8 @@ Pool::Worker::Worker(const std::size_t threads_numb,
       }
     }
   }};
+  while (not_started) {
+  }
 }
 
 Pool::Worker::~Worker() {
