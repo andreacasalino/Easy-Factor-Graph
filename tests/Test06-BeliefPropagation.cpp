@@ -319,7 +319,7 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
                               expf(beta), expf(beta), 1.f, expf(alfa),
                               expf(alfa) * expf(beta)}),
       graph.getJointMarginalDistribution({"A", "B", "C"})->getProbabilities(),
-      0.01f));
+      0.15f));
 
   // joint distribution of A B
   CHECK(almost_equal_distributions(
