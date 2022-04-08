@@ -146,13 +146,13 @@ void update_connectivity(HiddenCluster &subject) {
       all_dependencies.emplace(incoming_connection.get());
     }
     for (auto &[receiver, incoming_connection] : sender->active_connections) {
-      auto deps = all_dependencies;
-      deps.erase(incoming_connection.get());
       auto &added = connectivity.emplace_back();
       added.sender = sender;
+      added.connection = receiver->active_connections[sender].get();
+      auto deps = all_dependencies;
+      deps.erase(incoming_connection.get());
       added.dependencies =
           std::vector<const Connection *>{deps.begin(), deps.end()};
-      added.connection = receiver->active_connections[sender].get();
     }
   }
 }
@@ -171,12 +171,9 @@ float diff(const distribution::UnaryFactor &a,
   auto &map_b = b.getCombinationsMap();
   auto map_a_it = map_a.begin();
   float result = 0;
-  int diff;
   for (auto map_b_it = map_b.begin(); map_b_it != map_b.end();
        ++map_b_it, ++map_a_it) {
-    diff = static_cast<int>(map_a_it->second);
-    diff -= static_cast<int>(map_b_it->second);
-    result += abs(diff);
+    result += abs(map_a_it->second - map_b_it->second);
   }
   return result;
 }
