@@ -21,13 +21,16 @@ void BeliefAware::setPropagationStrategy(BeliePropagationStrategyPtr strategy) {
   propagator = std::move(strategy);
 }
 
+bool BeliefAware::wouldNeedPropagation(const PropagationKind &kind) const {
+  return (lastPropagation == nullptr) ||
+         (lastPropagation->propagation_kind_done != kind);
+}
+
 void BeliefAware::propagateBelief(const PropagationKind &kind) {
-  if ((lastPropagation != nullptr) &&
-      (lastPropagation->propagation_kind_done == kind)) {
-    return;
-  };
-  this->lastPropagation =
-      std::make_unique<PropagationResult>(this->propagator->propagateBelief(
-          getState_().clusters, kind, context, getPool()));
+  if (wouldNeedPropagation(kind)) {
+    this->lastPropagation =
+        std::make_unique<PropagationResult>(this->propagator->propagateBelief(
+            getState_().clusters, kind, context, getPool()));
+  }
 }
 } // namespace EFG::strct

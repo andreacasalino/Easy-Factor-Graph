@@ -56,7 +56,7 @@ void throw_inexistent_var(const std::string &var) {
 std::vector<float>
 QueryManager::getMarginalDistribution(const std::string &var,
                                       const std::size_t threads) {
-  {
+  if (wouldNeedPropagation(SUM)) {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(SUM);
   }
@@ -81,7 +81,7 @@ std::size_t find_max(const std::vector<float> &values) {
 
 std::size_t QueryManager::getMAP(const std::string &var,
                                  const std::size_t threads) {
-  {
+  if (wouldNeedPropagation(MAP)) {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(MAP);
   }
@@ -94,7 +94,7 @@ std::size_t QueryManager::getMAP(const std::string &var,
 }
 
 std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
-  {
+  if (wouldNeedPropagation(MAP)) {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(MAP);
   }
@@ -122,7 +122,7 @@ std::unique_ptr<distribution::Distribution>
 QueryManager::getJointMarginalDistribution(
     const std::unordered_set<std::string> &subgroup,
     const std::size_t threads) {
-  {
+  if (wouldNeedPropagation(SUM)) {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(SUM);
   }

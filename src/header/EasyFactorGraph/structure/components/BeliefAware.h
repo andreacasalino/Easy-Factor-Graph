@@ -62,6 +62,7 @@ protected:
 
   void resetBelief() { lastPropagation.reset(); }
   void propagateBelief(const PropagationKind &kind);
+  bool wouldNeedPropagation(const PropagationKind &kind) const;
 
 private:
   PropagationContext context = PropagationContext{1000};
