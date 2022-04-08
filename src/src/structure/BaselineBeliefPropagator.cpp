@@ -35,7 +35,7 @@ pack_all_tasks(std::vector<ConnectionAndDependencies> &tasks) {
 
 bool message_passing(HiddenCluster &cluster, const PropagationKind &kind,
                      Pool &pool) {
-  auto open = pack_all_tasks(*cluster.connectivity);
+  auto open = pack_all_tasks(*cluster.connectivity.get());
   while (!open.empty()) {
     Tasks to_process;
     auto open_it = open.begin();
@@ -81,7 +81,7 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
   };
 
   std::vector<Tasks> result;
-  auto open = pack_all_tasks(*cluster.connectivity);
+  auto open = pack_all_tasks(*cluster.connectivity.get());
   if (variations.size() > 1) {
     // multithreaded computation
     while (!open.empty()) {
@@ -128,7 +128,7 @@ struct LoopyPropagationContext {
 };
 bool loopy_propagation(HiddenCluster &cluster,
                        const LoopyPropagationContext &ctx, Pool &pool) {
-  auto open = pack_all_tasks(*cluster.connectivity);
+  auto open = pack_all_tasks(*cluster.connectivity.get());
   // set message to ones
   for (const auto *task : open) {
     task->connection->message = make_unary(task->sender->variable);
@@ -159,7 +159,7 @@ PropagationResult BaselineBeliefPropagator::propagateBelief(
   result.was_completed = true;
   result.propagation_kind_done = kind;
   for (auto &cluster : subject) {
-    if (nullptr == cluster.connectivity) {
+    if (cluster.connectivity.empty()) {
       update_connectivity(cluster);
     }
     if (message_passing(cluster, kind, pool)) {

@@ -127,17 +127,17 @@ void update_merged_unaries(Node &subject) {
   std::vector<const distribution::Distribution *> unary_factors =
       gather_unaries(subject);
   if (unary_factors.empty()) {
-    subject.merged_unaries = make_unary(subject.variable);
+    subject.merged_unaries.reset(make_unary(subject.variable));
     return;
   }
-  subject.merged_unaries = make_unary(unary_factors);
+  subject.merged_unaries.reset(make_unary(unary_factors));
 }
 
 void update_connectivity(HiddenCluster &subject) {
-  subject.connectivity =
-      std::make_unique<std::vector<ConnectionAndDependencies>>();
-  auto &connectivity = *subject.connectivity;
+  auto &connectivity = subject.connectivity.reset(
+      std::make_unique<std::vector<ConnectionAndDependencies>>());
   for (auto *sender : subject.nodes) {
+    update_merged_unaries(*sender);
     if (sender->active_connections.empty()) {
       continue;
     }
@@ -183,7 +183,7 @@ float diff(const distribution::UnaryFactor &a,
 std::optional<MessageVariation>
 update_message(ConnectionAndDependencies &subject,
                const PropagationKind &kind) {
-  if (nullptr == subject.sender->merged_unaries) {
+  if (subject.sender->merged_unaries.empty()) {
     update_merged_unaries(*subject.sender);
   }
   std::vector<const distribution::Distribution *> unary_factors = {

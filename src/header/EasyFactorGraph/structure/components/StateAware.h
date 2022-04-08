@@ -7,7 +7,9 @@
 
 #pragma once
 
+#include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/distribution/Distribution.h>
+#include <EasyFactorGraph/misc/Cache.h>
 #include <EasyFactorGraph/misc/SmartMap.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
@@ -18,7 +20,6 @@
 #include <variant>
 
 namespace EFG::strct {
-template <typename T> using Cache = std::unique_ptr<T>;
 
 struct Connection;
 struct Node {

@@ -14,7 +14,8 @@
 namespace EFG::strct {
 namespace {
 distribution::UnaryFactor gather_incoming_messages(Node &subject) {
-  std::vector<const distribution::Distribution *> messages;
+  std::vector<const distribution::Distribution *> messages = {
+      subject.merged_unaries.get()};
   for (const auto &[connected_node, message] : subject.active_connections) {
     messages.push_back(message->message.get());
   }
