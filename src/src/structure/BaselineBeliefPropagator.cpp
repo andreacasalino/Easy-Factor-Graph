@@ -130,8 +130,10 @@ bool loopy_propagation(HiddenCluster &cluster,
                        const LoopyPropagationContext &ctx, Pool &pool) {
   auto open = pack_all_tasks(*cluster.connectivity.get());
   // set message to ones
-  for (const auto *task : open) {
-    task->connection->message = make_unary(task->sender->variable);
+  for (auto *node : cluster.nodes) {
+    for (auto &[sender, connection] : node->active_connections) {
+      connection->message = make_unary(node->variable);
+    }
   }
   std::vector<MessageVariation> variations;
   variations.resize(pool.size());

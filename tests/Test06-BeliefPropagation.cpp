@@ -270,7 +270,24 @@ TEST_CASE("MAPTest", "[propagation]") {
 
   SECTION("strong weight for evidences") {
     auto model = make_chain_model(1.0f, 0.1f);
-    std::vector<std::size_t> mapExpected = {0, 1, 0, 1};
+
+    auto get_expected_MAP_val = [](const std::string &var_name) {
+      if (var_name == "Y0") {
+        return 0;
+      }
+      if (var_name == "Y1") {
+        return 1;
+      }
+      if (var_name == "Y2") {
+        return 0;
+      }
+      return 1;
+    };
+    std::vector<std::size_t> mapExpected;
+    mapExpected.reserve(4);
+    for (const auto &var : model.getHiddenVariables()) {
+      mapExpected.push_back(get_expected_MAP_val(var->name()));
+    }
     CHECK(mapExpected == model.getHiddenSetMAP());
   }
 }
