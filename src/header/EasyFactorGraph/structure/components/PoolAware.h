@@ -9,6 +9,7 @@
 
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 namespace EFG::strct {
@@ -27,6 +28,8 @@ public:
 private:
   class Worker;
   using WorkerPtr = std::unique_ptr<Worker>;
+
+  std::mutex parallel_for_dispatch_mtx;
 
   std::vector<WorkerPtr> workers;
 };
@@ -56,6 +59,7 @@ protected:
   };
 
 private:
+  std::mutex pool_mtx;
   std::unique_ptr<Pool> pool;
 };
 } // namespace EFG::strct

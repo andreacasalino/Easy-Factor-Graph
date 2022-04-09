@@ -82,6 +82,7 @@ Pool::Pool(const std::size_t size) {
 }
 
 void Pool::parallelFor(const std::vector<Task> &tasks) {
+  std::scoped_lock(parallel_for_dispatch_mtx);
   for (auto &worker : workers) {
     worker->dispatch(tasks);
   }
@@ -99,6 +100,7 @@ PoolAware::~PoolAware() = default;
 void PoolAware::resetPool() { pool = std::make_unique<Pool>(1); }
 
 void PoolAware::setPoolSize(const std::size_t new_size) {
+  std::scoped_lock(pool_mtx);
   if (new_size == pool->size()) {
     return;
   }
