@@ -5,5 +5,179 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-// #ifdef EFG_JSON_IO
-// #endif
+#ifdef EFG_JSON_IO
+
+#include <EasyFactorGraph/io/FactorImporter.h>
+#include <EasyFactorGraph/io/json/Importer.h>
+
+#include <variant>
+
+namespace EFG::io::json {
+namespace {
+const nlohmann::json *try_access(const nlohmann::json &subject,
+                                 const std::string &name) {
+  if (subject.contains(name)) {
+    return &subject[name];
+  }
+  return nullptr;
+}
+
+const nlohmann::json &access(const nlohmann::json &subject,
+                             const std::string &name) {
+  const auto *attr = try_access(subject, name);
+  if (nullptr == attr) {
+    throw Error{name, " is inexistent"};
+  }
+  return *attr;
+}
+
+std::string to_string(const nlohmann::json &subject) {
+  if (subject.is_string()) {
+    return subject.dump();
+  }
+  throw Error{"Expected a string"};
+}
+
+categoric::VariablePtr findVariable(const std::string &name,
+                                    const categoric::VariablesSet &variables) {
+  auto itV = variables.find(categoric::make_variable(2, name));
+  if (itV == variables.end()) {
+    throw Error("Inexistent variable");
+  }
+  return *itV;
+};
+
+categoric::Group importGroup(const nlohmann::json &subject,
+                             const categoric::VariablesSet &variables) {
+  categoric::VariablesSoup group;
+  for (const auto &var : subject) {
+    group.push_back(findVariable(to_string(var), variables));
+  }
+  if ((group.size() != 1) && (group.size() != 2)) {
+    throw Error("only unary or binary factor are supported");
+  }
+  return categoric::Group{group};
+};
+
+std::shared_ptr<distribution::Factor>
+importFactor(const nlohmann::json &subject,
+             const categoric::VariablesSet &variables) {
+  auto group = importGroup(access(subject, "Variables"), variables);
+
+  const auto *corr = try_access(subject, "Correlation");
+  if (nullptr != corr) {
+    if (to_string(*corr) == "T") {
+      return std::make_shared<distribution::Factor>(
+          categoric::Group{group.getVariables()},
+          distribution::USE_SIMPLE_CORRELATION_TAG);
+    }
+    if (to_string(*corr) == "F") {
+      return std::make_shared<distribution::Factor>(
+          categoric::Group{group.getVariables()},
+          distribution::USE_SIMPLE_ANTI_CORRELATION_TAG);
+    }
+    throw Error("invalid option for Correlation");
+  }
+
+  std::shared_ptr<distribution::Factor> result =
+      std::make_shared<distribution::Factor>(
+          categoric::Group{group.getVariables()});
+
+  for (const auto &comb : access(subject, "Distr_val")) {
+    std::vector<std::size_t> combination;
+    for (const auto &v : comb["v"]) {
+      combination.push_back(std::atoi(to_string(v).c_str()));
+    }
+    const float val =
+        static_cast<float>(std::atof(to_string(access(comb, "D")).c_str()));
+    result->setImageRaw(categoric::Combination{std::move(combination)}, val);
+  }
+
+  return result;
+};
+
+struct FactorAndSharingGroup {
+  std::shared_ptr<distribution::FactorExponential> factor;
+  std::optional<categoric::VariablesSet> sharing_group;
+};
+using PotentialToInsert =
+    std::variant<distribution::DistributionCnstPtr, FactorAndSharingGroup>;
+PotentialToInsert importPotential(const nlohmann::json &subject,
+                                  const categoric::VariablesSet &variables) {
+  auto shape = importFactor(subject, variables);
+  const auto *w = try_access(subject, "weight");
+  if (nullptr == w) {
+    return shape;
+  }
+
+  const auto *tunab = try_access(subject, "tunability");
+  if ((nullptr != tunab) && (to_string(*tunab) == "Y")) {
+    FactorAndSharingGroup result;
+    result.factor = std::make_shared<distribution::FactorExponential>(
+        *shape, static_cast<float>(std::atof(to_string(*w).c_str())));
+    const auto *share_tag = try_access(subject, "Share");
+    if (nullptr == share_tag) {
+      result.sharing_group.emplace(
+          importGroup(*share_tag, variables).getVariablesSet());
+    }
+    return result;
+  }
+  distribution::DistributionCnstPtr result =
+      std::make_shared<distribution::FactorExponential>(
+          *shape, static_cast<float>(std::atof(to_string(*w).c_str())));
+  return result;
+};
+} // namespace
+
+std::unordered_set<std::string> convert(const AdderPtrs &recipient,
+                                        const nlohmann::json &source) {
+  // import variables
+  categoric::VariablesSet variables;
+  std::unordered_set<std::string> evidences;
+  for (const auto &var : source["Variables"]) {
+    const auto name = to_string(access(var, "name"));
+    const auto size = to_string(access(var, "Size"));
+    auto new_var = categoric::make_variable(std::atoi(size.c_str()), name);
+    if (variables.find(new_var) != variables.end()) {
+      throw Error{name, " is a multiple times specified variable "};
+    }
+    variables.emplace(new_var);
+    const auto *obs_flag = try_access(var, "flag");
+    if ((nullptr != obs_flag) && (to_string(*obs_flag) == "O")) {
+      evidences.emplace(name);
+    }
+  }
+  // import potentials
+  std::vector<FactorAndSharingGroup> tunable_sharing_group;
+  for (const auto &factor : source["Potentials"]) {
+    auto to_insert = importPotential(factor, variables);
+
+    auto *as_const_distr =
+        std::get_if<distribution::DistributionCnstPtr>(&to_insert);
+    if (nullptr != as_const_distr) {
+      recipient.as_factors_const_adder->addConstFactor(*as_const_distr);
+      continue;
+    }
+
+    auto &as_tunable = std::get<FactorAndSharingGroup>(to_insert);
+    if (nullptr == recipient.as_factors_tunable_adder) {
+      recipient.as_factors_const_adder->addConstFactor(as_tunable.factor);
+      continue;
+    }
+
+    if (as_tunable.sharing_group == std::nullopt) {
+      recipient.as_factors_tunable_adder->addTunableFactor(as_tunable.factor);
+      continue;
+    }
+
+    tunable_sharing_group.push_back(as_tunable);
+  }
+  for (const auto &tunable : tunable_sharing_group) {
+    recipient.as_factors_tunable_adder->addTunableFactor(tunable.factor,
+                                                         tunable.sharing_group);
+  }
+  return evidences;
+}
+} // namespace EFG::io::json
+
+#endif

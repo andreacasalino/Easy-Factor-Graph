@@ -50,17 +50,16 @@ nlohmann::json &printExpPotential(const distribution::FactorExponential &distr,
 
 void Exporter::convert(nlohmann::json &recipient, const AwarePtrs &subject) {
   // hidden set
-  auto &hidden_set = recipient["Variables"];
+  auto &variables = recipient["Variables"];
   for (const auto &hidden_var :
        subject.as_structure_aware->getHiddenVariables()) {
-    auto &new_var = hidden_set.emplace_back();
+    auto &new_var = variables.emplace_back();
     printVariable(hidden_var, new_var);
   }
   // evidence set
-  auto &evidence_set = recipient["Evidences"];
   for (const auto &[evidence_var, evidence_val] :
        subject.as_structure_aware->getEvidences()) {
-    auto &new_var = evidence_set.emplace_back();
+    auto &new_var = variables.emplace_back();
     printVariable(evidence_var, new_var);
     new_var["flag"] = "O";
   }

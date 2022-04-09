@@ -10,6 +10,7 @@
 #pragma once
 
 #include <EasyFactorGraph/io/Utils.h>
+
 #include <nlohmann/json.hpp>
 
 namespace EFG::io::json {
