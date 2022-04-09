@@ -8,9 +8,8 @@
 #include <EasyFactorGraph/model/RandomField.h>
 
 namespace EFG::model {
-std::vector<float> RandomField::getWeightsGradient(
+std::vector<float> RandomField::getWeightsGradient_(
     const train::TrainSet::Iterator &train_set_combinations) {
-  throw 0; // decide what to do to set the pool
   if (!getEvidences().empty()) {
     removeAllEvidences();
   }

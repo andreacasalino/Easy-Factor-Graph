@@ -26,9 +26,6 @@ public:
   RandomField(const RandomField &o) { absorb(o, true); };
   RandomField &operator=(const RandomField &) = delete;
 
-  std::vector<float> getWeightsGradient(
-      const train::TrainSet::Iterator &train_set_combinations) final;
-
   template <typename Model>
   void absorb(const Model &to_absorb, const bool copy) {
     {
@@ -48,5 +45,9 @@ public:
       }
     }
   }
+
+protected:
+  std::vector<float> getWeightsGradient_(
+      const train::TrainSet::Iterator &train_set_combinations) final;
 };
 } // namespace EFG::model

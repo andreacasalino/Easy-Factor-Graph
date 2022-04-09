@@ -54,7 +54,7 @@ bool almost_equal_distributions(const std::vector<float> &a,
 class TestModels : public Graph {
 public:
   TestModels(const std::string &file_name) {
-    xml::Importer::importFromXml(*this, file_name);
+    xml::Importer::importFromFile(*this, file_name);
   }
 
   // check all messages were computed after propagation

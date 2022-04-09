@@ -46,6 +46,13 @@ void FactorsTunableAware::setWeights(const std::vector<float> &weights) {
   }
 }
 
+std::vector<float> FactorsTunableAware::getWeightsGradient(
+    const TrainSet::Iterator &train_set_combinations,
+    const std::size_t threads) {
+  ScopedPoolActivator activator(*this, threads);
+  return getWeightsGradient_(train_set_combinations);
+}
+
 void FactorsTunableAdder::addTuner(
     train::TunerPtr tuner,
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {

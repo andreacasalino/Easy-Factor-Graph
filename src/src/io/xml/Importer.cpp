@@ -1,10 +1,11 @@
-#ifdef EFG_XML_IO
 /**
  * Author:    Andrea Casalino
  * Created:   01.01.2021
  *
  * report any bug to andrecasa91@gmail.com.
  **/
+
+#ifdef EFG_XML_IO
 
 #include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
@@ -144,9 +145,9 @@ PotentialToInsert importPotential(const std::string &prefix,
 };
 } // namespace
 
-std::unordered_set<std::string>
-Importer::importComponents(const File &filePath, const AdderPtrs &subject) {
-  auto maybe_parsed_root = xmlPrs::parse_xml(filePath.str());
+std::unordered_set<std::string> Importer::convert(const AdderPtrs &subject,
+                                                  const File &file_path) {
+  auto maybe_parsed_root = xmlPrs::parse_xml(file_path.str());
   auto maybe_parsed_error = std::get_if<xmlPrs::Error>(&maybe_parsed_root);
   if (nullptr != maybe_parsed_error) {
     throw *maybe_parsed_error;
@@ -155,29 +156,29 @@ Importer::importComponents(const File &filePath, const AdderPtrs &subject) {
   // import variables
   categoric::VariablesSet variables;
   std::unordered_set<std::string> evidences;
-  for_each_key(parsed_root.getNested(), xmlPrs::Name{"Variable"},
-               [&variables, &evidences](const xmlPrs::TagPtr &var) {
-                 const auto &name = access_attribute(*var, "name");
-                 const auto &size = access_attribute(*var, "Size");
-                 auto new_var =
-                     categoric::make_variable(std::atoi(size.c_str()), name);
-                 if (variables.find(new_var) != variables.end()) {
-                   throw Error{name, " is a multiple times specified variable"};
-                 }
-                 variables.emplace(new_var);
-                 const auto *obs_flag = try_access_attribute(*var, "flag");
-                 if ((nullptr != obs_flag) && (*obs_flag == "O")) {
-                   evidences.emplace(name);
-                 }
-               });
+  for_each_key(
+      parsed_root.getNested(), xmlPrs::Name{"Variable"},
+      [&variables, &evidences](const xmlPrs::TagPtr &var) {
+        const auto &name = access_attribute(*var, "name");
+        const auto &size = access_attribute(*var, "Size");
+        auto new_var = categoric::make_variable(std::atoi(size.c_str()), name);
+        if (variables.find(new_var) != variables.end()) {
+          throw Error{name, " is a multiple times specified variable "};
+        }
+        variables.emplace(new_var);
+        const auto *obs_flag = try_access_attribute(*var, "flag");
+        if ((nullptr != obs_flag) && (*obs_flag == "O")) {
+          evidences.emplace(name);
+        }
+      });
   // import potentials
   std::vector<FactorAndSharingGroup> tunable_sharing_group;
   for_each_key(
       parsed_root.getNested(), xmlPrs::Name{"Potential"},
-      [&filePath, &variables, &subject,
+      [&file_path, &variables, &subject,
        &tunable_sharing_group](const xmlPrs::TagPtr &factor) {
         auto to_insert =
-            importPotential(filePath.parent_str(), *factor, variables);
+            importPotential(file_path.parent_str(), *factor, variables);
 
         auto *as_const_distr =
             std::get_if<distribution::DistributionCnstPtr>(&to_insert);

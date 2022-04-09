@@ -1,4 +1,3 @@
-#ifdef EFG_XML_IO
 /**
  * Author:    Andrea Casalino
  * Created:   01.01.2021
@@ -6,12 +5,12 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#ifdef EFG_XML_IO
+
 #include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/io/xml/Exporter.h>
 
 #include <XML-Parser/Tag.h>
-
-#include "../Utils.h"
 
 namespace EFG::io::xml {
 namespace {
@@ -54,15 +53,9 @@ xmlPrs::Tag &printExpPotential(const distribution::FactorExponential &distr,
 }
 } // namespace
 
-void Exporter::exportComponents(const File &filePath,
-                                const std::string &model_name,
-                                const AwarePtrs &subject) {
-  xmlPrs::Root exp_root(model_name);
-  if (model_name.empty()) {
-    exp_root.setName("EFG-model");
-  } else {
-    exp_root.setName(model_name);
-  }
+void Exporter::convert(std::ostream &recipient, const AwarePtrs &subject,
+                       const ExportInfo &info) {
+  xmlPrs::Root exp_root(info.model_name);
   // hidden set
   for (const auto &hidden_var :
        subject.as_structure_aware->getHiddenVariables()) {
@@ -100,8 +93,7 @@ void Exporter::exportComponents(const File &filePath,
       }
     }
   }
-  auto stream = make_out_stream(filePath.str());
-  exp_root.print(*stream);
+  exp_root.print(recipient);
 }
 } // namespace EFG::io::xml
 #endif

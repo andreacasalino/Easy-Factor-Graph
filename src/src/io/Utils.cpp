@@ -5,8 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include "Utils.h"
-#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/io/Utils.h>
 
 namespace EFG::io {
 namespace {

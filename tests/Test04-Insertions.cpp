@@ -116,7 +116,7 @@ public:
   FactorsTunableManagerTest() = default;
 
   virtual std::vector<float>
-  getWeightsGradient(const TrainSet::Iterator &train_set_combinations) final {
+  getWeightsGradient_(const TrainSet::Iterator &train_set_combinations) final {
     return {};
   }
 

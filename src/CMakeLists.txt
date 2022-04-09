@@ -24,7 +24,7 @@ if(BUILD_EFG_XML_CONVERTER)
   )
 endif()
 
-option(BUILD_EFG_JSON_CONVERTER "Compile features supporting conversion from and to json files" OFF)
+option(BUILD_EFG_JSON_CONVERTER "Compile features supporting conversion from and to json files" ON)
 if(BUILD_EFG_JSON_CONVERTER)
   message(STATUS "fetching nlohmann json")
   include(FetchContent)
@@ -42,7 +42,7 @@ if(BUILD_EFG_JSON_CONVERTER)
   )
 endif()
 
-option(BUILD_EFG_TRAINER_TOOLS "Compile features supporting learning of tunable models" ON)
+option(BUILD_EFG_TRAINER_TOOLS "Compile features supporting learning of tunable models" OFF)
 if(BUILD_EFG_TRAINER_TOOLS)
   FetchContent_Declare(
     trainers

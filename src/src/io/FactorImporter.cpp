@@ -7,10 +7,9 @@
 
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/io/FactorImporter.h>
+#include <EasyFactorGraph/io/Utils.h>
 
 #include <XML-Parser/Parser.h>
-
-#include "Utils.h"
 
 namespace EFG::io {
 
