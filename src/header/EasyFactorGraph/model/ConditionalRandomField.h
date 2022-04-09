@@ -1,78 +1,68 @@
-// /**
-//  * Author:    Andrea Casalino
-//  * Created:   01.01.2021
-//  *
-//  * report any bug to andrecasa91@gmail.com.
-//  **/
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
 
-// #pragma once
+#pragma once
 
-// #include <EasyFactorGraph/structure/EvidenceManager.h>
-// #include <EasyFactorGraph/structure/FactorsAdder.h>
-// #include <EasyFactorGraph/structure/GibbsSampler.h>
-// #include <EasyFactorGraph/structure/QueryManager.h>
-// #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
+#include <EasyFactorGraph/model/RandomField.h>
 
-// namespace EFG::model {
-// class RandomField : protected strct::EvidenceSetter,
-//                     protected strct::EvidenceRemover,
-//                     virtual public FactorsAware,
-//                     public strct::FactorsAdder,
-//                     virtual public FactorsTunableAware,
-//                     public strct::FactorsTunableAdder,
-//                     public strct::GibbsSampler,
-//                     public strct::QueryManager {
-// public:
-//   ConditionalRandomField() = delete;
+#ifdef EFG_JSON_IO
+#include <nlohmann/json.hpp>
+#endif
 
-//   //   /**
-//   //    * @throw in case no evidences are present in the passed model
-//   //    */
-//   //   template <typename Model> explicit ConditionalRandomField(const Model
-//   &o)
-//   //   {
-//   //     this->absorbOther(o);
-//   //   };
+namespace EFG::model {
+#ifdef EFG_XML_IO
+struct XmlFileTag {};
+static constexpr XmlFileTag XML_FILE_TAG = XmlFileTag{};
+#endif
 
-//   //   ConditionalRandomField(const ConditionalRandomField &o) {
-//   //     this->absorbOther(o);
-//   //   };
-//   ConditionalRandomField &operator=(const ConditionalRandomField &) = delete;
+#ifdef EFG_JSON_IO
+struct JsonFileTag {};
+static constexpr JsonFileTag JSON_FILE_TAG = JsonFileTag{};
+#endif
 
-//   //   /**
-//   //    * @brief import the model from an xml file
-//   //    * @param the path of the xml to read
-//   //    * @throw in case no evidences are set in the file
-//   //    */
-//   //   ConditionalRandomField(const io::FilePath &filePath);
+class ConditionalRandomField : protected strct::EvidenceSetter,
+                               protected strct::EvidenceRemover,
+                               virtual public strct::FactorsAware,
+                               protected strct::FactorsAdder,
+                               virtual public train::FactorsTunableAware,
+                               protected train::FactorsTunableAdder,
+                               public strct::GibbsSampler,
+                               public strct::QueryManager {
+public:
+  ConditionalRandomField() = delete;
 
-//   void setEvidences(const std::vector<std::size_t> &values);
+  ConditionalRandomField(const ConditionalRandomField &o);
+  ConditionalRandomField &operator=(const ConditionalRandomField &) = delete;
 
-// private:
-//   //   train::TrainHandlerPtr makeHandler(
-//   //       std::shared_ptr<distribution::factor::modif::FactorExponential>
-//   //       factor) override;
+#ifdef EFG_XML_IO
+  /**
+   * @brief import the model from an xml file
+   * @param the path of the xml to read
+   * @throw in case no evidences are set in the file
+   */
+  ConditionalRandomField(const std::string &file_path, XmlFileTag);
+#endif
 
-//   //   template <typename Model> void absorbOther(const Model &o) {
-//   //     const strct::EvidenceAware *evPtr =
-//   //         dynamic_cast<const strct::EvidenceAware *>(&o);
-//   //     if (nullptr == evPtr) {
-//   //       throw Error("the passed model is not evidence aware");
-//   //     }
-//   //     const auto &ev = evPtr->getEvidences();
-//   //     if (ev.empty()) {
-//   //       throw Error("the passed model should have at least 1 evidence");
-//   //     }
-//   //     this->absorbModel(o, true);
-//   //     std::map<std::string, std::size_t> ev2;
-//   //     for (auto it = ev.begin(); it != ev.end(); ++it) {
-//   //       ev2.emplace(it->first->name(), it->second);
-//   //     }
-//   //     this->resetEvidences(ev2);
-//   //     this->regenerateHandlers();
-//   //   };
+#ifdef EFG_JSON_IO
+  ConditionalRandomField(const std::string &file_path, JsonFileTag);
 
-//   //   // regenerate after knowing the eveidence set
-//   //   void regenerateHandlers();
-// };
-// } // namespace EFG::model
+  ConditionalRandomField(const nlohmann::json &source);
+#endif
+
+  ConditionalRandomField(const RandomField &o,
+                         const std::unordered_set<std::string> &evidences);
+
+  void setEvidences(const std::vector<std::size_t> &values);
+
+protected:
+  std::vector<float> getWeightsGradient_(
+      const train::TrainSet::Iterator &train_set_combinations) final;
+
+private:
+  const std::vector<std::size_t> evidence_vars_positions;
+};
+} // namespace EFG::model
