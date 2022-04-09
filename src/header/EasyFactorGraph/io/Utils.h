@@ -16,16 +16,16 @@
 
 namespace EFG::io {
 struct AwarePtrs {
-  strct::StateAware *as_structure_aware;
-  strct::FactorsAware *as_factors_const_aware;
-  train::FactorsTunableAware *as_factors_tunable_aware;
+  const strct::StateAware *as_structure_aware;
+  const strct::FactorsAware *as_factors_const_aware;
+  const train::FactorsTunableAware *as_factors_tunable_aware;
 };
 
 template <typename Model> AwarePtrs getAwareComponents(Model &model) {
   auto components =
-      AwarePtrs{dynamic_cast<strct::StateAware *>(&model),
-                dynamic_cast<strct::FactorsAware *>(&model),
-                dynamic_cast<train::FactorsTunableAware *>(&model)};
+      AwarePtrs{dynamic_cast<const strct::StateAware *>(&model),
+                dynamic_cast<const strct::FactorsAware *>(&model),
+                dynamic_cast<const train::FactorsTunableAware *>(&model)};
   if (nullptr == components.as_structure_aware) {
     throw Error{"A model should be at least StateAware"};
   }

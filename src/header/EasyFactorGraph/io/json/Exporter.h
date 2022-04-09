@@ -5,7 +5,7 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-// #ifdef EFG_JSON_IO
+#ifdef EFG_JSON_IO
 
 #pragma once
 
@@ -41,4 +41,4 @@ private:
   static void convert(nlohmann::json &recipient, const AwarePtrs &subject);
 };
 } // namespace EFG::io::json
-// #endif
+#endif

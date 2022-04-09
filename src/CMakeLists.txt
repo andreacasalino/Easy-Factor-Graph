@@ -34,7 +34,7 @@ if(BUILD_EFG_JSON_CONVERTER)
     GIT_TAG        7194245a314d142a5560f6906a87f7c67ebbcf2e
   )
   FetchContent_MakeAvailable(nlohmann_json)
-  target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
+  target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
     nlohmann_json::nlohmann_json
   )
   target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC
