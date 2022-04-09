@@ -30,9 +30,8 @@ void BaseTuner::setTrainSetIterator(const TrainSet::Iterator &iter) {
 float BaseTuner::dotProduct(const std::vector<float> &prob) const {
   float dot = 0.f;
   auto prob_it = prob.begin();
-  auto &evaluator = factor->getEvaluator();
   for (const auto &[comb, val] : factor->getCombinationsMap()) {
-    dot += *prob_it * evaluator.evaluate(val);
+    dot += *prob_it * val;
     ++prob_it;
   }
   return dot;
