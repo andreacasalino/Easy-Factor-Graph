@@ -5,14 +5,15 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#ifdef EFG_JSON_IO
+// #ifdef EFG_JSON_IO
 
 #pragma once
 
-#include <EasyFactorGraph/io/Exporter.h>
+#include <EasyFactorGraph/io/Utils.h>
+#include <nlohmann/json.hpp>
 
 namespace EFG::io::json {
-class Exporter : public io::Exporter {
+class Exporter {
 public:
   /**
    * @brief exports the model (variables and factors) into an xml file
@@ -21,14 +22,22 @@ public:
    * @param the xml file name
    */
   template <typename Model>
-  static void exportToJson(const Model &model, const std::string &filePath,
-                           const std::string &modelName = "") {
-    Exporter{}.exportComponents(filePath, modelName, getComponents(model));
+  static nlohmann::json exportToJson(const Model &model,
+                                     const std::string &file_path) {
+    nlohmann::json result;
+    convert(result, getAwareComponents(model));
+    return result;
   };
 
+  template <typename Model>
+  static void exportToFile(const Model &model, const std::string &file_path) {
+    auto as_json = exportToJson(model, file_path);
+    auto stream = make_out_stream(file_path);
+    *stream << as_json.dump();
+  }
+
 private:
-  void exportComponents(const File &filePath, const std::string &model_name,
-                        const AwarePtrs &subject) final;
+  static void convert(nlohmann::json &recipient, const AwarePtrs &subject);
 };
 } // namespace EFG::io::json
-#endif
+// #endif

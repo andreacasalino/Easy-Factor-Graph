@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <EasyFactorGraph/io/File.h>
 #include <EasyFactorGraph/io/Utils.h>
 
 #include <sstream>
@@ -38,7 +37,7 @@ public:
 
   template <typename Model>
   static void exportToFile(const Model &model, const ExportInfo &info) {
-    auto stream = make_in_stream(info.file_path);
+    auto stream = make_out_stream(info.file_path);
     convert(*stream, getAwareComponents(model), info);
   }
 
