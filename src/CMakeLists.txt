@@ -42,7 +42,7 @@ if(BUILD_EFG_JSON_CONVERTER)
   )
 endif()
 
-option(BUILD_EFG_TRAINER_TOOLS "Compile features supporting learning of tunable models" OFF)
+option(BUILD_EFG_TRAINER_TOOLS "Compile features supporting learning of tunable models" ON)
 if(BUILD_EFG_TRAINER_TOOLS)
   FetchContent_Declare(
     trainers

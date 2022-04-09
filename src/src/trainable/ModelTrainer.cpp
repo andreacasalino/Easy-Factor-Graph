@@ -5,42 +5,77 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-// #ifdef EFG_LEARNING_ENABLED
+#ifdef EFG_LEARNING_ENABLED
 
-// #include <EasyFactorGraph/trainable/ModelTrainer.h>
+#include <EasyFactorGraph/trainable/ModelTrainer.h>
+#include <TrainingTools/ParametersAware.h>
 
-// namespace EFG::train {
-// namespace {
-// class ModelWrapper : public train::ParametersAware {
-// public:
-//   ModelWrapper(FactorsTunableAware &subject,
-//                const TrainSet::Iterator &train_set_combinations,
-//                const std::size_t threads)
-//       : subject(subject), train_set_combinations(train_set_combinations),
-//         activator(subject.getPool(), threads) {}
+namespace EFG::train {
+namespace {
+::train::Vect to_Vect(const std::vector<float> &subject) {
+  ::train::Vect result(subject.size());
+  for (std::size_t k = 0; k < subject.size(); ++k) {
+    result(static_cast<Eigen::Index>(k)) = subject[k];
+  }
+  return result;
+}
 
-//   train::Vect getParameters() const final;
-//   void setParameters(const train::Vect &) final;
+std::vector<float> to_vector(const ::train::Vect &subject) {
+  std::vector<float> result;
+  result.reserve(subject.size());
+  for (Eigen::Index k = 0; k < subject.size(); ++k) {
+    result[static_cast<std::size_t>(k)] = subject(k);
+  }
+  return result;
+}
 
-//   train::Vect getGradient() const final {
-//     subject.getWeightsGradient_(train_set_combinations);
-//   }
+struct TrainSetWrapper {
+  const TrainSet &source;
+  float percentage;
 
-// private:
-//   FactorsTunableAware &subject;
-//   const TrainSet::Iterator &train_set_combinations;
-//   strct::ScopedPoolActivator activator;
-// };
-// } // namespace
+  mutable std::unique_ptr<TrainSet::Iterator> combinations =
+      std::make_unique<TrainSet::Iterator>(source, 1.f);
 
-// void train(FactorsTunableAware &subject,
-//            const TrainSet::Iterator &train_set_combinations,
-//            train::Trainer &trainer, const std::size_t threads) {
-//   // TODO open thread pool once here
-//   throw 0;
-//   ModelWrapper wrapper(subject, train_set_combinations, threads);
-//   trainer.train(wrapper);
-// }
-// } // namespace EFG::train
+  const TrainSet::Iterator &get() const {
+    if (1.f != percentage) {
+      combinations = std::make_unique<TrainSet::Iterator>(source, percentage);
+    }
+    return *combinations;
+  }
+};
+} // namespace
 
-// #endif
+class FactorsTunableAware::ModelWrapper : public ::train::ParametersAware {
+public:
+  ModelWrapper(FactorsTunableAware &subject, const TrainSet &train_set,
+               const TrainInfo &info)
+      : subject(subject),
+        train_set(TrainSetWrapper{train_set, info.stochastic_percentage}),
+        activator(subject, info.threads) {}
+
+  ::train::Vect getParameters() const final {
+    return to_Vect(subject.getWeights());
+  };
+  void setParameters(const ::train::Vect &w) final {
+    subject.setWeights(to_vector(w));
+  }
+
+  ::train::Vect getGradient() const final {
+    return to_Vect(subject.getWeightsGradient_(train_set.get()));
+  }
+
+private:
+  FactorsTunableAware &subject;
+  TrainSetWrapper train_set;
+  strct::PoolAware::ScopedPoolActivator activator;
+};
+
+void train_model(FactorsTunableAware &subject, ::train::Trainer &trainer,
+                 const TrainSet &train_set, const TrainInfo &info) {
+  FactorsTunableAdder::ModelWrapper wrapper(subject, train_set, info);
+  trainer.train(wrapper);
+}
+
+} // namespace EFG::train
+
+#endif

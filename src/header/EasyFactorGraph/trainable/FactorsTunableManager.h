@@ -14,8 +14,6 @@
 
 namespace EFG::train {
 class FactorsTunableAware : virtual public strct::ConnectionsManager {
-  friend class ModelWrapper;
-
 public:
   // comment that belief propagation will be not invalidate if weights are
   // changed outside
@@ -31,6 +29,8 @@ public:
   std::vector<float>
   getWeightsGradient(const TrainSet::Iterator &train_set_combinations,
                      const std::size_t threads = 1);
+
+  class ModelWrapper;
 
 protected:
   virtual std::vector<float>
