@@ -13,26 +13,20 @@
 namespace EFG::train {
 class BaseTuner : public Tuner {
 public:
-  std::vector<FactorExponentialPtr> getFactors() const final {
-    return {factor};
-  }
+  FactorExponentialPtr getFactorPtr() const { return factor; }
+  const distribution::FactorExponential &getFactor() const { return *factor; }
 
   void setTrainSetIterator(const TrainSet::Iterator &iter) final;
 
   float getGradientAlpha() final { return gradientAlpha; };
   void setWeight(const float &w) final { factor->setWeight(w); }
   float getWeight() const final { return factor->getWeight(); };
-  bool isHereGroup(const categoric::VariablesSet &group) const final {
-    return factor->getVariables().getVariablesSet() == group;
-  }
 
 protected:
   BaseTuner(const FactorExponentialPtr &factor,
             const categoric::VariablesSoup &variables_in_model);
 
   float dotProduct(const std::vector<float> &prob) const;
-
-  const distribution::FactorExponential &getFactor() const { return *factor; }
 
 private:
   FactorExponentialPtr factor;

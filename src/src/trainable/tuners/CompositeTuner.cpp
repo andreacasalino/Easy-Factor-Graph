@@ -16,16 +16,6 @@ CompositeTuner::CompositeTuner(TunerPtr elementA, TunerPtr elementB) {
   addElement(std::move(elementB));
 }
 
-std::vector<FactorExponentialPtr> CompositeTuner::getFactors() const {
-  std::vector<FactorExponentialPtr> result;
-  for (const auto &tuner : elements) {
-    for (const auto &factor : tuner->getFactors()) {
-      result.push_back(factor);
-    }
-  }
-  return result;
-}
-
 void CompositeTuner::addElement(TunerPtr element) {
   if (nullptr == element) {
     throw Error{"null tuner"};
@@ -59,12 +49,5 @@ void CompositeTuner::setWeight(const float &w) {
   for (auto &element : elements) {
     element->setWeight(w);
   }
-}
-
-bool CompositeTuner::isHereGroup(const categoric::VariablesSet &group) const {
-  return std::find_if(elements.begin(), elements.end(),
-                      [&group](const TunerPtr &element) {
-                        return element->isHereGroup(group);
-                      }) != elements.end();
 }
 } // namespace EFG::train

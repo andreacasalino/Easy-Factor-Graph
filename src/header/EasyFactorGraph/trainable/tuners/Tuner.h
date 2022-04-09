@@ -18,8 +18,6 @@ class Tuner {
 public:
   virtual ~Tuner() = default;
 
-  virtual std::vector<FactorExponentialPtr> getFactors() const = 0;
-
   virtual void setTrainSetIterator(const TrainSet::Iterator &iter) = 0;
 
   virtual float getGradientAlpha() = 0;
@@ -27,8 +25,6 @@ public:
 
   virtual void setWeight(const float &w) = 0;
   virtual float getWeight() const = 0;
-
-  virtual bool isHereGroup(const categoric::VariablesSet &group) const = 0;
 
 protected:
   Tuner() = default;

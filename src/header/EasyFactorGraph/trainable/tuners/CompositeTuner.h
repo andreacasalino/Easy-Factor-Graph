@@ -14,7 +14,8 @@
 namespace EFG::train {
 class CompositeTuner : public Tuner {
 public:
-  std::vector<FactorExponentialPtr> getFactors() const final;
+  std::vector<TunerPtr> &getElements() { return elements; };
+  const std::vector<TunerPtr> &getElements() const { return elements; };
 
   CompositeTuner(TunerPtr elementA, TunerPtr elementB);
 
@@ -24,7 +25,6 @@ public:
   float getGradientBeta() final;
   void setWeight(const float &w) final;
   float getWeight() const final { return elements.front()->getWeight(); };
-  bool isHereGroup(const categoric::VariablesSet &group) const final;
 
   void addElement(TunerPtr element);
 

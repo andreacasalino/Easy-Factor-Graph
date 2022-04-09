@@ -16,12 +16,45 @@
 #include <algorithm>
 
 namespace EFG::train {
+namespace {
+void use_tuner(
+    const TunerPtr &subject,
+    const std::function<void(const BaseTuner &)> &base_case =
+        [](const BaseTuner &tuner) {},
+    const std::function<void(const CompositeTuner &)> &composite_case =
+        [](const CompositeTuner &tuner) {}) {
+  const BaseTuner *as_base = dynamic_cast<const BaseTuner *>(subject.get());
+  if (nullptr != as_base) {
+    base_case(*as_base);
+    return;
+  }
+  const CompositeTuner *as_composite =
+      dynamic_cast<const CompositeTuner *>(subject.get());
+  if (nullptr != as_composite) {
+    composite_case(*as_composite);
+    return;
+  }
+  throw Error{"Unrecognized Tuner"};
+}
+} // namespace
+
 std::vector<std::vector<FactorExponentialPtr>>
 FactorsTunableAware::getTunableClusters() const {
   std::vector<std::vector<FactorExponentialPtr>> result;
   result.reserve(tuners.size());
   for (const auto &tuner : tuners) {
-    result.push_back(tuner->getFactors());
+    auto &cluster = result.emplace_back();
+    use_tuner(
+        tuner,
+        [&cluster](const BaseTuner &tuner) {
+          cluster.push_back(tuner.getFactorPtr());
+        },
+        [&cluster](const CompositeTuner &composite) {
+          for (const auto &element : composite.getElements()) {
+            cluster.push_back(
+                static_cast<const BaseTuner *>(element.get())->getFactorPtr());
+          }
+        });
   }
   return result;
 }
@@ -60,11 +93,30 @@ void FactorsTunableAdder::addTuner(
     tuners.emplace_back(std::move(tuner));
     return;
   }
-  auto tuners_it =
-      std::find_if(tuners.begin(), tuners.end(),
-                   [&group = *group_sharing_weight](const TunerPtr &tuner) {
-                     return tuner->isHereGroup(group);
-                   });
+  auto tuners_it = std::find_if(
+      tuners.begin(), tuners.end(),
+      [&group = *group_sharing_weight](const TunerPtr &tuner) {
+        bool is_here = false;
+        use_tuner(
+            tuner,
+            [&is_here, &group](const BaseTuner &tuner) {
+              is_here =
+                  tuner.getFactor().getVariables().getVariablesSet() == group;
+            },
+            [&is_here, &group](const CompositeTuner &composite) {
+              for (const auto &element : composite.getElements()) {
+                const auto *as_base_tuner =
+                    static_cast<const BaseTuner *>(element.get());
+                if (as_base_tuner->getFactor()
+                        .getVariables()
+                        .getVariablesSet() == group) {
+                  is_here = true;
+                  return;
+                }
+              }
+            });
+        return is_here;
+      });
   CompositeTuner *as_composite =
       dynamic_cast<CompositeTuner *>(tuners_it->get());
   if (nullptr != as_composite) {
