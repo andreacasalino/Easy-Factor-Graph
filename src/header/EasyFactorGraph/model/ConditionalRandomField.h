@@ -8,22 +8,9 @@
 #pragma once
 
 #include <EasyFactorGraph/model/RandomField.h>
-
-#ifdef EFG_JSON_IO
-#include <nlohmann/json.hpp>
-#endif
+#include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 
 namespace EFG::model {
-#ifdef EFG_XML_IO
-struct XmlFileTag {};
-static constexpr XmlFileTag XML_FILE_TAG = XmlFileTag{};
-#endif
-
-#ifdef EFG_JSON_IO
-struct JsonFileTag {};
-static constexpr JsonFileTag JSON_FILE_TAG = JsonFileTag{};
-#endif
-
 class ConditionalRandomField : protected strct::EvidenceSetter,
                                protected strct::EvidenceRemover,
                                virtual public strct::FactorsAware,
@@ -38,23 +25,9 @@ public:
   ConditionalRandomField(const ConditionalRandomField &o);
   ConditionalRandomField &operator=(const ConditionalRandomField &) = delete;
 
-#ifdef EFG_XML_IO
-  /**
-   * @brief import the model from an xml file
-   * @param the path of the xml to read
-   * @throw in case no evidences are set in the file
-   */
-  ConditionalRandomField(const std::string &file_path, XmlFileTag);
-#endif
-
-#ifdef EFG_JSON_IO
-  ConditionalRandomField(const std::string &file_path, JsonFileTag);
-
-  ConditionalRandomField(const nlohmann::json &source);
-#endif
-
-  ConditionalRandomField(const RandomField &o,
-                         const std::unordered_set<std::string> &evidences);
+  // evidences are deduced from source, and in case there are no, an exception
+  // is thrown
+  ConditionalRandomField(const RandomField &source, const bool copy);
 
   void setEvidences(const std::vector<std::size_t> &values);
 
@@ -63,6 +36,15 @@ protected:
       const train::TrainSet::Iterator &train_set_combinations) final;
 
 private:
+  struct SourceStructure {
+    const strct::FactorsAware *factors_structure;
+    const train::FactorsTunableAware *factors_tunable_structure;
+  };
+  void absorb(const SourceStructure &source, const bool copy);
+
+  void replaceIfNeeded(train::TunerPtr &container,
+                       const train::BaseTuner &subject);
+
   const std::vector<std::size_t> evidence_vars_positions;
 };
 } // namespace EFG::model

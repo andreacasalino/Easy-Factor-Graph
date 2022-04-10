@@ -14,8 +14,8 @@
 namespace EFG::train {
 class CompositeTuner : public Tuner {
 public:
-  std::vector<TunerPtr> &getElements() { return elements; };
-  const std::vector<TunerPtr> &getElements() const { return elements; };
+  Tuners &getElements() { return elements; };
+  const Tuners &getElements() const { return elements; };
 
   CompositeTuner(TunerPtr elementA, TunerPtr elementB);
 
@@ -29,6 +29,6 @@ public:
   void addElement(TunerPtr element);
 
 private:
-  std::vector<TunerPtr> elements;
+  Tuners elements;
 };
 } // namespace EFG::train

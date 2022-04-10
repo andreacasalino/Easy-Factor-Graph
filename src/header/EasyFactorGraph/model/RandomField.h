@@ -40,8 +40,7 @@ public:
       const train::FactorsTunableAware *model =
           dynamic_cast<const train::FactorsTunableAware *>(&to_absorb);
       if (nullptr != model) {
-        const auto &factors = model->getTunableFactors();
-        absorbTunableFactors(factors.begin(), factors.end(), copy);
+        absorbTunableClusters(*model, copy);
       }
     }
   }

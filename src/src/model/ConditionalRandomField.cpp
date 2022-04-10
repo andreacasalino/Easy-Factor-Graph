@@ -7,8 +7,96 @@
 
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
+#include <EasyFactorGraph/trainable/tuners/TunerVisitor.h>
+
+#include "HiddenObservedTuner.h"
 
 namespace EFG::model {
+ConditionalRandomField::ConditionalRandomField(
+    const ConditionalRandomField &o) {
+  absorb(SourceStructure{static_cast<const strct::FactorsAware *>(&o),
+                         static_cast<const train::FactorsTunableAware *>(&o)},
+         true);
+}
+
+ConditionalRandomField::ConditionalRandomField(const RandomField &source,
+                                               const bool copy) {
+  absorb(
+      SourceStructure{static_cast<const strct::FactorsAware *>(&source),
+                      static_cast<const train::FactorsTunableAware *>(&source)},
+      copy);
+}
+
+void ConditionalRandomField::absorb(const SourceStructure &source,
+                                    const bool copy) {
+  const auto &evidences = source.factors_structure->getEvidences();
+  if (evidences.empty()) {
+    throw Error{"ConditionalRandomField must have at least 1 evidence"};
+  }
+  const auto &const_factors = source.factors_structure->getConstFactors();
+  absorbConstFactors(const_factors.begin(), const_factors.end(), copy);
+  absorbTunableClusters(*source.factors_tunable_structure, copy);
+  for (const auto &[var, val] : evidences) {
+    setEvidence(findVariable(var->name()), val);
+  }
+  // replace tuners of factors connected to an evidence
+  for (auto &tuner : tuners) {
+    train::visit_tuner(
+        tuner,
+        [this, &tuner](train::BaseTuner &subject) {
+          this->replaceIfNeeded(tuner, subject);
+        },
+        [this](train::CompositeTuner &subject) {
+          for (auto &element : subject.getElements()) {
+            this->replaceIfNeeded(
+                element,
+                *dynamic_cast<const train::BaseTuner *>(element.get()));
+          }
+        });
+  }
+}
+
+void ConditionalRandomField::replaceIfNeeded(train::TunerPtr &container,
+                                             const train::BaseTuner &subject) {
+  const auto &evidences = this->getEvidences();
+  const auto &vars = subject.getFactor().getVariables().getVariables();
+  switch (vars.size()) {
+  case 1: {
+    if (evidences.find(vars.front()) != evidences.end()) {
+      throw Error{"Found unary factor attached to permanent evidence: ",
+                  vars.front()->name()};
+    }
+  } break;
+  case 2: {
+    auto first_as_evidence = evidences.find(vars.front());
+    auto second_as_evidence = evidences.find(vars.back());
+    if ((first_as_evidence == evidences.end()) &&
+        (second_as_evidence == evidences.end())) {
+      return;
+    }
+    if ((first_as_evidence != evidences.end()) &&
+        (second_as_evidence != evidences.end())) {
+      throw Error{"Found factor connecting the permanent evidences: ",
+                  first_as_evidence->first->name(), " and ",
+                  second_as_evidence->first->name()};
+      return;
+    }
+    train::TunerPtr replacing_tuner;
+    if (first_as_evidence == evidences.end()) {
+      strct::Node &hidden = *getState_().nodes.find(vars.front())->second;
+      replacing_tuner = std::make_unique<train::HiddenObservedTuner>(
+          hidden, second_as_evidence, subject.getFactorPtr(),
+          getAllVariables());
+    } else {
+      strct::Node &hidden = *getState_().nodes.find(vars.back())->second;
+      replacing_tuner = std::make_unique<train::HiddenObservedTuner>(
+          hidden, first_as_evidence, subject.getFactorPtr(), getAllVariables());
+    }
+    container = std::move(replacing_tuner);
+  } break;
+  }
+}
+
 void ConditionalRandomField::setEvidences(
     const std::vector<std::size_t> &values) {
   const auto &state = getState();

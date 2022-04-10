@@ -31,4 +31,6 @@ protected:
 };
 
 using TunerPtr = std::unique_ptr<Tuner>;
+
+using Tuners = std::vector<TunerPtr>;
 } // namespace EFG::train

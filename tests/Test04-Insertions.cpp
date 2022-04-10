@@ -120,7 +120,7 @@ public:
     return {};
   }
 
-  const std::vector<TunerPtr> &getTuners() const { return tuners; }
+  const Tuners &getTuners() const { return tuners; }
 
   const GraphState &accessState() const { return getState(); }
 };
@@ -164,6 +164,9 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
     CHECK(*model.getAllFactors().begin() == to_insert);
     CHECK(*model.getTunableFactors().begin() == to_insert);
   }
+
+  throw std::runtime_error{
+      "add something with tunable unary potentials and sharing w potentials"};
 }
 
 TEST_CASE("tunable factors multiple insertions", "[insertion]") {

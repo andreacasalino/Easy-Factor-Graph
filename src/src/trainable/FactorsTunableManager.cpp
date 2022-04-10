@@ -7,8 +7,7 @@
 
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
-#include <EasyFactorGraph/trainable/tuners/BinaryTuner.h>
-#include <EasyFactorGraph/trainable/tuners/CompositeTuner.h>
+#include <EasyFactorGraph/trainable/tuners/TunerVisitor.h>
 #include <EasyFactorGraph/trainable/tuners/UnaryTuner.h>
 
 #include "../structure/Utils.h"
@@ -16,35 +15,13 @@
 #include <algorithm>
 
 namespace EFG::train {
-namespace {
-void use_tuner(
-    const TunerPtr &subject,
-    const std::function<void(const BaseTuner &)> &base_case =
-        [](const BaseTuner &tuner) {},
-    const std::function<void(const CompositeTuner &)> &composite_case =
-        [](const CompositeTuner &tuner) {}) {
-  const BaseTuner *as_base = dynamic_cast<const BaseTuner *>(subject.get());
-  if (nullptr != as_base) {
-    base_case(*as_base);
-    return;
-  }
-  const CompositeTuner *as_composite =
-      dynamic_cast<const CompositeTuner *>(subject.get());
-  if (nullptr != as_composite) {
-    composite_case(*as_composite);
-    return;
-  }
-  throw Error{"Unrecognized Tuner"};
-}
-} // namespace
-
 std::vector<std::vector<FactorExponentialPtr>>
 FactorsTunableAware::getTunableClusters() const {
   std::vector<std::vector<FactorExponentialPtr>> result;
   result.reserve(tuners.size());
   for (const auto &tuner : tuners) {
     auto &cluster = result.emplace_back();
-    use_tuner(
+    visit_tuner(
         tuner,
         [&cluster](const BaseTuner &tuner) {
           cluster.push_back(tuner.getFactorPtr());
@@ -86,18 +63,13 @@ std::vector<float> FactorsTunableAware::getWeightsGradient(
   return getWeightsGradient_(train_set_combinations);
 }
 
-void FactorsTunableAdder::addTuner(
-    train::TunerPtr tuner,
-    const std::optional<categoric::VariablesSet> &group_sharing_weight) {
-  if (std::nullopt == group_sharing_weight) {
-    tuners.emplace_back(std::move(tuner));
-    return;
-  }
+TunerPtr &FactorsTunableAdder::findTuner(
+    const categoric::VariablesSet &tuned_vars_group) {
   auto tuners_it = std::find_if(
       tuners.begin(), tuners.end(),
-      [&group = *group_sharing_weight](const TunerPtr &tuner) {
+      [&group = tuned_vars_group](const TunerPtr &tuner) {
         bool is_here = false;
-        use_tuner(
+        visit_tuner(
             tuner,
             [&is_here, &group](const BaseTuner &tuner) {
               is_here =
@@ -117,15 +89,10 @@ void FactorsTunableAdder::addTuner(
             });
         return is_here;
       });
-  CompositeTuner *as_composite =
-      dynamic_cast<CompositeTuner *>(tuners_it->get());
-  if (nullptr != as_composite) {
-    as_composite->addElement(std::move(tuner));
-    return;
+  if (tuners_it == tuners.end()) {
+    throw Error{"Tuner not found"};
   }
-  TunerPtr new_composite =
-      std::make_unique<CompositeTuner>(std::move(*tuners_it), std::move(tuner));
-  *tuners_it = std::move(new_composite);
+  return *tuners_it;
 }
 
 namespace {
@@ -165,8 +132,22 @@ void FactorsTunableAdder::addTunableFactor(
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
   addDistribution(factor);
   auto tuner = makeTuner(factor);
-  addTuner(std::move(tuner), group_sharing_weight);
-  tunable_factors.emplace(factor);
+  if (std::nullopt == group_sharing_weight) {
+    tuners.emplace_back(std::move(tuner));
+    return;
+  }
+  auto &tuner_sharing_w = findTuner(*group_sharing_weight);
+  visit_tuner(
+      tuner_sharing_w,
+      [&tuner, &tuner_sharing_w](BaseTuner &) {
+        std::unique_ptr<CompositeTuner> new_composite =
+            std::make_unique<CompositeTuner>(std::move(tuner_sharing_w),
+                                             std::move(tuner));
+        tuner_sharing_w = std::move(new_composite);
+      },
+      [&tuner](CompositeTuner &tuner_sharing) {
+        tuner_sharing.addElement(std::move(tuner));
+      });
 }
 
 void FactorsTunableAdder::copyTunableFactor(
@@ -174,6 +155,29 @@ void FactorsTunableAdder::copyTunableFactor(
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
   auto cloned = std::make_shared<distribution::FactorExponential>(factor);
   addTunableFactor(cloned, group_sharing_weight);
+}
+
+void FactorsTunableAdder::absorbTunableClusters(
+    const FactorsTunableAware &source, const bool copy) {
+  for (const auto &cluster : source.getTunableClusters()) {
+    try {
+      const auto &front_factor = cluster.front();
+      if (copy) {
+        copyTunableFactor(*front_factor);
+      } else {
+        addTunableFactor(front_factor);
+      }
+      const auto &front_vars = front_factor->getVariables().getVariablesSet();
+      for (std::size_t k = 1; k < cluster.size(); ++k) {
+        if (copy) {
+          copyTunableFactor(*cluster[k], front_vars);
+        } else {
+          addTunableFactor(cluster[k], front_vars);
+        }
+      }
+    } catch (...) {
+    }
+  }
 }
 
 void set_ones(FactorsTunableAware &subject) {

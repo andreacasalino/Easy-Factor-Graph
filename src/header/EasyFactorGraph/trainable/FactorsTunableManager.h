@@ -37,7 +37,7 @@ protected:
   getWeightsGradient_(const TrainSet::Iterator &train_set_combinations) = 0;
 
   std::unordered_set<FactorExponentialPtr> tunable_factors;
-  std::vector<TunerPtr> tuners;
+  Tuners tuners;
 };
 
 class FactorsTunableAdder : virtual public FactorsTunableAware {
@@ -65,12 +65,14 @@ public:
     }
   }
 
-protected:
-  virtual TunerPtr makeTuner(const FactorExponentialPtr &factor);
+  void absorbTunableClusters(const FactorsTunableAware &source,
+                             const bool copy);
 
-  void
-  addTuner(train::TunerPtr tuner,
-           const std::optional<categoric::VariablesSet> &group_sharing_weight);
+protected:
+  TunerPtr &findTuner(const categoric::VariablesSet &tuned_vars_group);
+
+private:
+  TunerPtr makeTuner(const FactorExponentialPtr &factor);
 };
 
 /**
