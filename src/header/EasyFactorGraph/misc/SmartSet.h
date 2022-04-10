@@ -12,6 +12,15 @@
 #include <unordered_set>
 
 namespace EFG {
+/**
+ * @brief An unordered_set that stores shared pointers that can't be null.
+ *
+ * Elements are hashed by hashing the elements wrapped inside the shared
+ * pointer.
+ *
+ * Elements are compared by comparing the elements wrapped inside the
+ * shared pointer.
+ */
 template <typename T>
 using SmartSet =
     std::unordered_set<std::shared_ptr<T>, Hasher<T>, Comparator<T>>;

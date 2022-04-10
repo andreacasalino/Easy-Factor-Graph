@@ -27,6 +27,9 @@ public:
     return *combinations_map;
   }
 
+  /**
+   * @brief Replaces the variables this distribution should refer to.
+   */
   void replaceVariables(const categoric::VariablesSoup &new_variables) {
     variables.replaceVariables(new_variables);
   };

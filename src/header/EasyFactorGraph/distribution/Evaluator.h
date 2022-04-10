@@ -15,7 +15,7 @@ public:
   virtual ~Evaluator() = default;
 
   /**
-   * @brief applies a specific function to obtain the image from a the raw image
+   * @brief applies a specific function to obtain the image from the passed rwa
    * value
    * @param the raw value to convert
    * @return the converted image

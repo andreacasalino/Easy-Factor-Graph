@@ -12,6 +12,16 @@
 #include <unordered_map>
 
 namespace EFG {
+/**
+ * @brief An unordered_map that stores as keys shared pointers that can't be
+ * null.
+ *
+ * Keys are hashed by hashing the elements wrapped inside the shared
+ * pointer.
+ *
+ * Keys are compared by comparing the elements wrapped inside the
+ * shared pointer.
+ */
 template <typename K, typename V>
 using SmartMap =
     std::unordered_map<std::shared_ptr<K>, V, Hasher<K>, Comparator<K>>;

@@ -12,11 +12,19 @@
 
 namespace EFG::categoric {
 /**
- * @brief This object allows you to iterate all the elements in the joint domain
+ * @brief This object allows to iterate all the elements in the joint domain
  * of a group of variables, without precomputing all the elements in such
  * domain. For example when having a domain made by variables = { A (size = 2),
  * B (size = 3), C (size  = 2)  }, the elements in the joint domain that will be
- * iterated are: <0,0,0> <0,0,1> <0,1,0> <0,1,1> <0,2,0> <0,2,1> <1,0,0> <1,0,1>
+ * iterated are:
+ * <0,0,0>
+ * <0,0,1>
+ * <0,1,0>
+ * <0,1,1>
+ * <0,2,0>
+ * <0,2,1>
+ * <1,0,0>
+ * <1,0,1>
  * <1,1,0>
  * <1,1,1>
  * <1,2,0>
@@ -25,6 +33,8 @@ namespace EFG::categoric {
  * the joint domain <0,0,...>. Then, when incrementing the object, the following
  * element is pointed. When calling get() the current pointed element can be
  * accessed.
+ *
+ * This object should be recognized by the compiler as an stl iterator.
  */
 class GroupRange {
 public:
@@ -70,6 +80,10 @@ static const GroupRange RANGE_END = GroupRange::end();
 bool operator==(const GroupRange &a, const GroupRange &b);
 bool operator!=(const GroupRange &a, const GroupRange &b);
 
+/**
+ * @brief Applies the passed predicate to all the elements that can be ranged
+ * using the passed range.
+ */
 template <typename Predicate>
 void for_each_combination(GroupRange &range, const Predicate &predicate) {
   for (; range != RANGE_END; ++range) {

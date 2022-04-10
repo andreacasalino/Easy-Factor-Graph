@@ -11,26 +11,24 @@
 
 namespace EFG::distribution {
 /**
- * @brief An object used to search for big combinations inside a
- Distribution
+ * @brief An object used to search for the images associated to
+ * sub combinations that are part of a bigger one.
  */
 class CombinationFinder {
   friend class DistributionConcrete;
 
 public:
   /**
-   * @brief searches for matches. For example assume having built this
-   object with a containingGroup equal to <A,B,C,D> and the variables
-   describing the domain
-   * of the reference distribution equal to <B,D>. When passing comb as
-   <0,1,2,0>, it searches for the <combination,image> pertaining to
-   this combination
-   * <B,D> = <1,0>.
-   * @param the combination to search, referring to the set of
-   variables passed when building this object.
-   * @return the pair <combination,image> of the the matching
-   combination. <nullptr,0> is returned in case such a combination was
-   not explicitly put in the distribution.
+   * @brief Searches for matches. For example assume having built this
+   * object with a bigger_group equal to <A,B,C,D> while the variables
+   * describing the distribution this finder refers to is equal to <B,D>.
+   * When passing a comb equal to <0,1,2,0>, this object searches for the
+   * immage associated to the sub combination <B,D> = <1,0>.
+   * @param the combination of values referring to the bigger_group, which
+   * contains the sub combination to search.
+   * @return an object storing the sub combination (in case it is explicitly
+   * instanciated, otherwise an end iterator is returned) as well as the image
+   * associated to it.
    */
   struct Result {
     CombinationRawValuesMap::const_iterator map_iterator;

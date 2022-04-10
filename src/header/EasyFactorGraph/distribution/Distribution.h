@@ -18,38 +18,35 @@ using CombinationRawValuesMap = std::map<categoric::Combination, float>;
 class CombinationFinder;
 
 /**
- * @brief Base object for any kind of categoric distribution.
- * Any kind of categoric distribution has:
- *  - A domain, represented by the combinations in the joint domain of the Group
- * associated to this distribution
- *  - Raw images set, which are positive values associated to each element in
- * the domain
+ * @brief Base object for any kind of distribution.
+ * Any kind of distribution has:
+ *  - A group of variables the distribution refer to
+ *  - A domain, represented by the combinations map. To each key in the map, a
+ * raw image value (a float number) is associated.
  *  - Images set, which are the image values associated to each element in the
- * domain. They can be obtained by applying a certain function f(x) to the raw
- * images In order to save memory, the combinations having an image equal to 0
- * are not explicitly saved even if they are accounted for the opreations
- * involving this distribution.
+ * combinations map. They can be obtained by applying a certain function f(x) to
+ * the raw images.
+ * In order to save memory, the combinations having an image equal to 0 are not
+ * explicitly instanciated in the combinations map, even if they are accounted
+ * when calling evaluate(...)
  */
 class Distribution {
 public:
   virtual ~Distribution() = default;
 
+  /**
+   * @return the evaluator used to compute the images
+   */
   virtual const Evaluator &getEvaluator() const = 0;
+
   virtual const categoric::Group &getVariables() const = 0;
   virtual const CombinationRawValuesMap &getCombinationsMap() const = 0;
 
-  /**
-   * @param the variables referring to the combinations to search. This
-   kind of set should contain the subset of variables
-   * describing the domain of distribution
-   * @throw if some of the variables describing the distribution domain
-   are not contained in containingGroup
-   */
   virtual CombinationFinder
   makeFinder(const categoric::VariablesSoup &bigger_group) const = 0;
 
   /**
-   * @brief searches for the image associated to an element in the domain
+   * @brief searches for the image associated to the passed combination
    * @return the value of the image.
    */
   float evaluate(const categoric::Combination &comb) const;
@@ -57,8 +54,9 @@ public:
   /**
    * @return the probabilities associated to each combination in the domain,
    * when assuming only the existance of this distribution. Such probabilities
-   * are the normalized images. The order of returned values, refer to the
-   * combination order obtained by iterating with the categoric::Range object.
+   * are actually the normalized images. The order of returned values, refer to
+   * the combinations that can be iterated by categoric::GroupRange on the
+   * variables representing this distribution.
    */
   std::vector<float> getProbabilities() const;
 

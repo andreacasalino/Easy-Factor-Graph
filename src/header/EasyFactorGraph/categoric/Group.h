@@ -27,6 +27,9 @@ class Group {
 public:
   /**
    * @param the initial variables of the group
+   * @throw when passing an empty collection
+   * @throw when passing a collection containing multiple times a certain
+   * variable
    */
   explicit Group(const VariablesSoup &group);
 
@@ -39,17 +42,13 @@ public:
    * @param the first initial variable to put in the group
    * @param the second initial variable to put in the group
    * @param all the other initial variables
+   * @throw when passing a collection containing multiple times a certain
    */
   template <typename... Vars>
   Group(const VariablePtr &varA, const VariablePtr &varB, const Vars &...vars) {
     this->add(varA, varB, vars...);
   }
 
-  /**
-   * @throw In case of size mismatch with the previous variables set:
-   * the sizes of the 2 groups should be the same and the elements in
-   * the same positions must have the same domain size.
-   */
   /**
    * @brief replaces the group of variables.
    * @throw In case of size mismatch with the previous variables set:
@@ -80,10 +79,12 @@ public:
    */
   std::size_t size() const;
 
-  inline const VariablesSoup &getVariables() const { return this->group; }
-  inline const VariablesSet &getVariablesSet() const {
-    return this->group_sorted;
-  }
+  /** @return the ensamble of variables as an unsorted collection
+   */
+  const VariablesSoup &getVariables() const { return this->group; }
+  /** @return the ensamble of variables as a sorted collection
+   */
+  const VariablesSet &getVariablesSet() const { return this->group_sorted; }
 
 protected:
   Group() = default;
@@ -92,8 +93,13 @@ protected:
   VariablesSet group_sorted;
 };
 
+/** @brief removes the second set from the first
+ */
 VariablesSet &operator-=(VariablesSet &subject, const VariablesSet &to_remove);
 
+/** @return the complementary group of the entire_set,
+ * i.e. returns entire_set \ subset
+ */
 VariablesSet get_complementary(const VariablesSet &entire_set,
                                const VariablesSet &subset);
 } // namespace EFG::categoric
