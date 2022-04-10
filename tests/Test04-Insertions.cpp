@@ -167,6 +167,7 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
 
   throw std::runtime_error{
       "add something with tunable unary potentials and sharing w potentials"};
+  throw std::runtime_error{"add something testing io for xml and io for json"};
 }
 
 TEST_CASE("tunable factors multiple insertions", "[insertion]") {

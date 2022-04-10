@@ -37,7 +37,7 @@ public:
 
   template <typename Model>
   static std::unordered_set<std::string>
-  importFromFile(Model &model, const nlohmann::json &source) {
+  importFromJson(Model &model, const nlohmann::json &source) {
     return convert(getAdderComponents(model), source);
   };
 

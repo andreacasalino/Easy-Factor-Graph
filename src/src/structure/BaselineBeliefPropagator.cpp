@@ -81,8 +81,8 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
   };
 
   std::vector<Tasks> result;
-  auto open = pack_all_tasks(*cluster.connectivity.get());
   if (variations.size() > 1) {
+    auto open = pack_all_tasks(*cluster.connectivity.get());
     // multithreaded computation
     while (!open.empty()) {
       std::set<const Connection *> locked;
@@ -100,9 +100,9 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
     }
   } else {
     auto &new_tasks = result.emplace_back();
-    new_tasks.reserve(open.size());
-    for (auto *task : open) {
-      new_tasks.emplace_back(make_task(*task));
+    new_tasks.reserve(cluster.connectivity.get()->size());
+    for (auto &task : *cluster.connectivity.get()) {
+      new_tasks.emplace_back(make_task(task));
     }
   }
   return result;
