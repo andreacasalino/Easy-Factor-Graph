@@ -17,19 +17,21 @@ namespace EFG::io::json {
 class Exporter {
 public:
   /**
-   * @brief exports the model (variables and factors) into an xml file
+   * @brief exports the model (variables and factors) into a json.
    * @param the model to export
-   * @param the folder that will store the xml
-   * @param the xml file name
    */
   template <typename Model>
-  static nlohmann::json exportToJson(const Model &model,
-                                     const std::string &file_path) {
+  static nlohmann::json exportToJson(const Model &model) {
     nlohmann::json result;
     convert(result, getAwareComponents(model));
     return result;
   };
 
+  /**
+   * @brief exports the model (variables and factors) into an json file
+   * @param the model to export
+   * @param the file to generate storing the exported json
+   */
   template <typename Model>
   static void exportToFile(const Model &model, const std::string &file_path) {
     auto as_json = exportToJson(model, file_path);

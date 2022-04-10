@@ -16,14 +16,11 @@ namespace EFG::io::xml {
 class Importer {
 public:
   /**
-   * @brief imports the structure (variables and factors) described in
-   an xml file and add it to the passed model
-   * @param the model receiving the parsed data
-   * @param the path storing the xml to import
-   * @return the set of evidences red from the file. Attention! this
-   quantities are returned to allow the user
-   * to set such evidence, since this is not automatically done when
-   importing
+   * @brief parse the model (variables and factors) described by the specified
+   * file and tries to add its factors to the passed model.
+   * @param recipient of the model parsed from file
+   * @param location of the model to parse and add to the passed one
+   * @return the evidences contained in the parsed file
    */
   template <typename Model>
   static std::unordered_set<std::string> importFromFile(Model &model,

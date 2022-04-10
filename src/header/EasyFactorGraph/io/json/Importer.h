@@ -26,6 +26,7 @@ public:
    quantities are returned to allow the user
    * to set such evidence, since this is not automatically done when
    importing
+   * @return the evidences contained in the parsed file
    */
   template <typename Model>
   static std::unordered_set<std::string> importFromFile(Model &model,
@@ -35,6 +36,13 @@ public:
     return convert(getAdderComponents(model), source);
   };
 
+  /**
+   * @brief parse the model (variables and factors) described by the passed
+   * json and tries to add its factors to the passed model.
+   * @param recipient of the model parsed from file
+   * @param json describing the model to parse and add to the passed one
+   * @return the evidences contained in the parsed file
+   */
   template <typename Model>
   static std::unordered_set<std::string>
   importFromJson(Model &model, const nlohmann::json &source) {

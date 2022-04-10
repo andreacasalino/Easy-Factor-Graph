@@ -54,8 +54,8 @@ xmlPrs::Tag &printExpPotential(const distribution::FactorExponential &distr,
 } // namespace
 
 void Exporter::convert(std::ostream &recipient, const AwarePtrs &subject,
-                       const ExportInfo &info) {
-  xmlPrs::Root exp_root(info.model_name);
+                       const std::string &model_name) {
+  xmlPrs::Root exp_root(model_name);
   // hidden set
   for (const auto &hidden_var :
        subject.as_structure_aware->getHiddenVariables()) {

@@ -47,7 +47,7 @@ if(BUILD_EFG_TRAINER_TOOLS)
   FetchContent_Declare(
     trainers
     GIT_REPOSITORY https://github.com/andreacasalino/TrainingTools.git
-    GIT_TAG        main
+    GIT_TAG        4d81b25919e7f37dba98481a914279bcac5f17fc
   )
   FetchContent_MakeAvailable(trainers)
   target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
