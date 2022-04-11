@@ -11,6 +11,11 @@
 #include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 
 namespace EFG::model {
+/**
+ * @brief Similar to RandomField, with the difference that the model structure
+ * is immutable after construction. This applies also to the evidence set, which
+ * can't be changed over the time.
+ */
 class ConditionalRandomField : protected strct::EvidenceSetter,
                                protected strct::EvidenceRemover,
                                virtual public strct::FactorsAware,
@@ -25,10 +30,24 @@ public:
   ConditionalRandomField(const ConditionalRandomField &o);
   ConditionalRandomField &operator=(const ConditionalRandomField &) = delete;
 
-  // evidences are deduced from source, and in case there are no, an exception
-  // is thrown
+  /**
+   * @brief All the factors of the passed source are inserted/copied. The
+   * evidence set is deduced by the passed source.
+   * @param the model to emulate for building the structure of this one.
+   * @param then passing true the factors are deep copied, while in the contrary
+   * case the smart pointers storing the factors of the source are copied and
+   * inserted.
+   * @throw in case the passed source has no evidences
+   */
   ConditionalRandomField(const RandomField &source, const bool copy);
 
+  /**
+   * @brief Sets the new set of evidences.
+   * @param the new set of evidence values. The variables order is the same of
+   * the set obtained using getObservedVariables().
+   * @throw the number of passed values does not match the number of evidences.
+   * @throw in case some evidence values are inconsistent
+   */
   void setEvidences(const std::vector<std::size_t> &values);
 
 protected:
