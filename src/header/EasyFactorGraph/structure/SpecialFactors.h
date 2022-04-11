@@ -12,6 +12,9 @@
 #include <type_traits>
 
 namespace EFG::distribution {
+// The special factors defined here, are used internally to propagate the belief
+// in the most optimized possible way.
+
 class UnaryFactor : public distribution::Factor {
 public:
   // all ones are assumed

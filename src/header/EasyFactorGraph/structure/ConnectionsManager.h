@@ -14,6 +14,9 @@ namespace EFG::strct {
 class ConnectionsManager : virtual public StateAware,
                            virtual public BeliefAware {
 public:
+  /**
+   * @return all the factors in the model, tunable and constant.
+   */
   const std::set<distribution::DistributionCnstPtr> &getAllFactors() const {
     return this->factorsAll;
   };

@@ -52,9 +52,9 @@ struct ConnectionAndDependencies {
 };
 /**
  * @brief Clusters of hidden node. Each cluster is a group of
- connected hidden nodes.
- * Nodes in different clusters are not currently connected (due to
- the model structure or the kind of evidences currently set)
+ * connected hidden nodes.
+ * Nodes in different clusters are not currently connected, due to
+ * the model structure or the kind of evidences currently applied.
  */
 struct HiddenCluster {
   std::set<Node *> nodes;
@@ -88,15 +88,32 @@ class StateAware {
 public:
   virtual ~StateAware() = default;
 
+  /**
+   * @return all the variables that are part of the model.
+   */
   const categoric::VariablesSoup &getAllVariables() const {
     return state.variables;
   }
 
+  /**
+   * @return all the variables defining the hidden set of variables
+   */
   categoric::VariablesSet getHiddenVariables() const;
+  /**
+   * @return all the variables defining the evidence set
+   */
   categoric::VariablesSet getObservedVariables() const;
 
+  /**
+   * @return all the variables defining the evidence set, together with the
+   * associated values
+   */
   const Evidences &getEvidences() const { return getState().evidences; };
 
+  /**
+   * @return the variable in the model with the passed name
+   * @throw in case no variable with the specified name exists in this model
+   */
   categoric::VariablePtr findVariable(const std::string &name) const;
 
   StateAware(const StateAware &) = delete;

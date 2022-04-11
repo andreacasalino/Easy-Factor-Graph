@@ -12,6 +12,10 @@
 namespace EFG::strct {
 class FactorsAware : virtual public ConnectionsManager {
 public:
+  /**
+   * @return the collection of const factors that are part of the model. Tunable
+   * factors are not accounted in this collection.
+   */
   const std::unordered_set<distribution::DistributionCnstPtr> &
   getConstFactors() const {
     return const_factors;
@@ -23,9 +27,21 @@ protected:
 
 class FactorsAdder : virtual public FactorsAware {
 public:
+  /**
+   * @brief add a shallow copy of the passed const factor to this model
+   */
   void addConstFactor(const distribution::DistributionCnstPtr &factor);
+  /**
+   * @brief add a deep copy of the passed const factor to this model
+   */
   void copyConstFactor(const distribution::Distribution &factor);
 
+  /**
+   * @brief adds a collection of const factors ot this model.
+   * Passing copy = true, deep copies are created and inserted in this model.
+   * Passing copy = false, shallow copies are created and inserted in this
+   * model.
+   */
   template <typename DistributionIt>
   void absorbConstFactors(const DistributionIt &begin,
                           const DistributionIt &end, const bool copy) {

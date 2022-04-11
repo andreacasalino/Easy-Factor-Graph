@@ -16,14 +16,25 @@ namespace EFG::strct {
 enum PropagationKind { SUM, MAP };
 
 struct PropagationContext {
+  /**
+   * @brief maximum number of iterations to use when trying to calibrate a loopy
+   * graph
+   */
   std::size_t max_iterations_loopy_propagation;
 };
 
 struct ClusterInfo {
   bool tree_or_loopy_graph;
-  std::size_t size; // number of involved nodes
+  /**
+   * @brief number of nodes that constitutes the graph.
+   */
+  std::size_t size;
 };
 
+/**
+ * @brief a structure that can be exposed after having propagated the belief,
+ * providing info on the encountered structure.
+ */
 struct PropagationResult {
   PropagationKind propagation_kind_done;
 
@@ -43,6 +54,12 @@ public:
 };
 using BeliePropagationStrategyPtr = std::unique_ptr<BeliePropagationStrategy>;
 
+/**
+ * @brief The propagation relies on a concrete implementation of a
+ * BeliePropagationStrategy. In case no other is specified, a default one,
+ * BaselineBeliefPropagator, is instantiated and used internally. You can
+ * override this default propagator using setPropagationStrategy(...).
+ */
 class BeliefAware : virtual public StateAware, virtual public PoolAware {
 public:
   virtual ~BeliefAware() = default;

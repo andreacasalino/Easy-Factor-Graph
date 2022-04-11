@@ -19,14 +19,19 @@ class GibbsSampler : virtual public StateAware,
 public:
   struct SamplesGenerationContext {
     std::size_t samples_number;
+    /**
+     * @brief number of iterations used to evolve the model between the drawing
+     * of one sample and another
+     */
     std::optional<std::size_t> delta_iterations;
   };
   /**
-   * @brief Use Gibbs sampling to draw samples for the hidden variables,
-   * conditioned to the current evidences.
-   * @param number of samples to draw
-   * @param number of iterations used to evolve the model between the drawing of
-   * one sample and another
+   * @brief Use Gibbs sampling approach to draw empirical samples of the hidden
+   * variables, conditioned to the current evidences. Values inside the
+   * returned combiantion are ordered with the same order used for the variables
+   * returned by getHiddenVariables()
+   * @param number parameters for the samples generation
+   * @param number of threads to use for the samples generation
    */
   std::vector<categoric::Combination>
   getHiddenSetSamples(const SamplesGenerationContext &context,
