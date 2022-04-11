@@ -1,91 +1,127 @@
-// #include <gtest/gtest.h>
-// #include <ModelTest.h>
-// #include <model/Graph.h>
-// #include <math.h>
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
-// using namespace EFG::model;
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// // frequency of var = 1 is returned
-// float getFrequency1(const std::vector<Combination>& samples, const
-// std::set<VariablePtr>& group, const VariablePtr& var) {
-//     std::size_t varPos = std::distance(group.begin(), group.find(var));
-//     for(auto it = samples.begin(); it!=samples.end(); ++it) {
-//         EXPECT_EQ(it->size(), group.size());
-//     }
-//     std::size_t instances = 0;
-//     for(auto it = samples.begin(); it!=samples.end(); ++it) {
-//         if(1 == it->data()[varPos]) {
-//             ++instances;
-//         }
-//     }
-//     return static_cast<float>(instances) /
-//     static_cast<float>(samples.size());
-// };
+#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/model/Graph.h>
 
-// void compare(float probTheory0, float probTheory1, float frequency1, const
-// float threshold = 0.05f) {
-//     float probTheory = probTheory1 / (probTheory0 + probTheory1);/*
-//     std::cout << "prob theory " << probTheory << "   ;   prob sampler " <<
-//     frequency1 << std::endl;*/ EXPECT_LE(fabs(probTheory - frequency1) ,
-//     threshold);
-// }
+#include <algorithm>
+#include <math.h>
 
-// TEST(GibbsSampling, trivialBinary) {
-//     float w = 2.f;
-//     Graph model;
-//     model.insertCopy(factor::cnst::FactorExponential(factor::cnst::Factor({
-//     makeVariable(2, "A"), makeVariable(2, "B") }, true), w));
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
+using namespace EFG::model;
+using namespace EFG::strct;
 
-//     model.resetEvidences({ {"A", 1} });
-//     auto samples = model.getHiddenSetSamples(500, 50);
-//     compare(1.f, expf(w), getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("B")));
-// }
+namespace {
+std::string make_file_path(const std::string &file_name) {
+  std::stringstream stream;
+  stream << SAMPLE_FOLDER << "Sample03-BeliefPropagation-B/" << file_name;
+  return stream.str();
+}
 
-// TEST(GibbsSampling, polyTree) {
-//     float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
-//     Graph model;
-//     io::xml::Importer::importFromXml(model,
-//     test::getModelPath("graph_1.xml"));
+bool are_samples_valid(const std::vector<Combination> &samples,
+                       const VariablesSet &group) {
+  if (samples.empty()) {
+    return false;
+  }
+  auto samples_it = std::find_if(samples.begin(), samples.end(),
+                                 [&group](const Combination &comb) {
+                                   return comb.data().size() != group.size();
+                                 });
+  return samples_it == samples.end();
+}
 
-//     // E=1
-//     model.resetEvidences({ {"E", 1} });
-//     auto samples = model.getHiddenSetSamples(500, 20);
-//     compare((a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e)),
-//     getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("A"))); compare((g + e) ,(1 + g * e),
-//     getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("B"))); compare((b * (g + e) + (1 + g * e)), ((g + e)
-//     + b * (1 + g * e)), getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("C"))); compare(1.f, e , getFrequency1(samples,
-//     model.getHiddenVariables(), model.findVariable("D")));
-// }
+// frequency of var = 1 is returned
+float getFrequency1(const std::vector<Combination> &samples,
+                    const VariablesSet &group, const VariablePtr &var) {
+  std::size_t varPos = std::distance(group.begin(), group.find(var));
+  std::size_t instances = 0;
+  for (const auto &sample : samples) {
+    if (1 == sample.data()[varPos]) {
+      ++instances;
+    }
+  }
+  return static_cast<float>(instances) / static_cast<float>(samples.size());
+};
 
-// TEST(GibbsSampling, loopy) {
-//     float M = expf(1.f);
-//     float M_alfa = powf(M, 3) + M + 2.f*powf(M, 2);
-//     float M_beta = powf(M, 4) + 2.f*M + powf(M, 2);
-//     Graph model;
-//     io::xml::Importer::importFromXml(model,
-//     test::getModelPath("graph_3.xml"));
+bool almost_equal(float probTheory0, float probTheory1, float frequency1,
+                  const float threshold = 0.05f) {
+  float probTheory = probTheory1 / (probTheory0 + probTheory1);
+  return fabs(probTheory - frequency1) < threshold;
+}
+} // namespace
 
-//     // E=1
-//     model.resetEvidences({ {"E", 1} });
-//     auto samples = model.getHiddenSetSamples(500, 20);
-//     compare(3.f * M + powf(M,3), powf(M,4) + 3.f * powf(M,2),
-//     getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("D")), 0.06); compare(M_alfa, M_beta,
-//     getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("C")), 0.06); compare(M_alfa, M_beta,
-//     getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("B")), 0.06); compare(M * M_alfa + M_beta, M_alfa + M
-//     * M_beta , getFrequency1(samples, model.getHiddenVariables(),
-//     model.findVariable("A")), 0.06);
-// }
+TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
+  float w = 2.f;
+  FactorExponential factor(
+      Factor(Group{make_variable(2, "A"), make_variable(2, "B")},
+             USE_SIMPLE_CORRELATION_TAG),
+      w);
 
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
+  Graph model;
+  model.copyConstFactor(factor);
+
+  model.setEvidence(model.findVariable("A"), 1);
+  auto samples = model.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{500, 50});
+  REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
+  CHECK(almost_equal(1.f, expf(w),
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("B"))));
+}
+
+TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
+  float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
+  Graph model;
+  xml::Importer::importFromFile(model, make_file_path("graph_1.xml"));
+
+  // E=1
+  model.setEvidence(model.findVariable("E"), 1);
+  auto samples = model.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{500, 20});
+  REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
+
+  CHECK(almost_equal((a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e)),
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("A"))));
+  CHECK(almost_equal((g + e), (1 + g * e),
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("B"))));
+  CHECK(almost_equal((b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e)),
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("C"))));
+  CHECK(almost_equal(1.f, e,
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("D"))));
+}
+
+TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
+  float M = expf(1.f);
+  float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
+  float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
+  Graph model;
+  xml::Importer::importFromFile(model, make_file_path("graph_3.xml"));
+
+  // E=1
+  model.setEvidence(model.findVariable("E"), 1);
+  auto samples = model.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{500, 20});
+  REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
+  CHECK(almost_equal(3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("D")),
+                     0.06));
+  CHECK(almost_equal(M_alfa, M_beta,
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("C")),
+                     0.06));
+  CHECK(almost_equal(M_alfa, M_beta,
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("B")),
+                     0.06));
+  CHECK(almost_equal(M * M_alfa + M_beta, M_alfa + M * M_beta,
+                     getFrequency1(samples, model.getHiddenVariables(),
+                                   model.findVariable("A")),
+                     0.06));
+}
