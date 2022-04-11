@@ -28,12 +28,26 @@ public:
    */
   std::vector<std::vector<FactorExponentialPtr>> getTunableClusters() const;
 
-  // TODO comment ordine pesi
+  /**
+   * @return the weights of all the tunable factors that are part of the model.
+   * The same order assumed by getTunableClusters() is assumed.
+   */
   std::vector<float> getWeights() const;
-  // TODO comment ordine pesi
+  /**
+   * @return sets the weights to use for of all the tunable factors that are
+   * part of the model. The same order assumed by getTunableClusters() should be
+   * assumed.
+   * @throw in case the number of specified weights is inconsistent
+   */
   void setWeights(const std::vector<float> &weights);
 
-  // TODO comment ordine pesi
+  /**
+   * @return the gradients of the weights of all the tunable factors that are
+   * part of the model, w.r.t a certain training set. The same order assumed by
+   * getTunableClusters() is assumed.
+   * @param the training set to use
+   * @param the number of threads to use for the gradient computation
+   */
   std::vector<float>
   getWeightsGradient(const TrainSet::Iterator &train_set_combinations,
                      const std::size_t threads = 1);

@@ -23,18 +23,6 @@ public:
    */
   explicit TrainSet(const std::vector<categoric::Combination> &combinations);
 
-  //////////////////////////////
-  // MOVE TO io folder
-  //   /**
-  //    * @param import the combinations from a textual file where each row
-  //    represent
-  //    * a combination
-  //    * @throw if the file is not readable
-  //    * @throw if the parsed combinations don't have all the same size
-  //    * @throw if the file is empty
-  //    */
-  //   explicit TrainSet(const std::string &fileName);
-
   const std::vector<categoric::Combination> &getCombinations() const {
     return *this->combinations;
   };
@@ -48,12 +36,17 @@ private:
   std::shared_ptr<const std::vector<categoric::Combination>> combinations;
 };
 
+/**
+ * @brief an object able to iterate all the combinations that are part of a
+ * training set or a sub portion of it.
+ */
 class TrainSet::Iterator {
 public:
   /**
-   * @return a TrainSet containg some of the combinations stored into this
-   * object. The combination to take are randomly decided.
-   * @param the percentage of combinations to extract from this object.
+   * @brief involved train set
+   * @param the percentage of combinations to extract from the passed subject.
+   * Passing a value equal to 1, means to use all the combinations of the passed
+   * subject.
    */
   Iterator(const TrainSet &subject, const float percentage);
 
@@ -70,6 +63,9 @@ public:
     }
   }
 
+  /**
+   * @return number of combinations considered by this train set iterator.
+   */
   std::size_t size() const;
 
 private:
