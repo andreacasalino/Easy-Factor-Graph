@@ -1,234 +1,285 @@
-// #include <categoric/Range.h>
-// #include <distribution/DistributionFinder.h>
-// #include <distribution/factor/const/Indicator.h>
-// #include <gtest/gtest.h>
-// #include <math.h>
-// #include <model/ConditionalRandomField.h>
-// #include <model/RandomField.h>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <TrainingTools/iterative/solvers/GradientDescend.h>
-// #include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
-// #include <TrainingTools/iterative/solvers/QuasiNewton.h>
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
-// using namespace EFG::model;
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/distribution/CombinationFinder.h>
+#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/model/ConditionalRandomField.h>
+#include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/trainable/FactorsTunableManager.h>
+#include <EasyFactorGraph/trainable/ModelTrainer.h>
 
-// template <typename TrainerT> class StoryAware : public TrainerT {
-// public:
-//   std::list<std::vector<float>> getStory() const { return descendStory; }
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
+#include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
+#include <TrainingTools/iterative/solvers/QuasiNewton.h>
 
-// protected:
-//   void updateDirection() override {
-//     Eigen::VectorXd par = this->getParameters();
-//     std::vector<float> w;
-//     w.reserve(par.size());
-//     for (Eigen::Index i = 0; i < par.size(); ++i) {
-//       w.push_back(par(i));
-//     }
-//     this->descendStory.emplace_back(std::move(w));
-//     this->TrainerT::updateDirection();
-//   };
+#include <algorithm>
+#include <limits>
+#include <math.h>
 
-//   void initDirection() override {
-//     this->descendStory.clear();
-//     this->TrainerT::initDirection();
-//   }
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
+using namespace EFG::model;
+using namespace EFG::train;
+using namespace EFG::strct;
 
-// private:
-//   std::list<std::vector<float>> descendStory;
-// };
+namespace {
+template <typename TrainerT> class StoryAware : public TrainerT {
+public:
+  std::list<std::vector<float>> getStory() const { return descendStory; }
 
-// class LikelihoodAware {
-// public:
-//   LikelihoodAware(const EFG::train::Trainable &model) {
-//     this->vars = model.getVariables();
-//     const EFG::strct::StructureAware *str =
-//         dynamic_cast<const EFG::strct::StructureAware *>(&model);
-//     for (auto it = str->getAllFactors().begin();
-//          it != str->getAllFactors().end(); ++it) {
-//       this->finders.emplace_back(**it, vars);
-//     }
-//   };
+protected:
+  void updateDirection() override {
+    Eigen::VectorXd par = this->getParameters();
+    std::vector<float> w;
+    w.reserve(par.size());
+    for (Eigen::Index i = 0; i < par.size(); ++i) {
+      w.push_back(par(i));
+    }
+    this->descendStory.emplace_back(std::move(w));
+    this->TrainerT::updateDirection();
+  };
 
-//   float getLogActivation(const EFG::categoric::Combination &c) const {
-//     float res = 0.f;
-//     for (auto it = this->finders.begin(); it != this->finders.end(); ++it) {
-//       res += logf(it->find(c).second);
-//     }
-//     return res;
-//   };
+  void initDirection() override {
+    this->descendStory.clear();
+    this->TrainerT::initDirection();
+  }
 
-//   float getLogLikeliHood(const EFG::train::TrainSetPtr &trainSet) {
-//     float Z = 0.f;
-//     {
-//       EFG::categoric::Range group(this->vars);
-//       EFG::iterator::forEach(group, [this, &Z](const EFG::categoric::Range
-//       &r) {
-//         Z += this->getLogActivation(r.get());
-//       });
-//     }
-//     float lkl = 0.f,
-//           coeff = 1.f / static_cast<float>(trainSet->getSet().size());
-//     for (auto it = trainSet->getSet().begin(); it !=
-//     trainSet->getSet().end();
-//          ++it) {
-//       lkl += coeff * this->getLogActivation(**it);
-//     }
-//     return lkl - Z;
-//   }
+private:
+  std::list<std::vector<float>> descendStory;
+};
 
-// private:
-//   std::set<categoric::VariablePtr> vars;
-//   std::list<DistributionFinder> finders;
-// };
+class LikelihoodAware {
+public:
+  LikelihoodAware(const EFG::strct::ConnectionsManager &model)
+      : vars{model.getAllVariables()} {
+    const auto &factors = model.getAllFactors();
+    finders.reserve(factors.size());
+    const auto &all_vars = vars.getVariables();
+    for (const auto &factor : factors) {
+      finders.emplace_back(factor->makeFinder(all_vars));
+    }
+  };
 
-// class TrainTest : public ::testing::Test {
-// protected:
-//   virtual std::unique_ptr<EFG::train::Trainable> getModel() const = 0;
+  float getLogActivation(const EFG::categoric::Combination &c) const {
+    float res = 0.f;
+    for (auto it = this->finders.begin(); it != this->finders.end(); ++it) {
+      res += logf(it->find(c).value);
+    }
+    return res;
+  };
 
-//   virtual EFG::train::TrainSetPtr getTrainSet() {
-//     EFG::strct::GibbsSampler *sampler =
-//         dynamic_cast<EFG::strct::GibbsSampler *>(info->referenceModel.get());
-//     return std::make_unique<EFG::train::TrainSet>(
-//         sampler->getHiddenSetSamples(500, 50));
-//   };
+  float getLogLikeliHood(const EFG::train::TrainSet::Iterator &combinations) {
+    float Z = 0.f;
+    {
+      GroupRange range(Group{vars});
+      for_each_combination(range, [this, &Z](const Combination &comb) {
+        Z += this->getLogActivation(comb);
+      });
+    }
+    float lkl = 0.f, coeff = 1.f / static_cast<float>(combinations.size());
+    combinations.forEachSample([this, &lkl, &coeff](const Combination &comb) {
+      lkl += coeff * this->getLogActivation(comb);
+    });
+    return lkl - Z;
+  }
 
-//   struct Info {
-//     std::unique_ptr<EFG::train::Trainable> referenceModel;
-//     std::unique_ptr<EFG::train::Trainable> trainedModel;
-//     EFG::train::TrainSetPtr trainSet;
-//     std::unique_ptr<LikelihoodAware> evaluator;
-//   };
-//   std::unique_ptr<Info> info;
-//   std::unique_ptr<float> train_set_percentage;
-//   void SetUp() override {
-//     info = std::make_unique<Info>();
-//     info->referenceModel = this->getModel();
-//     info->trainedModel = this->getModel();
-//     info->evaluator =
-//         std::make_unique<LikelihoodAware>(*info->trainedModel.get());
-//     info->trainSet = this->getTrainSet();
-//     std::cout << "train set sampled " << std::endl;
-//   }
+private:
+  Group vars;
+  std::vector<CombinationFinder> finders;
+};
 
-//   float wErrToll = 0.3f;
-//   void checkWeights() const {
-//     // check tuned values
-//     auto finalWeight = info->trainedModel->getWeights();
-//     {
-//       auto referenceWeight = info->referenceModel->getWeights();
-//       for (std::size_t k = 0; k < finalWeight.size(); ++k) {
-//         EXPECT_LE(fabs(finalWeight[k] - referenceWeight[k]), this->wErrToll);
-//       }
-//     }
-//   }
-//   void checkMarginals() {
-//     auto vars = info->referenceModel->getVariables();
-//     std::vector<float> distrLearnt, distrReal;
-//     EFG::strct::EvidencesChanger *referenceSetter =
-//         dynamic_cast<EFG::strct::EvidencesChanger *>(
-//             info->referenceModel.get());
-//     if (nullptr != referenceSetter) {
-//       // random field
-//       referenceSetter->resetEvidences({{(*vars.rbegin())->name(), 0}});
-//       dynamic_cast<EFG::strct::EvidencesChanger *>(info->trainedModel.get())
-//           ->resetEvidences({{(*vars.rbegin())->name(), 0}});
-//     }
-//     distrReal =
-//         dynamic_cast<EFG::strct::QueryHandler *>(info->referenceModel.get())
-//             ->getMarginalDistribution((*vars.rbegin())->name());
-//     distrLearnt =
-//         dynamic_cast<EFG::strct::QueryHandler *>(info->trainedModel.get())
-//             ->getMarginalDistribution((*vars.rbegin())->name());
+TrainSet make_train_set(GibbsSampler &subject) {
+  return TrainSet{subject.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{500, 50, 0})};
+}
 
-//     EXPECT_LE(fabs(distrLearnt.front() - distrReal.front()), 0.1f);
-//     EXPECT_LE(fabs(distrLearnt.back() - distrReal.back()), 0.1f);
-//   }
+bool are_similar(const std::vector<float> &a, const std::vector<float> &b,
+                 const float toll = 0.2f) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  for (std::size_t k = 0; k < a.size(); ++k) {
+    if (abs(a[k] - b[k]) > toll) {
+      return false;
+    }
+  }
+  return true;
+}
 
-//   bool checkLkl = true;
-//   template <typename TrainerT>
-//   void checkLikelihood(const StoryAware<TrainerT> &trainer) {
-//     auto finalWeight = info->trainedModel->getWeights();
-//     auto story = trainer.getStory();
-//     auto it = story.begin();
-//     info->trainedModel->setWeights(*it);
-//     float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
-//     ++it;
-//     for (it; it != story.end(); ++it) {
-//       info->trainedModel->setWeights(*it);
-//       float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
-//       EXPECT_GE(lastLkl, lkl);
-//       lastLkl = lkl;
-//     }
-//     info->trainedModel->setWeights(finalWeight);
-//   }
+VariablePtr get_second_hidden(const ConnectionsManager &subject) {
+  auto vars = subject.getHiddenVariables();
+  auto it = vars.begin();
+  ++it;
+  return *it;
+}
 
-//   void checkGradient() {
-//     info->trainedModel->setOnes();
-//     auto grad = info->trainedModel->getGradient(info->trainSet);
-//     auto real_w = info->referenceModel->getWeights();
-//     EXPECT_EQ(grad.size(), real_w.size());
-//     auto same_sign = [](const float a, const float b) {
-//       if (a > 0) {
-//         return b > 0;
-//       }
-//       return b < 0;
-//     };
-//     for (std::size_t k = 0; k < grad.size(); ++k) {
-//       EXPECT_TRUE(same_sign(grad[k], real_w[k] - 1.0));
-//     }
-//   }
+struct Models {
+  FactorsTunableAware &reference_model;
+  FactorsTunableAware &trained_model;
+};
+bool is_gradient_in_right_direction(const Models &subject,
+                                    const TrainSet::Iterator &train_set) {
+  auto gradient = subject.trained_model.getWeightsGradient(train_set);
+  auto w_a = subject.reference_model.getWeights();
+  auto w_b = subject.trained_model.getWeights();
+  if (gradient.size() != w_b.size()) {
+    return false;
+  }
+  auto same_sign = [](const float a, const float b) {
+    if (a > 0) {
+      return b > 0;
+    }
+    return b < 0;
+  };
+  for (std::size_t k = 0; k < gradient.size(); ++k) {
+    if (!same_sign(gradient[k], w_a[k] - w_b[k])) {
+      return false;
+    }
+  }
+  return true;
+}
 
-//   template <typename TrainerT> void checkTrainer() {
-//     info->trainedModel->setOnes();
-//     // do training
-//     StoryAware<TrainerT> trainer;
-//     trainer.setMaxIterations(30);
-//     {
-//       ::train::GradientDescendFixed *as_fixed =
-//           dynamic_cast<::train::GradientDescendFixed *>(&trainer);
-//       if (nullptr != as_fixed) {
-//         as_fixed->setOptimizationStep(0.5);
-//       }
-//     }
-//     if (nullptr != train_set_percentage) {
-//       info->trainedModel->train(trainer, info->trainSet,
-//       *train_set_percentage);
-//     } else {
-//       info->trainedModel->train(trainer, info->trainSet);
-//     }
-//     std::cout << "Iterations done " << trainer.getStory().size() <<
-//     std::endl;
-//     // check tuned values
-//     this->checkWeights();
-//     // check marginal computation
-//     this->checkMarginals();
-//     // check decresing trend
-//     if (this->checkLkl) {
-//       this->checkLikelihood(trainer);
-//     }
-//   }
+bool are_marginals_similar(const Models &subject) {
+  auto *reference_as_random_field =
+      dynamic_cast<RandomField *>(&subject.reference_model);
+  if (nullptr == reference_as_random_field) {
+    reference_as_random_field->setEvidence(
+        get_second_hidden(*reference_as_random_field), 0);
+    auto *trained_as_random_field =
+        dynamic_cast<RandomField *>(&subject.trained_model);
+    trained_as_random_field->setEvidence(
+        get_second_hidden(*trained_as_random_field), 0);
+  }
 
-//   bool use_adaptive_descend = true;
-//   bool use_conjugate = true;
-//   bool use_newton = true;
-//   void CHECK() {
-//     this->checkGradient();
-//     this->checkTrainer<::train::GradientDescendFixed>();
-//     if (use_adaptive_descend) {
-//       this->checkTrainer<::train::GradientDescend<::train::YundaSearcher>>();
-//     }
-//     if (use_conjugate) {
-//       this->checkTrainer<::train::GradientDescendConjugate<
-//           ::train::YundaSearcher, ::train::FletcherReeves>>();
-//     }
-//     if (use_newton) {
-//       this->checkTrainer<
-//           ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>();
-//     }
-//   }
-// };
+  std::string variable_to_query =
+      subject.reference_model.getEvidences().begin()->first->name();
+
+  auto *reference_query_handler =
+      dynamic_cast<QueryManager *>(&subject.reference_model);
+  auto *trained_query_handler =
+      dynamic_cast<QueryManager *>(&subject.trained_model);
+  return are_similar(
+      reference_query_handler->getMarginalDistribution(variable_to_query),
+      trained_query_handler->getMarginalDistribution(variable_to_query), 0.1f);
+}
+
+bool has_likelihood_decreasing_trend(
+    FactorsTunableAware &trained_model,
+    const EFG::train::TrainSet::Iterator &combinations,
+    const std::list<std::vector<float>> &story, const float toll = 0.1f) {
+  const auto final_w = trained_model.getWeights();
+  LikelihoodAware likelihood_aware(trained_model);
+  float prev_likelihood = std::numeric_limits<float>::min();
+  for (const auto &w : story) {
+    trained_model.setWeights(w);
+    float att_likelihood = likelihood_aware.getLogLikeliHood(combinations);
+    const bool ok = (-toll) < (att_likelihood - prev_likelihood);
+    if (!ok) {
+      return false;
+    }
+    prev_likelihood - att_likelihood;
+  }
+  trained_model.setWeights(final_w);
+  return true;
+}
+
+template <typename TrainerT> bool check_trainer(const Models &models) {
+  //   info->trainedModel->setOnes();
+  //   // do training
+  //   StoryAware<TrainerT> trainer;
+  //   trainer.setMaxIterations(30);
+  //   {
+  //     ::train::GradientDescendFixed *as_fixed =
+  //         dynamic_cast<::train::GradientDescendFixed *>(&trainer);
+  //     if (nullptr != as_fixed) {
+  //       as_fixed->setOptimizationStep(0.5);
+  //     }
+  //   }
+  //   if (nullptr != train_set_percentage) {
+  //     info->trainedModel->train(trainer, info->trainSet,
+  //     *train_set_percentage);
+  //   } else {
+  //     info->trainedModel->train(trainer, info->trainSet);
+  //   }
+  //   std::cout << "Iterations done " << trainer.getStory().size() <<
+  //   std::endl;
+  //   // check tuned values
+  //   this->checkWeights();
+  //   // check marginal computation
+  //   this->checkMarginals();
+  //   // check decresing trend
+  //   if (this->checkLkl) {
+  //     this->checkLikelihood(trainer);
+  //   }
+}
+
+struct Info {
+  float stoch_percentage = 1.f;
+  bool use_adaptive_descend = true;
+  bool use_conjugate = true;
+  bool use_newton = true;
+  // TODO tollerances
+};
+bool check_trainers(const Models &models, const TrainSet &train_set,
+                    const Info &info) {
+  // use SECTION to refactor this, calling check_trainer every time
+
+  //   this->checkGradient();
+  // this->checkTrainer<::train::GradientDescendFixed>();
+  // if (use_adaptive_descend) {
+  //   this->checkTrainer<::train::GradientDescend<::train::YundaSearcher>>();
+  // }
+  // if (use_conjugate) {
+  //   this->checkTrainer<::train::GradientDescendConjugate<
+  //       ::train::YundaSearcher, ::train::FletcherReeves>>();
+  // }
+  // if (use_newton) {
+  //   this->checkTrainer<
+  //       ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>();
+  // }
+}
+
+class TrainTest : public ::testing::Test {
+protected:
+  struct Info {
+    std::unique_ptr<EFG::train::Trainable> referenceModel;
+    std::unique_ptr<EFG::train::Trainable> trainedModel;
+    EFG::train::TrainSetPtr trainSet;
+    std::unique_ptr<LikelihoodAware> evaluator;
+  };
+  std::unique_ptr<Info> info;
+  std::unique_ptr<float> train_set_percentage;
+  void SetUp() override {
+    info = std::make_unique<Info>();
+    info->referenceModel = this->getModel();
+    info->trainedModel = this->getModel();
+    info->evaluator =
+        std::make_unique<LikelihoodAware>(*info->trainedModel.get());
+    info->trainSet = this->getTrainSet();
+    std::cout << "train set sampled " << std::endl;
+  }
+
+  bool checkLkl = true;
+  template <typename TrainerT>
+  void checkLikelihood(const StoryAware<TrainerT> &trainer) {
+    auto finalWeight = info->trainedModel->getWeights();
+    auto story = trainer.getStory();
+    auto it = story.begin();
+    info->trainedModel->setWeights(*it);
+    float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
+    ++it;
+    for (it; it != story.end(); ++it) {
+      info->trainedModel->setWeights(*it);
+      float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
+      EXPECT_GE(lastLkl, lkl);
+      lastLkl = lkl;
+    }
+    info->trainedModel->setWeights(finalWeight);
+  }
+};
+} // namespace
 
 // class SmallRandomField : public TrainTest {
 // public:
@@ -380,8 +431,3 @@
 // TEST_F(SmallConditionalRandomField, check) { this->CHECK(); }
 
 // TEST_F(MediumRandomFieldThreadPool, check) { this->CHECK(); }
-
-// int main(int argc, char *argv[]) {
-//   ::testing::InitGoogleTest(&argc, argv);
-//   return RUN_ALL_TESTS();
-// }
