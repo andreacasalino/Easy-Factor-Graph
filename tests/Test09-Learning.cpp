@@ -6,6 +6,7 @@
 #include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
 #include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/structure/SpecialFactors.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
 #include <EasyFactorGraph/trainable/ModelTrainer.h>
 
@@ -89,11 +90,6 @@ private:
   Group vars;
   std::vector<CombinationFinder> finders;
 };
-
-TrainSet make_train_set(GibbsSampler &subject) {
-  return TrainSet{subject.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{500, 50, 0})};
-}
 
 bool are_similar(const std::vector<float> &a, const std::vector<float> &b,
                  const float toll = 0.2f) {
@@ -185,249 +181,197 @@ bool has_likelihood_decreasing_trend(
   return true;
 }
 
-template <typename TrainerT> bool check_trainer(const Models &models) {
-  //   info->trainedModel->setOnes();
-  //   // do training
-  //   StoryAware<TrainerT> trainer;
-  //   trainer.setMaxIterations(30);
-  //   {
-  //     ::train::GradientDescendFixed *as_fixed =
-  //         dynamic_cast<::train::GradientDescendFixed *>(&trainer);
-  //     if (nullptr != as_fixed) {
-  //       as_fixed->setOptimizationStep(0.5);
-  //     }
-  //   }
-  //   if (nullptr != train_set_percentage) {
-  //     info->trainedModel->train(trainer, info->trainSet,
-  //     *train_set_percentage);
-  //   } else {
-  //     info->trainedModel->train(trainer, info->trainSet);
-  //   }
-  //   std::cout << "Iterations done " << trainer.getStory().size() <<
-  //   std::endl;
-  //   // check tuned values
-  //   this->checkWeights();
-  //   // check marginal computation
-  //   this->checkMarginals();
-  //   // check decresing trend
-  //   if (this->checkLkl) {
-  //     this->checkLikelihood(trainer);
-  //   }
-}
-
-struct Info {
-  float stoch_percentage = 1.f;
-  bool use_adaptive_descend = true;
-  bool use_conjugate = true;
-  bool use_newton = true;
-  // TODO tollerances
-};
-bool check_trainers(const Models &models, const TrainSet &train_set,
-                    const Info &info) {
-  // use SECTION to refactor this, calling check_trainer every time
-
-  //   this->checkGradient();
-  // this->checkTrainer<::train::GradientDescendFixed>();
-  // if (use_adaptive_descend) {
-  //   this->checkTrainer<::train::GradientDescend<::train::YundaSearcher>>();
-  // }
-  // if (use_conjugate) {
-  //   this->checkTrainer<::train::GradientDescendConjugate<
-  //       ::train::YundaSearcher, ::train::FletcherReeves>>();
-  // }
-  // if (use_newton) {
-  //   this->checkTrainer<
-  //       ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>();
-  // }
-}
-
-class TrainTest : public ::testing::Test {
-protected:
-  struct Info {
-    std::unique_ptr<EFG::train::Trainable> referenceModel;
-    std::unique_ptr<EFG::train::Trainable> trainedModel;
-    EFG::train::TrainSetPtr trainSet;
-    std::unique_ptr<LikelihoodAware> evaluator;
-  };
-  std::unique_ptr<Info> info;
-  std::unique_ptr<float> train_set_percentage;
-  void SetUp() override {
-    info = std::make_unique<Info>();
-    info->referenceModel = this->getModel();
-    info->trainedModel = this->getModel();
-    info->evaluator =
-        std::make_unique<LikelihoodAware>(*info->trainedModel.get());
-    info->trainSet = this->getTrainSet();
-    std::cout << "train set sampled " << std::endl;
-  }
-
-  bool checkLkl = true;
-  template <typename TrainerT>
-  void checkLikelihood(const StoryAware<TrainerT> &trainer) {
-    auto finalWeight = info->trainedModel->getWeights();
-    auto story = trainer.getStory();
-    auto it = story.begin();
-    info->trainedModel->setWeights(*it);
-    float lastLkl = info->evaluator->getLogLikeliHood(info->trainSet);
-    ++it;
-    for (it; it != story.end(); ++it) {
-      info->trainedModel->setWeights(*it);
-      float lkl = info->evaluator->getLogLikeliHood(info->trainSet);
-      EXPECT_GE(lastLkl, lkl);
-      lastLkl = lkl;
+template <typename TrainerT>
+bool check_trainer(const Models &models, const TrainSet &train_set,
+                   const float stoch_percentage, const bool check_Lkl = true,
+                   const std::size_t threads = 1) {
+  set_ones(models.trained_model);
+  StoryAware<TrainerT> trainer;
+  trainer.setMaxIterations(30);
+  {
+    ::train::GradientDescendFixed *as_fixed =
+        dynamic_cast<::train::GradientDescendFixed *>(&trainer);
+    if (nullptr != as_fixed) {
+      as_fixed->setOptimizationStep(0.5);
     }
-    info->trainedModel->setWeights(finalWeight);
   }
-};
+  TrainInfo info;
+  info.stochastic_percentage = stoch_percentage;
+  info.threads = threads;
+  train_model(models.trained_model, trainer, train_set, info);
+  // check tuned values
+  if (!are_similar(models.reference_model.getWeights(),
+                   models.trained_model.getWeights())) {
+    return false;
+  }
+  // check marginal computation
+  if (!are_marginals_similar(models)) {
+    return false;
+  }
+  // check decresing trend
+  if (check_Lkl && (!has_likelihood_decreasing_trend(models.trained_model,
+                                                     train_set.makeIterator(),
+                                                     trainer.getStory()))) {
+    return false;
+  }
+  return true;
+}
+
+std::shared_ptr<FactorExponential>
+make_corr_factor(const VariablePtr &first, const VariablePtr &second,
+                 const float w, const bool correlating_nature = true) {
+  std::unique_ptr<Factor> factor;
+  if (correlating_nature) {
+    factor = std::make_unique<Factor>(Group{first, second},
+                                      USE_SIMPLE_CORRELATION_TAG);
+  } else {
+    factor = std::make_unique<Factor>(Group{first, second},
+                                      USE_SIMPLE_ANTI_CORRELATION_TAG);
+  }
+  return std::make_shared<FactorExponential>(factor, w);
+}
 } // namespace
 
-// class SmallRandomField : public TrainTest {
-// public:
-//   SmallRandomField() = default;
+TEST_CASE("Small random field", "[train]") {
+  VariablePtr A = make_variable(3, "A");
+  VariablePtr B = make_variable(3, "B");
+  VariablePtr C = make_variable(3, "C");
 
-// protected:
-//   std::unique_ptr<EFG::train::Trainable> getModel() const override {
-//     VariablePtr A = std::make_shared<Variable>(3, "A");
-//     VariablePtr B = std::make_shared<Variable>(3, "B");
-//     VariablePtr C = std::make_shared<Variable>(3, "C");
+  RandomField reference_model;
+  reference_model.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
+  reference_model.addTunableFactor(make_corr_factor(A, B, 2.f, true));
+  reference_model.addTunableFactor(make_corr_factor(A, C, 0.5f, true));
 
-//     std::unique_ptr<model::RandomField> model =
-//         std::make_unique<model::RandomField>();
-//     model->insert(std::make_shared<factor::cnst::FactorExponential>(
-//         factor::cnst::IndicatorFactor(A, 0), 1.f));
-//     model->insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
-//     model->insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
-//     return std::move(model);
-//   }
-// };
+  RandomField to_tune(reference_model);
+  Models models{reference_model, to_tune};
 
-// class MediumRandomField : public TrainTest {
-// public:
-//   MediumRandomField() = default;
+  TrainSet train_set(reference_model.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{100, 10, 0}));
 
-// protected:
-//   std::unique_ptr<EFG::train::Trainable> getModel() const override {
-//     VariablePtr A = std::make_shared<Variable>(3, "A");
-//     VariablePtr B = std::make_shared<Variable>(3, "B");
-//     VariablePtr C = std::make_shared<Variable>(3, "C");
-//     VariablePtr D = std::make_shared<Variable>(3, "D");
-//     VariablePtr E = std::make_shared<Variable>(3, "E");
+  REQUIRE(is_gradient_in_right_direction(models, train_set.makeIterator()));
 
-//     std::unique_ptr<model::RandomField> model =
-//         std::make_unique<model::RandomField>();
-//     model->insert(std::make_shared<factor::cnst::FactorExponential>(
-//         factor::cnst::IndicatorFactor(A, 0), 1.f));
-//     model->insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
-//     model->insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
-//     model->insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, D}, true), 2.f));
-//     model->insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, E}, true), 0.5f));
-//     return std::move(model);
-//   }
-// };
+  SECTION("Gradient Descend Fixed") {
+    CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set, 1.f));
+  }
+  SECTION("Gradient Descend Adaptive") {
+    CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+        models, train_set, 1.f));
+  }
+  SECTION("Gradient Descend Conjugate") {
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+        models, train_set, 1.f));
+  }
+  SECTION("Quasi Newton") {
+    CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set, 1.f));
+  }
+}
 
-// class MediumRandomFieldStoch : public MediumRandomField {
-// public:
-//   MediumRandomFieldStoch() = default;
+TEST_CASE("Medium random field", "[train]") {
+  VariablePtr A = make_variable(3, "A");
+  VariablePtr B = make_variable(3, "B");
+  VariablePtr C = make_variable(3, "C");
+  VariablePtr D = make_variable(3, "D");
+  VariablePtr E = make_variable(3, "E");
 
-// protected:
-//   EFG::train::TrainSetPtr getTrainSet() override {
-//     EFG::strct::GibbsSampler *sampler =
-//         dynamic_cast<EFG::strct::GibbsSampler *>(info->referenceModel.get());
-//     return std::make_unique<EFG::train::TrainSet>(
-//         sampler->getHiddenSetSamples(3000, 50));
-//   };
+  RandomField reference_model;
+  reference_model.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
+  reference_model.addTunableFactor(make_corr_factor(A, B, 2.f, true));
+  reference_model.addTunableFactor(make_corr_factor(A, C, 0.5f, true));
+  reference_model.addTunableFactor(make_corr_factor(A, D, 2.f, true));
+  reference_model.addTunableFactor(make_corr_factor(A, E, 0.5f, true));
 
-//   void SetUp() override {
-//     this->MediumRandomField::SetUp();
-//     this->checkLkl = false;
-//     this->wErrToll = 0.37f;
-//     this->train_set_percentage = std::make_unique<float>(0.1f);
+  RandomField to_tune(reference_model);
+  Models models{reference_model, to_tune};
 
-//     this->use_adaptive_descend = false;
-//     this->use_conjugate = false;
-//     this->use_newton = false;
-//   }
-// };
+  SECTION("Full training set") {
+    TrainSet train_set(reference_model.getHiddenSetSamples(
+        GibbsSampler::SamplesGenerationContext{100, 10, 0}));
 
-// class MediumRandomFieldThreadPool : public MediumRandomField {
-// public:
-//   MediumRandomFieldThreadPool() = default;
+    REQUIRE(is_gradient_in_right_direction(models, train_set.makeIterator()));
 
-// protected:
-//   void SetUp() override {
-//     this->MediumRandomField::SetUp();
-//     dynamic_cast<strct::ThreadPoolAware *>(info->trainedModel.get())
-//         ->setThreadPoolSize(3);
-//   }
-// };
+    SECTION("Gradient Descend Fixed") {
+      auto threads = GENERATE(1, 3);
+      CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set, 1.f,
+                                                         true, threads));
+    }
+    SECTION("Gradient Descend Adaptive") {
+      CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+          models, train_set, 1.f));
+    }
+    SECTION("Gradient Descend Conjugate") {
+      CHECK(check_trainer<
+            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+          models, train_set, 1.f));
+    }
+    SECTION("Quasi Newton") {
+      CHECK(
+          check_trainer<::train::GradientDescendFixed>(models, train_set, 1.f));
+    }
+  }
 
-// class SmallConditionalRandomField : public TrainTest {
-// public:
-//   SmallConditionalRandomField() = default;
+  SECTION("Stochastic training set") {
+    TrainSet train_set(reference_model.getHiddenSetSamples(
+        GibbsSampler::SamplesGenerationContext{1000, 50, 0}));
 
-// protected:
-//   std::unique_ptr<EFG::train::Trainable> getModel() const override {
-//     VariablePtr A = std::make_shared<Variable>(3, "A");
-//     VariablePtr B = std::make_shared<Variable>(3, "B");
-//     VariablePtr C = std::make_shared<Variable>(3, "C");
+    const float percentage = 0.1f;
 
-//     model::RandomField model;
-//     model.insert(std::make_shared<factor::cnst::FactorExponential>(
-//         factor::cnst::IndicatorFactor(A, 0), 1.f));
-//     model.insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, B}, true), 2.f));
-//     model.insertTunable(std::make_shared<factor::modif::FactorExponential>(
-//         factor::cnst::Factor(std::set<VariablePtr>{A, C}, true), 0.5f));
-//     model.resetEvidences({{"B", 0}, {"C", 0}});
-//     return std::make_unique<ConditionalRandomField>(model);
-//   }
+    SECTION("Gradient Descend Fixed") {
+      CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set,
+                                                         percentage, false));
+    }
+    SECTION("Gradient Descend Adaptive") {
+      CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+          models, train_set, percentage, false));
+    }
+    SECTION("Gradient Descend Conjugate") {
+      CHECK(check_trainer<
+            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+          models, train_set, percentage, false));
+    }
+    SECTION("Quasi Newton") {
+      CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set,
+                                                         percentage, false));
+    }
+  }
+}
 
-//   EFG::train::TrainSetPtr getTrainSet() override {
-//     std::size_t iter = 50;
-//     std::vector<categoric::Combination> rawSamples;
-//     EFG::strct::GibbsSampler *sampler =
-//         dynamic_cast<EFG::strct::GibbsSampler *>(info->referenceModel.get());
-//     EFG::strct::NodesAware *nodes =
-//         dynamic_cast<EFG::strct::NodesAware *>(info->referenceModel.get());
-//     EFG::strct::EvidencesSetter *setter =
-//         dynamic_cast<EFG::strct::EvidencesSetter
-//         *>(info->referenceModel.get());
-//     std::set<categoric::VariablePtr> evidences = {nodes->findVariable("B"),
-//                                                   nodes->findVariable("C")};
-//     rawSamples.reserve(iter * categoric::Group(evidences).size());
-//     categoric::Range range(evidences);
-//     iterator::forEach(range, [&](const categoric::Range &r) {
-//       std::vector<std::size_t> ev = {r.get().data()[0], r.get().data()[1]};
-//       setter->setEvidences(ev);
-//       auto samples = sampler->getHiddenSetSamples(iter, 50);
-//       for (auto it = samples.begin(); it != samples.end(); ++it) {
-//         rawSamples.emplace_back(3);
-//         rawSamples.back().data()[0] = it->data()[0];
-//         rawSamples.back().data()[1] = ev[0];
-//         rawSamples.back().data()[2] = ev[1];
-//       }
-//     });
-//     return std::make_shared<EFG::train::TrainSet>(rawSamples);
-//   };
+TEST_CASE("Small conditional random field", "[train]") {
+  VariablePtr A = make_variable(3, "A");
+  VariablePtr B = make_variable(3, "B");
+  VariablePtr C = make_variable(3, "C");
 
-//   void SetUp() override {
-//     this->TrainTest::SetUp();
-//     this->wErrToll = 0.35f;
-//   }
-// };
+  RandomField reference_model_temp;
+  reference_model_temp.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
+  reference_model_temp.addTunableFactor(make_corr_factor(A, B, 2.f, true));
+  reference_model_temp.addTunableFactor(make_corr_factor(A, C, 0.5f, true));
+  reference_model_temp.setEvidence(B, 0);
+  reference_model_temp.setEvidence(C, 0);
+  ConditionalRandomField reference_model(reference_model_temp, false);
 
-// TEST_F(SmallRandomField, check) { this->CHECK(); }
+  ConditionalRandomField to_tune(reference_model);
+  Models models{reference_model, to_tune};
 
-// TEST_F(MediumRandomField, check) { this->CHECK(); }
+  TrainSet train_set(reference_model.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{100, 10, 0}));
+  throw std::runtime_error{"Compute train set of conditional random in field "
+                           "in a funciton inside library"};
 
-// TEST_F(MediumRandomFieldStoch, check) { this->CHECK(); }
+  REQUIRE(is_gradient_in_right_direction(models, train_set.makeIterator()));
 
-// TEST_F(SmallConditionalRandomField, check) { this->CHECK(); }
-
-// TEST_F(MediumRandomFieldThreadPool, check) { this->CHECK(); }
+  SECTION("Gradient Descend Fixed") {
+    CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set, 1.f));
+  }
+  SECTION("Gradient Descend Adaptive") {
+    CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+        models, train_set, 1.f));
+  }
+  SECTION("Gradient Descend Conjugate") {
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+        models, train_set, 1.f));
+  }
+  SECTION("Quasi Newton") {
+    CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set, 1.f));
+  }
+}
