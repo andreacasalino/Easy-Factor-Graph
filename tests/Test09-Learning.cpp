@@ -228,7 +228,7 @@ make_corr_factor(const VariablePtr &first, const VariablePtr &second,
     factor = std::make_unique<Factor>(Group{first, second},
                                       USE_SIMPLE_ANTI_CORRELATION_TAG);
   }
-  return std::make_shared<FactorExponential>(factor, w);
+  return std::make_shared<FactorExponential>(*factor, w);
 }
 } // namespace
 
