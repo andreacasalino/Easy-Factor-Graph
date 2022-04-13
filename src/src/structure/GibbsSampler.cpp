@@ -12,12 +12,16 @@
 #include <algorithm>
 #include <list>
 #include <random>
+#include <time.h>
 
 namespace EFG::strct {
 namespace {
 class UniformSampler {
 public:
-  UniformSampler() = default;
+  UniformSampler() {
+    auto random_seed = static_cast<unsigned int>(time(NULL));
+    resetSeed(random_seed);
+  }
 
   std::size_t sampleFromDiscrete(const std::vector<float> &distribution) const {
     float s = this->sample();
@@ -103,7 +107,6 @@ std::vector<float> ones(const std::size_t size) {
 
 Task to_task(const SamplerNode &subject,
              const std::vector<UniformSampler> &engines) {
-  throw 0; // gestire questione seeds
   Task result = [subject = subject, &engines](const std::size_t th_id) {
     const auto &engine = engines[th_id];
     auto unaries = subject.static_unaries;
@@ -139,8 +142,17 @@ Tasks to_tasks(const std::vector<SamplerNode> &subject,
 
 std::vector<Tasks> make_tasks(const std::vector<SamplerNode> &nodes,
                               std::vector<UniformSampler> &engines,
+                              const std::optional<std::size_t> &seed,
                               Pool &pool) {
   engines.resize(pool.size());
+  if (std::nullopt != seed) {
+    std::size_t s = *seed;
+    for (auto &engine : engines) {
+      engine.resetSeed(s);
+      s += 5;
+    }
+  }
+
   std::list<const SamplerNode *> open;
   for (auto &node : nodes) {
     open.push_back(&node);
@@ -188,7 +200,7 @@ GibbsSampler::getHiddenSetSamples(const SamplesGenerationContext &context,
   auto sampling_nodes = make_nodes(getState().clusters, combination);
   std::vector<UniformSampler> engines;
   auto &pool = getPool();
-  auto sampling_tasks = make_tasks(sampling_nodes, engines, pool);
+  auto sampling_tasks = make_tasks(sampling_nodes, engines, context.seed, pool);
 
   std::vector<categoric::Combination> result;
   result.reserve(context.samples_number);

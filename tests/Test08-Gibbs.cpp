@@ -12,6 +12,7 @@ using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::model;
 using namespace EFG::strct;
+using namespace EFG::io;
 
 namespace {
 std::string make_file_path(const std::string &file_name) {
@@ -64,7 +65,7 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
 
   model.setEvidence(model.findVariable("A"), 1);
   auto samples = model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{500, 50});
+      GibbsSampler::SamplesGenerationContext{500, 50, 0});
   REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
   CHECK(almost_equal(1.f, expf(w),
                      getFrequency1(samples, model.getHiddenVariables(),
@@ -76,10 +77,12 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
   Graph model;
   xml::Importer::importFromFile(model, make_file_path("graph_1.xml"));
 
+  auto threads = GENERATE(1, 4);
+
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
   auto samples = model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{500, 20});
+      GibbsSampler::SamplesGenerationContext{500, 20, 0}, threads);
   REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
 
   CHECK(almost_equal((a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e)),
@@ -103,10 +106,12 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
   Graph model;
   xml::Importer::importFromFile(model, make_file_path("graph_3.xml"));
 
+  auto threads = GENERATE(1, 4);
+
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
   auto samples = model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{500, 20});
+      GibbsSampler::SamplesGenerationContext{500, 20}, threads);
   REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
   CHECK(almost_equal(3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
                      getFrequency1(samples, model.getHiddenVariables(),

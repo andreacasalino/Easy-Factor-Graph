@@ -24,6 +24,12 @@ public:
      * of one sample and another
      */
     std::optional<std::size_t> delta_iterations;
+    /**
+     * @brief sets the seed of the random engine.
+     * Passing a nullopt will make the sampler to generate a random seed by
+     * using the current time.
+     */
+    std::optional<std::size_t> seed;
   };
   /**
    * @brief Use Gibbs sampling approach to draw empirical samples of the hidden
