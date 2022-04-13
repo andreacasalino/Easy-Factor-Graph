@@ -50,6 +50,12 @@ public:
    */
   void setEvidences(const std::vector<std::size_t> &values);
 
+  // TODO comment
+  std::vector<categoric::Combination>
+  makeTrainSet(const GibbsSampler::SamplesGenerationContext &context,
+               const float range_percentage = 1.f,
+               const std::size_t threads = 1);
+
 protected:
   std::vector<float> getWeightsGradient_(
       const train::TrainSet::Iterator &train_set_combinations) final;

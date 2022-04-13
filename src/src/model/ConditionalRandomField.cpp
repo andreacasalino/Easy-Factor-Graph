@@ -6,21 +6,42 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
 #include <EasyFactorGraph/trainable/tuners/TunerVisitor.h>
 
 #include "HiddenObservedTuner.h"
 
+#include <algorithm>
+#include <math.h>
+
 namespace EFG::model {
-ConditionalRandomField::ConditionalRandomField(
-    const ConditionalRandomField &o) {
+namespace {
+std::vector<std::size_t>
+find_positions(const categoric::VariablesSoup &all_vars,
+               const categoric::VariablesSet &to_find) {
+  std::vector<std::size_t> result;
+  result.reserve(to_find.size());
+  for (const auto &var : to_find) {
+    auto it = std::find(all_vars.begin(), all_vars.end(), var);
+    result.push_back(std::distance(all_vars.begin(), it));
+  }
+  return result;
+}
+} // namespace
+
+ConditionalRandomField::ConditionalRandomField(const ConditionalRandomField &o)
+    : evidence_vars_positions(
+          find_positions(o.getAllVariables(), o.getObservedVariables())) {
   absorb(SourceStructure{static_cast<const strct::FactorsAware *>(&o),
                          static_cast<const train::FactorsTunableAware *>(&o)},
          true);
 }
 
 ConditionalRandomField::ConditionalRandomField(const RandomField &source,
-                                               const bool copy) {
+                                               const bool copy)
+    : evidence_vars_positions(find_positions(source.getAllVariables(),
+                                             source.getObservedVariables())) {
   absorb(
       SourceStructure{static_cast<const strct::FactorsAware *>(&source),
                       static_cast<const train::FactorsTunableAware *>(&source)},
@@ -169,5 +190,82 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
     alfas[k] -= betas[k];
   }
   return alfas;
+}
+
+namespace {
+std::vector<std::size_t>
+assemble_combination(const strct::Evidences &evidences,
+                     const std::vector<std::size_t> &evidence_vars_position,
+                     const categoric::Combination &hidden_set_combiantion,
+                     const std::vector<std::size_t> &hidden_vars_position) {
+  std::vector<std::size_t> result;
+  {
+    std::size_t k = 0;
+    for (const auto &[var, val] : evidences) {
+      result[evidence_vars_position[k]] = val;
+      ++k;
+    }
+  }
+  {
+    const auto &data = hidden_set_combiantion.data();
+    for (std::size_t k = 0; k < data.size(); ++k) {
+      result[hidden_vars_position[k]] = data[k];
+    }
+  }
+  return result;
+}
+} // namespace
+
+std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
+    const GibbsSampler::SamplesGenerationContext &context,
+    const float range_percentage, const std::size_t threads) {
+  if ((range_percentage > 1.f) || (range_percentage, 0)) {
+    throw Error{"Invalid range percentage"};
+  }
+
+  std::vector<std::size_t> hidden_vars_position =
+      find_positions(getAllVariables(), getHiddenVariables());
+
+  std::vector<categoric::Combination> result;
+  const auto evidence_set = getObservedVariables();
+  auto evidences_group = categoric::Group{
+      categoric::VariablesSoup{evidence_set.begin(), evidence_set.end()}};
+  categoric::GroupRange evidences_range(evidences_group);
+  const auto &evidences = getState().evidences;
+  if (1.f == range_percentage) {
+    categoric::for_each_combination(
+        evidences_range, [&](const categoric::Combination &ev) {
+          this->setEvidences(ev.data());
+          for (const auto &sample :
+               this->getHiddenSetSamples(context, threads)) {
+            result.emplace_back(
+                assemble_combination(evidences, this->evidence_vars_positions,
+                                     sample, hidden_vars_position));
+          }
+        });
+  } else {
+    const std::size_t result_max_size = evidences_group.size();
+    const std::size_t result_size_approx =
+        static_cast<std::size_t>(floorf(result_max_size * range_percentage));
+    const std::size_t delta = result_max_size / result_size_approx;
+    std::size_t k = 0;
+    while (k < result_max_size) {
+      const categoric::Combination &ev = *evidences_range;
+      setEvidences(ev.data());
+      for (const auto &sample : this->getHiddenSetSamples(context, threads)) {
+        result.emplace_back(assemble_combination(evidences,
+                                                 this->evidence_vars_positions,
+                                                 sample, hidden_vars_position));
+      }
+      if ((k + delta) >= result_max_size) {
+        break;
+      }
+      for (std::size_t i = 0; i < delta; ++i) {
+        ++evidences_range;
+      }
+      k += delta;
+    }
+  }
+  return result;
 }
 } // namespace EFG::model

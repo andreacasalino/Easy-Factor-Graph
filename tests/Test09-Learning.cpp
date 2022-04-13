@@ -352,8 +352,8 @@ TEST_CASE("Small conditional random field", "[train]") {
   ConditionalRandomField to_tune(reference_model);
   Models models{reference_model, to_tune};
 
-  TrainSet train_set(reference_model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{100, 10, 0}));
+  TrainSet train_set(reference_model.makeTrainSet(
+      GibbsSampler::SamplesGenerationContext{100, 10, 0}, 0.5f));
   throw std::runtime_error{"Compute train set of conditional random in field "
                            "in a funciton inside library"};
 
