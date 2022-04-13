@@ -53,7 +53,7 @@ public:
   // TODO comment
   std::vector<categoric::Combination>
   makeTrainSet(const GibbsSampler::SamplesGenerationContext &context,
-               const float range_percentage = 1.f,
+               const float range_percentage = 0.2f,
                const std::size_t threads = 1);
 
 protected:

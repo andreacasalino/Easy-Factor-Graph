@@ -227,22 +227,24 @@ std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
       find_positions(getAllVariables(), getHiddenVariables());
 
   std::vector<categoric::Combination> result;
+  const auto &evidences = getState().evidences;
+  auto emplace_samples = [&](const categoric::Combination &ev) {
+    this->setEvidences(ev.data());
+    for (const auto &sample : this->getHiddenSetSamples(context, threads)) {
+      result.emplace_back(assemble_combination(evidences,
+                                               this->evidence_vars_positions,
+                                               sample, hidden_vars_position));
+    }
+  };
+
   const auto evidence_set = getObservedVariables();
   auto evidences_group = categoric::Group{
       categoric::VariablesSoup{evidence_set.begin(), evidence_set.end()}};
   categoric::GroupRange evidences_range(evidences_group);
-  const auto &evidences = getState().evidences;
   if (1.f == range_percentage) {
     categoric::for_each_combination(
-        evidences_range, [&](const categoric::Combination &ev) {
-          this->setEvidences(ev.data());
-          for (const auto &sample :
-               this->getHiddenSetSamples(context, threads)) {
-            result.emplace_back(
-                assemble_combination(evidences, this->evidence_vars_positions,
-                                     sample, hidden_vars_position));
-          }
-        });
+        evidences_range,
+        [&](const categoric::Combination &ev) { emplace_samples(ev); });
   } else {
     const std::size_t result_max_size = evidences_group.size();
     const std::size_t result_size_approx =
@@ -250,13 +252,7 @@ std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
     const std::size_t delta = result_max_size / result_size_approx;
     std::size_t k = 0;
     while (k < result_max_size) {
-      const categoric::Combination &ev = *evidences_range;
-      setEvidences(ev.data());
-      for (const auto &sample : this->getHiddenSetSamples(context, threads)) {
-        result.emplace_back(assemble_combination(evidences,
-                                                 this->evidence_vars_positions,
-                                                 sample, hidden_vars_position));
-      }
+      emplace_samples(*evidences_range);
       if ((k + delta) >= result_max_size) {
         break;
       }
