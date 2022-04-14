@@ -3,11 +3,13 @@
 
 #include <EasyFactorGraph/io/xml/Exporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/model/Graph.h>
 #include <EasyFactorGraph/model/RandomField.h>
 
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::strct;
+using namespace EFG::train;
 using namespace EFG::model;
 using namespace EFG::distribution;
 
@@ -66,7 +68,7 @@ bool exist_factor_with_group(const ContainerT &subject, const StateAware &model,
   return false;
 }
 
-bool check_imported_variables(const RandomField &model) {
+bool check_imported_variables(const StateAware &model) {
   const auto vars = model.getAllVariables();
   const std::vector<std::string> expected_vars = {"V0", "V1", "V2", "V3", "O"};
   if (expected_vars.size() != vars.size()) {
@@ -89,7 +91,7 @@ struct VarPair {
   std::string second;
 };
 
-bool check_imported_const_factors(const RandomField &model) {
+bool check_imported_const_factors(const FactorsAware &model) {
   const auto const_factors = model.getConstFactors();
   if (const_factors.size() != 4) {
     return false;
@@ -105,7 +107,7 @@ bool check_imported_const_factors(const RandomField &model) {
   return true;
 }
 
-bool check_imported_tunable_factors(const RandomField &model) {
+bool check_imported_tunable_factors(const FactorsTunableAware &model) {
   const auto tunable_factors = model.getTunableFactors();
   if (tunable_factors.size() != 4) {
     return false;
@@ -121,11 +123,15 @@ bool check_imported_tunable_factors(const RandomField &model) {
   return true;
 }
 
-bool check_imported_evidences(const RandomField &model) {
-  Evidences expected;
-  expected.emplace(model.findVariable("O"), 1);
+bool check_imported_evidences(const StateAware &model) {
   const auto &evidences = model.getEvidences();
-  if (expected != evidences) {
+  if (evidences.size() != 1) {
+    return false;
+  }
+  if (evidences.begin()->first != model.findVariable("O")) {
+    return false;
+  }
+  if (evidences.begin()->second != 1) {
     return false;
   }
   return true;
@@ -153,31 +159,53 @@ TEST_CASE("xml managing", "[io][xml]") {
   EFG::io::xml::Exporter::exportToFile(
       model, EFG::io::xml::ExportInfo{temp_file, "Model"});
 
-  RandomField model_imported;
-  EFG::io::xml::Importer::importFromFile(model_imported, temp_file);
+  SECTION("tunable model") {
+    RandomField model_imported;
+    EFG::io::xml::Importer::importFromFile(model_imported, temp_file);
 
-  CHECK(check_imported_variables(model_imported));
-  CHECK(check_imported_const_factors(model_imported));
-  CHECK(check_imported_tunable_factors(model_imported));
-  CHECK(check_imported_evidences(model_imported));
-  CHECK(check_imported_clusters(model_imported));
+    CHECK(check_imported_variables(model_imported));
+    CHECK(check_imported_const_factors(model_imported));
+    CHECK(check_imported_tunable_factors(model_imported));
+    CHECK(check_imported_evidences(model_imported));
+    CHECK(check_imported_clusters(model_imported));
+  }
+
+  SECTION("constant model") {
+    Graph model_imported;
+    EFG::io::xml::Importer::importFromFile(model_imported, temp_file);
+
+    CHECK(check_imported_variables(model_imported));
+    CHECK(model_imported.getConstFactors().size() == 8);
+    CHECK(check_imported_evidences(model_imported));
+  }
 }
 
-// #include <EasyFactorGraph/io/json/Exporter.h>
-// #include <EasyFactorGraph/io/json/Importer.h>
+#include <EasyFactorGraph/io/json/Exporter.h>
+#include <EasyFactorGraph/io/json/Importer.h>
 
-// TEST_CASE("json managing", "[io][json]") {
-//   auto model = make_test_model();
-//   const std::string temp_file = "./temp.json";
+TEST_CASE("json managing", "[io][json]") {
+  auto model = make_test_model();
+  const std::string temp_file = "./temp.json";
 
-//   EFG::io::json::Exporter::exportToFile(model, temp_file);
+  EFG::io::json::Exporter::exportToFile(model, temp_file);
 
-//   RandomField model_imported;
-//   EFG::io::json::Importer::importFromFile(model_imported, temp_file);
+  SECTION("tunable model") {
+    RandomField model_imported;
+    EFG::io::json::Importer::importFromFile(model_imported, temp_file);
 
-// CHECK(check_imported_variables(model_imported));
-// CHECK(check_imported_const_factors(model_imported));
-// CHECK(check_imported_tunable_factors(model_imported));
-// CHECK(check_imported_evidences(model_imported));
-// CHECK(check_imported_clusters(model_imported));
-// }
+    CHECK(check_imported_variables(model_imported));
+    CHECK(check_imported_const_factors(model_imported));
+    CHECK(check_imported_tunable_factors(model_imported));
+    CHECK(check_imported_evidences(model_imported));
+    CHECK(check_imported_clusters(model_imported));
+  }
+
+  SECTION("constant model") {
+    Graph model_imported;
+    EFG::io::json::Importer::importFromFile(model_imported, temp_file);
+
+    CHECK(check_imported_variables(model_imported));
+    CHECK(model_imported.getConstFactors().size() == 8);
+    CHECK(check_imported_evidences(model_imported));
+  }
+}

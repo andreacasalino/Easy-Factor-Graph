@@ -33,14 +33,18 @@ const nlohmann::json &access(const nlohmann::json &subject,
 
 std::string to_string(const nlohmann::json &subject) {
   if (subject.is_string()) {
-    return subject.dump();
+    auto raw_dump = subject.dump();
+    return std::string{raw_dump, 1, raw_dump.size() - 2};
   }
   throw Error{"Expected a string"};
 }
 
 categoric::VariablePtr findVariable(const std::string &name,
                                     const categoric::VariablesSet &variables) {
-  auto itV = variables.find(categoric::make_variable(2, name));
+  const auto itV = std::find_if(variables.begin(), variables.end(),
+                                [&name](const categoric::VariablePtr &var) {
+                                  return var->name() == name;
+                                });
   if (itV == variables.end()) {
     throw Error("Inexistent variable");
   }
@@ -123,11 +127,11 @@ void importPotential(const nlohmann::json &subject,
 };
 } // namespace
 
-std::unordered_set<std::string> convert(const AdderPtrs &recipient,
-                                        const nlohmann::json &source) {
+std::unordered_map<std::string, std::size_t>
+Importer::convert(const AdderPtrs &recipient, const nlohmann::json &source) {
   // import variables
   categoric::VariablesSet variables;
-  std::unordered_set<std::string> evidences;
+  std::unordered_map<std::string, std::size_t> evidences;
   for (const auto &var : source["Variables"]) {
     const auto name = to_string(access(var, "name"));
     const auto size = to_string(access(var, "Size"));
@@ -136,9 +140,11 @@ std::unordered_set<std::string> convert(const AdderPtrs &recipient,
       throw Error{name, " is a multiple times specified variable "};
     }
     variables.emplace(new_var);
-    const auto *obs_flag = try_access(var, "flag");
-    if ((nullptr != obs_flag) && (to_string(*obs_flag) == "O")) {
-      evidences.emplace(name);
+    const auto *obs_flag = try_access(var, "evidence");
+    if (nullptr != obs_flag) {
+      const std::size_t val =
+          static_cast<std::size_t>(std::atoi(to_string(*obs_flag).c_str()));
+      evidences.emplace(name, val);
     }
   }
   // import potentials

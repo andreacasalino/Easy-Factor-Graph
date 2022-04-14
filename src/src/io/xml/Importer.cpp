@@ -142,8 +142,8 @@ void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
 };
 } // namespace
 
-std::unordered_set<std::string> Importer::convert(const AdderPtrs &subject,
-                                                  const File &file_path) {
+std::unordered_map<std::string, std::size_t>
+Importer::convert(const AdderPtrs &subject, const File &file_path) {
   auto maybe_parsed_root = xmlPrs::parse_xml(file_path.str());
   auto maybe_parsed_error = std::get_if<xmlPrs::Error>(&maybe_parsed_root);
   if (nullptr != maybe_parsed_error) {
@@ -152,7 +152,7 @@ std::unordered_set<std::string> Importer::convert(const AdderPtrs &subject,
   const auto &parsed_root = std::get<xmlPrs::Root>(maybe_parsed_root);
   // import variables
   categoric::VariablesSet variables;
-  std::unordered_set<std::string> evidences;
+  std::unordered_map<std::string, std::size_t> evidences;
   for_each_key(
       parsed_root.getNested(), xmlPrs::Name{"Variable"},
       [&variables, &evidences](const xmlPrs::TagPtr &var) {
@@ -163,9 +163,11 @@ std::unordered_set<std::string> Importer::convert(const AdderPtrs &subject,
           throw Error{name, " is a multiple times specified variable "};
         }
         variables.emplace(new_var);
-        const auto *obs_flag = try_access_attribute(*var, "flag");
-        if ((nullptr != obs_flag) && (*obs_flag == "O")) {
-          evidences.emplace(name);
+        const auto *obs_flag = try_access_attribute(*var, "evidence");
+        if (nullptr != obs_flag) {
+          const std::size_t val =
+              static_cast<std::size_t>(atoi(obs_flag->c_str()));
+          evidences.emplace(name, val);
         }
       });
   // import potentials

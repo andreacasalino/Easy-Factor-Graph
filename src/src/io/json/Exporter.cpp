@@ -61,7 +61,7 @@ void Exporter::convert(nlohmann::json &recipient, const AwarePtrs &subject) {
        subject.as_structure_aware->getEvidences()) {
     auto &new_var = variables.emplace_back();
     printVariable(evidence_var, new_var);
-    new_var["flag"] = "O";
+    new_var["evidence"] = std::to_string(evidence_val);
   }
   auto &potentials = recipient["Potentials"];
   // const factors

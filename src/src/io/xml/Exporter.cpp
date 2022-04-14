@@ -65,7 +65,7 @@ void Exporter::convert(std::ostream &recipient, const AwarePtrs &subject,
   for (const auto &[evidence_var, evidence_val] :
        subject.as_structure_aware->getEvidences()) {
     auto &var_tag = printVariable(evidence_var, exp_root);
-    var_tag.getAttributes().emplace("flag", "O");
+    var_tag.getAttributes().emplace("evidence", std::to_string(evidence_val));
   }
   // const factors
   for (const auto &const_factor :

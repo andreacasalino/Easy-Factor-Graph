@@ -45,19 +45,20 @@ public:
   };
 
 private:
-  static std::unordered_set<std::string> convert(const AdderPtrs &recipient,
-                                                 const nlohmann::json &source);
+  static std::unordered_map<std::string, std::size_t>
+  convert(const AdderPtrs &recipient, const nlohmann::json &source);
 
   template <typename Model>
-  static void set_evidences(Model &model,
-                            const std::unordered_set<std::string> &ev) {
+  static void
+  set_evidences(Model &model,
+                const std::unordered_map<std::string, std::size_t> &ev) {
     strct::EvidenceSetter *as_setter =
         dynamic_cast<strct::EvidenceSetter *>(&model);
     if (nullptr == as_setter) {
       return;
     }
-    for (const auto &var : ev) {
-      as_setter->setEvidence(as_setter->findVariable(var), 0);
+    for (const auto &[var, val] : ev) {
+      as_setter->setEvidence(as_setter->findVariable(var), val);
     }
   }
 };
