@@ -13,10 +13,10 @@
 #include <thread>
 
 namespace EFG::strct {
-class Pool::Worker {
+class WorkerConcrete : public Pool::Worker {
 public:
-  Worker(const std::size_t threads_numb, const std::size_t thread_id);
-  ~Worker();
+  WorkerConcrete(const std::size_t threads_numb, const std::size_t thread_id);
+  ~WorkerConcrete() override;
 
   void dispatch(const Tasks &tasks);
 
@@ -41,8 +41,8 @@ void process(const Tasks &subject, const std::size_t threads_numb,
 }
 } // namespace
 
-Pool::Worker::Worker(const std::size_t threads_numb,
-                     const std::size_t thread_id)
+WorkerConcrete::WorkerConcrete(const std::size_t threads_numb,
+                               const std::size_t thread_id)
     : threads_numb(threads_numb), thread_id(thread_id) {
   std::atomic_bool not_started = true;
   worker_ = std::thread{[this, &not_started]() {
@@ -61,12 +61,12 @@ Pool::Worker::Worker(const std::size_t threads_numb,
   }
 }
 
-Pool::Worker::~Worker() {
+WorkerConcrete::~WorkerConcrete() {
   life = false;
   worker_.join();
 }
 
-void Pool::Worker::dispatch(const Tasks &tasks) {
+void WorkerConcrete::dispatch(const Tasks &tasks) {
   std::scoped_lock lock(this->tasks_mtx);
   this->tasks = &tasks;
 }
@@ -77,18 +77,18 @@ Pool::Pool(const std::size_t size) {
   }
   workers.reserve(size - 1);
   for (std::size_t k = 1; k < size; ++k) {
-    workers.emplace_back(std::make_unique<Worker>(size, k));
+    workers.emplace_back(std::make_unique<WorkerConcrete>(size, k));
   }
 }
 
 void Pool::parallelFor(const std::vector<Task> &tasks) {
   std::scoped_lock(parallel_for_dispatch_mtx);
   for (auto &worker : workers) {
-    worker->dispatch(tasks);
+    static_cast<WorkerConcrete *>(worker.get())->dispatch(tasks);
   }
   process(tasks, workers.size() + 1, 0);
   for (auto &worker : workers) {
-    while (worker->isBusy()) {
+    while (static_cast<WorkerConcrete *>(worker.get())->isBusy()) {
     }
   }
 }

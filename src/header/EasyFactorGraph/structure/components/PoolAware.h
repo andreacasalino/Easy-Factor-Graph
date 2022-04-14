@@ -25,8 +25,15 @@ public:
 
   std::size_t size() const { return workers.size() + 1; }
 
+  class Worker {
+  public:
+    virtual ~Worker() = default;
+
+  protected:
+    Worker() = default;
+  };
+
 private:
-  class Worker;
   using WorkerPtr = std::unique_ptr<Worker>;
 
   std::mutex parallel_for_dispatch_mtx;
