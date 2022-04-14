@@ -16,6 +16,7 @@ class DistributionConcrete : virtual public Distribution {
 public:
   DistributionConcrete(const DistributionConcrete &o) = delete;
   DistributionConcrete &operator==(const DistributionConcrete &) = delete;
+  DistributionConcrete(DistributionConcrete &&o) = delete;
   DistributionConcrete &operator==(DistributionConcrete &&) = delete;
 
   CombinationFinder
@@ -35,8 +36,6 @@ public:
   };
 
 protected:
-  DistributionConcrete(DistributionConcrete &&o);
-
   DistributionConcrete(const EvaluatorPtr &evaluator,
                        const categoric::Group &vars);
 

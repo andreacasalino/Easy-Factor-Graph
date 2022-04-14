@@ -26,12 +26,16 @@ static const std::shared_ptr<BasicEvaluator> BASIC_EVALUATOR =
     std::make_shared<BasicEvaluator>();
 }
 
-Factor::Factor(const Distribution &to_clone) : Factor(to_clone.getVariables()) {
+Factor::Factor(const Distribution &to_clone,
+               const GenericCopyTag &GENERIC_COPY_TAG)
+    : Factor(to_clone.getVariables()) {
   auto &comb_map = getCombinationsMap_();
   for (const auto &[comb, raw_val] : to_clone.getCombinationsMap()) {
     comb_map.emplace(comb, to_clone.evaluate(comb));
   }
 }
+
+Factor::Factor(const Factor &o) : Factor(o, GENERIC_COPY_TAG) {}
 
 Factor::Factor(const categoric::Group &vars)
     : DistributionConcrete(BASIC_EVALUATOR, vars) {}
@@ -208,12 +212,4 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
 Factor::Factor(const categoric::Group &vars,
                const CombinationRawValuesMapPtr &map)
     : DistributionConcrete(BASIC_EVALUATOR, vars, map) {}
-
-// Factor::Factor(const Factor &o)
-//     : DistributionConcrete(
-//           BASIC_EVALUATOR, o.getVariables(),
-//           std::make_shared<CombinationRawValuesMap>(o.getCombinationsMap()))
-//           {}
-
-Factor::Factor(Factor &&o) : DistributionConcrete(std::move(o)) {}
 } // namespace EFG::distribution

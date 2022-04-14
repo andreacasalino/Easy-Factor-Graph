@@ -149,9 +149,10 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
   }
 
   SECTION("by sharing") {
+    Group group_AB{VariablesSoup{A, B}};
     std::shared_ptr<distribution::FactorExponential> to_insert =
-        std::make_shared<distribution::FactorExponential>(distribution::Factor{
-            Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
+        std::make_shared<distribution::FactorExponential>(
+            distribution::Factor{group_AB, USE_SIMPLE_CORRELATION_TAG});
 
     model.addTunableFactor(to_insert);
     model.checkPostInsertion();
@@ -163,11 +164,27 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
     CHECK(model.getTuners().size() == 1);
     CHECK(*model.getAllFactors().begin() == to_insert);
     CHECK(*model.getTunableFactors().begin() == to_insert);
-  }
 
-  throw std::runtime_error{
-      "add something with tunable unary potentials and sharing w potentials"};
-  throw std::runtime_error{"add something testing io for xml and io for json"};
+    SECTION("add factor sharing the weight") {
+      auto C = make_variable(2, "C");
+      std::shared_ptr<distribution::FactorExponential> to_insert2 =
+          std::make_shared<distribution::FactorExponential>(
+              distribution::Factor{Group{VariablesSoup{A, C}},
+                                   USE_SIMPLE_CORRELATION_TAG});
+
+      model.addTunableFactor(to_insert2, group_AB.getVariablesSet());
+      model.checkPostInsertion();
+      model.checkVariables(VariablesSet{A, B, C});
+
+      CHECK(model.getAllFactors().size() == 2);
+      CHECK(model.getConstFactors().size() == 0);
+      CHECK(model.getTunableFactors().size() == 2);
+      const auto clusters = model.getTunableClusters();
+      CHECK(clusters.size() == 1);
+      CHECK(clusters.front().size() == 2);
+      CHECK(model.getTuners().size() == 1);
+    }
+  }
 }
 
 TEST_CASE("tunable factors multiple insertions", "[insertion]") {
@@ -216,8 +233,8 @@ TEST_CASE("check bad factor insertions are refused", "[insertion]") {
   SECTION("factor connecting same variables") {
     DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
         Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
-    // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO find a
-    // way to make it work
+    // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO find
+    // a way to make it work
   }
 
   SECTION("factor referring to a bad variable") {
@@ -226,16 +243,16 @@ TEST_CASE("check bad factor insertions are refused", "[insertion]") {
     SECTION("bad unary factor") {
       DistributionCnstPtr to_insert2 =
           std::make_shared<Factor>(Group{VariablesSoup{A_bis}});
-      // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO find
-      // a way to make it work
+      // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO
+      // find a way to make it work
     }
 
     SECTION("bad binary factor") {
       auto C = make_variable(2, "C");
       DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
           Group{VariablesSoup{A_bis, C}}, USE_SIMPLE_CORRELATION_TAG);
-      // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO find
-      // a way to make it work
+      // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO
+      // find a way to make it work
     }
   }
 }

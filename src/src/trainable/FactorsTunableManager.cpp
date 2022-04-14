@@ -132,6 +132,7 @@ void FactorsTunableAdder::addTunableFactor(
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
   addDistribution(factor);
   auto tuner = makeTuner(factor);
+  tunable_factors.emplace(factor);
   if (std::nullopt == group_sharing_weight) {
     tuners.emplace_back(std::move(tuner));
     return;

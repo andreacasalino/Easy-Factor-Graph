@@ -21,6 +21,9 @@ struct UseSimpleAntiCorrelation {};
 constexpr UseSimpleAntiCorrelation USE_SIMPLE_ANTI_CORRELATION_TAG =
     UseSimpleAntiCorrelation{};
 
+struct GenericCopyTag {};
+constexpr GenericCopyTag GENERIC_COPY_TAG = GenericCopyTag{};
+
 class Factor : public DistributionConcrete, public DistributionSetter {
 public:
   /**
@@ -30,9 +33,9 @@ public:
    * combinations map of the factor to build, assigning the images values
    * obtained by evaluating the passed factor.
    */
-  Factor(const Distribution &to_clone);
+  Factor(const Distribution &to_clone, const GenericCopyTag &GENERIC_COPY_TAG);
 
-  Factor(Factor &&o);
+  Factor(const Factor &o);
 
   /**
    * @brief The variables set representing this factor is assumed equal to the

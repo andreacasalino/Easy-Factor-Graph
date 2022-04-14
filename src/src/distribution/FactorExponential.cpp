@@ -69,7 +69,4 @@ FactorExponential::FactorExponential(const FactorExponential &o)
           std::make_shared<ExponentialEvaluator>(o.getWeight()),
           o.getVariables(),
           std::make_shared<CombinationRawValuesMap>(o.getCombinationsMap())) {}
-
-FactorExponential::FactorExponential(FactorExponential &&o)
-    : DistributionConcrete(std::move(o)) {}
 } // namespace EFG::distribution

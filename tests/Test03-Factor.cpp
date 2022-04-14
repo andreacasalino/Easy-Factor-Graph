@@ -136,3 +136,50 @@ TEST_CASE("merge factors", "[factor]") {
     CHECK(distrABC.evaluate(comb) == val1 * val2);
   });
 }
+
+namespace {
+bool are_similar(const distribution::Distribution &a,
+                 const distribution::Distribution &b) {
+  const auto &map_a = a.getCombinationsMap();
+  const auto &map_b = b.getCombinationsMap();
+  if (map_a.size() != map_b.size()) {
+    return false;
+  }
+  auto map_b_it = map_b.begin();
+  for (auto map_a_it = map_a.begin(); map_a_it != map_a.end();
+       ++map_a_it, ++map_b_it) {
+    if (!((map_a_it->first == map_b_it->first) &&
+          (a.evaluate(map_a_it->first) == b.evaluate(map_b_it->first)))) {
+      return false;
+    }
+  }
+  return true;
+}
+} // namespace
+
+#include <EasyFactorGraph/distribution/FactorExponential.h>
+
+TEST_CASE("copy c'tor", "[factor]") {
+  Group group(VariablesSoup{make_variable(4, "A"), make_variable(4, "B"),
+                            make_variable(4, "C")});
+
+  Factor factor(group, USE_SIMPLE_CORRELATION_TAG);
+  SECTION("Factor") {
+    Factor copy(factor);
+    CHECK(are_similar(factor, copy));
+  }
+
+  SECTION("FactorExponential") {
+    const float w = 1.3f;
+    FactorExponential factor_exp(factor, w);
+    FactorExponential copy(factor_exp);
+    CHECK(are_similar(factor_exp, copy));
+  }
+
+  SECTION("Factor from FactorExponential") {
+    const float w = 1.3f;
+    FactorExponential factor_exp(factor, w);
+    Factor copy(factor_exp, distribution::GENERIC_COPY_TAG);
+    CHECK(are_similar(factor_exp, copy));
+  }
+}

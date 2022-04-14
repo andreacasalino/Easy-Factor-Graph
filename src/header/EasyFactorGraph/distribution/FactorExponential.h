@@ -45,7 +45,6 @@ public:
   FactorExponential(const Factor &factor);
 
   FactorExponential(const FactorExponential &o);
-  FactorExponential(FactorExponential &&o);
 
   /**
    * @brief sets the weight used by the exponential evaluator.

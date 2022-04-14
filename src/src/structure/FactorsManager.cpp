@@ -15,7 +15,9 @@ void FactorsAdder::addConstFactor(
 }
 
 void FactorsAdder::copyConstFactor(const distribution::Distribution &factor) {
-  auto cloned = std::make_shared<distribution::Factor>(factor);
+  auto cloned = std::make_shared<distribution::Factor>(
+      factor, distribution::GENERIC_COPY_TAG);
+
   addConstFactor(cloned);
 }
 } // namespace EFG::strct
