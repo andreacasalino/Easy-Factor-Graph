@@ -11,6 +11,7 @@
 
 #include <EasyFactorGraph/io/File.h>
 #include <EasyFactorGraph/io/Utils.h>
+#include <EasyFactorGraph/structure/EvidenceManager.h>
 
 namespace EFG::io::xml {
 class Importer {
@@ -20,17 +21,29 @@ public:
    * file and tries to add its factors to the passed model.
    * @param recipient of the model parsed from file
    * @param location of the model to parse and add to the passed one
-   * @return the evidences contained in the parsed file
    */
   template <typename Model>
-  static std::unordered_set<std::string> importFromFile(Model &model,
-                                                        const File &file_path) {
-    return convert(getAdderComponents(model), file_path);
+  static void importFromFile(Model &model, const File &file_path) {
+    auto evidences = convert(getAdderComponents(model), file_path);
+    set_evidences(model, evidences);
   };
 
 private:
   static std::unordered_set<std::string> convert(const AdderPtrs &recipient,
                                                  const File &file_path);
+
+  template <typename Model>
+  static void set_evidences(Model &model,
+                            const std::unordered_set<std::string> &ev) {
+    strct::EvidenceSetter *as_setter =
+        dynamic_cast<strct::EvidenceSetter *>(&model);
+    if (nullptr == as_setter) {
+      return;
+    }
+    for (const auto &var : ev) {
+      as_setter->setEvidence(as_setter->findVariable(var), 0);
+    }
+  }
 };
 } // namespace EFG::io::xml
 #endif

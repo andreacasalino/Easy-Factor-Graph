@@ -9,7 +9,6 @@
 
 #include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
-
 #include <XML-Parser/Parser.h>
 
 #include <variant>

@@ -50,11 +50,106 @@ RandomField make_test_model() {
   model.setEvidence(O, 1);
   return model;
 }
+
+template <typename ContainerT>
+bool exist_factor_with_group(const ContainerT &subject, const StateAware &model,
+                             const std::string &first,
+                             const std::string &second) {
+  VariablesSet group;
+  group.emplace(model.findVariable(first));
+  group.emplace(model.findVariable(second));
+  for (const auto &element : subject) {
+    const distribution::Distribution &distr = *element;
+    if (group == distr.getVariables().getVariablesSet()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool check_imported_model(const RandomField &model) {
+  {
+    const auto vars = model.getAllVariables();
+    const std::vector<std::string> expected_vars = {"V0", "V1", "V2", "V3",
+                                                    "O"};
+    if (expected_vars.size() != vars.size()) {
+      return false;
+    }
+    for (const auto &var_name : expected_vars) {
+      auto vars_it = std::find_if(vars.begin(), vars.end(),
+                                  [&var_name](const VariablePtr &var) {
+                                    return var_name == var->name();
+                                  });
+      if (vars_it == vars.end()) {
+        return false;
+      }
+    }
+  }
+
+  struct VarPair {
+    std::string first;
+    std::string second;
+  };
+
+  {
+    const auto const_factors = model.getConstFactors();
+    if (const_factors.size() != 5) {
+      return false;
+    }
+    const std::vector<VarPair> expected_groups = {
+        {"V0", "O"}, {"V1", "O"}, {"V2", "O"}, {"V3", "O"}};
+    for (const auto &group : expected_groups) {
+      if (!exist_factor_with_group(const_factors, model, group.first,
+                                   group.second)) {
+        return false;
+      }
+    }
+  }
+
+  {
+    const auto tunable_factors = model.getTunableFactors();
+    if (tunable_factors.size() != 4) {
+      return false;
+    }
+    const std::vector<VarPair> expected_groups = {
+        {"V0", "V1"}, {"V1", "V2"}, {"V2", "V3"}, {"V3", "V0"}};
+    for (const auto &group : expected_groups) {
+      if (!exist_factor_with_group(tunable_factors, model, group.first,
+                                   group.second)) {
+        return false;
+      }
+    }
+  }
+
+  {
+    Evidences expected;
+    expected.emplace(model.findVariable("O"), 1);
+    const auto &evidences = model.getEvidences();
+    if (expected != evidences) {
+      return false;
+    }
+  }
+
+  {
+    const auto w = model.getWeights();
+    if (w.size() != 3) {
+      return false;
+    }
+    std::vector<float> expected_w = {alfa, beta, gamma};
+    for (const auto val : expected_w) {
+      if (std::find(w.begin(), w.end(), val) == w.end()) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
 } // namespace
 
 TEST_CASE("xml managing", "[io][xml]") {
   auto model = make_test_model();
-  const std::string temp_file = "temp_xml.xml";
+  const std::string temp_file = "temp.xml";
 
   EFG::io::xml::Exporter::exportToFile(
       model, EFG::io::xml::ExportInfo{temp_file, "Model"});
@@ -62,28 +157,20 @@ TEST_CASE("xml managing", "[io][xml]") {
   RandomField model_imported;
   EFG::io::xml::Importer::importFromFile(model_imported, temp_file);
 
-  // chek the 2 models are identical in:
-  //  - variables
-  //  - factors const
-  //  - factors tunable clsuters
-  //  - evidences
+  CHECK(check_imported_model(model_imported));
 }
 
-#include <EasyFactorGraph/io/json/Exporter.h>
-#include <EasyFactorGraph/io/json/Importer.h>
+// #include <EasyFactorGraph/io/json/Exporter.h>
+// #include <EasyFactorGraph/io/json/Importer.h>
 
-TEST_CASE("json managing", "[io][json]") {
-  auto model = make_test_model();
-  const std::string temp_file = "temp_xml.json";
+// TEST_CASE("json managing", "[io][json]") {
+//   auto model = make_test_model();
+//   const std::string temp_file = "temp.json";
 
-  EFG::io::json::Exporter::exportToFile(model, temp_file);
+//   EFG::io::json::Exporter::exportToFile(model, temp_file);
 
-  RandomField model_imported;
-  EFG::io::json::Importer::importFromFile(model_imported, temp_file);
+//   RandomField model_imported;
+//   EFG::io::json::Importer::importFromFile(model_imported, temp_file);
 
-  // chek the 2 models are identical in:
-  //  - variables
-  //  - factors const
-  //  - factors tunable clsuters
-  //  - evidences
-}
+//   CHECK(check_imported_model(model_imported));
+// }
