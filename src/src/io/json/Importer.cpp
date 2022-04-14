@@ -10,7 +10,7 @@
 #include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/json/Importer.h>
 
-#include <variant>
+#include "../ImportUtils.h"
 
 namespace EFG::io::json {
 namespace {
@@ -96,36 +96,30 @@ importFactor(const nlohmann::json &subject,
   return result;
 };
 
-struct FactorAndSharingGroup {
-  std::shared_ptr<distribution::FactorExponential> factor;
-  std::optional<categoric::VariablesSet> sharing_group;
-};
-using PotentialToInsert =
-    std::variant<distribution::DistributionCnstPtr, FactorAndSharingGroup>;
-PotentialToInsert importPotential(const nlohmann::json &subject,
-                                  const categoric::VariablesSet &variables) {
+void importPotential(const nlohmann::json &subject,
+                     const categoric::VariablesSet &variables,
+                     ImportPredicate &importer) {
   auto shape = importFactor(subject, variables);
   const auto *w = try_access(subject, "weight");
   if (nullptr == w) {
-    return shape;
+    importer.importConst(shape);
+    return;
   }
 
+  auto factor = std::make_shared<distribution::FactorExponential>(
+      *shape, static_cast<float>(std::atof(to_string(*w).c_str())));
   const auto *tunab = try_access(subject, "tunability");
   if ((nullptr != tunab) && (to_string(*tunab) == "Y")) {
-    FactorAndSharingGroup result;
-    result.factor = std::make_shared<distribution::FactorExponential>(
-        *shape, static_cast<float>(std::atof(to_string(*w).c_str())));
     const auto *share_tag = try_access(subject, "Share");
     if (nullptr == share_tag) {
-      result.sharing_group.emplace(
-          importGroup(*share_tag, variables).getVariablesSet());
+      importer.importTunable(factor);
+    } else {
+      auto group = importGroup(*share_tag, variables).getVariablesSet();
+      importer.importTunable(factor, group);
     }
-    return result;
+    return;
   }
-  distribution::DistributionCnstPtr result =
-      std::make_shared<distribution::FactorExponential>(
-          *shape, static_cast<float>(std::atof(to_string(*w).c_str())));
-  return result;
+  importer.importConst(factor);
 };
 } // namespace
 
@@ -148,34 +142,11 @@ std::unordered_set<std::string> convert(const AdderPtrs &recipient,
     }
   }
   // import potentials
-  std::vector<FactorAndSharingGroup> tunable_sharing_group;
+  ImportPredicate importer{recipient};
   for (const auto &factor : source["Potentials"]) {
-    auto to_insert = importPotential(factor, variables);
-
-    auto *as_const_distr =
-        std::get_if<distribution::DistributionCnstPtr>(&to_insert);
-    if (nullptr != as_const_distr) {
-      recipient.as_factors_const_adder->addConstFactor(*as_const_distr);
-      continue;
-    }
-
-    auto &as_tunable = std::get<FactorAndSharingGroup>(to_insert);
-    if (nullptr == recipient.as_factors_tunable_adder) {
-      recipient.as_factors_const_adder->addConstFactor(as_tunable.factor);
-      continue;
-    }
-
-    if (as_tunable.sharing_group == std::nullopt) {
-      recipient.as_factors_tunable_adder->addTunableFactor(as_tunable.factor);
-      continue;
-    }
-
-    tunable_sharing_group.push_back(as_tunable);
+    importPotential(factor, variables, importer);
   }
-  for (const auto &tunable : tunable_sharing_group) {
-    recipient.as_factors_tunable_adder->addTunableFactor(tunable.factor,
-                                                         tunable.sharing_group);
-  }
+  importer.importCumulatedTunable();
   return evidences;
 }
 } // namespace EFG::io::json

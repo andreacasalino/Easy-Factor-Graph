@@ -86,10 +86,12 @@ void Exporter::convert(std::ostream &recipient, const AwarePtrs &subject,
     for (const auto &cluster :
          subject.as_factors_tunable_aware->getTunableClusters()) {
       const auto &front_factor = *cluster.front();
-      printExpPotential(front_factor, exp_root);
+      auto &factor_tag = printExpPotential(front_factor, exp_root);
+      factor_tag.getAttributes().emplace("tunability", "Y");
       for (std::size_t k = 1; k < cluster.size(); ++k) {
-        auto &factor_tag = printExpPotential(*cluster[k], exp_root);
-        printGroup(front_factor.getVariables(), factor_tag["Share"]);
+        auto &factor_tag2 = printExpPotential(*cluster[k], exp_root);
+        factor_tag2.getAttributes().emplace("tunability", "Y");
+        printGroup(front_factor.getVariables(), factor_tag2["Share"]);
       }
     }
   }

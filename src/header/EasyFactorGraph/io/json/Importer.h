@@ -39,8 +39,7 @@ public:
    * @param json describing the model to parse and add to the passed one
    */
   template <typename Model>
-  static std::unordered_set<std::string>
-  importFromJson(Model &model, const nlohmann::json &source) {
+  static void importFromJson(Model &model, const nlohmann::json &source) {
     auto evidences = convert(getAdderComponents(model), source);
     set_evidences(model, evidences);
   };

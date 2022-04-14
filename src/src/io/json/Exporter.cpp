@@ -83,10 +83,12 @@ void Exporter::convert(nlohmann::json &recipient, const AwarePtrs &subject) {
     for (const auto &cluster :
          subject.as_factors_tunable_aware->getTunableClusters()) {
       const auto &front_factor = *cluster.front();
-      printExpPotential(front_factor, potentials);
+      auto &factor_tag = printExpPotential(front_factor, potentials);
+      factor_tag["tunability"] = "Y";
       for (std::size_t k = 1; k < cluster.size(); ++k) {
-        auto &factor_tag = printExpPotential(*cluster[k], potentials);
-        printGroup(front_factor.getVariables(), factor_tag["Share"]);
+        auto &factor_tag2 = printExpPotential(*cluster[k], potentials);
+        printGroup(front_factor.getVariables(), factor_tag2["Share"]);
+        factor_tag2["tunability"] = "Y";
       }
     }
   }

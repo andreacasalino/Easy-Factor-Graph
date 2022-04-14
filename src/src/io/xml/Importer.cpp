@@ -9,9 +9,10 @@
 
 #include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
-#include <XML-Parser/Parser.h>
 
-#include <variant>
+#include "../ImportUtils.h"
+
+#include <XML-Parser/Parser.h>
 
 namespace EFG::io::xml {
 namespace {
@@ -44,7 +45,10 @@ void for_each_key(const std::unordered_multimap<K, V> &subject, const K &key,
 
 categoric::VariablePtr findVariable(const std::string &name,
                                     const categoric::VariablesSet &variables) {
-  auto itV = variables.find(categoric::make_variable(2, name));
+  const auto itV = std::find_if(variables.begin(), variables.end(),
+                                [&name](const categoric::VariablePtr &var) {
+                                  return var->name() == name;
+                                });
   if (itV == variables.end()) {
     throw Error("Inexistent variable");
   }
@@ -110,37 +114,31 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
   return result;
 };
 
-struct FactorAndSharingGroup {
-  std::shared_ptr<distribution::FactorExponential> factor;
-  std::optional<categoric::VariablesSet> sharing_group;
-};
-using PotentialToInsert =
-    std::variant<distribution::DistributionCnstPtr, FactorAndSharingGroup>;
-PotentialToInsert importPotential(const std::string &prefix,
-                                  const xmlPrs::Tag &tag,
-                                  const categoric::VariablesSet &variables) {
+void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
+                     const categoric::VariablesSet &variables,
+                     ImportPredicate &importer) {
   auto shape = importFactor(prefix, tag, variables);
   const auto *w = try_access_attribute(tag, "weight");
   if (nullptr == w) {
-    return shape;
+    importer.importConst(shape);
+    return;
   }
 
+  auto factor = std::make_shared<distribution::FactorExponential>(
+      *shape, static_cast<float>(std::atof(w->c_str())));
   const auto *tunab = try_access_attribute(tag, "tunability");
   if ((nullptr != tunab) && (*tunab == "Y")) {
-    FactorAndSharingGroup result;
-    result.factor = std::make_shared<distribution::FactorExponential>(
-        *shape, static_cast<float>(std::atof(w->c_str())));
     auto share_tag_it = tag.getNested().find("Share");
-    if (share_tag_it != tag.getNested().end()) {
-      result.sharing_group.emplace(
-          importGroup(*share_tag_it->second, variables).getVariablesSet());
+    if (share_tag_it == tag.getNested().end()) {
+      importer.importTunable(factor);
+    } else {
+      auto group =
+          importGroup(*share_tag_it->second, variables).getVariablesSet();
+      importer.importTunable(factor, group);
     }
-    return result;
+    return;
   }
-  distribution::DistributionCnstPtr result =
-      std::make_shared<distribution::FactorExponential>(
-          *shape, static_cast<float>(std::atof(w->c_str())));
-  return result;
+  importer.importConst(factor);
 };
 } // namespace
 
@@ -171,38 +169,13 @@ std::unordered_set<std::string> Importer::convert(const AdderPtrs &subject,
         }
       });
   // import potentials
-  std::vector<FactorAndSharingGroup> tunable_sharing_group;
-  for_each_key(
-      parsed_root.getNested(), xmlPrs::Name{"Potential"},
-      [&file_path, &variables, &subject,
-       &tunable_sharing_group](const xmlPrs::TagPtr &factor) {
-        auto to_insert =
-            importPotential(file_path.parent_str(), *factor, variables);
-
-        auto *as_const_distr =
-            std::get_if<distribution::DistributionCnstPtr>(&to_insert);
-        if (nullptr != as_const_distr) {
-          subject.as_factors_const_adder->addConstFactor(*as_const_distr);
-          return;
-        }
-
-        auto &as_tunable = std::get<FactorAndSharingGroup>(to_insert);
-        if (nullptr == subject.as_factors_tunable_adder) {
-          subject.as_factors_const_adder->addConstFactor(as_tunable.factor);
-          return;
-        }
-
-        if (as_tunable.sharing_group == std::nullopt) {
-          subject.as_factors_tunable_adder->addTunableFactor(as_tunable.factor);
-          return;
-        }
-
-        tunable_sharing_group.push_back(as_tunable);
-      });
-  for (const auto &tunable : tunable_sharing_group) {
-    subject.as_factors_tunable_adder->addTunableFactor(tunable.factor,
-                                                       tunable.sharing_group);
-  }
+  ImportPredicate importer{subject};
+  for_each_key(parsed_root.getNested(), xmlPrs::Name{"Potential"},
+               [&](const xmlPrs::TagPtr &factor) {
+                 importPotential(file_path.parent_str(), *factor, variables,
+                                 importer);
+               });
+  importer.importCumulatedTunable();
   return evidences;
 }
 } // namespace EFG::io::xml
