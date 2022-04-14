@@ -145,9 +145,11 @@ void FactorsTunableAdder::addTunableFactor(
             std::make_unique<CompositeTuner>(std::move(tuner_sharing_w),
                                              std::move(tuner));
         tuner_sharing_w = std::move(new_composite);
+        tuner_sharing_w->setWeight(tuner_sharing_w->getWeight());
       },
       [&tuner](CompositeTuner &tuner_sharing) {
         tuner_sharing.addElement(std::move(tuner));
+        tuner_sharing.setWeight(tuner_sharing.getWeight());
       });
 }
 

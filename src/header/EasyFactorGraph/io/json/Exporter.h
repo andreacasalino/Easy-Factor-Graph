@@ -34,7 +34,7 @@ public:
    */
   template <typename Model>
   static void exportToFile(const Model &model, const std::string &file_path) {
-    auto as_json = exportToJson(model, file_path);
+    auto as_json = exportToJson(model);
     auto stream = make_out_stream(file_path);
     *stream << as_json.dump();
   }

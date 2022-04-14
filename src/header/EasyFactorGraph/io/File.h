@@ -5,6 +5,8 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#pragma once
+
 #include <string>
 
 namespace EFG::io {
