@@ -77,25 +77,24 @@ max_variation(const std::vector<MessageVariation> &variations) {
   }
   return result;
 }
+} // namespace
 
-struct LoopyPropagationContext {
-  PropagationKind kind;
-  std::size_t max_iter;
-  MessageVariation variation_tollerance;
-};
-bool loopy_propagation(HiddenCluster &cluster,
-                       const LoopyPropagationContext &ctx, Pool &pool) {
-  auto open = pack_all_tasks(*cluster.connectivity.get());
+bool BaselineLoopyPropagator::propagateBelief(HiddenCluster &subject,
+                                              const PropagationKind &kind,
+                                              const PropagationContext &context,
+                                              Pool &pool) {
+  auto open = pack_all_tasks(*subject.connectivity.get());
   // set message to ones
-  for (auto *node : cluster.nodes) {
+  for (auto *node : subject.nodes) {
     for (auto &[sender, connection] : node->active_connections) {
       connection->message = make_unary(node->variable);
     }
   }
   std::vector<MessageVariation> variations;
   variations.resize(pool.size());
-  auto order = compute_loopy_order(cluster, ctx.kind, variations);
-  for (std::size_t iter = 0; iter < ctx.max_iter; ++iter) {
+  auto order = compute_loopy_order(subject, kind, variations);
+  for (std::size_t iter = 0; iter < context.max_iterations_loopy_propagation;
+       ++iter) {
     for (auto &variation : variations) {
       variation = 0;
     }
@@ -107,17 +106,5 @@ bool loopy_propagation(HiddenCluster &cluster,
     }
   }
   return false;
-}
-} // namespace
-
-bool BaselineLoopyPropagator::propagateBelief(HiddenCluster &subject,
-                                              const PropagationKind &kind,
-                                              const PropagationContext &context,
-                                              Pool &pool) {
-  return loopy_propagation(
-      subject,
-      LoopyPropagationContext{kind, context.max_iterations_loopy_propagation,
-                              DEFAULT_VARIATION_TOLLERANCE},
-      pool);
 }
 } // namespace EFG::strct
