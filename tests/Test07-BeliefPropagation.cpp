@@ -12,6 +12,7 @@ using namespace EFG::model;
 using namespace EFG::strct;
 using namespace EFG::io;
 using namespace EFG::categoric;
+using namespace EFG::distribution;
 
 #define TEST_MULTI_THREAD
 
@@ -188,7 +189,7 @@ TEST_CASE("complex poly tree", "[propagation]") {
   CHECK(model.araAllMessagesComputed());
 }
 
-TEST_CASE("simple loopy tree", "[propagation]") {
+TEST_CASE("simple loopy graph", "[propagation]") {
   TestModels model(make_file_path("graph_3.xml"));
 
   float M = expf(1.f);
@@ -216,7 +217,7 @@ TEST_CASE("simple loopy tree", "[propagation]") {
                              0.045f));
 }
 
-TEST_CASE("complex loopy tree", "[propagation]") {
+TEST_CASE("complex loopy graph", "[propagation]") {
   TestModels model(make_file_path("graph_4.xml"));
 
   model.setEvidence(model.findVariable("v1"), 1);
@@ -231,6 +232,61 @@ TEST_CASE("complex loopy tree", "[propagation]") {
   auto prob = model.getMarginalDistribution("v8", threads);
   CHECK(prob[0] < prob[1]);
   CHECK(model.araAllMessagesComputed());
+}
+
+#include <sstream>
+
+TEST_CASE("big loopy graph", "[propagation]") {
+  std::vector<std::vector<VariablePtr>> vars;
+
+  auto make_name = [](const std::size_t r, const std::size_t c) {
+    std::stringstream stream;
+    stream << "V_" << std::to_string(r) << std::to_string(c);
+    return stream.str();
+  };
+
+  const std::size_t size = 10;
+  vars.reserve(size);
+  for (std::size_t r = 0; r < size; ++r) {
+    auto &row = vars.emplace_back();
+    row.reserve(size);
+    for (std::size_t c = 0; c < size; ++c) {
+      row.push_back(make_variable(2, make_name(r, c)));
+    }
+  }
+
+  Graph model;
+
+  using Coord = std::pair<std::size_t, std::size_t>;
+  auto add_factor = [&](const Coord &first, const Coord &second) {
+    Factor factor(Group{vars[first.first][first.second],
+                        vars[second.first][second.second]},
+                  USE_SIMPLE_CORRELATION_TAG);
+    model.addConstFactor(std::make_shared<FactorExponential>(factor, 0.1f));
+  };
+
+  for (std::size_t r = 0; r < size; ++r) {
+    for (std::size_t c = 0; c < size; ++c) {
+      if (0 < r) {
+        add_factor(Coord{r, c}, Coord{r - 1, c});
+      }
+      if (0 < c) {
+        add_factor(Coord{r, c}, Coord{r, c - 1});
+      }
+      if ((0 < r) && (0 < c)) {
+        add_factor(Coord{r, c}, Coord{r - 1, c - 1});
+      }
+    }
+  }
+
+  auto threads =
+#ifdef TEST_MULTI_THREAD
+      GENERATE(1, 2, 4);
+#else
+      1;
+#endif
+
+  model.getMarginalDistribution(make_name(0, 0), threads);
 }
 
 #include <EasyFactorGraph/structure/SpecialFactors.h>

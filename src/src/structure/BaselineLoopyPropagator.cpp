@@ -35,12 +35,9 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
   auto make_task = [&kind, &variations](ConnectionAndDependencies &subject) {
     return [&task = subject, &kind, &variations](const std::size_t th_id) {
       auto &variation = variations[th_id];
-      auto candidate = update_message(task, kind);
-      if (std::nullopt == candidate) {
-        throw Error{"Found empty dependency when loopy propagating"};
-      }
-      if (*candidate > variation) {
-        variation = *candidate;
+      auto candidate = *update_message(task, kind);
+      if (candidate > variation) {
+        variation = candidate;
       }
     };
   };
