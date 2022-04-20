@@ -14,14 +14,19 @@
 
 namespace EFG::strct {
 namespace {
-bool has_locked_dependency(const ConnectionAndDependencies &subject,
-                           const std::set<const Connection *> &locked) {
-  for (const auto *dep : subject.dependencies) {
-    if (locked.find(dep) != locked.end()) {
-      return true;
+bool not_contain(const std::set<const Connection *> &subject,
+                 const Connection *to_find) {
+  return subject.find(to_find) == subject.end();
+}
+
+bool not_contain_none(const std::set<const Connection *> &subject,
+                      const std::vector<const Connection *> &to_find) {
+  for (const auto *element : to_find) {
+    if (!not_contain(subject, element)) {
+      return false;
     }
   }
-  return false;
+  return true;
 }
 
 std::vector<Tasks>
@@ -30,9 +35,12 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
   auto make_task = [&kind, &variations](ConnectionAndDependencies &subject) {
     return [&task = subject, &kind, &variations](const std::size_t th_id) {
       auto &variation = variations[th_id];
-      float candidate = *update_message(task, kind);
-      if (candidate > variation) {
-        variation = candidate;
+      auto candidate = update_message(task, kind);
+      if (std::nullopt == candidate) {
+        throw Error{"Found empty dependency when loopy propagating"};
+      }
+      if (*candidate > variation) {
+        variation = *candidate;
       }
     };
   };
@@ -42,12 +50,17 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
     auto open = pack_all_tasks(*cluster.connectivity.get());
     // multithreaded computation
     while (!open.empty()) {
-      std::set<const Connection *> locked;
+      std::set<const Connection *> should_not_change;
+      std::set<const Connection *> will_change;
       auto &new_tasks = result.emplace_back();
       auto open_it = open.begin();
       while (open_it != open.end()) {
-        if (!has_locked_dependency(**open_it, locked)) {
-          locked.emplace((*open_it)->connection);
+        if (not_contain(should_not_change, (*open_it)->connection) &&
+            not_contain_none(will_change, (*open_it)->dependencies)) {
+          will_change.emplace((*open_it)->connection);
+          for (const auto *dep : (*open_it)->dependencies) {
+            should_not_change.emplace(dep);
+          }
           new_tasks.emplace_back(make_task(**open_it));
           open_it = open.erase(open_it);
         } else {
