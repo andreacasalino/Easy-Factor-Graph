@@ -8,6 +8,7 @@
 #include "ImportUtils.h"
 
 namespace EFG::io {
+
 void ImportPredicate::importConst(
     const distribution::DistributionCnstPtr &factor) {
   model.as_factors_const_adder->addConstFactor(factor);
@@ -37,4 +38,5 @@ void ImportPredicate::importCumulatedTunable() const {
                                                      remaining.group);
   }
 }
+
 } // namespace EFG::io

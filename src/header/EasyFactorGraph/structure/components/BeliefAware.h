@@ -43,16 +43,17 @@ struct PropagationResult {
   std::vector<ClusterInfo> structure_found;
 };
 
-class BeliePropagationStrategy {
+class LoopyBeliefPropagationStrategy {
 public:
-  virtual ~BeliePropagationStrategy() = default;
+  virtual ~LoopyBeliefPropagationStrategy() = default;
 
-  virtual PropagationResult propagateBelief(HiddenClusters &subject,
-                                            const PropagationKind &kind,
-                                            const PropagationContext &context,
-                                            Pool &pool) = 0;
+  virtual bool propagateBelief(HiddenCluster &subject,
+                               const PropagationKind &kind,
+                               const PropagationContext &context,
+                               Pool &pool) = 0;
 };
-using BeliePropagationStrategyPtr = std::unique_ptr<BeliePropagationStrategy>;
+using LoopyBeliefPropagationStrategyPtr =
+    std::unique_ptr<LoopyBeliefPropagationStrategy>;
 
 /**
  * @brief The propagation relies on a concrete implementation of a
@@ -72,7 +73,7 @@ public:
     return *this->lastPropagation;
   };
 
-  void setPropagationStrategy(BeliePropagationStrategyPtr strategy);
+  void setLoopyPropagationStrategy(LoopyBeliefPropagationStrategyPtr strategy);
 
 protected:
   BeliefAware();
@@ -90,6 +91,6 @@ private:
    */
   std::unique_ptr<PropagationResult> lastPropagation;
 
-  BeliePropagationStrategyPtr propagator;
+  LoopyBeliefPropagationStrategyPtr loopy_propagator;
 };
 } // namespace EFG::strct

@@ -29,8 +29,6 @@ void disable_connection(Node &a, Node &b,
 
 std::vector<const distribution::Distribution *> gather_unaries(Node &subject);
 
-void update_merged_unaries(Node &subject);
-
 void update_connectivity(HiddenCluster &subject);
 
 using MessageVariation = float;
@@ -44,4 +42,7 @@ bool can_update_message(const ConnectionAndDependencies &subject);
 // any other number is the delta w.r.t, the previous message
 std::optional<MessageVariation>
 update_message(ConnectionAndDependencies &subject, const PropagationKind &kind);
+
+std::list<ConnectionAndDependencies *>
+pack_all_tasks(std::vector<ConnectionAndDependencies> &tasks);
 } // namespace EFG::strct

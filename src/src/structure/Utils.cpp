@@ -123,6 +123,7 @@ std::vector<const distribution::Distribution *> gather_unaries(Node &subject) {
   return unary_factors;
 }
 
+namespace {
 void update_merged_unaries(Node &subject) {
   std::vector<const distribution::Distribution *> unary_factors =
       gather_unaries(subject);
@@ -132,6 +133,7 @@ void update_merged_unaries(Node &subject) {
   }
   subject.merged_unaries.reset(make_unary(unary_factors));
 }
+} // namespace
 
 void update_connectivity(HiddenCluster &subject) {
   auto &connectivity = subject.connectivity.reset(
@@ -184,7 +186,7 @@ std::optional<MessageVariation>
 update_message(ConnectionAndDependencies &subject,
                const PropagationKind &kind) {
   if (subject.sender->merged_unaries.empty()) {
-    update_merged_unaries(*subject.sender);
+    throw Error{"Found node with not updated static dependencies"};
   }
   std::vector<const distribution::Distribution *> unary_factors = {
       subject.sender->merged_unaries.get()};
@@ -212,4 +214,14 @@ update_message(ConnectionAndDependencies &subject,
   }
   return diff(*previous_message, *subject.connection->message);
 }
+
+std::list<ConnectionAndDependencies *>
+pack_all_tasks(std::vector<ConnectionAndDependencies> &tasks) {
+  std::list<ConnectionAndDependencies *> result;
+  for (auto &task : tasks) {
+    result.push_back(&task);
+  }
+  return result;
+}
+
 } // namespace EFG::strct
