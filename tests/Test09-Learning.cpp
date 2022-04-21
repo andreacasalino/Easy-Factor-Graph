@@ -232,7 +232,7 @@ make_corr_factor(const VariablePtr &first, const VariablePtr &second,
 }
 } // namespace
 
-TEST_CASE("Small random field", "[train]") {
+TEST_CASE("Small random field tuning", "[train]") {
   VariablePtr A = make_variable(3, "A");
   VariablePtr B = make_variable(3, "B");
   VariablePtr C = make_variable(3, "C");
@@ -246,7 +246,7 @@ TEST_CASE("Small random field", "[train]") {
   Models models{reference_model, to_tune};
 
   TrainSet train_set(reference_model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{100, 10, 0}));
+      GibbsSampler::SamplesGenerationContext{500, 20, 0}));
 
   REQUIRE(is_gradient_in_right_direction(models, train_set.makeIterator()));
 
@@ -267,7 +267,7 @@ TEST_CASE("Small random field", "[train]") {
   }
 }
 
-TEST_CASE("Medium random field", "[train]") {
+TEST_CASE("Medium random field tuning", "[train]") {
   VariablePtr A = make_variable(3, "A");
   VariablePtr B = make_variable(3, "B");
   VariablePtr C = make_variable(3, "C");
@@ -336,7 +336,7 @@ TEST_CASE("Medium random field", "[train]") {
   }
 }
 
-TEST_CASE("Small conditional random field", "[train]") {
+TEST_CASE("Small conditional random field tuning", "[train]") {
   VariablePtr A = make_variable(3, "A");
   VariablePtr B = make_variable(3, "B");
   VariablePtr C = make_variable(3, "C");

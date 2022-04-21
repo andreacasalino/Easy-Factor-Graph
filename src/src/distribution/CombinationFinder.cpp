@@ -48,9 +48,9 @@ CombinationFinder::CombinationFinder(
 
 CombinationFinder::Result
 CombinationFinder::find(const categoric::Combination &comb) const {
-  if (comb.data().size() != bigger_group_size) {
-    throw Error{"Invalid to combination"};
-  }
+  // if (comb.data().size() != bigger_group_size) {
+  //   throw Error{"Invalid to combination"};
+  // }
   auto it = std::find_if(
       combinations_map->begin(), combinations_map->end(),
       [&comb, &indices = this->indices_in_bigger_group](
