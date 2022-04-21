@@ -52,13 +52,13 @@ public:
 
   template <typename Predicate>
   void forEachSample(const Predicate &pred) const {
-    if (std::nullopt == positions) {
+    if (std::nullopt == combinations_subset) {
       for (const auto &sample : *combinations) {
         pred(sample);
       }
     } else {
-      for (const auto &pos : *positions) {
-        pred((*combinations)[pos]);
+      for (const auto &sample_it : *combinations_subset) {
+        pred(*sample_it);
       }
     }
   }
@@ -70,6 +70,9 @@ public:
 
 private:
   std::shared_ptr<const std::vector<categoric::Combination>> combinations;
-  std::optional<std::vector<std::size_t>> positions;
+
+  using CombinationIt = std::vector<categoric::Combination>::const_iterator;
+  using CombinationsIt = std::vector<CombinationIt>;
+  std::optional<CombinationsIt> combinations_subset;
 };
 } // namespace EFG::train

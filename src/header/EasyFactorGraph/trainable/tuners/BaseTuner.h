@@ -18,7 +18,7 @@ public:
 
   void setTrainSetIterator(const TrainSet::Iterator &iter) final;
 
-  float getGradientAlpha() final { return gradientAlpha; };
+  float getGradientAlpha() final { return alpha_part->value; };
   void setWeight(const float &w) final { factor->setWeight(w); }
   float getWeight() const final { return factor->getWeight(); };
 
@@ -31,8 +31,11 @@ protected:
 private:
   FactorExponentialPtr factor;
 
-  const TrainSet::Iterator *train_set_iterator = nullptr;
   const distribution::CombinationFinder finder;
-  float gradientAlpha = 0;
+  struct GradientAlphaPart {
+    const TrainSet::Iterator *train_set_iterator;
+    float value;
+  };
+  std::optional<GradientAlphaPart> alpha_part;
 };
 } // namespace EFG::train

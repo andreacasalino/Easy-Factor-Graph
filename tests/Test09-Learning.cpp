@@ -117,6 +117,7 @@ struct Models {
 };
 bool is_gradient_in_right_direction(const Models &subject,
                                     const TrainSet::Iterator &train_set) {
+  set_ones(subject.trained_model);
   auto gradient = subject.trained_model.getWeightsGradient(train_set);
   auto w_a = subject.reference_model.getWeights();
   auto w_b = subject.trained_model.getWeights();

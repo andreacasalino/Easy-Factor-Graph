@@ -45,7 +45,6 @@ private:
   EvaluatorPtr evaluator;
   CombinationRawValuesMapPtr combinations_map;
 
-  const std::size_t bigger_group_size;
   const std::vector<std::size_t> indices_in_bigger_group;
 };
 } // namespace EFG::distribution

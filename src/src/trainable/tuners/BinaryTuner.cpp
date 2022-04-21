@@ -56,7 +56,7 @@ float BinaryTuner::getGradientBeta() {
   }
   probs_coeff = 1.f / probs_coeff;
   for (auto &val : probs) {
-    val *= 1.f / probs_coeff;
+    val *= probs_coeff;
   }
   return dotProduct(probs);
 }

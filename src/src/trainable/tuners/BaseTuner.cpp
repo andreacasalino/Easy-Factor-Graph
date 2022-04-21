@@ -14,17 +14,17 @@ BaseTuner::BaseTuner(
     : factor(factor), finder(factor->makeFinder(variables_in_model)) {}
 
 void BaseTuner::setTrainSetIterator(const TrainSet::Iterator &iter) {
-  if (&iter == train_set_iterator) {
+  if (alpha_part && (alpha_part->train_set_iterator == &iter)) {
     return;
   }
-  train_set_iterator = &iter;
-  gradientAlpha = 0;
-  const float coeff =
-      1.f / static_cast<float>(this->train_set_iterator->size());
-  train_set_iterator->forEachSample(
-      [this, &coeff](const categoric::Combination &comb) {
-        this->gradientAlpha += coeff * this->finder.find(comb).value;
-      });
+  auto &value = alpha_part.emplace();
+  value.train_set_iterator = &iter;
+  value.value = 0;
+  const float coeff = 1.f / static_cast<float>(iter.size());
+  iter.forEachSample([&finder = this->finder, &value = value.value,
+                      &coeff](const categoric::Combination &comb) {
+    value += coeff * finder.find(comb).map_iterator->second;
+  });
 }
 
 float BaseTuner::dotProduct(const std::vector<float> &prob) const {

@@ -30,17 +30,19 @@ TrainSet::Iterator::Iterator(const TrainSet &subject, const float percentage) {
   if (1.f == percentage) {
     return;
   }
-  std::size_t numberOfCombinations = 1;
-  throw 0; // compute combinations number
-           //   numberOfCombinations =
-  //       max(static_cast<int>(floor(this->combinations->size() * percentage)),
-  //           numberOfCombinations);
-  //   numberOfCombinations = min(this->combinations->size(),
-  // numberOfCombinations);
-  auto &pos = positions.emplace();
-  pos.reserve(numberOfCombinations);
-  for (std::size_t k = 0; k < numberOfCombinations; ++k) {
-    pos.push_back(rand() % this->combinations->size());
+  if ((percentage <= 0) || (percentage > 1.f)) {
+    throw Error{percentage,
+                " is an invalid percentage for a TrainSet Iterator"};
+  }
+  int subset_size =
+      std::max(0, static_cast<int>(floorf(percentage * combinations->size())));
+  auto &subset = combinations_subset.emplace();
+  subset.reserve(subset_size);
+  for (int k = 0; k < subset_size; ++k) {
+    int sampled_pos = rand() % combinations->size();
+    auto to_add = combinations->begin();
+    std::advance(to_add, sampled_pos);
+    subset.push_back(to_add);
   }
 }
 
@@ -53,9 +55,9 @@ TrainSet::Iterator TrainSet::makeSubSetIterator(const float &percentage) const {
 }
 
 std::size_t TrainSet::Iterator::size() const {
-  if (std::nullopt == positions) {
-    return positions->size();
+  if (std::nullopt == combinations_subset) {
+    return combinations->size();
   }
-  return combinations->size();
+  return combinations_subset->size();
 }
 } // namespace EFG::train

@@ -15,15 +15,16 @@ std::vector<float> RandomField::getWeightsGradient_(
   }
   propagateBelief(strct::SUM);
   std::vector<float> result;
+  result.resize(tuners.size());
   strct::Tasks tasks;
-  result.reserve(tuners.size());
+  std::size_t result_pos = 0;
   for (auto &tuner : tuners) {
-    auto &receiver = result.emplace_back();
-    tasks.emplace_back([&receiver = receiver, &tuner = tuner,
+    tasks.emplace_back([&receiver = result[result_pos], &tuner = tuner,
                         &train_set_combinations](const std::size_t) {
       tuner->setTrainSetIterator(train_set_combinations);
       receiver = tuner->getGradientAlpha() - tuner->getGradientBeta();
     });
+    ++result_pos;
   }
   getPool().parallelFor(tasks);
   return result;

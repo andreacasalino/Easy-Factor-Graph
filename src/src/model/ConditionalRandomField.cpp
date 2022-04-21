@@ -151,15 +151,16 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
   // compute alfa part
   std::vector<float> alfas;
   {
-    alfas.reserve(tuners.size());
+    alfas.resize(tuners.size());
     strct::Tasks tasks;
+    std::size_t alfas_pos = 0;
     for (auto &tuner : tuners) {
-      auto &receiver = alfas.emplace_back();
-      tasks.emplace_back([&receiver = receiver, &tuner = tuner,
+      tasks.emplace_back([&receiver = alfas[alfas_pos], &tuner = tuner,
                           &train_set_combinations](const std::size_t) {
         tuner->setTrainSetIterator(train_set_combinations);
         receiver = tuner->getGradientAlpha();
       });
+      ++alfas_pos;
     }
     getPool().parallelFor(tasks);
   }
@@ -171,18 +172,19 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
       betas.push_back(0);
     }
     float coeff = 1.f / static_cast<float>(train_set_combinations.size());
+    strct::Tasks tasks;
+    for (std::size_t t = 0; t < this->tuners.size(); ++t) {
+      tasks.emplace_back([&receiver = betas[t], &tuner = tuners[t],
+                          &coeff](const std::size_t) {
+        receiver = coeff * tuner->getGradientBeta();
+      });
+    }
     train_set_combinations.forEachSample(
-        [this, &betas, &coeff](const categoric::Combination &combination) {
+        [this, &betas, &coeff,
+         &tasks](const categoric::Combination &combination) {
           this->setEvidences(
               extract_evidences(combination, this->evidence_vars_positions));
           propagateBelief(strct::SUM);
-          strct::Tasks tasks;
-          for (std::size_t t = 0; t < this->tuners.size(); ++t) {
-            tasks.emplace_back([&receiver = betas[t], &tuner = tuners[t],
-                                &coeff](const std::size_t) {
-              receiver = coeff * tuner->getGradientBeta();
-            });
-          }
           this->getPool().parallelFor(tasks);
         });
   }
