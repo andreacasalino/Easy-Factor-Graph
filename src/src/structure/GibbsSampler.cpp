@@ -74,6 +74,7 @@ struct SamplerNode {
 using SamplerNodePtr = std::unique_ptr<SamplerNode>;
 using SamplerNodes = std::vector<SamplerNodePtr>;
 SamplerNodes make_nodes(const HiddenClusters &clusters,
+                        const categoric::VariablesSet &hidden_set_order,
                         std::vector<std::size_t> &combination) {
   std::size_t nodes_size = 0;
   for (const auto &cluster : clusters) {
@@ -85,12 +86,12 @@ SamplerNodes make_nodes(const HiddenClusters &clusters,
   }
   SamplerNodes result;
   result.reserve(nodes_size);
-  std::size_t k = 0;
   for (const auto &cluster : clusters) {
     for (auto *node : cluster.nodes) {
+      std::size_t position = std::distance(
+          hidden_set_order.begin(), hidden_set_order.find(node->variable));
       SamplerNodePtr new_node =
-          std::make_unique<SamplerNode>(*node, combination[k]);
-      ++k;
+          std::make_unique<SamplerNode>(*node, combination[position]);
       result.emplace_back(std::move(new_node));
     }
   }
@@ -113,7 +114,7 @@ SamplerNodes make_nodes(const HiddenClusters &clusters,
 
 Task to_sampling_task(const SamplerNode &subject,
                       const std::vector<UniformSampler> &engines) {
-  Task result = [subject = subject, &engines](const std::size_t th_id) {
+  return [subject = subject, &engines](const std::size_t th_id) {
     const auto &engine = engines[th_id];
     std::vector<const distribution::Distribution *> contributions = {
         &subject.static_unaries};
@@ -125,10 +126,9 @@ Task to_sampling_task(const SamplerNode &subject,
       contributions.push_back(&added);
     }
     distribution::UnaryFactor merged(contributions);
-    *subject.combination_value =
-        engine.sampleFromDiscrete(merged.getProbabilities());
+    auto sampled = engine.sampleFromDiscrete(merged.getProbabilities());
+    *subject.combination_value = sampled;
   };
-  return result;
 }
 
 bool have_no_changing_deps(const SamplerNode &subject,
@@ -157,7 +157,6 @@ std::vector<Tasks> make_sampling_tasks(const SamplerNodes &nodes,
   std::vector<Tasks> result;
   if (1 == pool.size()) {
     auto &new_tasks = result.emplace_back();
-    result.reserve(nodes.size());
     for (const auto &node : nodes) {
       new_tasks.emplace_back(to_sampling_task(*node, engines));
     }
@@ -208,7 +207,8 @@ GibbsSampler::getHiddenSetSamples(const SamplesGenerationContext &context,
   ScopedPoolActivator activator(*this, threads);
 
   std::vector<std::size_t> combination;
-  auto sampling_nodes = make_nodes(getState().clusters, combination);
+  auto sampling_nodes =
+      make_nodes(getState().clusters, getHiddenVariables(), combination);
   if (sampling_nodes.empty()) {
     throw Error{"Cannot generate samples of a model having an empty hidden"};
   }

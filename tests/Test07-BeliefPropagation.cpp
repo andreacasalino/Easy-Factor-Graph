@@ -14,8 +14,6 @@ using namespace EFG::io;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 
-#define TEST_MULTI_THREAD
-
 namespace {
 std::string make_file_path(const std::string &file_name) {
   std::stringstream stream;
@@ -166,12 +164,7 @@ TEST_CASE("complex poly tree", "[propagation]") {
   model.setEvidence(model.findVariable("v2"), 1);
   model.setEvidence(model.findVariable("v3"), 1);
 
-  auto threads =
-#ifdef TEST_MULTI_THREAD
-      GENERATE(1, 2);
-#else
-      1;
-#endif
+  auto threads = GENERATE(1, 2, 4);
 
   {
     auto prob = model.getMarginalDistribution("v10", threads);
@@ -222,12 +215,7 @@ TEST_CASE("complex loopy graph", "[propagation]") {
 
   model.setEvidence(model.findVariable("v1"), 1);
 
-  auto threads =
-#ifdef TEST_MULTI_THREAD
-      GENERATE(1, 2);
-#else
-      1;
-#endif
+  auto threads = GENERATE(1, 2, 4);
 
   auto prob = model.getMarginalDistribution("v8", threads);
   CHECK(prob[0] < prob[1]);
@@ -279,13 +267,7 @@ TEST_CASE("big loopy graph", "[propagation]") {
     }
   }
 
-  auto threads =
-#ifdef TEST_MULTI_THREAD
-      GENERATE(1, 2, 4);
-#else
-      1;
-#endif
-
+  auto threads = GENERATE(1, 2, 4);
   model.getMarginalDistribution(make_name(0, 0), threads);
 }
 

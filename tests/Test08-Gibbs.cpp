@@ -77,7 +77,7 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
   Graph model;
   xml::Importer::importFromFile(model, make_file_path("graph_1.xml"));
 
-  auto threads = GENERATE(1, 2);
+  auto threads = GENERATE(1, 2, 3);
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
@@ -106,12 +106,12 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
   Graph model;
   xml::Importer::importFromFile(model, make_file_path("graph_3.xml"));
 
-  auto threads = GENERATE(1, 2);
+  auto threads = GENERATE(1, 2, 3);
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
   auto samples = model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{500, 20}, threads);
+      GibbsSampler::SamplesGenerationContext{500, 20, 0}, threads);
   REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
   CHECK(almost_equal(3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
                      getFrequency1(samples, model.getHiddenVariables(),
