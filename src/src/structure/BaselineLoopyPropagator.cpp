@@ -14,15 +14,10 @@
 
 namespace EFG::strct {
 namespace {
-bool not_contain(const std::set<const Connection *> &subject,
-                 const Connection *to_find) {
-  return subject.find(to_find) == subject.end();
-}
-
-bool not_contain_none(const std::set<const Connection *> &subject,
-                      const std::vector<const Connection *> &to_find) {
-  for (const auto *element : to_find) {
-    if (!not_contain(subject, element)) {
+bool have_no_changing_deps(const ConnectionAndDependencies &subject,
+                           const std::set<const Connection *> &will_change) {
+  for (const auto *dep : subject.dependencies) {
+    if (exists(will_change, dep)) {
       return false;
     }
   }
@@ -52,8 +47,8 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
       auto &new_tasks = result.emplace_back();
       auto open_it = open.begin();
       while (open_it != open.end()) {
-        if (not_contain(should_not_change, (*open_it)->connection) &&
-            not_contain_none(will_change, (*open_it)->dependencies)) {
+        if (!exists(should_not_change, (*open_it)->connection) &&
+            have_no_changing_deps(**open_it, will_change)) {
           will_change.emplace((*open_it)->connection);
           for (const auto *dep : (*open_it)->dependencies) {
             should_not_change.emplace(dep);

@@ -77,7 +77,7 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
   Graph model;
   xml::Importer::importFromFile(model, make_file_path("graph_1.xml"));
 
-  auto threads = GENERATE(1, 4);
+  auto threads = GENERATE(1, 2);
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
@@ -106,7 +106,7 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
   Graph model;
   xml::Importer::importFromFile(model, make_file_path("graph_3.xml"));
 
-  auto threads = GENERATE(1, 4);
+  auto threads = GENERATE(1, 2);
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);

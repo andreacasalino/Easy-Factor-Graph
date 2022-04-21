@@ -6,6 +6,7 @@
  **/
 
 #include <EasyFactorGraph/structure/GibbsSampler.h>
+#include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include "Utils.h"
 
@@ -51,99 +52,99 @@ struct SamplerConnection {
   const SamplerNode *sender;
   distribution::DistributionCnstPtr factor;
 };
+
+distribution::UnaryFactor make_static_unaries(Node &n) {
+  auto unaries = gather_unaries(n);
+  if (unaries.empty()) {
+    return distribution::UnaryFactor{n.variable};
+  }
+  return distribution::UnaryFactor{unaries};
+}
+
 struct SamplerNode {
-  Node *node;
-  std::size_t *sample_value;
+  SamplerNode(Node &n, std::size_t &c)
+      : node(&n), combination_value(&c),
+        static_unaries(make_static_unaries(n)) {}
+
+  const Node *node;
+  std::size_t *combination_value;
   std::vector<SamplerConnection> connections;
-  std::vector<const distribution::Distribution *> static_unaries;
+  distribution::UnaryFactor static_unaries;
 };
-std::vector<SamplerNode> make_nodes(const HiddenClusters &clusters,
-                                    std::vector<std::size_t> &recipient) {
+using SamplerNodePtr = std::unique_ptr<SamplerNode>;
+using SamplerNodes = std::vector<SamplerNodePtr>;
+SamplerNodes make_nodes(const HiddenClusters &clusters,
+                        std::vector<std::size_t> &combination) {
   std::size_t nodes_size = 0;
   for (const auto &cluster : clusters) {
     nodes_size += cluster.nodes.size();
   }
-  recipient.reserve(nodes_size);
-  for (std::size_t k = 0; k < nodes_size; ++k) {
-    recipient.push_back(0);
+  combination.resize(nodes_size);
+  for (auto &comb : combination) {
+    comb = 0;
   }
-  std::vector<SamplerNode> result;
+  SamplerNodes result;
   result.reserve(nodes_size);
   std::size_t k = 0;
   for (const auto &cluster : clusters) {
     for (auto *node : cluster.nodes) {
-      auto &added = result.emplace_back();
-      added.node = node;
-      added.sample_value = &recipient[k];
-      added.static_unaries = gather_unaries(*node);
+      SamplerNodePtr new_node =
+          std::make_unique<SamplerNode>(*node, combination[k]);
       ++k;
+      result.emplace_back(std::move(new_node));
     }
   }
   // compute connections
   for (auto &sampler_node : result) {
     for (const auto &[connected_node, connection] :
-         sampler_node.node->active_connections) {
-      auto &added = sampler_node.connections.emplace_back();
+         sampler_node->node->active_connections) {
+      auto &added = sampler_node->connections.emplace_back();
       added.factor = connection->factor;
       auto result_it = std::find_if(
           result.begin(), result.end(),
-          [&connected_node = connected_node](const SamplerNode &node) {
-            return node.node == connected_node;
+          [&connected_node = connected_node](const SamplerNodePtr &node) {
+            return node->node == connected_node;
           });
-      added.sender = &(*result_it);
+      added.sender = (*result_it).get();
     }
   }
   return result;
 }
 
-std::vector<float> ones(const std::size_t size) {
-  std::vector<float> result;
-  result.resize(size);
-  for (auto &val : result) {
-    val = 1.f;
-  }
-  return result;
-}
-
-Task to_task(const SamplerNode &subject,
-             const std::vector<UniformSampler> &engines) {
+Task to_sampling_task(const SamplerNode &subject,
+                      const std::vector<UniformSampler> &engines) {
   Task result = [subject = subject, &engines](const std::size_t th_id) {
     const auto &engine = engines[th_id];
-    auto unaries = subject.static_unaries;
-    std::vector<distribution::Evidence> evidences;
-    evidences.reserve(subject.connections.size());
+    std::vector<const distribution::Distribution *> contributions = {
+        &subject.static_unaries};
+    std::list<distribution::Evidence> incomings;
     for (const auto &connection : subject.connections) {
-      auto &added = evidences.emplace_back(*connection.factor,
-                                           connection.sender->node->variable,
-                                           *connection.sender->sample_value);
-      unaries.push_back(&added);
+      const auto &added = incomings.emplace_back(
+          *connection.factor, connection.sender->node->variable,
+          *connection.sender->combination_value);
+      contributions.push_back(&added);
     }
-    if (unaries.empty()) {
-      *subject.sample_value =
-          engine.sampleFromDiscrete(ones(subject.node->variable->size()));
-    } else {
-      distribution::UnaryFactor merged_unaries(unaries);
-      *subject.sample_value =
-          engine.sampleFromDiscrete(merged_unaries.getProbabilities());
-    }
+    distribution::UnaryFactor merged(contributions);
+    *subject.combination_value =
+        engine.sampleFromDiscrete(merged.getProbabilities());
   };
   return result;
 }
 
-Tasks to_tasks(const std::vector<SamplerNode> &subject,
-               const std::vector<UniformSampler> &engines) {
-  Tasks result;
-  result.reserve(subject.size());
-  for (const auto &node : subject) {
-    result.push_back(to_task(node, engines));
+bool have_no_changing_deps(const SamplerNode &subject,
+                           const std::set<const SamplerNode *> &will_change) {
+  for (const auto &dep : subject.connections) {
+    if (exists(will_change, dep.sender)) {
+      return false;
+    }
   }
-  return result;
+  return true;
 }
 
-std::vector<Tasks> make_tasks(const std::vector<SamplerNode> &nodes,
-                              std::vector<UniformSampler> &engines,
-                              const std::optional<std::size_t> &seed,
-                              Pool &pool) {
+std::vector<Tasks> make_sampling_tasks(const SamplerNodes &nodes,
+                                       std::vector<UniformSampler> &engines,
+                                       const std::optional<std::size_t> &seed,
+                                       Pool &pool) {
   engines.resize(pool.size());
   if (std::nullopt != seed) {
     std::size_t s = *seed;
@@ -153,25 +154,35 @@ std::vector<Tasks> make_tasks(const std::vector<SamplerNode> &nodes,
     }
   }
 
-  std::list<const SamplerNode *> open;
-  for (auto &node : nodes) {
-    open.push_back(&node);
-  }
   std::vector<Tasks> result;
-  while (!open.empty()) {
-    auto &tasks = result.emplace_back();
-    std::set<const SamplerNode *> locked;
-    auto it = open.begin();
-    while (it != open.end()) {
-      if (std::find_if((*it)->connections.begin(), (*it)->connections.end(),
-                       [&locked](const SamplerConnection &connection) {
-                         return locked.find(connection.sender) != locked.end();
-                       }) == (*it)->connections.end()) {
-        tasks.push_back(to_task(**it, engines));
-        locked.emplace(*it);
-        ++it;
-      } else {
-        it = open.erase(it);
+  if (1 == pool.size()) {
+    auto &new_tasks = result.emplace_back();
+    result.reserve(nodes.size());
+    for (const auto &node : nodes) {
+      new_tasks.emplace_back(to_sampling_task(*node, engines));
+    }
+  } else {
+    std::list<const SamplerNode *> open;
+    for (auto &node : nodes) {
+      open.push_back(node.get());
+    }
+    while (!open.empty()) {
+      std::set<const SamplerNode *> should_not_change;
+      std::set<const SamplerNode *> will_change;
+      auto &new_tasks = result.emplace_back();
+      auto open_it = open.begin();
+      while (open_it != open.end()) {
+        if (!exists(should_not_change, *open_it) &&
+            have_no_changing_deps(**open_it, will_change)) {
+          will_change.emplace(*open_it);
+          for (const auto &dep : (*open_it)->connections) {
+            should_not_change.emplace(dep.sender);
+          }
+          new_tasks.emplace_back(to_sampling_task(**open_it, engines));
+          open_it = open.erase(open_it);
+        } else {
+          ++open_it;
+        }
       }
     }
   }
@@ -198,9 +209,14 @@ GibbsSampler::getHiddenSetSamples(const SamplesGenerationContext &context,
 
   std::vector<std::size_t> combination;
   auto sampling_nodes = make_nodes(getState().clusters, combination);
+  if (sampling_nodes.empty()) {
+    throw Error{"Cannot generate samples of a model having an empty hidden"};
+  }
+
   std::vector<UniformSampler> engines;
   auto &pool = getPool();
-  auto sampling_tasks = make_tasks(sampling_nodes, engines, context.seed, pool);
+  auto sampling_tasks =
+      make_sampling_tasks(sampling_nodes, engines, context.seed, pool);
 
   std::vector<categoric::Combination> result;
   result.reserve(context.samples_number);

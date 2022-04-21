@@ -15,6 +15,11 @@
 #include <optional>
 
 namespace EFG::strct {
+template <typename SortedContainer, typename ToFind>
+bool exists(const SortedContainer &to_query, const ToFind &to_find) {
+  return to_query.find(to_find) != to_query.end();
+}
+
 void visit_location(
     const NodeLocation &to_visit,
     std::function<void(const HiddenNodeLocation &)> hidden_case,
