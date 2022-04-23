@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include "Utils.h"
 #include <EasyFactorGraph/io/xml/Exporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/Graph.h>
@@ -12,21 +13,9 @@ using namespace EFG::strct;
 using namespace EFG::train;
 using namespace EFG::model;
 using namespace EFG::distribution;
+using namespace EFG::test;
 
 namespace {
-std::shared_ptr<Factor> make_test_factor(const VariablePtr &first,
-                                         const VariablePtr &second) {
-  return std::make_shared<Factor>(Group{first, second},
-                                  USE_SIMPLE_CORRELATION_TAG);
-}
-
-std::shared_ptr<FactorExponential>
-make_test_factor_exp(const VariablePtr &first, const VariablePtr &second,
-                     const float w) {
-  return std::make_shared<FactorExponential>(*make_test_factor(first, second),
-                                             w);
-}
-
 constexpr float alfa = 0.5f;
 constexpr float beta = 0.7f;
 constexpr float gamma = 1.2f;
@@ -39,14 +28,14 @@ RandomField make_test_model() {
   auto O = make_variable(3, "O");
 
   RandomField model;
-  model.addConstFactor(make_test_factor(V0, O));
-  model.addConstFactor(make_test_factor(V1, O));
-  model.addConstFactor(make_test_factor(V2, O));
-  model.addConstFactor(make_test_factor(V3, O));
-  model.addTunableFactor(make_test_factor_exp(V0, V1, alfa));
-  model.addTunableFactor(make_test_factor_exp(V1, V2, beta));
-  model.addTunableFactor(make_test_factor_exp(V2, V3, gamma));
-  model.addTunableFactor(make_test_factor_exp(V3, V0, gamma),
+  model.addConstFactor(make_corr_factor2(V0, O));
+  model.addConstFactor(make_corr_factor2(V1, O));
+  model.addConstFactor(make_corr_factor2(V2, O));
+  model.addConstFactor(make_corr_factor2(V3, O));
+  model.addTunableFactor(make_corr_expfactor2(V0, V1, alfa));
+  model.addTunableFactor(make_corr_expfactor2(V1, V2, beta));
+  model.addTunableFactor(make_corr_expfactor2(V2, V3, gamma));
+  model.addTunableFactor(make_corr_expfactor2(V3, V0, gamma),
                          VariablesSet{V2, V3});
   model.setEvidence(O, 1);
   return model;

@@ -4,12 +4,15 @@
 #include <algorithm>
 #include <sstream>
 
+#include "Utils.h"
 #include <EasyFactorGraph/structure/EvidenceManager.h>
 #include <EasyFactorGraph/structure/FactorsManager.h>
+
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::strct;
+using namespace EFG::test;
 
 namespace {
 class EvidenceTest : public EvidenceSetter,
@@ -22,9 +25,7 @@ public:
 
   EvidenceTest() {
     auto connect = [this](const VariablePtr &a, const VariablePtr &b) {
-      DistributionCnstPtr factor = std::make_shared<Factor>(
-          Group{VariablesSoup{a, b}}, USE_SIMPLE_CORRELATION_TAG);
-      addConstFactor(factor);
+      addConstFactor(make_corr_factor2(a, b));
     };
 
     auto createVariable = [](const std::string &name, std::size_t id) {

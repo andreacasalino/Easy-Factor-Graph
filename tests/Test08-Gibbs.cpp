@@ -65,14 +65,11 @@ bool check_second_prob(const float expected_value_0,
 } // namespace
 
 TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
-  float w = 1.f;
-  FactorExponential factor(
-      Factor(Group{make_variable(2, "A"), make_variable(2, "B")},
-             USE_SIMPLE_CORRELATION_TAG),
-      w);
-
   Graph model;
-  model.copyConstFactor(factor);
+
+  float w = 1.f;
+  model.addConstFactor(
+      make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
 
   SECTION("specific variable frequency") {
     model.setEvidence(model.findVariable("A"), 1);
@@ -110,14 +107,10 @@ TEST_CASE("simple graph gibbs sampling", "[gibbs_sampling]") {
   auto C = make_variable(2, "C");
 
   float alfa = 1.2f;
-  FactorExponential factor_AB(Factor(Group{A, B}, USE_SIMPLE_CORRELATION_TAG),
-                              alfa);
-  model.copyConstFactor(factor_AB);
+  model.addConstFactor(make_corr_expfactor2(A, B, alfa));
 
   float beta = 1.5f;
-  FactorExponential factor_BC(Factor(Group{B, C}, USE_SIMPLE_CORRELATION_TAG),
-                              beta);
-  model.copyConstFactor(factor_BC);
+  model.addConstFactor(make_corr_expfactor2(B, C, beta));
 
   auto samples = model.getHiddenSetSamples(
       GibbsSampler::SamplesGenerationContext{500, 50, 0});

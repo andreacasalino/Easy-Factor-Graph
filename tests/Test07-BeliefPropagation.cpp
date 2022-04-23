@@ -208,10 +208,9 @@ TEST_CASE("big loopy graph", "[propagation]") {
 
   using Coord = std::pair<std::size_t, std::size_t>;
   auto add_factor = [&](const Coord &first, const Coord &second) {
-    Factor factor(Group{vars[first.first][first.second],
-                        vars[second.first][second.second]},
-                  USE_SIMPLE_CORRELATION_TAG);
-    model.addConstFactor(std::make_shared<FactorExponential>(factor, 0.1f));
+    model.addConstFactor(make_corr_expfactor2(vars[first.first][first.second],
+                                              vars[second.first][second.second],
+                                              0.1f));
   };
 
   for (std::size_t r = 0; r < size; ++r) {
@@ -244,9 +243,7 @@ model::Graph make_chain_model(const float wXY, const float wYY) {
   model::Graph model;
   auto connect = [&model](const VariablePtr &a, const VariablePtr &b,
                           const float w) {
-    distribution::Factor factor(Group{VariablesSoup{a, b}},
-                                distribution::USE_SIMPLE_CORRELATION_TAG);
-    model.copyConstFactor(distribution::FactorExponential(factor, w));
+    model.addConstFactor(make_corr_expfactor2(a, b, w));
   };
 
   connect(X[0], Y[0], wXY);
@@ -311,18 +308,9 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
   float alfa = 0.5f, beta = 1.5f;
   // build the chain
   model::Graph graph;
-  graph.addConstFactor(std::make_shared<distribution::FactorExponential>(
-      distribution::Factor(Group{{A, B}},
-                           distribution::USE_SIMPLE_CORRELATION_TAG),
-      alfa));
-  graph.addConstFactor(std::make_shared<distribution::FactorExponential>(
-      distribution::Factor(Group{{B, C}},
-                           distribution::USE_SIMPLE_CORRELATION_TAG),
-      alfa));
-  graph.addConstFactor(std::make_shared<distribution::FactorExponential>(
-      distribution::Factor(Group{{C, D}},
-                           distribution::USE_SIMPLE_CORRELATION_TAG),
-      alfa));
+  graph.addConstFactor(make_corr_expfactor2(A, B, alfa));
+  graph.addConstFactor(make_corr_expfactor2(B, C, alfa));
+  graph.addConstFactor(make_corr_expfactor2(C, D, alfa));
 
   // joint distribution of A B C
   CHECK(almost_equal(
