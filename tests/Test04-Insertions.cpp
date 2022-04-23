@@ -1,13 +1,16 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include "Utils.h"
 #include <EasyFactorGraph/structure/FactorsManager.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
+
 using namespace EFG;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::strct;
 using namespace EFG::train;
+using namespace EFG::test;
 
 namespace {
 template <typename Predicate>
@@ -79,8 +82,7 @@ TEST_CASE("const factors insertion", "[insertion]") {
   FactorsManagerTest model;
 
   SECTION("by copy") {
-    distribution::Factor to_insert(Group{VariablesSoup{A, B}},
-                                   USE_SIMPLE_CORRELATION_TAG);
+    auto to_insert = make_corr_factor(A, B);
 
     model.copyConstFactor(to_insert);
     model.checkPostInsertion();
@@ -93,8 +95,7 @@ TEST_CASE("const factors insertion", "[insertion]") {
   }
 
   SECTION("by sharing") {
-    std::shared_ptr<Factor> to_insert = std::make_shared<Factor>(
-        Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+    auto to_insert = make_corr_factor2(A, B);
 
     model.addConstFactor(to_insert);
     model.checkPostInsertion();
@@ -133,8 +134,7 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
   FactorsTunableManagerTest model;
 
   SECTION("by copy") {
-    distribution::FactorExponential to_insert(distribution::Factor{
-        Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
+    auto to_insert = make_corr_expfactor(A, B, 1.f);
 
     model.copyTunableFactor(to_insert);
     model.checkPostInsertion();
@@ -149,10 +149,7 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
   }
 
   SECTION("by sharing") {
-    Group group_AB{VariablesSoup{A, B}};
-    std::shared_ptr<distribution::FactorExponential> to_insert =
-        std::make_shared<distribution::FactorExponential>(
-            distribution::Factor{group_AB, USE_SIMPLE_CORRELATION_TAG});
+    auto to_insert = make_corr_expfactor2(A, B, 1.f);
 
     model.addTunableFactor(to_insert);
     model.checkPostInsertion();
@@ -167,12 +164,10 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
 
     SECTION("add factor sharing the weight") {
       auto C = make_variable(2, "C");
-      std::shared_ptr<distribution::FactorExponential> to_insert2 =
-          std::make_shared<distribution::FactorExponential>(
-              distribution::Factor{Group{VariablesSoup{A, C}},
-                                   USE_SIMPLE_CORRELATION_TAG});
+      auto to_insert2 = make_corr_expfactor2(A, C, 1.f);
 
-      model.addTunableFactor(to_insert2, group_AB.getVariablesSet());
+      model.addTunableFactor(to_insert2,
+                             to_insert->getVariables().getVariablesSet());
       model.checkPostInsertion();
       model.checkVariables(VariablesSet{A, B, C});
 
@@ -195,10 +190,8 @@ TEST_CASE("tunable factors multiple insertions", "[insertion]") {
 
   FactorsTunableManagerTest model;
 
-  distribution::FactorExponential factor_AB(distribution::Factor{
-      Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG});
-  distribution::Factor factor_BC(Group{VariablesSoup{B, C}},
-                                 USE_SIMPLE_CORRELATION_TAG);
+  auto factor_AB = make_corr_expfactor(A, B, 1.f);
+  auto factor_BC = make_corr_expfactor(B, C, 1.f);
   distribution::FactorExponential factor_D(
       distribution::Factor{Group{VariablesSoup{D}}});
 
@@ -226,13 +219,11 @@ TEST_CASE("check bad factor insertions are refused", "[insertion]") {
 
   FactorsTunableManagerTest model;
 
-  DistributionCnstPtr to_insert1 = std::make_shared<Factor>(
-      Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+  DistributionCnstPtr to_insert1 = make_corr_factor2(A, B);
   model.addConstFactor(to_insert1);
 
   SECTION("factor connecting same variables") {
-    DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
-        Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG);
+    DistributionCnstPtr to_insert2 = make_corr_factor2(A, B);
     // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO find
     // a way to make it work
   }
@@ -249,8 +240,7 @@ TEST_CASE("check bad factor insertions are refused", "[insertion]") {
 
     SECTION("bad binary factor") {
       auto C = make_variable(2, "C");
-      DistributionCnstPtr to_insert2 = std::make_shared<Factor>(
-          Group{VariablesSoup{A_bis, C}}, USE_SIMPLE_CORRELATION_TAG);
+      DistributionCnstPtr to_insert2 = make_corr_factor2(A_bis, C);
       // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO
       // find a way to make it work
     }

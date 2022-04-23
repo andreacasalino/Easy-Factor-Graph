@@ -7,6 +7,7 @@
 
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/distribution/CombinationFinder.h>
+
 #include <algorithm>
 
 namespace EFG::distribution {
@@ -51,8 +52,10 @@ CombinationFinder::find(const categoric::Combination &comb) const {
       combinations_map->begin(), combinations_map->end(),
       [&comb, &indices = this->indices_in_bigger_group](
           const std::pair<categoric::Combination, float> &element) {
+        const auto &element_comb_data = element.first.data();
+        const auto &comb_data = comb.data();
         for (std::size_t k = 0; k < indices.size(); ++k) {
-          if (element.first.data()[k] != comb.data()[indices[k]]) {
+          if (element_comb_data[k] != comb_data[indices[k]]) {
             return false;
           }
         }

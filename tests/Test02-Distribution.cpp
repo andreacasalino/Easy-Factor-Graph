@@ -209,3 +209,23 @@ TEST_CASE("bigger combination finder", "[distribution]") {
     CHECK(found.value == 0);
   }
 }
+
+TEST_CASE("bigger combination finder again", "[distribution]") {
+  auto A = make_variable(3, "A");
+  auto B = make_variable(3, "B");
+  auto C = make_variable(3, "C");
+  auto D = make_variable(3, "D");
+
+  VariablesSoup bigger_group = {A, B, C, D};
+
+  Factor factor(Group{VariablesSoup{B, D}});
+  factor.setImageRaw(std::vector<std::size_t>{0, 1}, 1.f);
+  factor.setImageRaw(std::vector<std::size_t>{2, 1}, 2.f);
+  factor.setImageRaw(std::vector<std::size_t>{1, 1}, 3.f);
+
+  auto finder = factor.makeFinder(bigger_group);
+
+  CHECK(finder.find(std::vector<std::size_t>{0, 0, 2, 1}).value == 1.f);
+  CHECK(finder.find(std::vector<std::size_t>{2, 2, 0, 1}).value == 2.f);
+  CHECK(finder.find(std::vector<std::size_t>{2, 1, 2, 1}).value == 3.f);
+}

@@ -4,7 +4,7 @@
 #include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
-#include <math.h>
+#include "Utils.h"
 
 using namespace EFG;
 using namespace EFG::categoric;
@@ -21,7 +21,7 @@ bool almost_equal(const CombinationRawValuesMap &a,
     if (a_it->first != b_it->first) {
       return false;
     }
-    if (abs(a_it->second - b_it->second) > 0.01f) {
+    if (!test::almost_equal(a_it->second, b_it->second, 0.01f)) {
       return false;
     }
   }

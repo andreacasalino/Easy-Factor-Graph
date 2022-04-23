@@ -1,11 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include "Utils.h"
 #include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/Graph.h>
-
-#include <math.h>
-#include <sstream>
 
 using namespace EFG;
 using namespace EFG::model;
@@ -13,45 +11,9 @@ using namespace EFG::strct;
 using namespace EFG::io;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
+using namespace EFG::test;
 
 namespace {
-std::string make_file_path(const std::string &file_name) {
-  std::stringstream stream;
-  stream << SAMPLE_FOLDER << "Sample03-BeliefPropagation-B/" << file_name;
-  return stream.str();
-}
-
-std::vector<float>
-normalize_distribution(const std::vector<float> &distribution) {
-  float sum = 0;
-  for (const auto &val : distribution) {
-    sum += val;
-  }
-  if (sum < 0.001f) {
-    return distribution;
-  }
-  std::vector<float> result;
-  result.reserve(distribution.size());
-  for (const auto &val : distribution) {
-    result.push_back(val / sum);
-  }
-  return result;
-}
-
-bool almost_equal_distributions(const std::vector<float> &a,
-                                const std::vector<float> &b,
-                                const float threshold) {
-  if (a.size() != b.size()) {
-    return false;
-  }
-  for (std::size_t k = 0; k < a.size(); ++k) {
-    if (abs(a[k] - b[k]) > threshold) {
-      return false;
-    }
-  }
-  return true;
-}
-
 class TestModels : public Graph {
 public:
   TestModels(const std::string &file_name) {
@@ -77,9 +39,8 @@ public:
                       const std::vector<float> &expected,
                       const float threshold = 0.01f) {
     const auto var = findVariable(var_name);
-    return almost_equal_distributions(normalize_distribution(expected),
-                                      getMarginalDistribution(var_name),
-                                      threshold);
+    return almost_equal(*ProbDistribution{expected},
+                        getMarginalDistribution(var_name), threshold);
   }
 };
 
@@ -111,7 +72,7 @@ bool are_equal(const PropagationResult &a, const PropagationResult &b) {
 } // namespace
 
 TEST_CASE("simple poly tree", "[propagation]") {
-  TestModels model(make_file_path("graph_1.xml"));
+  TestModels model(make_graph_path("graph_1.xml"));
 
   float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
 
@@ -159,7 +120,7 @@ TEST_CASE("simple poly tree", "[propagation]") {
 }
 
 TEST_CASE("complex poly tree", "[propagation]") {
-  TestModels model(make_file_path("graph_2.xml"));
+  TestModels model(make_graph_path("graph_2.xml"));
   model.setEvidence(model.findVariable("v1"), 1);
   model.setEvidence(model.findVariable("v2"), 1);
   model.setEvidence(model.findVariable("v3"), 1);
@@ -183,7 +144,7 @@ TEST_CASE("complex poly tree", "[propagation]") {
 }
 
 TEST_CASE("simple loopy graph", "[propagation]") {
-  TestModels model(make_file_path("graph_3.xml"));
+  TestModels model(make_graph_path("graph_3.xml"));
 
   float M = expf(1.f);
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
@@ -211,7 +172,7 @@ TEST_CASE("simple loopy graph", "[propagation]") {
 }
 
 TEST_CASE("complex loopy graph", "[propagation]") {
-  TestModels model(make_file_path("graph_4.xml"));
+  TestModels model(make_graph_path("graph_4.xml"));
 
   model.setEvidence(model.findVariable("v1"), 1);
 
@@ -364,16 +325,15 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
       alfa));
 
   // joint distribution of A B C
-  CHECK(almost_equal_distributions(
-      normalize_distribution({expf(alfa) * expf(beta), expf(alfa), 1.f,
-                              expf(beta), expf(beta), 1.f, expf(alfa),
-                              expf(alfa) * expf(beta)}),
+  CHECK(almost_equal(
+      *ProbDistribution{{expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
+                         expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}},
       graph.getJointMarginalDistribution({"A", "B", "C"})->getProbabilities(),
       0.15f));
 
   // joint distribution of A B
-  CHECK(almost_equal_distributions(
-      normalize_distribution({expf(alfa), 1.f, 1.f, expf(alfa)}),
+  CHECK(almost_equal(
+      *ProbDistribution{{expf(alfa), 1.f, 1.f, expf(alfa)}},
       graph.getJointMarginalDistribution({"A", "B"})->getProbabilities(),
       0.01f));
 }
