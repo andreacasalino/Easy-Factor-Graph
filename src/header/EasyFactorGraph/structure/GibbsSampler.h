@@ -11,8 +11,24 @@
 #include <EasyFactorGraph/structure/components/PoolAware.h>
 
 #include <optional>
+#include <random>
 
 namespace EFG::strct {
+class UniformSampler {
+public:
+  UniformSampler();
+
+  std::size_t sampleFromDiscrete(const std::vector<float> &distribution) const;
+
+  void resetSeed(const std::size_t &newSeed);
+
+private:
+  inline float sample() const { return this->distribution(this->generator); };
+
+  mutable std::default_random_engine generator;
+  mutable std::uniform_real_distribution<float> distribution;
+};
+
 class GibbsSampler : virtual public StateAware,
                      virtual public BeliefAware,
                      virtual public PoolAware {

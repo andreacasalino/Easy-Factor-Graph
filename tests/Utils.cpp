@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include <EasyFactorGraph/categoric/GroupRange.h>
 
 #include <math.h>
 #include <sstream>
@@ -72,4 +73,32 @@ std::vector<float> make_normalized(const std::vector<float> &values) {
 
 ProbDistribution::ProbDistribution(const std::vector<float> &values)
     : values_normalized(make_normalized(values)) {}
+
+namespace {
+class MergingFactor : public distribution::Factor {
+public:
+  MergingFactor(const std::vector<const distribution::Distribution *> &factors)
+      : distribution::Factor(factors) {}
+};
+} // namespace
+
+CombinationsAndProbabilities
+compute_combinations_and_probs(const strct::ConnectionsManager &model) {
+  categoric::Group all_vars(model.getAllVariables());
+  CombinationsAndProbabilities result;
+  std::vector<const distribution::Distribution *> factors;
+  for (const auto &factor : model.getAllFactors()) {
+    factors.push_back(factor.get());
+  }
+  MergingFactor merged(factors);
+  result.probs = merged.getProbabilities();
+  result.combinations.reserve(all_vars.size());
+  categoric::GroupRange range(all_vars);
+  categoric::for_each_combination(range,
+                                  [&combinations = result.combinations](
+                                      const categoric::Combination &comb) {
+                                    combinations.push_back(comb);
+                                  });
+  return result;
+}
 } // namespace EFG::test

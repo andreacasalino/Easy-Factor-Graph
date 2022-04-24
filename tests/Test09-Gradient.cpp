@@ -2,8 +2,10 @@
 #include <catch2/generators/catch_generators.hpp>
 
 #include "Utils.h"
+#include <EasyFactorGraph/categoric/GroupRange.h>
 #include <EasyFactorGraph/distribution/CombinationFinder.h>
 #include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/structure/GibbsSampler.h>
 #include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 
 using namespace EFG;
@@ -19,31 +21,42 @@ class TunableModelTest : public RandomField {
 public:
   TunableModelTest() = default;
 
+  TrainSet makeGoodTrainset(const std::size_t samples) const {
+    auto combs_and_prob = compute_combinations_and_probs(*this);
+    std::vector<categoric::Combination> sampled;
+    sampled.reserve(samples);
+    UniformSampler sampler;
+    sampler.resetSeed(0);
+    while (sampled.size() != samples) {
+      auto pos = sampler.sampleFromDiscrete(combs_and_prob.probs);
+      sampled.push_back(combs_and_prob.combinations[pos]);
+    }
+    return TrainSet{sampled};
+  }
+
   bool checkGradient(const std::vector<float> &for_samples_generation,
                      const std::vector<float> &for_gradient_computation) {
     setWeights(for_samples_generation);
-    auto samples = TrainSet{getHiddenSetSamples(
-        GibbsSampler::SamplesGenerationContext{1000, 50, 0})};
+    auto samples = makeGoodTrainset(1000);
 
+    propagateBelief(SUM);
+    auto samples_it = samples.makeIterator();
     setWeights(for_gradient_computation);
-    auto gradient = getWeightsGradient(samples.makeIterator());
-    float coeff = 1.f / static_cast<float>(samples.getCombinations().size());
-    for (const auto &tuner : tuners) {
+    for (std::size_t t = 0; t < tuners.size(); ++t) {
+      const auto &tuner = tuners[t];
+      tuner->setTrainSetIterator(samples_it);
+
       float alfa_part = tuner->getGradientAlpha();
-      float alfa_expected = 0.f;
-      auto comb_finder = dynamic_cast<const BaseTuner *>(tuner.get())
-                             ->getFactor()
-                             .makeFinder(getAllVariables());
-      for (const auto &sample : samples.getCombinations()) {
-        alfa_expected += coeff * comb_finder.find(sample).value;
-      }
-      if (!almost_equal(alfa_part, alfa_expected, 0.05f)) {
-        return false;
-      }
+      float alfa_expected = expf(for_samples_generation[t]) /
+                            (1.f + expf(for_samples_generation[t]));
 
       float beta_part = tuner->getGradientBeta();
       float beta_expected =
           expf(tuner->getWeight()) / (1.f + expf(tuner->getWeight()));
+
+      if (!almost_equal(alfa_part, alfa_expected, 0.05f)) {
+        return false;
+      }
       if (!almost_equal(beta_part, beta_expected, 0.05f)) {
         return false;
       }

@@ -12,41 +12,32 @@
 
 #include <algorithm>
 #include <list>
-#include <random>
 #include <time.h>
 
 namespace EFG::strct {
-namespace {
-class UniformSampler {
-public:
-  UniformSampler() {
-    auto random_seed = static_cast<unsigned int>(time(NULL));
-    resetSeed(random_seed);
-  }
+UniformSampler::UniformSampler() {
+  auto random_seed = static_cast<unsigned int>(time(NULL));
+  resetSeed(random_seed);
+}
 
-  std::size_t sampleFromDiscrete(const std::vector<float> &distribution) const {
-    float s = this->sample();
-    float cumul = 0.f;
-    for (std::size_t k = 0; k < distribution.size(); ++k) {
-      cumul += distribution[k];
-      if (s <= cumul) {
-        return k;
-      }
+std::size_t UniformSampler::sampleFromDiscrete(
+    const std::vector<float> &distribution) const {
+  float s = this->sample();
+  float cumul = 0.f;
+  for (std::size_t k = 0; k < distribution.size(); ++k) {
+    cumul += distribution[k];
+    if (s <= cumul) {
+      return k;
     }
-    return distribution.size() - 1;
   }
+  return distribution.size() - 1;
+}
 
-  void resetSeed(const std::size_t &newSeed) {
-    this->generator.seed(static_cast<unsigned int>(newSeed));
-  }
+void UniformSampler::resetSeed(const std::size_t &newSeed) {
+  this->generator.seed(static_cast<unsigned int>(newSeed));
+}
 
-private:
-  inline float sample() const { return this->distribution(this->generator); };
-
-  mutable std::default_random_engine generator;
-  mutable std::uniform_real_distribution<float> distribution;
-};
-
+namespace {
 struct SamplerNode;
 struct SamplerConnection {
   const SamplerNode *sender;

@@ -2,6 +2,7 @@
 
 #include <EasyFactorGraph/distribution/Factor.h>
 #include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/structure/ConnectionsManager.h>
 
 #include <math.h>
 #include <memory>
@@ -38,4 +39,11 @@ public:
 private:
   const std::vector<float> values_normalized;
 };
+
+struct CombinationsAndProbabilities {
+  std::vector<float> probs;
+  std::vector<categoric::Combination> combinations;
+};
+CombinationsAndProbabilities
+compute_combinations_and_probs(const strct::ConnectionsManager &model);
 } // namespace EFG::test
