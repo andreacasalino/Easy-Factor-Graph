@@ -37,14 +37,14 @@ public:
       for (const auto &sample : samples.getCombinations()) {
         alfa_expected += coeff * comb_finder.find(sample).value;
       }
-      if (almost_equal(alfa_part, alfa_expected, 0.05f)) {
+      if (!almost_equal(alfa_part, alfa_expected, 0.05f)) {
         return false;
       }
 
       float beta_part = tuner->getGradientBeta();
       float beta_expected =
           expf(tuner->getWeight()) / (1.f + expf(tuner->getWeight()));
-      if (almost_equal(beta_part, beta_expected, 0.05f)) {
+      if (!almost_equal(beta_part, beta_expected, 0.05f)) {
         return false;
       }
     }
