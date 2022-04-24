@@ -16,9 +16,7 @@ public:
   FactorExponentialPtr getFactorPtr() const { return factor; }
   const distribution::FactorExponential &getFactor() const { return *factor; }
 
-  void setTrainSetIterator(const TrainSet::Iterator &iter) final;
-
-  float getGradientAlpha() final { return alpha_part->value; };
+  float getGradientAlpha(const TrainSet::Iterator &iter) final;
   void setWeight(const float &w) final { factor->setWeight(w); }
   float getWeight() const final { return factor->getWeight(); };
 

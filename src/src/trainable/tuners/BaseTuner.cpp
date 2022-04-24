@@ -13,18 +13,18 @@ BaseTuner::BaseTuner(
     const categoric::VariablesSoup &variables_in_model)
     : factor(factor), finder(factor->makeFinder(variables_in_model)) {}
 
-void BaseTuner::setTrainSetIterator(const TrainSet::Iterator &iter) {
-  if (alpha_part && (alpha_part->train_set_iterator == &iter)) {
-    return;
+float BaseTuner::getGradientAlpha(const TrainSet::Iterator &iter) {
+  if (!alpha_part.has_value() || (alpha_part->train_set_iterator != &iter)) {
+    auto &value = alpha_part.emplace();
+    value.train_set_iterator = &iter;
+    value.value = 0;
+    const float coeff = 1.f / static_cast<float>(iter.size());
+    iter.forEachSample([&finder = this->finder, &value = value.value,
+                        &coeff](const categoric::Combination &comb) {
+      value += coeff * finder.find(comb).map_iterator->second;
+    });
   }
-  auto &value = alpha_part.emplace();
-  value.train_set_iterator = &iter;
-  value.value = 0;
-  const float coeff = 1.f / static_cast<float>(iter.size());
-  iter.forEachSample([&finder = this->finder, &value = value.value,
-                      &coeff](const categoric::Combination &comb) {
-    value += coeff * finder.find(comb).map_iterator->second;
-  });
+  return alpha_part->value;
 }
 
 float BaseTuner::dotProduct(const std::vector<float> &prob) const {

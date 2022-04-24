@@ -44,9 +44,8 @@ public:
     setWeights(for_gradient_computation);
     for (std::size_t t = 0; t < tuners.size(); ++t) {
       const auto &tuner = tuners[t];
-      tuner->setTrainSetIterator(samples_it);
 
-      float alfa_part = tuner->getGradientAlpha();
+      float alfa_part = tuner->getGradientAlpha(samples_it);
       float alfa_expected = expf(for_samples_generation[t]) /
                             (1.f + expf(for_samples_generation[t]));
 

@@ -21,8 +21,8 @@ std::vector<float> RandomField::getWeightsGradient_(
   for (auto &tuner : tuners) {
     tasks.emplace_back([&receiver = result[result_pos], &tuner = tuner,
                         &train_set_combinations](const std::size_t) {
-      tuner->setTrainSetIterator(train_set_combinations);
-      receiver = tuner->getGradientAlpha() - tuner->getGradientBeta();
+      receiver = tuner->getGradientAlpha(train_set_combinations) -
+                 tuner->getGradientBeta();
     });
     ++result_pos;
   }

@@ -23,16 +23,10 @@ void CompositeTuner::addElement(TunerPtr element) {
   elements.emplace_back(std::move(element));
 }
 
-void CompositeTuner::setTrainSetIterator(const TrainSet::Iterator &iter) {
-  for (auto &element : elements) {
-    element->setTrainSetIterator(iter);
-  }
-}
-
-float CompositeTuner::getGradientAlpha() {
+float CompositeTuner::getGradientAlpha(const TrainSet::Iterator &iter) {
   float grad = 0.f;
   for (auto &element : elements) {
-    grad += element->getGradientAlpha();
+    grad += element->getGradientAlpha(iter);
   }
   return grad;
 }

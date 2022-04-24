@@ -157,8 +157,7 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
     for (auto &tuner : tuners) {
       tasks.emplace_back([&receiver = alfas[alfas_pos], &tuner = tuner,
                           &train_set_combinations](const std::size_t) {
-        tuner->setTrainSetIterator(train_set_combinations);
-        receiver = tuner->getGradientAlpha();
+        receiver = tuner->getGradientAlpha(train_set_combinations);
       });
       ++alfas_pos;
     }
