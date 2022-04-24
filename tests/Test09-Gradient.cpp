@@ -1,26 +1,90 @@
-// #include <catch2/catch_test_macros.hpp>
-// #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <EasyFactorGraph/model/RandomField.h>
+#include "Utils.h"
+#include <EasyFactorGraph/distribution/CombinationFinder.h>
+#include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
-// using namespace EFG::model;
-// using namespace EFG::train;
-// using namespace EFG::strct;
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
+using namespace EFG::train;
+using namespace EFG::strct;
+using namespace EFG::model;
+using namespace EFG::test;
 
-// TEST_CASE("Gradient evaluation on binary factor", "[train][gradient]") {
-//   RandomField model;
+namespace {
+class TunableModelTest : public RandomField {
+public:
+  TunableModelTest() = default;
 
-//   const float w = 1.5f;
-//   FactorExponential factor_AB(
-//       Factor{Group{VariablesSoup{make_variable(2, "A"), make_variable(2,
-//       "B")}},
-//              USE_SIMPLE_CORRELATION_TAG},
-//       w);
-//   model.copyTunableFactor(factor_AB);
+  bool checkGradient(const std::vector<float> &for_samples_generation,
+                     const std::vector<float> &for_gradient_computation) {
+    setWeights(for_samples_generation);
+    auto samples = TrainSet{getHiddenSetSamples(
+        GibbsSampler::SamplesGenerationContext{1000, 50, 0})};
 
-//   auto samples = model.getHiddenSetSamples(
-//       GibbsSampler::SamplesGenerationContext{100, 20, 0});
-// }
+    setWeights(for_gradient_computation);
+    auto gradient = getWeightsGradient(samples.makeIterator());
+    float coeff = 1.f / static_cast<float>(samples.getCombinations().size());
+    for (const auto &tuner : tuners) {
+      float alfa_part = tuner->getGradientAlpha();
+      float alfa_expected = 0.f;
+      auto comb_finder = dynamic_cast<const BaseTuner *>(tuner.get())
+                             ->getFactor()
+                             .makeFinder(getAllVariables());
+      for (const auto &sample : samples.getCombinations()) {
+        alfa_expected += coeff * comb_finder.find(sample).value;
+      }
+      if (almost_equal(alfa_part, alfa_expected, 0.05f)) {
+        return false;
+      }
+
+      float beta_part = tuner->getGradientBeta();
+      float beta_expected =
+          expf(tuner->getWeight()) / (1.f + expf(tuner->getWeight()));
+      if (almost_equal(beta_part, beta_expected, 0.05f)) {
+        return false;
+      }
+    }
+    return true;
+  }
+};
+} // namespace
+
+TEST_CASE("Gradient evaluation on binary factor", "[train][gradient]") {
+  TunableModelTest model;
+
+  const float w = 1.5f;
+  model.addTunableFactor(
+      make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
+
+  auto grad_w = GENERATE(0.5f, 2.f);
+
+  CHECK(model.checkGradient(std::vector<float>{w}, std::vector<float>{grad_w}));
+}
+
+TEST_CASE("Gradient evaluation on a simple chain model", "[train][gradient]") {
+  TunableModelTest model;
+
+  auto A = make_variable(2, "A");
+  auto B = make_variable(2, "B");
+  auto C = make_variable(2, "C");
+  auto D = make_variable(2, "D");
+
+  const float alfa = 1.f;
+  model.addTunableFactor(make_corr_expfactor2(A, B, alfa));
+  const float beta = 0.5f;
+  model.addTunableFactor(make_corr_expfactor2(B, C, beta));
+  const float gamma = 2.f;
+  model.addTunableFactor(make_corr_expfactor2(C, D, gamma));
+
+  const std::vector<float> reference_w = {alfa, beta, gamma};
+
+  auto grad_w = GENERATE(std::vector<float>{1.f, 1.f, 1.f},
+                         std::vector<float>{0.5f, 0.5f, 0.5f},
+                         std::vector<float>{2.f, 2.f, 2.f});
+
+  CHECK(model.checkGradient(std::vector<float>{reference_w}, grad_w));
+}
