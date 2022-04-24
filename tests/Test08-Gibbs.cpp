@@ -67,7 +67,7 @@ bool check_second_prob(const float expected_value_0,
 TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
   Graph model;
 
-  float w = 1.f;
+  auto w = GENERATE(0.5f, 1.f, 2.f);
   model.addConstFactor(
       make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
 
@@ -96,6 +96,68 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
                        1.f / Z, 0.02f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1}),
                        exp_w / Z, 0.02f));
+  }
+}
+
+namespace {
+float getFrequency(const std::vector<Combination> &samples,
+                   const std::vector<std::size_t> &comb_to_search,
+                   const std::vector<std::size_t> &pos_to_search) {
+  std::size_t result = 0;
+  for (const auto &sample : samples) {
+    std::vector<std::size_t> sub_part;
+    sub_part.reserve(pos_to_search.size());
+    for (const auto &pos : pos_to_search) {
+      sub_part.push_back(sample.data()[pos]);
+    }
+    if (sub_part == comb_to_search) {
+      ++result;
+    }
+  }
+  float result2 =
+      static_cast<float>(result) / static_cast<float>(samples.size());
+  return result2;
+}
+} // namespace
+
+TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
+  Graph model;
+
+  auto A = make_variable(2, "A");
+  auto B = make_variable(2, "B");
+  auto C = make_variable(2, "C");
+
+  float alfa = 0.2f;
+  model.addConstFactor(make_corr_expfactor2(A, B, alfa));
+
+  float beta = 2.f;
+  model.addConstFactor(make_corr_expfactor2(B, C, beta));
+
+  auto samples = model.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{1000, 50, 0});
+
+  {
+    const float exp_alfa = expf(alfa);
+    const float Z = 2.f * (1.f + exp_alfa);
+
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0},
+                                    std::vector<std::size_t>{0, 1}),
+                       exp_alfa / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1},
+                                    std::vector<std::size_t>{0, 1}),
+                       exp_alfa / Z, 0.05f));
+  }
+
+  {
+    const float exp_beta = expf(beta);
+    const float Z = 2.f * (1.f + exp_beta);
+
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0},
+                                    std::vector<std::size_t>{1, 2}),
+                       exp_beta / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1},
+                                    std::vector<std::size_t>{1, 2}),
+                       exp_beta / Z, 0.05f));
   }
 }
 
