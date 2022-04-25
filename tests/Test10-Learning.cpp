@@ -1,284 +1,249 @@
-// #include <catch2/catch_test_macros.hpp>
-// #include <catch2/generators/catch_generators.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/generators/catch_generators.hpp>
 
-// #include <EasyFactorGraph/categoric/GroupRange.h>
-// #include <EasyFactorGraph/distribution/CombinationFinder.h>
-// #include <EasyFactorGraph/io/xml/Importer.h>
-// #include <EasyFactorGraph/model/ConditionalRandomField.h>
-// #include <EasyFactorGraph/model/RandomField.h>
-// #include <EasyFactorGraph/structure/SpecialFactors.h>
-// #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
-// #include <EasyFactorGraph/trainable/ModelTrainer.h>
+#include "Utils.h"
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/distribution/CombinationFinder.h>
+#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/model/ConditionalRandomField.h>
+#include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/structure/QueryManager.h>
+#include <EasyFactorGraph/structure/SpecialFactors.h>
+#include <EasyFactorGraph/trainable/FactorsTunableManager.h>
+#include <EasyFactorGraph/trainable/ModelTrainer.h>
 
-// #include <TrainingTools/iterative/solvers/GradientDescend.h>
-// #include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
-// #include <TrainingTools/iterative/solvers/QuasiNewton.h>
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
+#include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
+#include <TrainingTools/iterative/solvers/QuasiNewton.h>
 
-// #include <algorithm>
-// #include <limits>
-// #include <math.h>
+#include <algorithm>
+#include <functional>
+#include <limits>
+#include <math.h>
 
-// using namespace EFG;
-// using namespace EFG::categoric;
-// using namespace EFG::distribution;
-// using namespace EFG::model;
-// using namespace EFG::train;
-// using namespace EFG::strct;
+using namespace EFG;
+using namespace EFG::categoric;
+using namespace EFG::distribution;
+using namespace EFG::model;
+using namespace EFG::train;
+using namespace EFG::strct;
+using namespace EFG::test;
 
-// namespace {
-// template <typename TrainerT> class StoryAware : public TrainerT {
-// public:
-//   std::list<std::vector<float>> getStory() const { return descendStory; }
+namespace {
+template <typename TrainerT> class StoryAware : public TrainerT {
+public:
+  std::list<std::vector<float>> getStory() const { return descendStory; }
 
-// protected:
-//   void updateDirection() override {
-//     Eigen::VectorXd par = this->getParameters();
-//     std::vector<float> w;
-//     w.reserve(par.size());
-//     for (Eigen::Index i = 0; i < par.size(); ++i) {
-//       w.push_back(par(i));
-//     }
-//     this->descendStory.emplace_back(std::move(w));
-//     this->TrainerT::updateDirection();
-//   };
+protected:
+  void updateDirection() override {
+    Eigen::VectorXd par = this->getParameters();
+    std::vector<float> w;
+    w.reserve(par.size());
+    for (Eigen::Index i = 0; i < par.size(); ++i) {
+      w.push_back(par(i));
+    }
+    this->descendStory.emplace_back(std::move(w));
+    this->TrainerT::updateDirection();
+  };
 
-//   void initDirection() override {
-//     this->descendStory.clear();
-//     this->TrainerT::initDirection();
-//   }
+  void initDirection() override {
+    this->descendStory.clear();
+    this->TrainerT::initDirection();
+  }
 
-// private:
-//   std::list<std::vector<float>> descendStory;
-// };
+private:
+  std::list<std::vector<float>> descendStory;
+};
 
-// class LikelihoodAware {
-// public:
-//   LikelihoodAware(const EFG::strct::ConnectionsManager &model)
-//       : vars{model.getAllVariables()} {
-//     const auto &factors = model.getAllFactors();
-//     finders.reserve(factors.size());
-//     const auto &all_vars = vars.getVariables();
-//     for (const auto &factor : factors) {
-//       finders.emplace_back(factor->makeFinder(all_vars));
-//     }
-//   };
+class LikelihoodAware {
+public:
+  LikelihoodAware(const EFG::strct::ConnectionsManager &model)
+      : vars{model.getAllVariables()} {
+    const auto &factors = model.getAllFactors();
+    finders.reserve(factors.size());
+    const auto &all_vars = vars.getVariables();
+    for (const auto &factor : factors) {
+      finders.emplace_back(factor->makeFinder(all_vars));
+    }
+  };
 
-//   float getLogActivation(const EFG::categoric::Combination &c) const {
-//     float res = 0.f;
-//     for (auto it = this->finders.begin(); it != this->finders.end(); ++it) {
-//       res += logf(it->find(c).value);
-//     }
-//     return res;
-//   };
+  float getLogActivation(const EFG::categoric::Combination &c) const {
+    float res = 0.f;
+    for (auto it = this->finders.begin(); it != this->finders.end(); ++it) {
+      res += logf(it->find(c).value);
+    }
+    return res;
+  };
 
-//   float getLogLikeliHood(const EFG::train::TrainSet::Iterator &combinations)
-//   {
-//     float Z = 0.f;
-//     {
-//       GroupRange range(Group{vars});
-//       for_each_combination(range, [this, &Z](const Combination &comb) {
-//         Z += this->getLogActivation(comb);
-//       });
-//     }
-//     float lkl = 0.f, coeff = 1.f / static_cast<float>(combinations.size());
-//     combinations.forEachSample([this, &lkl, &coeff](const Combination &comb)
-//     {
-//       lkl += coeff * this->getLogActivation(comb);
-//     });
-//     return lkl - Z;
-//   }
+  float getLogLikeliHood(const EFG::train::TrainSet::Iterator &combinations) {
+    float Z = 0.f;
+    {
+      GroupRange range(Group{vars});
+      for_each_combination(range, [this, &Z](const Combination &comb) {
+        Z += this->getLogActivation(comb);
+      });
+    }
+    float lkl = 0.f, coeff = 1.f / static_cast<float>(combinations.size());
+    combinations.forEachSample([this, &lkl, &coeff](const Combination &comb) {
+      lkl += coeff * this->getLogActivation(comb);
+    });
+    return lkl - Z;
+  }
 
-// private:
-//   Group vars;
-//   std::vector<CombinationFinder> finders;
-// };
+private:
+  Group vars;
+  std::vector<CombinationFinder> finders;
+};
 
-// bool are_similar(const std::vector<float> &a, const std::vector<float> &b,
-//                  const float toll = 0.2f) {
-//   if (a.size() != b.size()) {
-//     return false;
-//   }
-//   for (std::size_t k = 0; k < a.size(); ++k) {
-//     if (abs(a[k] - b[k]) > toll) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
+bool has_decreasing_likelihood(FactorsTunableAware &trained_model,
+                               const EFG::train::TrainSet &train_set,
+                               const std::list<std::vector<float>> &story,
+                               const float toll) {
+  const auto final_w = trained_model.getWeights();
+  LikelihoodAware likelihood_aware(trained_model);
+  float prev_likelihood = std::numeric_limits<float>::min();
+  const auto train_set_iter = train_set.makeIterator();
+  for (const auto &w : story) {
+    trained_model.setWeights(w);
+    float att_likelihood = likelihood_aware.getLogLikeliHood(train_set_iter);
+    const bool ok = (-toll) < (att_likelihood - prev_likelihood);
+    if (!ok) {
+      return false;
+    }
+    prev_likelihood = att_likelihood;
+  }
+  trained_model.setWeights(final_w);
+  return true;
+}
 
-// VariablePtr get_second_hidden(const ConnectionsManager &subject) {
-//   auto vars = subject.getHiddenVariables();
-//   auto it = vars.begin();
-//   ++it;
-//   return *it;
-// }
+template <typename T> T *cast_model(FactorsTunableAware &subject) {
+  return dynamic_cast<T *>(&subject);
+}
 
-// struct Models {
-//   FactorsTunableAware &reference_model;
-//   FactorsTunableAware &trained_model;
-// };
+struct Models {
+  FactorsTunableAware &reference_model;
+  FactorsTunableAware &trained_model;
+};
 
-// // bool is_gradient_in_right_direction(const Models &subject,
-// //                                     const TrainSet::Iterator &train_set) {
-// //   auto w_a = subject.reference_model.getWeights();
-// //   auto w_b = w_a;
-// //   for (auto &w : w_b) {
-// //     // w += 0.1f * static_cast<float>(rand()) /
-// static_cast<float>(RAND_MAX);
-// //     // w += 0.1f;
-// //     w += 0;
-// //   }
-// //   subject.trained_model.setWeights(w_b);
-// //   auto gradient = subject.trained_model.getWeightsGradient(train_set);
-// //   if (gradient.size() != w_b.size()) {
-// //     return false;
-// //   }
-// //   auto same_sign = [](const float a, const float b) {
-// //     if (a > 0) {
-// //       return b > 0;
-// //     }
-// //     return b < 0;
-// //   };
-// //   for (std::size_t k = 0; k < gradient.size(); ++k) {
-// //     if (!same_sign(gradient[k], w_a[k] - w_b[k])) {
-// //       return false;
-// //     }
-// //   }
-// //   return true;
-// // }
+VariablesSoup to_soup(const VariablesSet &subject) {
+  return VariablesSoup{subject.begin(), subject.end()};
+}
 
-// bool are_marginals_similar(const Models &subject) {
-//   auto *reference_as_random_field =
-//       dynamic_cast<RandomField *>(&subject.reference_model);
-//   if (nullptr == reference_as_random_field) {
-//     reference_as_random_field->setEvidence(
-//         get_second_hidden(*reference_as_random_field), 0);
-//     auto *trained_as_random_field =
-//         dynamic_cast<RandomField *>(&subject.trained_model);
-//     trained_as_random_field->setEvidence(
-//         get_second_hidden(*trained_as_random_field), 0);
-//   }
+bool almost_equal_marginals(const Models &models, const float toll) {
+  auto hidden_vars = to_soup(models.trained_model.getHiddenVariables());
+  auto var_getter = [&model = models.reference_model](const std::string &name) {
+    return model.findVariable(name);
+  };
 
-//   std::string variable_to_query =
-//       subject.reference_model.getEvidences().begin()->first->name();
+  cast_model<EvidenceSetter>(models.trained_model)
+      ->setEvidence(hidden_vars.back(), 0);
+  cast_model<EvidenceSetter>(models.reference_model)
+      ->setEvidence(var_getter(hidden_vars.back()->name()), 0);
 
-//   auto *reference_query_handler =
-//       dynamic_cast<QueryManager *>(&subject.reference_model);
-//   auto *trained_query_handler =
-//       dynamic_cast<QueryManager *>(&subject.trained_model);
-//   return are_similar(
-//       reference_query_handler->getMarginalDistribution(variable_to_query),
-//       trained_query_handler->getMarginalDistribution(variable_to_query),
-//       0.1f);
-// }
+  for (std::size_t k = 0; k < (hidden_vars.size() - 1); ++k) {
+    auto marginals_trained =
+        cast_model<QueryManager>(models.trained_model)
+            ->getMarginalDistribution(hidden_vars[k]->name());
 
-// bool has_likelihood_decreasing_trend(
-//     FactorsTunableAware &trained_model,
-//     const EFG::train::TrainSet::Iterator &combinations,
-//     const std::list<std::vector<float>> &story, const float toll = 0.1f) {
-//   const auto final_w = trained_model.getWeights();
-//   LikelihoodAware likelihood_aware(trained_model);
-//   float prev_likelihood = std::numeric_limits<float>::min();
-//   for (const auto &w : story) {
-//     trained_model.setWeights(w);
-//     float att_likelihood = likelihood_aware.getLogLikeliHood(combinations);
-//     const bool ok = (-toll) < (att_likelihood - prev_likelihood);
-//     if (!ok) {
-//       return false;
-//     }
-//     prev_likelihood - att_likelihood;
-//   }
-//   trained_model.setWeights(final_w);
-//   return true;
-// }
+    auto marginals_reference =
+        cast_model<QueryManager>(models.reference_model)
+            ->getMarginalDistribution(hidden_vars[k]->name());
 
-// template <typename TrainerT>
-// bool check_trainer(const Models &models, const TrainSet &train_set,
-//                    const float stoch_percentage, const bool check_Lkl = true,
-//                    const std::size_t threads = 1) {
-//   set_ones(models.trained_model);
-//   StoryAware<TrainerT> trainer;
-//   trainer.setMaxIterations(30);
-//   {
-//     ::train::GradientDescendFixed *as_fixed =
-//         dynamic_cast<::train::GradientDescendFixed *>(&trainer);
-//     if (nullptr != as_fixed) {
-//       as_fixed->setOptimizationStep(0.5);
-//     }
-//   }
-//   TrainInfo info;
-//   info.stochastic_percentage = stoch_percentage;
-//   info.threads = threads;
-//   train_model(models.trained_model, trainer, train_set, info);
-//   // check tuned values
-//   if (!are_similar(models.reference_model.getWeights(),
-//                    models.trained_model.getWeights())) {
-//     return false;
-//   }
-//   // check marginal computation
-//   if (!are_marginals_similar(models)) {
-//     return false;
-//   }
-//   // check decresing trend
-//   if (check_Lkl && (!has_likelihood_decreasing_trend(models.trained_model,
-//                                                      train_set.makeIterator(),
-//                                                      trainer.getStory()))) {
-//     return false;
-//   }
-//   return true;
-// }
+    if (!almost_equal(marginals_trained, marginals_reference, toll)) {
+      return false;
+    }
+  }
+  return true;
+}
 
-// std::shared_ptr<FactorExponential>
-// make_corr_factor(const VariablePtr &first, const VariablePtr &second,
-//                  const float w, const bool correlating_nature = true) {
-//   std::unique_ptr<Factor> factor;
-//   if (correlating_nature) {
-//     factor = std::make_unique<Factor>(Group{first, second},
-//                                       USE_SIMPLE_CORRELATION_TAG);
-//   } else {
-//     factor = std::make_unique<Factor>(Group{first, second},
-//                                       USE_SIMPLE_ANTI_CORRELATION_TAG);
-//   }
-//   return std::make_shared<FactorExponential>(*factor, w);
-// }
-// } // namespace
+struct CheckContext {
+  CheckContext(const Models &models, const TrainSet &train_set)
+      : models(models), train_set(train_set) {}
 
-// TEST_CASE("Small random field tuning", "[train]") {
-//   VariablePtr A = make_variable(3, "A");
-//   VariablePtr B = make_variable(3, "B");
-//   VariablePtr C = make_variable(3, "C");
+  Models models;
+  TrainSet train_set;
+  std::size_t max_iterations = 30;
+  std::optional<float> stoch_percentage = 1.f;
+  std::optional<std::function<void(::train::IterativeTrainer &)>>
+      trainer_setting;
 
-//   RandomField reference_model;
-//   reference_model.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
-//   reference_model.addTunableFactor(make_corr_factor(A, B, 2.f, true));
-//   reference_model.addTunableFactor(make_corr_factor(A, C, 0.5f, true));
+  std::optional<float> check_weights_toll = 0.05f;
+  std::optional<float> check_likelihood_trend_toll = 0.1f;
+  std::optional<float> check_marginal_info;
+};
+template <typename TrainerT>
+bool check_trainer(const CheckContext &ctxt, const std::size_t threads) {
+  set_ones(ctxt.models.trained_model);
+  StoryAware<TrainerT> trainer;
+  trainer.setMaxIterations(ctxt.max_iterations);
+  if (std::nullopt != ctxt.trainer_setting) {
+    (*ctxt.trainer_setting)(trainer);
+  }
+  TrainInfo info;
+  info.stochastic_percentage =
+      ctxt.stoch_percentage.has_value() ? *ctxt.stoch_percentage : 1.f;
+  info.threads = threads;
+  train_model(ctxt.models.trained_model, trainer, ctxt.train_set, info);
+  // check tuned values
+  if (ctxt.check_weights_toll &&
+      (!almost_equal(ctxt.models.reference_model.getWeights(),
+                     ctxt.models.trained_model.getWeights(),
+                     *ctxt.check_weights_toll))) {
+    return false;
+  }
+  // check decresing trend
+  if (ctxt.check_likelihood_trend_toll &&
+      (!has_decreasing_likelihood(ctxt.models.trained_model, ctxt.train_set,
+                                  trainer.getStory(),
+                                  *ctxt.check_likelihood_trend_toll))) {
+    return false;
+  }
+  // check marginal computation
+  if (ctxt.check_marginal_info &&
+      (!almost_equal_marginals(ctxt.models, *ctxt.check_marginal_info))) {
+    return false;
+  }
+  return true;
+}
+} // namespace
 
-//   RandomField to_tune(reference_model);
-//   Models models{reference_model, to_tune};
+TEST_CASE("Small random field tuning", "[train]") {
+  VariablePtr A = make_variable(3, "A");
+  VariablePtr B = make_variable(3, "B");
+  VariablePtr C = make_variable(3, "C");
 
-//   TrainSet train_set(reference_model.getHiddenSetSamples(
-//       GibbsSampler::SamplesGenerationContext{100, 20, 0}));
+  RandomField reference_model;
+  reference_model.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
+  reference_model.addTunableFactor(make_corr_expfactor2(A, B, 2.f));
+  reference_model.addTunableFactor(make_corr_expfactor2(A, C, 0.5f));
 
-//   REQUIRE(is_gradient_in_right_direction(models, train_set.makeIterator()));
+  RandomField to_tune(reference_model);
 
-//   SECTION("Gradient Descend Fixed") {
-//     CHECK(check_trainer<::train::GradientDescendFixed>(models,
-//     train_set, 1.f));
-//   }
-//   SECTION("Gradient Descend Adaptive") {
-//     CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
-//         models, train_set, 1.f));
-//   }
-//   SECTION("Gradient Descend Conjugate") {
-//     CHECK(check_trainer<
-//           ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-//         models, train_set, 1.f));
-//   }
-//   SECTION("Quasi Newton") {
-//     CHECK(check_trainer<::train::GradientDescendFixed>(models,
-//     train_set, 1.f));
-//   }
-// }
+  CheckContext context(
+      Models{reference_model, to_tune},
+      TrainSet(reference_model.getHiddenSetSamples(
+          GibbsSampler::SamplesGenerationContext{100, 20, 0})));
+
+  SECTION("Gradient Descend Fixed") {
+    context.trainer_setting = [](::train::IterativeTrainer &trainer) {
+      static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
+          0.5f);
+    };
+    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+  }
+  SECTION("Gradient Descend Adaptive") {
+    CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+        context, 1));
+  }
+  SECTION("Gradient Descend Conjugate") {
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
+                                                                       1));
+  }
+  SECTION("Quasi Newton") {
+    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+  }
+}
 
 // TEST_CASE("Medium random field tuning", "[train]") {
 //   VariablePtr A = make_variable(3, "A");

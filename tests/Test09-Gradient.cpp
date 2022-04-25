@@ -80,7 +80,7 @@ TEST_CASE("Gradient evaluation on binary factor", "[gradient]") {
   CHECK(model.checkGradient(std::vector<float>{w}, std::vector<float>{grad_w}));
 }
 
-TEST_CASE("Gradient evaluation on simple chain models", "[gradient]") {
+TEST_CASE("Gradient evaluation on chain models", "[gradient]") {
   TunableModelTest model;
 
   auto A = make_variable(2, "A");
