@@ -212,4 +212,44 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
 Factor::Factor(const categoric::Group &vars,
                const CombinationRawValuesMapPtr &map)
     : DistributionConcrete(BASIC_EVALUATOR, vars, map) {}
+
+namespace {
+std::vector<std::size_t>
+compute_new_positions(const categoric::VariablesSoup &old_order,
+                      const categoric::VariablesSoup &new_order) {
+  std::vector<std::size_t> result;
+  result.reserve(old_order.size());
+  for (const auto &var : old_order) {
+    auto it = std::find(new_order.begin(), new_order.end(), var);
+    result.push_back(std::distance(new_order.begin(), it));
+  }
+  return result;
+}
+
+std::vector<std::size_t>
+get_permuted(const std::vector<std::size_t> &subject,
+             const std::vector<std::size_t> &new_positions) {
+  std::vector<std::size_t> result;
+  result.resize(subject.size());
+  for (std::size_t p = 0; p < subject.size(); ++p) {
+    result[new_positions[p]] = subject[p];
+  }
+  return result;
+}
+} // namespace
+
+Factor Factor::cloneWithPermutedGroup(const categoric::Group &new_order) const {
+  if (new_order.getVariablesSet() != getVariables().getVariablesSet()) {
+    throw Error{"Invalid new order. The new order should be a permutation of "
+                "the factor to clone"};
+  }
+  Factor result(new_order);
+  auto &result_combs = result.getCombinationsMap_();
+  const auto new_positions = compute_new_positions(
+      getVariables().getVariables(), result.getVariables().getVariables());
+  for (const auto &[comb, val] : getCombinationsMap()) {
+    result_combs.emplace(get_permuted(comb.data(), new_positions), val);
+  }
+  return result;
+}
 } // namespace EFG::distribution

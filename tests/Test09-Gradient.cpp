@@ -17,6 +17,11 @@ using namespace EFG::model;
 using namespace EFG::test;
 
 namespace {
+float exp_over_exp_plus_one(const float val) {
+  const float exp_val = expf(val);
+  return exp_val / (1.f + exp_val);
+}
+
 class TunableModelTest : public RandomField {
 public:
   TunableModelTest() = default;
@@ -46,12 +51,10 @@ public:
       const auto &tuner = tuners[t];
 
       float alfa_part = tuner->getGradientAlpha(samples_it);
-      float alfa_expected = expf(for_samples_generation[t]) /
-                            (1.f + expf(for_samples_generation[t]));
+      float alfa_expected = exp_over_exp_plus_one(for_samples_generation[t]);
 
       float beta_part = tuner->getGradientBeta();
-      float beta_expected =
-          expf(tuner->getWeight()) / (1.f + expf(tuner->getWeight()));
+      float beta_expected = exp_over_exp_plus_one(tuner->getWeight());
 
       if (!almost_equal(alfa_part, alfa_expected, 0.05f)) {
         return false;
@@ -65,10 +68,10 @@ public:
 };
 } // namespace
 
-TEST_CASE("Gradient evaluation on binary factor", "[train][gradient]") {
+TEST_CASE("Gradient evaluation on binary factor", "[gradient]") {
   TunableModelTest model;
 
-  const float w = 1.5f;
+  const float w = 1.f;
   model.addTunableFactor(
       make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
 
@@ -77,26 +80,36 @@ TEST_CASE("Gradient evaluation on binary factor", "[train][gradient]") {
   CHECK(model.checkGradient(std::vector<float>{w}, std::vector<float>{grad_w}));
 }
 
-TEST_CASE("Gradient evaluation on a simple chain model", "[train][gradient]") {
+TEST_CASE("Gradient evaluation on simple chain models", "[gradient]") {
   TunableModelTest model;
 
   auto A = make_variable(2, "A");
   auto B = make_variable(2, "B");
   auto C = make_variable(2, "C");
-  auto D = make_variable(2, "D");
-
   const float alfa = 1.f;
   model.addTunableFactor(make_corr_expfactor2(A, B, alfa));
   const float beta = 0.5f;
   model.addTunableFactor(make_corr_expfactor2(B, C, beta));
+  {
+    const std::vector<float> reference_w = {alfa, beta};
+
+    auto modified_w =
+        GENERATE(std::vector<float>{1.f, 1.f}, std::vector<float>{0.5f, 0.5f},
+                 std::vector<float>{2.f, 2.f});
+
+    CHECK(model.checkGradient(std::vector<float>{reference_w}, modified_w));
+  }
+
+  auto D = make_variable(2, "D");
   const float gamma = 2.f;
   model.addTunableFactor(make_corr_expfactor2(C, D, gamma));
+  {
+    const std::vector<float> reference_w = {alfa, beta, gamma};
 
-  const std::vector<float> reference_w = {alfa, beta, gamma};
+    auto modified_w = GENERATE(std::vector<float>{1.f, 1.f, 1.f},
+                               std::vector<float>{0.5f, 0.5f, 0.5f},
+                               std::vector<float>{2.f, 2.f, 2.f});
 
-  auto grad_w = GENERATE(std::vector<float>{1.f, 1.f, 1.f},
-                         std::vector<float>{0.5f, 0.5f, 0.5f},
-                         std::vector<float>{2.f, 2.f, 2.f});
-
-  CHECK(model.checkGradient(std::vector<float>{reference_w}, grad_w));
+    CHECK(model.checkGradient(std::vector<float>{reference_w}, modified_w));
+  }
 }

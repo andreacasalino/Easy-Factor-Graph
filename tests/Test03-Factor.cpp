@@ -159,7 +159,7 @@ bool are_similar(const distribution::Distribution &a,
 
 #include <EasyFactorGraph/distribution/FactorExponential.h>
 
-TEST_CASE("copy c'tor", "[factor]") {
+TEST_CASE("Factor copy c'tor", "[factor]") {
   Group group(VariablesSoup{make_variable(4, "A"), make_variable(4, "B"),
                             make_variable(4, "C")});
 
@@ -182,4 +182,25 @@ TEST_CASE("copy c'tor", "[factor]") {
     Factor copy(factor_exp, distribution::GENERIC_COPY_TAG);
     CHECK(are_similar(factor_exp, copy));
   }
+}
+
+TEST_CASE("Variables order change in factor", "[factor]") {
+  auto A = make_variable(3, "A");
+  auto B = make_variable(3, "B");
+  auto C = make_variable(3, "C");
+
+  Group initial_group(VariablesSoup{A, B, C});
+  Factor initial_order(initial_group);
+  initial_order.setImageRaw(std::vector<std::size_t>{0, 1, 2}, 1.f);
+  initial_order.setImageRaw(std::vector<std::size_t>{0, 2, 0}, 2.f);
+  initial_order.setImageRaw(std::vector<std::size_t>{1, 0, 1}, 3.f);
+
+  Group different_group(VariablesSoup{B, C, A});
+  auto different_order = initial_order.cloneWithPermutedGroup(different_group);
+
+  REQUIRE(different_order.getVariables() == different_group);
+  CHECK(different_order.getCombinationsMap().size() == 3);
+  CHECK(different_order.evaluate(std::vector<std::size_t>{1, 2, 0}) == 1.f);
+  CHECK(different_order.evaluate(std::vector<std::size_t>{2, 0, 0}) == 2.f);
+  CHECK(different_order.evaluate(std::vector<std::size_t>{0, 1, 1}) == 3.f);
 }

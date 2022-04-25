@@ -91,7 +91,8 @@ compute_combinations_and_probs(const strct::ConnectionsManager &model) {
     factors.push_back(factor.get());
   }
   MergingFactor merged(factors);
-  result.probs = merged.getProbabilities();
+  distribution::Factor merged_sorted = merged.cloneWithPermutedGroup(all_vars);
+  result.probs = merged_sorted.getProbabilities();
   result.combinations.reserve(all_vars.size());
   categoric::GroupRange range(all_vars);
   categoric::for_each_combination(range,

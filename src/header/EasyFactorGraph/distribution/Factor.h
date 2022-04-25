@@ -145,6 +145,16 @@ public:
          const Distributions &...others)
       : Factor(pack_factors(first, second, others...)) {}
 
+  /**
+   * @brief Generates a Factor similar to this one, permuting the group of
+   * variables.
+   * @param the new variables group order to assume
+   * @return the permuted variables factor
+   * @throw in case new_order.getVariablesSet() !=
+   * this->getVariables().getVariablesSet()
+   */
+  Factor cloneWithPermutedGroup(const categoric::Group &new_order) const;
+
 protected:
   Factor(const categoric::Group &vars, const CombinationRawValuesMapPtr &map);
 
