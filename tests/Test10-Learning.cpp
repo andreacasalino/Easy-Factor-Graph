@@ -222,7 +222,7 @@ TEST_CASE("Small random field tuning", "[train]") {
   CheckContext context(
       Models{reference_model, to_tune},
       TrainSet(reference_model.getHiddenSetSamples(
-          GibbsSampler::SamplesGenerationContext{100, 20, 0})));
+          GibbsSampler::SamplesGenerationContext{500, 20, 0})));
 
   SECTION("Gradient Descend Fixed") {
     context.trainer_setting = [](::train::IterativeTrainer &trainer) {
@@ -245,117 +245,119 @@ TEST_CASE("Small random field tuning", "[train]") {
   }
 }
 
-// TEST_CASE("Medium random field tuning", "[train]") {
-//   VariablePtr A = make_variable(3, "A");
-//   VariablePtr B = make_variable(3, "B");
-//   VariablePtr C = make_variable(3, "C");
-//   VariablePtr D = make_variable(3, "D");
-//   VariablePtr E = make_variable(3, "E");
+TEST_CASE("Medium random field tuning", "[train]") {
+  VariablePtr A = make_variable(3, "A");
+  VariablePtr B = make_variable(3, "B");
+  VariablePtr C = make_variable(3, "C");
+  VariablePtr D = make_variable(3, "D");
+  VariablePtr E = make_variable(3, "E");
 
-//   RandomField reference_model;
-//   reference_model.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
-//   reference_model.addTunableFactor(make_corr_factor(A, B, 2.f, true));
-//   reference_model.addTunableFactor(make_corr_factor(A, C, 0.5f, true));
-//   reference_model.addTunableFactor(make_corr_factor(A, D, 2.f, true));
-//   reference_model.addTunableFactor(make_corr_factor(A, E, 0.5f, true));
+  RandomField reference_model;
+  reference_model.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
+  reference_model.addTunableFactor(make_corr_expfactor2(A, B, 2.f));
+  reference_model.addTunableFactor(make_corr_expfactor2(A, C, 0.5f));
+  reference_model.addTunableFactor(make_corr_expfactor2(A, D, 2.f));
+  reference_model.addTunableFactor(make_corr_expfactor2(A, E, 0.5f));
 
-//   RandomField to_tune(reference_model);
-//   Models models{reference_model, to_tune};
+  RandomField to_tune(reference_model);
 
-//   SECTION("Full training set") {
-//     TrainSet train_set(reference_model.getHiddenSetSamples(
-//         GibbsSampler::SamplesGenerationContext{100, 10, 0}));
+  SECTION("Full training set") {
+    CheckContext context(
+        Models{reference_model, to_tune},
+        TrainSet(reference_model.getHiddenSetSamples(
+            GibbsSampler::SamplesGenerationContext{1000, 20, 0})));
 
-//     REQUIRE(is_gradient_in_right_direction(models,
-//     train_set.makeIterator()));
+    SECTION("Gradient Descend Fixed") {
+      context.trainer_setting = [](::train::IterativeTrainer &trainer) {
+        static_cast<::train::GradientDescendFixed &>(trainer)
+            .setOptimizationStep(0.5f);
+      };
+      auto threads = GENERATE(1, 2, 4);
+      CHECK(check_trainer<::train::GradientDescendFixed>(context, threads));
+    }
+    SECTION("Gradient Descend Adaptive") {
+      CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+          context, 1));
+    }
+    SECTION("Gradient Descend Conjugate") {
+      CHECK(check_trainer<
+            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+          context, 1));
+    }
+    SECTION("Quasi Newton") {
+      CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+    }
+  }
 
-//     SECTION("Gradient Descend Fixed") {
-//       auto threads = GENERATE(1, 3);
-//       CHECK(check_trainer<::train::GradientDescendFixed>(models,
-//       train_set, 1.f,
-//                                                          true, threads));
-//     }
-//     SECTION("Gradient Descend Adaptive") {
-//       CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
-//           models, train_set, 1.f));
-//     }
-//     SECTION("Gradient Descend Conjugate") {
-//       CHECK(check_trainer<
-//             ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-//           models, train_set, 1.f));
-//     }
-//     SECTION("Quasi Newton") {
-//       CHECK(
-//           check_trainer<::train::GradientDescendFixed>(models,
-//           train_set, 1.f));
-//     }
-//   }
+  SECTION("Stochastic training set") {
+    CheckContext context(
+        Models{reference_model, to_tune},
+        TrainSet(reference_model.getHiddenSetSamples(
+            GibbsSampler::SamplesGenerationContext{3000, 20, 0})));
+    context.check_likelihood_trend_toll.reset();
+    context.stoch_percentage = 0.2f;
 
-//   SECTION("Stochastic training set") {
-//     TrainSet train_set(reference_model.getHiddenSetSamples(
-//         GibbsSampler::SamplesGenerationContext{1000, 50, 0}));
+    SECTION("Gradient Descend Fixed") {
+      context.trainer_setting = [](::train::IterativeTrainer &trainer) {
+        static_cast<::train::GradientDescendFixed &>(trainer)
+            .setOptimizationStep(0.3f);
+      };
+      CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+    }
+    SECTION("Gradient Descend Adaptive") {
+      CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+          context, 1));
+    }
+    SECTION("Gradient Descend Conjugate") {
+      CHECK(check_trainer<
+            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+          context, 1));
+    }
+    SECTION("Quasi Newton") {
+      CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+    }
+  }
+}
 
-//     const float percentage = 0.1f;
+TEST_CASE("Small conditional random field tuning", "[train]") {
+  VariablePtr A = make_variable(3, "A");
+  VariablePtr B = make_variable(3, "B");
+  VariablePtr C = make_variable(3, "C");
 
-//     SECTION("Gradient Descend Fixed") {
-//       CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set,
-//                                                          percentage, false));
-//     }
-//     SECTION("Gradient Descend Adaptive") {
-//       CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
-//           models, train_set, percentage, false));
-//     }
-//     SECTION("Gradient Descend Conjugate") {
-//       CHECK(check_trainer<
-//             ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-//           models, train_set, percentage, false));
-//     }
-//     SECTION("Quasi Newton") {
-//       CHECK(check_trainer<::train::GradientDescendFixed>(models, train_set,
-//                                                          percentage, false));
-//     }
-//   }
-// }
+  RandomField reference_model_temp;
+  reference_model_temp.copyConstFactor(FactorExponential{Indicator{A, 0}, 1.f});
+  reference_model_temp.addTunableFactor(make_corr_expfactor2(A, B, 2.f));
+  reference_model_temp.addTunableFactor(make_corr_expfactor2(A, C, 0.5f));
+  reference_model_temp.setEvidence(B, 0);
+  reference_model_temp.setEvidence(C, 0);
+  ConditionalRandomField reference_model(reference_model_temp, false);
 
-// TEST_CASE("Small conditional random field tuning", "[train]") {
-//   VariablePtr A = make_variable(3, "A");
-//   VariablePtr B = make_variable(3, "B");
-//   VariablePtr C = make_variable(3, "C");
+  ConditionalRandomField to_tune(reference_model);
+  Models models{reference_model, to_tune};
 
-//   RandomField reference_model_temp;
-//   reference_model_temp.copyConstFactor(FactorExponential{Indicator{A,
-//   0}, 1.f}); reference_model_temp.addTunableFactor(make_corr_factor(A,
-//   B, 2.f, true)); reference_model_temp.addTunableFactor(make_corr_factor(A,
-//   C, 0.5f, true)); reference_model_temp.setEvidence(B, 0);
-//   reference_model_temp.setEvidence(C, 0);
-//   ConditionalRandomField reference_model(reference_model_temp, false);
+  CheckContext context(
+      Models{reference_model, to_tune},
+      TrainSet{reference_model.makeTrainSet(
+          GibbsSampler::SamplesGenerationContext{50, 20, 0}, 1.f)});
+  throw std::runtime_error{"comment makeTrainSet(...) and check above values"};
 
-//   ConditionalRandomField to_tune(reference_model);
-//   Models models{reference_model, to_tune};
-
-//   TrainSet train_set(reference_model.makeTrainSet(
-//       GibbsSampler::SamplesGenerationContext{100, 10, 0}, 0.5f));
-//   throw std::runtime_error{"Compute train set of conditional random in field
-//   "
-//                            "in a funciton inside library"};
-
-//   REQUIRE(is_gradient_in_right_direction(models, train_set.makeIterator()));
-
-//   SECTION("Gradient Descend Fixed") {
-//     CHECK(check_trainer<::train::GradientDescendFixed>(models,
-//     train_set, 1.f));
-//   }
-//   SECTION("Gradient Descend Adaptive") {
-//     CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
-//         models, train_set, 1.f));
-//   }
-//   SECTION("Gradient Descend Conjugate") {
-//     CHECK(check_trainer<
-//           ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-//         models, train_set, 1.f));
-//   }
-//   SECTION("Quasi Newton") {
-//     CHECK(check_trainer<::train::GradientDescendFixed>(models,
-//     train_set, 1.f));
-//   }
-// }
+  SECTION("Gradient Descend Fixed") {
+    context.trainer_setting = [](::train::IterativeTrainer &trainer) {
+      static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
+          0.5f);
+    };
+    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+  }
+  SECTION("Gradient Descend Adaptive") {
+    CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+        context, 1));
+  }
+  SECTION("Gradient Descend Conjugate") {
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
+                                                                       1));
+  }
+  SECTION("Quasi Newton") {
+    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+  }
+}
