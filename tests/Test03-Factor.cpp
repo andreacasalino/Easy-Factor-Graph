@@ -47,15 +47,21 @@ TEST_CASE("operations on factor", "[factor]") {
 }
 
 #include <EasyFactorGraph/io/FactorImporter.h>
+#include <fstream>
 #include <math.h>
 
 TEST_CASE("import from file", "[factor]") {
-  // 2,2,4
+  const std::string &file_name = "factor_description";
+  {
+    std::ofstream stream(file_name);
+    stream << "0 1 1 2.0\n";
+    stream << "0 0 0 3.0\n";
+    stream << "1 1 3 2.5\n";
+    stream << "1 0 2 1.4";
+  } // 2,2,4
   categoric::VariablesSoup vars = {make_variable(2, "A"), make_variable(2, "B"),
                                    make_variable(4, "C")};
   distribution::Factor factor_ABC(categoric::Group{vars});
-  const std::string file_name =
-      std::string(TEST_FOLDER) + std::string("FactorDescription");
 
   io::import_values(factor_ABC, file_name);
 

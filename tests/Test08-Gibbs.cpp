@@ -1,9 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/Graph.h>
 
+#include "ModelLibrary.h"
 #include "Utils.h"
 
 #include <algorithm>
@@ -13,8 +13,8 @@ using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::model;
 using namespace EFG::strct;
-using namespace EFG::io;
 using namespace EFG::test;
+using namespace EFG::test::library;
 
 namespace {
 bool are_samples_valid(const std::vector<Combination> &samples,
@@ -205,9 +205,12 @@ TEST_CASE("simple graph gibbs sampling", "[gibbs_sampling]") {
 }
 
 TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
-  float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
-  Graph model;
-  xml::Importer::importFromFile(model, make_graph_path("graph_1.xml"));
+  RandomField model(SIMPLE_TREE);
+
+  const float a = expf(SimpleTree::alfa);
+  const float b = expf(SimpleTree::beta);
+  const float g = expf(SimpleTree::gamma);
+  const float e = expf(SimpleTree::eps);
 
   auto threads = GENERATE(1, 2, 3);
 
@@ -234,11 +237,11 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
 }
 
 TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
-  float M = expf(1.f);
+  RandomField model(SIMPLE_LOOPY);
+
+  float M = expf(SimpleLoopy::w);
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
   float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
-  Graph model;
-  xml::Importer::importFromFile(model, make_graph_path("graph_3.xml"));
 
   auto threads = GENERATE(1, 2, 3);
 

@@ -33,12 +33,6 @@ make_corr_expfactor2(const categoric::VariablePtr &first,
   return std::make_shared<distribution::FactorExponential>(factor, w);
 }
 
-std::string make_graph_path(const std::string &file_name) {
-  std::stringstream stream;
-  stream << SAMPLE_FOLDER << "Sample03-BeliefPropagation-B/" << file_name;
-  return stream.str();
-}
-
 bool almost_equal(const float a, const float b, const float tollerance) {
   return fabs(a - b) < tollerance;
 }

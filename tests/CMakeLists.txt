@@ -18,10 +18,4 @@ target_link_libraries(${TEST_NAME} PUBLIC
     EFG
 )
 
-target_compile_definitions(${TEST_NAME} 
-PUBLIC
-	-D TEST_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/"
-	-D SAMPLE_FOLDER="${CMAKE_CURRENT_SOURCE_DIR}/../samples/"
-)
-
 install(TARGETS ${TEST_NAME})

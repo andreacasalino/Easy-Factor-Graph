@@ -1,28 +1,26 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
+#include "ModelLibrary.h"
 #include "Utils.h"
-#include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/Graph.h>
 
 using namespace EFG;
 using namespace EFG::model;
 using namespace EFG::strct;
-using namespace EFG::io;
 using namespace EFG::categoric;
 using namespace EFG::distribution;
 using namespace EFG::test;
+using namespace EFG::test::library;
 
 namespace {
-class TestModels : public Graph {
+template <typename ModelT> class TestModels : public ModelT {
 public:
-  TestModels(const std::string &file_name) {
-    xml::Importer::importFromFile(*this, file_name);
-  }
+  TestModels() = default;
 
   // check all messages were computed after propagation
-  bool araAllMessagesComputed() const {
-    for (const auto &cluster : getState().clusters) {
+  bool areAllMessagesComputed() const {
+    for (const auto &cluster : this->getState().clusters) {
       for (const auto *node : cluster.nodes) {
         for (const auto &[connected_node, connection] :
              node->active_connections) {
@@ -38,9 +36,9 @@ public:
   bool checkMarginals(const std::string &var_name,
                       const std::vector<float> &expected,
                       const float threshold = 0.01f) {
-    const auto var = findVariable(var_name);
+    const auto var = this->findVariable(var_name);
     return almost_equal(*ProbDistribution{expected},
-                        getMarginalDistribution(var_name), threshold);
+                        this->getMarginalDistribution(var_name), threshold);
   }
 };
 
@@ -71,12 +69,15 @@ bool are_equal(const PropagationResult &a, const PropagationResult &b) {
 }
 } // namespace
 
-TEST_CASE("simple poly tree", "[propagation]") {
-  TestModels model(make_graph_path("graph_1.xml"));
-
-  float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
+TEST_CASE("simple poly tree belief propagation", "[propagation]") {
+  TestModels<SimpleTree> model;
 
   REQUIRE_FALSE(model.hasPropagationResult());
+
+  const float a = expf(SimpleTree::alfa);
+  const float b = expf(SimpleTree::beta);
+  const float g = expf(SimpleTree::gamma);
+  const float e = expf(SimpleTree::eps);
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
@@ -92,7 +93,7 @@ TEST_CASE("simple poly tree", "[propagation]") {
         std::vector<ClusterInfo>{ClusterInfo{true, 4}};
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
-  REQUIRE(model.araAllMessagesComputed());
+  REQUIRE(model.areAllMessagesComputed());
   CHECK(model.checkMarginals("B", {(g + e), (1 + g * e)}));
   CHECK(model.checkMarginals(
       "C", {(b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e))}));
@@ -113,14 +114,14 @@ TEST_CASE("simple poly tree", "[propagation]") {
         std::vector<ClusterInfo>{ClusterInfo{true, 3}, ClusterInfo{true, 1}};
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
-  REQUIRE(model.araAllMessagesComputed());
+  REQUIRE(model.areAllMessagesComputed());
   CHECK(model.checkMarginals("B", {1.f, g}));
   CHECK(model.checkMarginals("C", {b + g, 1.f + b * g}));
   CHECK(model.checkMarginals("E", {1.f, e}));
 }
 
-TEST_CASE("complex poly tree", "[propagation]") {
-  TestModels model(make_graph_path("graph_2.xml"));
+TEST_CASE("complex poly tree belief propagation", "[propagation]") {
+  TestModels<ComplexTree> model;
   model.setEvidence(model.findVariable("v1"), 1);
   model.setEvidence(model.findVariable("v2"), 1);
   model.setEvidence(model.findVariable("v3"), 1);
@@ -140,13 +141,13 @@ TEST_CASE("complex poly tree", "[propagation]") {
     CHECK(prob[0] < prob[1]);
   }
 
-  CHECK(model.araAllMessagesComputed());
+  CHECK(model.areAllMessagesComputed());
 }
 
-TEST_CASE("simple loopy graph", "[propagation]") {
-  TestModels model(make_graph_path("graph_3.xml"));
+TEST_CASE("simple loopy graph belief propagation", "[propagation]") {
+  TestModels<SimpleLoopy> model;
 
-  float M = expf(1.f);
+  float M = expf(SimpleLoopy::w);
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
   float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
 
@@ -164,15 +165,15 @@ TEST_CASE("simple loopy graph", "[propagation]") {
         std::vector<ClusterInfo>{ClusterInfo{false, 4}};
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
-  REQUIRE(model.araAllMessagesComputed());
+  REQUIRE(model.areAllMessagesComputed());
   CHECK(model.checkMarginals("C", {M_alfa, M_beta}, 0.045f));
   CHECK(model.checkMarginals("B", {M_alfa, M_beta}, 0.045f));
   CHECK(model.checkMarginals("A", {M * M_alfa + M_beta, M_alfa + M * M_beta},
                              0.045f));
 }
 
-TEST_CASE("complex loopy graph", "[propagation]") {
-  TestModels model(make_graph_path("graph_4.xml"));
+TEST_CASE("complex loopy graph belief propagation", "[propagation]") {
+  TestModels<ComplexLoopy> model;
 
   model.setEvidence(model.findVariable("v1"), 1);
 
@@ -180,7 +181,7 @@ TEST_CASE("complex loopy graph", "[propagation]") {
 
   auto prob = model.getMarginalDistribution("v8", threads);
   CHECK(prob[0] < prob[1]);
-  CHECK(model.araAllMessagesComputed());
+  CHECK(model.areAllMessagesComputed());
 }
 
 #include <sstream>

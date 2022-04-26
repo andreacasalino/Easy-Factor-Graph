@@ -4,7 +4,6 @@
 #include "Utils.h"
 #include <EasyFactorGraph/categoric/GroupRange.h>
 #include <EasyFactorGraph/distribution/CombinationFinder.h>
-#include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
 #include <EasyFactorGraph/model/RandomField.h>
 #include <EasyFactorGraph/structure/QueryManager.h>

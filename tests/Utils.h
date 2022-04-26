@@ -23,8 +23,6 @@ std::shared_ptr<distribution::FactorExponential>
 make_corr_expfactor2(const categoric::VariablePtr &first,
                      const categoric::VariablePtr &second, const float w);
 
-std::string make_graph_path(const std::string &file_name);
-
 bool almost_equal(const float a, const float b, const float tollerance);
 
 bool almost_equal(const std::vector<float> &a, const std::vector<float> &b,
