@@ -101,7 +101,7 @@ bool has_decreasing_likelihood(FactorsTunableAware &trained_model,
                                const float toll) {
   const auto final_w = trained_model.getWeights();
   LikelihoodAware likelihood_aware(trained_model);
-  float prev_likelihood = std::numeric_limits<float>::min();
+  float prev_likelihood = -std::numeric_limits<float>::max();
   const auto train_set_iter = train_set.makeIterator();
   for (const auto &w : story) {
     trained_model.setWeights(w);
@@ -167,9 +167,9 @@ struct CheckContext {
   std::optional<std::function<void(::train::IterativeTrainer &)>>
       trainer_setting;
 
-  std::optional<float> check_weights_toll = 0.05f;
-  std::optional<float> check_likelihood_trend_toll = 0.1f;
-  std::optional<float> check_marginal_info;
+  std::optional<float> check_weights_toll = 0.5f;
+  std::optional<float> check_likelihood_trend_toll = 5.f;
+  std::optional<float> check_marginal_info = 0.15f;
 };
 template <typename TrainerT>
 bool check_trainer(const CheckContext &ctxt, const std::size_t threads) {
@@ -237,11 +237,13 @@ TEST_CASE("Small random field tuning", "[train]") {
   }
   SECTION("Gradient Descend Conjugate") {
     CHECK(check_trainer<
-          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
-                                                                       1));
+          ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
+                                                                     1));
   }
   SECTION("Quasi Newton") {
-    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
+                                                                       1));
   }
 }
 
@@ -281,11 +283,13 @@ TEST_CASE("Medium random field tuning", "[train]") {
     }
     SECTION("Gradient Descend Conjugate") {
       CHECK(check_trainer<
-            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-          context, 1));
+            ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
+                                                                       1));
     }
     SECTION("Quasi Newton") {
-      CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+      CHECK(check_trainer<
+            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+          context, 1));
     }
   }
 
@@ -310,11 +314,13 @@ TEST_CASE("Medium random field tuning", "[train]") {
     }
     SECTION("Gradient Descend Conjugate") {
       CHECK(check_trainer<
-            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-          context, 1));
+            ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
+                                                                       1));
     }
     SECTION("Quasi Newton") {
-      CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+      CHECK(check_trainer<
+            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+          context, 1));
     }
   }
 }
@@ -354,10 +360,12 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
   }
   SECTION("Gradient Descend Conjugate") {
     CHECK(check_trainer<
-          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
-                                                                       1));
+          ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
+                                                                     1));
   }
   SECTION("Quasi Newton") {
-    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
+                                                                       1));
   }
 }

@@ -22,7 +22,7 @@ namespace {
 
 std::vector<float> to_vector(const ::train::Vect &subject) {
   std::vector<float> result;
-  result.reserve(subject.size());
+  result.resize(subject.size());
   for (Eigen::Index k = 0; k < subject.size(); ++k) {
     result[static_cast<std::size_t>(k)] = subject(k);
   }
@@ -61,7 +61,7 @@ public:
   }
 
   ::train::Vect getGradient() const final {
-    return to_Vect(subject.getWeightsGradient_(train_set.get()));
+    return -to_Vect(subject.getWeightsGradient_(train_set.get()));
   }
 
 private:
