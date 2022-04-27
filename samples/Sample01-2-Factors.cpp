@@ -6,7 +6,6 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/categoric/GroupRange.h>
 #include <EasyFactorGraph/distribution/CombinationFinder.h>
 #include <EasyFactorGraph/distribution/Factor.h>

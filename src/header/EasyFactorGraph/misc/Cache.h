@@ -44,7 +44,7 @@ private:
 
   void throw_if_empty() const {
     if (nullptr == cast_()) {
-      throw Error{"Trying to using empty cache"};
+      throw Error{"Try using empty cache"};
     }
   }
 };

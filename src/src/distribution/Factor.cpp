@@ -84,7 +84,7 @@ Factor::Factor(const categoric::Group &vars, const UseSimpleCorrelation &)
   }
   check_all_same_size(vars.getVariables());
   const auto &group_vars = getGroup().getVariables();
-  auto buffer = make_combination_buffer(vars.size());
+  auto buffer = make_combination_buffer(group_vars.size());
   for (std::size_t k = 0; k < group_vars.front()->size(); ++k) {
     update_combination_buffer(buffer, k);
     auto buffer_copy = buffer;

@@ -5,9 +5,9 @@
 	<Variable name="C" Size="2"></Variable>
 	<Variable name="D" Size="2"></Variable>
 	<Variable name="E" Size="2"></Variable>
-	<Potential var="A" var="B" weight="1" Source="binary_shape.txt"></Potential>
-	<Potential var="B" var="C" weight="1" Source="binary_shape.txt"></Potential>
-	<Potential var="B" var="D" weight="1" Source="binary_shape.txt"></Potential>
-	<Potential var="C" var="D" weight="1" Source="binary_shape.txt"></Potential>
-	<Potential var="E" var="D" weight="1" Source="binary_shape.txt"></Potential>
+	<Potential var="A" var="B" weight="1" Correlation="T"></Potential>
+	<Potential var="B" var="C" weight="1" Correlation="T"></Potential>
+	<Potential var="B" var="D" weight="1" Correlation="T"></Potential>
+	<Potential var="C" var="D" weight="1" Correlation="T"></Potential>
+	<Potential var="E" var="D" weight="1" Correlation="T"></Potential>
 </Politree>

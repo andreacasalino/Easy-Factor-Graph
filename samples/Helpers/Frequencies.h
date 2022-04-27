@@ -19,3 +19,5 @@ float getEmpiricalProbability(
     const EFG::categoric::VariablesSoup &combGroup,
     const std::vector<EFG::categoric::Combination> &samples,
     const EFG::categoric::VariablesSoup &samplesGroup);
+
+std::vector<float> make_distribution(const std::vector<float> &values);

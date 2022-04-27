@@ -73,3 +73,16 @@ float getEmpiricalProbability(
 
   return static_cast<float>(counter) / static_cast<float>(samples.size());
 }
+
+std::vector<float> make_distribution(const std::vector<float> &values) {
+  float coeff = 0;
+  for (const auto value : values) {
+    coeff += value;
+  }
+  coeff = 1.f / coeff;
+  auto result = values;
+  for (auto &value : result) {
+    value *= coeff;
+  }
+  return result;
+}
