@@ -37,7 +37,7 @@ const EvaluatorPtr &get_basic_evaluator() {
 
 Factor::Factor(const Distribution &to_clone,
                const GenericCopyTag &GENERIC_COPY_TAG)
-    : Factor(to_clone.getVariables()) {
+    : Factor(to_clone.getGroup()) {
   auto &comb_map = getCombinationsMap_();
   for (const auto &[comb, raw_val] : to_clone.getCombinationsMap()) {
     comb_map.emplace(comb, to_clone.evaluate(comb));
@@ -83,9 +83,9 @@ Factor::Factor(const categoric::Group &vars, const UseSimpleCorrelation &)
     throw Error{"Only 1 variable can't make a correlation"};
   }
   check_all_same_size(vars.getVariables());
-  auto buffer = make_combination_buffer(getVariables().getVariables().size());
-  for (std::size_t k = 0; k < getVariables().getVariables().front()->size();
-       ++k) {
+  const auto &group_vars = getGroup().getVariables();
+  auto buffer = make_combination_buffer(vars.size());
+  for (std::size_t k = 0; k < group_vars.front()->size(); ++k) {
     update_combination_buffer(buffer, k);
     auto buffer_copy = buffer;
     setImageRaw(categoric::Combination{std::move(buffer_copy)}, 1.f);
@@ -98,10 +98,9 @@ Factor::Factor(const categoric::Group &vars, const UseSimpleAntiCorrelation &)
     throw Error{"Only 1 variable can't make a correlation"};
   }
   check_all_same_size(vars.getVariables());
-  auto buffer = make_combination_buffer(getVariables().getVariables().size());
+  auto buffer = make_combination_buffer(getGroup().getVariables().size());
   setAllImagesRaw(1.f);
-  for (std::size_t k = 0; k < getVariables().getVariables().front()->size();
-       ++k) {
+  for (std::size_t k = 0; k < getGroup().getVariables().front()->size(); ++k) {
     auto buffer_copy = buffer;
     for (auto &buffer_val : buffer_copy) {
       buffer_val = k;
@@ -115,7 +114,7 @@ categoric::Group
 gather_variables(const std::vector<const Distribution *> &factors) {
   categoric::VariablesSet vars;
   for (const auto *factor : factors) {
-    for (const auto &var : factor->getVariables().getVariables()) {
+    for (const auto &var : factor->getGroup().getVariables()) {
       auto vars_it = vars.find(var);
       if (vars_it == vars.end()) {
         vars.emplace(var);
@@ -162,9 +161,9 @@ private:
 
 Factor::Factor(const std::vector<const Distribution *> &factors)
     : Factor(gather_variables(factors)) {
-  const auto &vars = getVariables().getVariables();
-  categoric::GroupRange range(getVariables());
-  const std::size_t range_size = getVariables().size();
+  const auto &vars = getGroup().getVariables();
+  categoric::GroupRange range(getGroup());
+  const std::size_t range_size = getGroup().size();
   // fill the distribution
   auto &distribution = getCombinationsMap_();
   using CombinationFinderProxy =
@@ -172,7 +171,7 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
   std::vector<CombinationFinderProxy> finders;
   finders.reserve(factors.size());
   for (const auto *factor : factors) {
-    if (factor->getVariables().getVariables().size() == vars.size()) {
+    if (factor->getGroup().getVariables().size() == vars.size()) {
       if (factor->getCombinationsMap().size() == range_size) {
         finders.push_back(DenseTrivialFinder{*factor});
       } else {
@@ -248,14 +247,14 @@ get_permuted(const std::vector<std::size_t> &subject,
 } // namespace
 
 Factor Factor::cloneWithPermutedGroup(const categoric::Group &new_order) const {
-  if (new_order.getVariablesSet() != getVariables().getVariablesSet()) {
+  if (new_order.getVariablesSet() != getGroup().getVariablesSet()) {
     throw Error{"Invalid new order. The new order should be a permutation of "
                 "the factor to clone"};
   }
   Factor result(new_order);
   auto &result_combs = result.getCombinationsMap_();
   const auto new_positions = compute_new_positions(
-      getVariables().getVariables(), result.getVariables().getVariables());
+      getGroup().getVariables(), result.getGroup().getVariables());
   for (const auto &[comb, val] : getCombinationsMap()) {
     result_combs.emplace(get_permuted(comb.data(), new_positions), val);
   }

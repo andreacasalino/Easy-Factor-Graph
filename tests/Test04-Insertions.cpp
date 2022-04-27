@@ -70,7 +70,7 @@ public:
 };
 
 bool have_same_values(const Distribution &a, const Distribution &b) {
-  return (a.getVariables().getVariables() == b.getVariables().getVariables()) &&
+  return (a.getGroup().getVariables() == b.getGroup().getVariables()) &&
          (a.getCombinationsMap() == b.getCombinationsMap());
 }
 } // namespace
@@ -86,7 +86,7 @@ TEST_CASE("const factors insertion", "[insertion]") {
 
     model.copyConstFactor(to_insert);
     model.checkPostInsertion();
-    model.checkVariables(to_insert.getVariables().getVariablesSet());
+    model.checkVariables(to_insert.getGroup().getVariablesSet());
 
     CHECK(model.getAllFactors().size() == 1);
     CHECK(model.getConstFactors().size() == 1);
@@ -99,7 +99,7 @@ TEST_CASE("const factors insertion", "[insertion]") {
 
     model.addConstFactor(to_insert);
     model.checkPostInsertion();
-    model.checkVariables(to_insert->getVariables().getVariablesSet());
+    model.checkVariables(to_insert->getGroup().getVariablesSet());
 
     CHECK(model.getAllFactors().size() == 1);
     CHECK(model.getConstFactors().size() == 1);
@@ -138,7 +138,7 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
 
     model.copyTunableFactor(to_insert);
     model.checkPostInsertion();
-    model.checkVariables(to_insert.getVariables().getVariablesSet());
+    model.checkVariables(to_insert.getGroup().getVariablesSet());
 
     CHECK(model.getAllFactors().size() == 1);
     CHECK(model.getConstFactors().size() == 0);
@@ -153,7 +153,7 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
 
     model.addTunableFactor(to_insert);
     model.checkPostInsertion();
-    model.checkVariables(to_insert->getVariables().getVariablesSet());
+    model.checkVariables(to_insert->getGroup().getVariablesSet());
 
     CHECK(model.getAllFactors().size() == 1);
     CHECK(model.getConstFactors().size() == 0);
@@ -167,7 +167,7 @@ TEST_CASE("tunable factors insertion", "[insertion]") {
       auto to_insert2 = make_corr_expfactor2(A, C, 1.f);
 
       model.addTunableFactor(to_insert2,
-                             to_insert->getVariables().getVariablesSet());
+                             to_insert->getGroup().getVariablesSet());
       model.checkPostInsertion();
       model.checkVariables(VariablesSet{A, B, C});
 

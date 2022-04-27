@@ -33,7 +33,7 @@ void printGroup(const categoric::Group &group, xmlPrs::Tag &recipient) {
 xmlPrs::Tag &printPotential(const distribution::Distribution &distr,
                             xmlPrs::Tag &recipient) {
   auto &pot_tag = recipient.addNested("Potential");
-  printGroup(distr.getVariables(), pot_tag);
+  printGroup(distr.getGroup(), pot_tag);
   for (const auto &[comb, val] : distr.getCombinationsMap()) {
     auto &comb_val = pot_tag.addNested("Distr_val");
     auto &attributes = comb_val.getAttributes();
@@ -91,7 +91,7 @@ void Exporter::convert(std::ostream &recipient, const AwarePtrs &subject,
       for (std::size_t k = 1; k < cluster.size(); ++k) {
         auto &factor_tag2 = printExpPotential(*cluster[k], exp_root);
         factor_tag2.getAttributes().emplace("tunability", "Y");
-        printGroup(front_factor.getVariables(), factor_tag2["Share"]);
+        printGroup(front_factor.getGroup(), factor_tag2["Share"]);
       }
     }
   }

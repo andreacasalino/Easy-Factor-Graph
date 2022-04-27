@@ -22,7 +22,7 @@ float Distribution::evaluate(const categoric::Combination &comb) const {
 
 std::vector<float> Distribution::getProbabilities() const {
   const auto &map = getCombinationsMap();
-  const auto &vars = getVariables();
+  const auto &vars = getGroup();
   const auto jointSize = vars.size();
   if (map.empty()) {
     return std::vector<float>(jointSize, 1.f / static_cast<float>(jointSize));

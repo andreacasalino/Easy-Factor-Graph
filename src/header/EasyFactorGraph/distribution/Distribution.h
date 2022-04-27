@@ -39,7 +39,7 @@ public:
    */
   virtual const Evaluator &getEvaluator() const = 0;
 
-  virtual const categoric::Group &getVariables() const = 0;
+  virtual const categoric::Group &getGroup() const = 0;
   virtual const CombinationRawValuesMap &getCombinationsMap() const = 0;
 
   virtual CombinationFinder

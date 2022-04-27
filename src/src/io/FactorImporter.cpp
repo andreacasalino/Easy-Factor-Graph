@@ -18,7 +18,7 @@ void import_values(distribution::Factor &recipient,
   auto stream = make_in_stream(file_name);
   recipient.clear();
   const std::size_t values_size =
-      recipient.getVariables().getVariables().size() + 1;
+      recipient.getGroup().getVariables().size() + 1;
   for_each_line(stream, [&values_size, &recipient](const std::string &line) {
     auto values = xmlPrs::slice_fragments(line);
     if (values.size() != values_size) {

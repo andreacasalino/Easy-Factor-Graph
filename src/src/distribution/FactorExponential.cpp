@@ -33,10 +33,10 @@ CombinationRawValuesMapPtr make_exponential_distribution(const Factor &factor) {
   const auto &factor_map = factor.getCombinationsMap();
   CombinationRawValuesMapPtr result =
       std::make_shared<CombinationRawValuesMap>();
-  if (factor_map.size() == factor.getVariables().size()) {
+  if (factor_map.size() == factor.getGroup().size()) {
     *result = factor_map;
   } else {
-    categoric::GroupRange range(factor.getVariables());
+    categoric::GroupRange range(factor.getGroup());
     for_each_combination(range, [&factor_map, &result = *result](
                                     const categoric::Combination &comb) {
       auto factor_map_it = factor_map.find(comb);
@@ -53,7 +53,7 @@ CombinationRawValuesMapPtr make_exponential_distribution(const Factor &factor) {
 
 FactorExponential::FactorExponential(const Factor &factor, const float weigth)
     : DistributionConcrete(std::make_shared<ExponentialEvaluator>(weigth),
-                           factor.getVariables(),
+                           factor.getGroup(),
                            make_exponential_distribution(factor)) {}
 
 void FactorExponential::setWeight(float w) {
@@ -66,7 +66,6 @@ float FactorExponential::getWeight() const {
 
 FactorExponential::FactorExponential(const FactorExponential &o)
     : DistributionConcrete(
-          std::make_shared<ExponentialEvaluator>(o.getWeight()),
-          o.getVariables(),
+          std::make_shared<ExponentialEvaluator>(o.getWeight()), o.getGroup(),
           std::make_shared<CombinationRawValuesMap>(o.getCombinationsMap())) {}
 } // namespace EFG::distribution

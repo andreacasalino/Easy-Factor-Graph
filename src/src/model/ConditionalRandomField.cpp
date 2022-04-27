@@ -80,7 +80,7 @@ void ConditionalRandomField::absorb(const SourceStructure &source,
 void ConditionalRandomField::replaceIfNeeded(train::TunerPtr &container,
                                              const train::BaseTuner &subject) {
   const auto &evidences = this->getEvidences();
-  const auto &vars = subject.getFactor().getVariables().getVariables();
+  const auto &vars = subject.getFactor().getGroup().getVariables();
   switch (vars.size()) {
   case 1: {
     if (evidences.find(vars.front()) != evidences.end()) {

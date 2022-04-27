@@ -17,7 +17,7 @@ HiddenObservedTuner::HiddenObservedTuner(
       evidence(evidence) {
   pos_in_factor_hidden = 0;
   pos_in_factor_evidence = 1;
-  if (factor->getVariables().getVariables().front().get() ==
+  if (factor->getGroup().getVariables().front().get() ==
       evidence->first.get()) {
     std::swap(pos_in_factor_hidden, pos_in_factor_evidence);
   }

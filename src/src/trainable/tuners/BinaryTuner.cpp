@@ -15,7 +15,7 @@ BinaryTuner::BinaryTuner(
     const std::shared_ptr<distribution::FactorExponential> &factor,
     const categoric::VariablesSoup &variables_in_model)
     : BaseTuner(factor, variables_in_model), nodeA(nodeA), nodeB(nodeB) {
-  const auto &variables = factor->getVariables().getVariables();
+  const auto &variables = factor->getGroup().getVariables();
   if (variables.front().get() != nodeA.variable.get()) {
     throw Error{"Invalid BinaryTuner"};
   }

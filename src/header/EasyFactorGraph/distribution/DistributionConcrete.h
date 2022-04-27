@@ -23,7 +23,7 @@ public:
   makeFinder(const categoric::VariablesSoup &bigger_group) const final;
 
   const Evaluator &getEvaluator() const final { return *evaluator; }
-  const categoric::Group &getVariables() const final { return variables; }
+  const categoric::Group &getGroup() const final { return variables; }
   const CombinationRawValuesMap &getCombinationsMap() const final {
     return *combinations_map;
   }

@@ -75,9 +75,9 @@ TEST_CASE("operations on distribution", "[distribution]") {
           VariablesSoup{make_variable(3, "A2"), make_variable(4, "B2"),
                         make_variable(2, "C2")};
       factor.replaceVariables(new_vars);
-      CHECK(factor.getVariables().getVariables()[0]->name() == "A2");
-      CHECK(factor.getVariables().getVariables()[1]->name() == "B2");
-      CHECK(factor.getVariables().getVariables()[2]->name() == "C2");
+      CHECK(factor.getGroup().getVariables()[0]->name() == "A2");
+      CHECK(factor.getGroup().getVariables()[1]->name() == "B2");
+      CHECK(factor.getGroup().getVariables()[2]->name() == "C2");
 
       const VariablesSoup new_vars_bad =
           VariablesSoup{make_variable(5, "A2"), make_variable(2, "B2"),
@@ -88,8 +88,8 @@ TEST_CASE("operations on distribution", "[distribution]") {
     SECTION("set onse") {
       factor.setAllImagesRaw(1.f);
       const auto &factor_map = factor.getCombinationsMap();
-      CHECK(factor_map.size() == factor.getVariables().size());
-      GroupRange range(factor.getVariables());
+      CHECK(factor_map.size() == factor.getGroup().size());
+      GroupRange range(factor.getGroup());
       for_each_combination(range, [&factor_map](const Combination &comb) {
         auto factor_map_it = factor_map.find(comb);
         REQUIRE(factor_map_it != factor_map.end());

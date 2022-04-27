@@ -37,7 +37,7 @@ TEST_CASE("operations on factor", "[factor]") {
   SECTION("set all combinations at once") {
     auto value_to_set = GENERATE(2.f, 3.5f);
     factor.setAllImagesRaw(value_to_set);
-    CHECK(factor.getCombinationsMap().size() == factor.getVariables().size());
+    CHECK(factor.getCombinationsMap().size() == factor.getGroup().size());
     for (const auto &[comb, comb_val] : factor.getCombinationsMap()) {
       CHECK(value_to_set == comb_val);
     }
@@ -92,7 +92,7 @@ TEST_CASE("correlating factors", "[factor]") {
 
   SECTION("correlating factor") {
     Factor factor(group, USE_SIMPLE_CORRELATION_TAG);
-    categoric::GroupRange range(factor.getVariables());
+    categoric::GroupRange range(factor.getGroup());
     for_each_combination(range, [&factor](const Combination &comb) {
       if (all_equals_values(comb)) {
         CHECK(1.f == factor.evaluate(comb));
@@ -104,7 +104,7 @@ TEST_CASE("correlating factors", "[factor]") {
 
   SECTION("anti correlating factor") {
     Factor factor(group, USE_SIMPLE_ANTI_CORRELATION_TAG);
-    categoric::GroupRange range(factor.getVariables());
+    categoric::GroupRange range(factor.getGroup());
     for_each_combination(range, [&factor](const Combination &comb) {
       if (all_equals_values(comb)) {
         CHECK(0 == factor.evaluate(comb));
@@ -129,15 +129,15 @@ TEST_CASE("merge factors", "[factor]") {
   distrBC.setAllImagesRaw(val2);
 
   distribution::Factor distrABC(distrAC, distrBC);
-  REQUIRE(3 == distrABC.getVariables().getVariables().size());
+  REQUIRE(3 == distrABC.getGroup().getVariables().size());
 
-  const auto &distrABC_group = distrABC.getVariables().getVariablesSet();
+  const auto &distrABC_group = distrABC.getGroup().getVariablesSet();
   REQUIRE(distrABC_group.find(make_variable(2, "A")) != distrABC_group.end());
   REQUIRE(distrABC_group.find(make_variable(2, "B")) != distrABC_group.end());
   REQUIRE(distrABC_group.find(make_variable(2, "C")) != distrABC_group.end());
 
-  GroupRange range(distrABC.getVariables());
-  REQUIRE(distrABC.getVariables().size() == 2 * 2 * 2);
+  GroupRange range(distrABC.getGroup());
+  REQUIRE(distrABC.getGroup().size() == 2 * 2 * 2);
   for_each_combination(range, [&](const Combination &comb) {
     CHECK(distrABC.evaluate(comb) == val1 * val2);
   });
@@ -204,7 +204,7 @@ TEST_CASE("Variables order change in factor", "[factor]") {
   Group different_group(VariablesSoup{B, C, A});
   auto different_order = initial_order.cloneWithPermutedGroup(different_group);
 
-  REQUIRE(different_order.getVariables() == different_group);
+  REQUIRE(different_order.getGroup() == different_group);
   CHECK(different_order.getCombinationsMap().size() == 3);
   CHECK(different_order.evaluate(std::vector<std::size_t>{1, 2, 0}) == 1.f);
   CHECK(different_order.evaluate(std::vector<std::size_t>{2, 0, 0}) == 2.f);

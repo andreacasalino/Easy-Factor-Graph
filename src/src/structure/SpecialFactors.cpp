@@ -28,7 +28,7 @@ UnaryFactor::UnaryFactor(const categoric::VariablePtr &var)
 
 UnaryFactor::UnaryFactor(
     const std::vector<const distribution::Distribution *> &factors)
-    : UnaryFactor(factors.front()->getVariables().getVariables().front()) {
+    : UnaryFactor(factors.front()->getGroup().getVariables().front()) {
   for (const auto *factor : factors) {
     merge(*factor);
   }
@@ -37,7 +37,7 @@ UnaryFactor::UnaryFactor(
 
 void UnaryFactor::merge(const Distribution &to_merge) {
   {
-    const auto &vars = to_merge.getVariables().getVariables();
+    const auto &vars = to_merge.getGroup().getVariables();
     if (vars.size() != 1) {
       throw Error{"Invalid factor"};
     }
@@ -80,10 +80,10 @@ void UnaryFactor::normalize() {
 namespace {
 categoric::VariablePtr get_other_var(const Distribution &binary_factor,
                                      const categoric::VariablePtr &var) {
-  if (2 != binary_factor.getVariables().getVariables().size()) {
+  if (2 != binary_factor.getGroup().getVariables().size()) {
     throw Error{"invalid binary factor"};
   }
-  const auto &vars = binary_factor.getVariables().getVariables();
+  const auto &vars = binary_factor.getGroup().getVariables();
   if (vars.front() == var) {
     return vars.back();
   }
@@ -96,7 +96,7 @@ void get_positions(const Distribution &binary_factor,
                    std::size_t &other_var_pos) {
   unary_factor_var_pos = 0;
   other_var_pos = 1;
-  if (binary_factor.getVariables().getVariables().back().get() ==
+  if (binary_factor.getGroup().getVariables().back().get() ==
       unary_factor_var.get()) {
     std::swap(unary_factor_var_pos, other_var_pos);
   }
@@ -135,7 +135,7 @@ void fill_message(
                 sender_var_pos);
   std::vector<float> values;
   const auto recipient_var =
-      binary_factor.getVariables().getVariables()[message_var_pos];
+      binary_factor.getGroup().getVariables()[message_var_pos];
   for (std::size_t recipient_comb = 0; recipient_comb < recipient_var->size();
        ++recipient_comb) {
     values.clear();

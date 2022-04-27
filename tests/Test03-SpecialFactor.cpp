@@ -33,7 +33,7 @@ TEST_CASE("Unary factor", "[factor-special]") {
   SECTION("ones from single variable") {
     auto var = make_variable(3, "A");
     UnaryFactor factor(var);
-    REQUIRE(factor.getVariables().getVariables() == VariablesSoup{var});
+    REQUIRE(factor.getGroup().getVariables() == VariablesSoup{var});
     const auto &map = factor.getCombinationsMap();
     REQUIRE(map.size() == var->size());
     for (const auto &[comb, val] : factor.getCombinationsMap()) {
@@ -58,7 +58,7 @@ TEST_CASE("Unary factor", "[factor-special]") {
 
     UnaryFactor factor({&distr_1, &distr_2, &distr_3});
 
-    REQUIRE(factor.getVariables().getVariables() == VariablesSoup{var});
+    REQUIRE(factor.getGroup().getVariables() == VariablesSoup{var});
 
     CombinationRawValuesMap expected_map;
     expected_map.emplace(std::vector<std::size_t>{0}, 0.1f / 0.3f);
@@ -90,10 +90,10 @@ TEST_CASE("Evidence", "[factor-special]") {
   const float w = 1.3f;
   auto factor = make_exp_test_factor(w);
 
-  Evidence evidence(factor, factor.getVariables().getVariables()[0], 1);
+  Evidence evidence(factor, factor.getGroup().getVariables()[0], 1);
 
-  CHECK(evidence.getVariables().getVariables().front() ==
-        factor.getVariables().getVariables()[1]);
+  CHECK(evidence.getGroup().getVariables().front() ==
+        factor.getGroup().getVariables()[1]);
   CombinationRawValuesMap expected_map;
   expected_map.emplace(std::vector<std::size_t>{0}, 1.f);
   expected_map.emplace(std::vector<std::size_t>{1}, exp(w));
@@ -105,8 +105,8 @@ TEST_CASE("Message", "[factor-special]") {
   const float g = 0.6f;
 
   auto factor_AB = make_exp_test_factor(w);
-  auto A = factor_AB.getVariables().getVariables().front();
-  auto B = factor_AB.getVariables().getVariables().back();
+  auto A = factor_AB.getGroup().getVariables().front();
+  auto B = factor_AB.getGroup().getVariables().back();
 
   Factor shape_A(Group{A});
   shape_A.setImageRaw(std::vector<std::size_t>{0}, 0.5f);

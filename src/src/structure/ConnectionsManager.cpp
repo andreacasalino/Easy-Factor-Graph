@@ -23,7 +23,7 @@ void ConnectionsManager::addDistribution(
   }
   resetBelief();
 
-  switch (distribution->getVariables().getVariables().size()) {
+  switch (distribution->getGroup().getVariables().size()) {
   case 1:
     addUnaryDistribution(distribution);
     break;
@@ -78,7 +78,7 @@ ConnectionsManager::findOrMakeNode(const categoric::VariablePtr &var) {
 
 void ConnectionsManager::addUnaryDistribution(
     const EFG::distribution::DistributionCnstPtr &unary_factor) {
-  const auto &var = unary_factor->getVariables().getVariables().front();
+  const auto &var = unary_factor->getGroup().getVariables().front();
   auto node_location = findOrMakeNode(var);
   Node *node = nullptr;
   visit_location(
@@ -101,7 +101,7 @@ void check_are_already_connected(Node &a, Node &b) {
 
 void ConnectionsManager::addBinaryDistribution(
     const EFG::distribution::DistributionCnstPtr &binary_factor) {
-  const auto &vars = binary_factor->getVariables().getVariables();
+  const auto &vars = binary_factor->getGroup().getVariables();
   auto nodeA_location = findOrMakeNode(vars.front());
   auto nodeB_location = findOrMakeNode(vars.back());
 

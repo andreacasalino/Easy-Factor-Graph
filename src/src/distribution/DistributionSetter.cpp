@@ -15,7 +15,7 @@ void DistributionSetter::setImageRaw(const categoric::Combination &comb,
   if (value < 0.f) {
     throw Error("negative value is not possible");
   }
-  const auto &vars = getVariables().getVariables();
+  const auto &vars = getGroup().getVariables();
   const auto size = vars.size();
   const auto &comb_data = comb.data();
   if (comb_data.size() != size) {
@@ -34,7 +34,7 @@ void DistributionSetter::setAllImagesRaw(const float &value) {
     throw Error("negative value is not possible");
   }
   clear();
-  categoric::GroupRange range(getVariables());
+  categoric::GroupRange range(getGroup());
   auto &map = getCombinationsMap_();
   for_each_combination(range,
                        [&map, &value](const categoric::Combination &comb) {

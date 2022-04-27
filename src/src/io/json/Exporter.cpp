@@ -27,7 +27,7 @@ void printGroup(const categoric::Group &group, nlohmann::json &recipient) {
 nlohmann::json &printPotential(const distribution::Distribution &distr,
                                nlohmann::json &recipient) {
   auto &potential = recipient.emplace_back();
-  printGroup(distr.getVariables(), potential["Variables"]);
+  printGroup(distr.getGroup(), potential["Variables"]);
   auto &Distr_val = potential["Distr_val"];
   for (const auto &[comb, val] : distr.getCombinationsMap()) {
     auto &Distr_val_added = Distr_val.emplace_back();
@@ -87,7 +87,7 @@ void Exporter::convert(nlohmann::json &recipient, const AwarePtrs &subject) {
       factor_tag["tunability"] = "Y";
       for (std::size_t k = 1; k < cluster.size(); ++k) {
         auto &factor_tag2 = printExpPotential(*cluster[k], potentials);
-        printGroup(front_factor.getVariables(), factor_tag2["Share"]);
+        printGroup(front_factor.getGroup(), factor_tag2["Share"]);
         factor_tag2["tunability"] = "Y";
       }
     }

@@ -50,7 +50,7 @@ bool exist_factor_with_group(const ContainerT &subject, const StateAware &model,
   group.emplace(model.findVariable(second));
   for (const auto &element : subject) {
     const distribution::Distribution &distr = *element;
-    if (group == distr.getVariables().getVariablesSet()) {
+    if (group == distr.getGroup().getVariablesSet()) {
       return true;
     }
   }

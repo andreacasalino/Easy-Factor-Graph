@@ -72,16 +72,14 @@ TunerPtr &FactorsTunableAdder::findTuner(
         visit_tuner(
             tuner,
             [&is_here, &group](const BaseTuner &tuner) {
-              is_here =
-                  tuner.getFactor().getVariables().getVariablesSet() == group;
+              is_here = tuner.getFactor().getGroup().getVariablesSet() == group;
             },
             [&is_here, &group](const CompositeTuner &composite) {
               for (const auto &element : composite.getElements()) {
                 const auto *as_base_tuner =
                     static_cast<const BaseTuner *>(element.get());
-                if (as_base_tuner->getFactor()
-                        .getVariables()
-                        .getVariablesSet() == group) {
+                if (as_base_tuner->getFactor().getGroup().getVariablesSet() ==
+                    group) {
                   is_here = true;
                   return;
                 }
@@ -112,8 +110,8 @@ strct::Node *extract_node(const strct::NodeLocation &location) {
 
 TunerPtr FactorsTunableAdder::makeTuner(const FactorExponentialPtr &factor) {
   auto vars = getAllVariables();
-  const auto &factor_vars = factor->getVariables().getVariables();
-  switch (factor->getVariables().getVariables().size()) {
+  const auto &factor_vars = factor->getGroup().getVariables();
+  switch (factor_vars.size()) {
   case 1: {
     auto *node = extract_node(*locate(factor_vars.front()));
     return std::make_unique<UnaryTuner>(*node, factor, vars);
@@ -170,7 +168,7 @@ void FactorsTunableAdder::absorbTunableClusters(
       } else {
         addTunableFactor(front_factor);
       }
-      const auto &front_vars = front_factor->getVariables().getVariablesSet();
+      const auto &front_vars = front_factor->getGroup().getVariablesSet();
       for (std::size_t k = 1; k < cluster.size(); ++k) {
         if (copy) {
           copyTunableFactor(*cluster[k], front_vars);

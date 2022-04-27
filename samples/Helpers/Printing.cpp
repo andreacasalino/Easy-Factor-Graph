@@ -55,9 +55,9 @@ std::ostream &operator<<(std::ostream &s,
 
 std::ostream &operator<<(std::ostream &s,
                          const EFG::distribution::Distribution &distribution) {
-  s << distribution.getVariables().getVariables() << "    raw    image"
+  s << distribution.getGroup().getVariables() << "    raw    image"
     << std::endl;
-  EFG::categoric::GroupRange range(distribution.getVariables());
+  EFG::categoric::GroupRange range(distribution.getGroup());
   EFG::categoric::for_each_combination(
       range, [&s, &distribution](const EFG::categoric::Combination &comb) {
         print_vector(s, comb.data());
