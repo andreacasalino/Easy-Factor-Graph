@@ -5,114 +5,156 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Presenter.h>
-#include <print/DistributionPrint.h>
-#include <CombinationMaker.h>
-#include <print/ProbabilityDistributionPrint.h>
-#include <print/GroupPrint.h>
-#include <distribution/factor/modifiable/Factor.h>
-#include <distribution/DistributionFinder.h>
-#include <distribution/factor/const/FactorExponential.h>
-#include <categoric/Range.h>
+// what is required from the EFG core library
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/distribution/CombinationFinder.h>
+#include <EasyFactorGraph/distribution/Factor.h>
+#include <EasyFactorGraph/distribution/FactorExponential.h>
+using namespace EFG;
+
+// just a bunch of utilities needed by the sample
+#include <Printing.h>
+#include <SampleSection.h>
+
 #include <iostream>
 using namespace std;
-using namespace EFG;
-using namespace EFG::categoric;
-using namespace EFG::distribution;
 
-int main () {
-	EFG::sample::samplePart([]() {
-		//create a couple of variables with Dom size equal to 4
-		VariablePtr A = makeVariable(4, "A");
-		VariablePtr B = makeVariable(4, "B");
+int main() {
+  {
+    SampleSection section("Factors construction", "4.1.2.1");
 
-		//create a Simple shape involving A and B
-		factor::modif::Factor Phi_AB(std::set<categoric::VariablePtr>{A, B});
-		//fill the domain in order to have for Phi_AB(a,b) = a + 2*b (without a particular reason)
-		{
-			Range range_AB(Phi_AB.getGroup().getVariables());
-			EFG::iterator::forEach(range_AB, [&Phi_AB](const Range& r) {
-				Phi_AB.setImageRaw(r.get(), static_cast<float>(r.get().data()[0] + 2 * r.get().data()[1]));
-			});
-		}
-		//print the distribution
-		cout << Phi_AB << endl << endl;
+    // create a couple of variables with Dom size equal to 4
+    auto A = categoric::make_variable(4, "A");
+    auto B = categoric::make_variable(4, "B");
 
-		//define another couple of variables with the same Dom size if A and B
-		VariablePtr X = makeVariable(4, "X");
-		VariablePtr Y = makeVariable(4, "Y");
-		//build Phi_XY, which has the same image of Phi_AB, but considering the realizations of X and Y
-		factor::modif::Factor Phi_XY(Phi_AB);
-		Phi_XY.replaceGroup(Group(std::set<categoric::VariablePtr>{X, Y}));
-		cout << Phi_XY << endl << endl;
-	}, "Distribution construction", "refer to Section 4.1.2.1 of the documentation");
+    // create a Simple shape involving A and B
+    distribution::Factor Phi_AB(
+        categoric::Group{categoric::VariablesSoup{A, B}});
+    // fill the domain in order to have for Phi_AB(a,b) = a + 2*b (just to put
+    // some numbers)
+    {
+      categoric::GroupRange range_AB(Phi_AB.getVariables());
+      categoric::for_each_combination(
+          range_AB, [&Phi_AB](const categoric::Combination &comb) {
+            const auto &data = comb.data();
+            Phi_AB.setImageRaw(comb, static_cast<float>(data[0] + 2 * data[1]));
+          });
+    }
+    // print the distribution
+    cout << Phi_AB << endl << endl;
 
-	EFG::sample::samplePart([]() {
-		// build the variables
-		VariablePtr V1 = makeVariable(3, "V1");
-		VariablePtr V2 = makeVariable(3, "V2");
-		VariablePtr V3 = makeVariable(3, "V3");
+    // define another couple of variables with the same Dom size of A and B
+    auto X = categoric::make_variable(4, "X");
+    auto Y = categoric::make_variable(4, "Y");
 
-		float weight = 1.5f; // you can tune this value to see how the probabilities change
+    // build a factor involving X and Y, cloning the one that involves A and B
+    distribution::Factor Phi_XY(Phi_AB); // initially clone as is
+    Phi_XY.replaceVariables(
+        categoric::VariablesSoup{X, Y}); // then replace variables group
+    cout << Phi_XY << endl << endl;
 
-		// build the correlating factor
-		factor::modif::Factor Phi_C = factor::cnst::Factor({ V1, V2, V3 }, true);
-		Phi_C.fillDomain();
-		cout << "Correlating factor domain and images: " << endl;
-		cout << Phi_C << endl << endl;
+    // permute X with Y
+    distribution::Factor Phi_XY_permuted = Phi_XY.cloneWithPermutedGroup(
+        categoric::Group{categoric::VariablesSoup{Y, X}});
+    cout << Phi_XY_permuted << endl << endl;
+  }
 
-		// build the anti correlating factor
-		factor::modif::Factor Phi_A = factor::cnst::Factor({ V1, V2, V3 }, false);
-		Phi_A.fillDomain();
-		cout << "Anti correlating factor domain and images: " << endl;
-		cout << Phi_A << endl << endl;
+  {
+    SampleSection section("Simple Factor query", "4.1.2.2");
 
-		// build the exponential correlating factor and evaluates the probabilities
-		factor::cnst::FactorExponential Psi_C(Phi_C, weight);
-		cout << "probabilities taken from the correlating exponential factor" << endl;
-		cout << Psi_C.getProbabilities() << endl << endl;
+    // build the variables
+    auto V1 = categoric::make_variable(3, "V1");
+    auto V2 = categoric::make_variable(3, "V2");
+    auto V3 = categoric::make_variable(3, "V3");
 
-		// build the exponential anti correlating factor and evaluates the probabilities
-		factor::cnst::FactorExponential Psi_A(Phi_A, weight);
-		cout << "probabilities taken from the anti correlating exponential factor" << endl;
-		cout << Psi_A.getProbabilities() << endl << endl;
-	}, "Distribution simple query", "refer to Section 4.1.2.2 of the documentation");
+    // build a factor correlating V1, V2 and V3
+    distribution::Factor Phi_C = distribution::Factor(
+        categoric::Group{categoric::VariablesSoup{V1, V2, V3}},
+        distribution::USE_SIMPLE_CORRELATION_TAG);
+    cout << "Correlating factor" << endl;
+    cout << Phi_C << endl << endl;
 
-	EFG::sample::samplePart([]() {
-		factor::modif::Factor distr(std::set<categoric::VariablePtr>({ makeVariable(2 , "A"), makeVariable(3 , "B"), makeVariable(2 , "C"), makeVariable(3 , "D") }));
-		cout << "marginalize considering A=1 and C=1" << endl;
-		cout << factor::cnst::Factor(distr, sample::makeCombination({ 1,1 }), { makeVariable(2 , "A"), makeVariable(3 , "C") }) << endl << endl;
-	}, "Marginalization");
+    // build a factor correlating V1, V2 and V3
+    distribution::Factor Phi_A = distribution::Factor(
+        categoric::Group{categoric::VariablesSoup{V1, V2, V3}},
+        distribution::USE_SIMPLE_ANTI_CORRELATION_TAG);
+    cout << "Anti correlating factor" << endl;
+    cout << Phi_A << endl << endl;
 
-	EFG::sample::samplePart([]() {
-		factor::modif::Factor distr(std::set<categoric::VariablePtr>({ makeVariable(2 , "A"), makeVariable(3 , "B"), makeVariable(2 , "C"), makeVariable(3 , "D") }));
-		distr.setImageRaw(sample::makeCombination({ 0,0,0,0 }), 1.f);
-		distr.setImageRaw(sample::makeCombination({ 0,0,1,0 }), 2.f);
-		distr.setImageRaw(sample::makeCombination({ 1,0,1,1 }), 3.f);
-		cout << "current content of the distribution" << endl;
-		cout << distr << endl << endl;
+    float weight =
+        1.5f; // you can tune this value to see how the probabilities change
 
-		cout << "value found for <0,0,1,0>  ->  " << distr.find(sample::makeCombination({ 0,0,1,0 })) << endl;
+    // build the exponential correlating factor and evaluates the probabilities
+    distribution::FactorExponential Psi_C(Phi_C, weight);
+    cout << "probabilities taken from the correlating exponential factor "
+         << endl;
+    cout << Psi_C.getProbabilities() << endl << endl;
 
-		auto groupBigger = distr.getGroup();
-		groupBigger.add(makeVariable(2, "E"));
-		DistributionFinder finder(distr, groupBigger.getVariables());
-		cout << "value found for <1,0,1,1,0> from group " << groupBigger << "  ->  " << finder.find(sample::makeCombination({ 1,0,1,1,0 })).second << endl;
-	}, "Combinations find");
+    // build the exponential anti correlating factor and evaluates the
+    // probabilities
+    distribution::FactorExponential Psi_A(Phi_A, weight);
+    cout << "probabilities taken from the correlating exponential factor "
+         << endl;
+    cout << Psi_A.getProbabilities() << endl << endl;
+  }
 
-	EFG::sample::samplePart([]() {
-		factor::modif::Factor distrAC(std::set<categoric::VariablePtr>({makeVariable(2 , "A"), makeVariable(2 , "C")}));
-		distrAC.setAllImagesRaw(2.f);
-		factor::modif::Factor distrBC(std::set<categoric::VariablePtr>({makeVariable(2 , "B"), makeVariable(2 , "C")}));
-		distrBC.setAllImagesRaw(0.5f);
+  {
+    SampleSection section("Find specific combination in Factors");
 
-		std::cout << "distributions to merge" << std::endl;
-		cout << distrAC << endl << endl;
-		cout << distrBC << endl << endl;
+    distribution::Factor factor(categoric::Group{categoric::VariablesSoup{
+        categoric::make_variable(2, "A"), categoric::make_variable(3, "B"),
+        categoric::make_variable(2, "C"), categoric::make_variable(3, "D")}});
+    factor.setImageRaw(std::vector<std::size_t>{0, 0, 0, 0}, 1.f);
+    factor.setImageRaw(std::vector<std::size_t>{0, 0, 1, 0}, 2.f);
+    factor.setImageRaw(std::vector<std::size_t>{1, 0, 1, 1}, 3.f);
+    cout << "current content of the distribution" << endl;
+    cout << factor << endl << endl;
 
-		std::cout << "merged distribution" << std::endl;
-		cout << factor::modif::Factor(&distrAC, &distrBC) << endl << endl;
-	}, "Merge distributions");
+    cout << "value found for 0 0 1 0  ->  "
+         << factor.evaluate(std::vector<std::size_t>{0, 0, 1, 0}) << endl;
 
-	return EXIT_SUCCESS;
+    auto bigger_group = factor.getVariables().getVariables();
+    bigger_group.push_back(categoric::make_variable(2, "E"));
+    auto combination_finder = factor.makeFinder(bigger_group);
+    cout << "value found for <1,0,1,1,0> from group " << bigger_group << "  -> "
+         << combination_finder.find(std::vector<std::size_t>{1, 0, 1, 1, 0})
+                .value
+         << endl;
+  }
+
+  {
+    SampleSection section("Factors merging");
+
+    auto A = categoric::make_variable(2, "A");
+    auto B = categoric::make_variable(2, "B");
+    auto C = categoric::make_variable(2, "C");
+
+    distribution::Factor factor_AC(
+        categoric::Group{categoric::VariablesSoup{A, C}},
+        distribution::USE_SIMPLE_CORRELATION_TAG);
+    distribution::Factor factor_BC(
+        categoric::Group{categoric::VariablesSoup{B, C}},
+        distribution::USE_SIMPLE_CORRELATION_TAG);
+
+    std::cout << "distributions to merge" << std::endl;
+    cout << factor_AC << endl << endl;
+    cout << factor_BC << endl << endl;
+
+    std::cout << "merged distribution" << std::endl;
+    cout << distribution::Factor{factor_AC, factor_BC} << endl << endl;
+
+    // change factors to merge and then merge again
+    factor_AC.setAllImagesRaw(0.5f);
+    factor_BC.setAllImagesRaw(0.5f);
+
+    std::cout << "distributions to merge after the change" << std::endl;
+    cout << factor_AC << endl << endl;
+    cout << factor_BC << endl << endl;
+
+    std::cout << "merged distribution" << std::endl;
+    cout << distribution::Factor{factor_AC, factor_BC} << endl << endl;
+  }
+
+  return EXIT_SUCCESS;
 }

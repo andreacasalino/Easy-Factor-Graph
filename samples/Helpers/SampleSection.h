@@ -13,5 +13,8 @@ class SampleSection {
 public:
   SampleSection(const std::string &description,
                 const std::string &doc_reference);
+
+  SampleSection(const std::string &description);
+
   ~SampleSection();
 };

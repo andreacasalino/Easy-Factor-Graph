@@ -42,14 +42,15 @@ void print_vector(
 }
 } // namespace
 
-void print_range(std::ostream &s, const EFG::categoric::Group &group) {
-  s << group.getVariables() << std::endl;
-  EFG::categoric::GroupRange range(group);
-  EFG::categoric::for_each_combination(
-      range, [&s](const EFG::categoric::Combination &comb) {
-        print_vector(s, comb.data());
-        s << std::endl;
-      });
+std::ostream &operator<<(std::ostream &s, const std::vector<float> &values) {
+  print_vector(s, values);
+  return s;
+}
+
+std::ostream &operator<<(std::ostream &s,
+                         const EFG::categoric::Combination &comb) {
+  print_vector(s, comb.data());
+  return s;
 }
 
 std::ostream &operator<<(std::ostream &s,

@@ -11,8 +11,7 @@
 
 SampleSection::SampleSection(const std::string &description,
                              const std::string &doc_reference) {
-  std::cout
-      << "\n\n--------------------------------------------------------\n\n";
+  std::cout << "\n--------------------------------------------------------\n\n";
   std::cout << description;
   if (!doc_reference.empty()) {
     std::cout << " , refer to Section " << doc_reference
@@ -21,6 +20,9 @@ SampleSection::SampleSection(const std::string &description,
   std::cout << "\n--------------------------------------------------------\n\n";
 }
 
+SampleSection::SampleSection(const std::string &description)
+    : SampleSection(description, "") {}
+
 SampleSection::~SampleSection() {
-  std::cout << "\n--------------------------------------------------------\n\n";
+  std::cout << "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
 }
