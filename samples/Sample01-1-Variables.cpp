@@ -5,51 +5,59 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Presenter.h>
-#include <Error.h>
-#include <print/GroupPrint.h>
-#include <print/RangePrint.h>
+// what is required from the EFG core library
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/categoric/Variable.h>
+using namespace EFG;
+
+// just a bunch of utilities needed by the sample
+#include <Printing.h>
+#include <SampleSection.h>
+
 #include <iostream>
 using namespace std;
-using namespace EFG::categoric;
 
 int main() {
-    EFG::sample::samplePart([]() {
-        //define a group variable
-        Group groupABCD(makeVariable(2, "A"), makeVariable(2, "B"));
-        cout << "groupABCD with only A and B for the moment: " << groupABCD << endl;
+  {
+    SampleSection section("Group of variables managing", "4.1.1.1");
 
-        groupABCD.add(makeVariable(2, "C"));
-        groupABCD.add(makeVariable(2, "D"));
-        cout << "groupABCD: " << groupABCD << endl;
+    // define a group of variables, all with size = 2
+    categoric::Group groupABCD(categoric::make_variable(2, "A"),
+                               categoric::make_variable(2, "B"));
+    cout << "groupABCD with only A and B for the moment: " << groupABCD << endl;
 
-        // try to add an already existing variable
-        try {
-            groupABCD.add(makeVariable(2, "C"));
-        }
-        catch (...) {
-            cout << "insertion of C in ABCD group correctly refused" << endl;
-        }
-        cout << "groupABCD: " << groupABCD << endl;
-    }, "Group of variables", "refer to Section 4.1.1.1 of the documentation");
+    groupABCD.add(categoric::make_variable(2, "C"));
+    groupABCD.add(categoric::make_variable(2, "D"));
+    cout << "groupABCD after adding also C and D: " << groupABCD << endl;
 
-    EFG::sample::samplePart([]() {
-        // build some variables
-        auto A = makeVariable(2, "A");
-        auto B = makeVariable(4, "B");
-        auto C = makeVariable(3, "C");
+    // try to add an already existing variable
+    try {
+      groupABCD.add(categoric::make_variable(2, "C"));
+    } catch (...) {
+      cout << "insertion of C in ABCD group correctly refused" << endl;
+    }
+    cout << "groupABCD: " << groupABCD << endl;
+  }
 
-        // build and display the joint domains
-        cout << "A B range:" << endl;
-        cout << Range({ A, B }) << endl;
+  //   EFG::sample::samplePart(
+  //       []() {
+  //         // build some variables
+  //         auto A = makeVariable(2, "A");
+  //         auto B = makeVariable(4, "B");
+  //         auto C = makeVariable(3, "C");
 
-        cout << "A C range:" << endl;
-        cout << Range({ A, C }) << endl;
+  //         // build and display the joint domains
+  //         cout << "A B range:" << endl;
+  //         cout << Range({A, B}) << endl;
 
-        cout << "A B C range:" << endl;
-        cout << Range({ A, B, C }) << endl;
-    }, "Joint domains", "refer to Section 4.1.1.2 of the documentation");
+  //         cout << "A C range:" << endl;
+  //         cout << Range({A, C}) << endl;
 
-	return EXIT_SUCCESS;
+  //         cout << "A B C range:" << endl;
+  //         cout << Range({A, B, C}) << endl;
+  //       },
+  //       "Joint domains", "refer to Section 4.1.1.2 of the documentation");
+
+  return EXIT_SUCCESS;
 }
-

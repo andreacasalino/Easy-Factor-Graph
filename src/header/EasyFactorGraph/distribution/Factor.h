@@ -161,6 +161,8 @@ protected:
   Factor(const std::vector<const Distribution *> &factors);
 
 private:
+  static const EvaluatorPtr BASIC_EVALUATOR;
+
   template <typename... Distributions>
   static std::vector<const Distribution *>
   pack_factors(const Distributions &...factors) {

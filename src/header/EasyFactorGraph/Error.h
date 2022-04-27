@@ -31,7 +31,7 @@ private:
 
   template <typename T>
   static void merge_(std::stringstream &recipient, const T &element) {
-    merge_(recipient, element);
+    recipient << element;
   }
 };
 

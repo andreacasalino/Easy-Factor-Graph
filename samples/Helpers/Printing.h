@@ -15,9 +15,9 @@
 std::ostream &operator<<(std::ostream &s,
                          const EFG::categoric::VariablesSoup &group);
 
+std::ostream &operator<<(std::ostream &s, const EFG::categoric::Group &group);
+
 void print_range(std::ostream &s, const EFG::categoric::Group &group);
 
 std::ostream &operator<<(std::ostream &s,
                          const EFG::distribution::Distribution &distribution);
-
-// print somehow a distribution

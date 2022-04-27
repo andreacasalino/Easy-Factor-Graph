@@ -5,69 +5,71 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <Frequencies.h>
-#include <Error.h>
+#include <EasyFactorGraph/Error.h>
+#include <Printing.h>
+
 #include <algorithm>
 
-namespace EFG::sample {
-    std::vector<float> makeDistribution(const std::vector<float>& values) {
-        if (values.size() <= 1) {
-            throw Error("this is not a distribution");
-        }
-        auto distr = values;
-        float sum = 0.f;
-        std::for_each(values.begin(), values.end(), [&sum](const float& v) {
-            sum += v;
-        });
-        std::for_each(distr.begin(), distr.end(), [&sum](float& v) {
-            v /= sum;
-        });
-        return distr;
+namespace {
+std::size_t
+find_var_position(EFG::categoric::VariablePtr var2Search,
+                  const EFG::categoric::VariablesSoup &samplesGroup) {
+  return std::distance(
+      samplesGroup.begin(),
+      std::find(samplesGroup.begin(), samplesGroup.end(), var2Search));
+}
+} // namespace
+
+std::vector<float>
+getEmpiricalMarginals(EFG::categoric::VariablePtr var2Search,
+                      const std::vector<EFG::categoric::Combination> &samples,
+                      const EFG::categoric::VariablesSoup &samplesGroup) {
+  std::vector<std::size_t> counters;
+  counters.reserve(var2Search->size());
+  for (std::size_t k = 0; k < var2Search->size(); ++k) {
+    counters.push_back(0);
+  }
+
+  const std::size_t var_pos = find_var_position(var2Search, samplesGroup);
+  for (const auto &sample : samples) {
+    ++counters[sample.data()[var_pos]];
+  }
+
+  std::vector<float> result;
+  result.reserve(counters.size());
+  for (const auto counter : counters) {
+    result.push_back(static_cast<float>(counter) /
+                     static_cast<float>(samples.size()));
+  }
+  return result;
+}
+
+float getEmpiricalProbability(
+    const EFG::categoric::Combination &comb2Search,
+    const EFG::categoric::VariablesSoup &combGroup,
+    const std::vector<EFG::categoric::Combination> &samples,
+    const EFG::categoric::VariablesSoup &samplesGroup) {
+  std::size_t counter = 0;
+
+  std::vector<std::size_t> var2Search_positions;
+  for (const auto &var : combGroup) {
+    var2Search_positions.push_back(find_var_position(var, samplesGroup));
+  }
+
+  for (const auto &sample : samples) {
+    bool increment = true;
+    const auto &sample_data = sample.data();
+    const auto &comb2Search_data = comb2Search.data();
+    for (std::size_t k = 0; k < var2Search_positions.size(); ++k) {
+      if (sample_data[var2Search_positions[k]] != comb2Search_data[k]) {
+        increment = false;
+        break;
+      }
     }
-
-    std::size_t findPosition(const categoric::VariablePtr& var2Search, const std::set<categoric::VariablePtr>& group) {
-        auto it = group.find(var2Search);
-        if (it == group.end()) {
-            throw Error("variable not found");
-        }
-        return std::distance(group.begin(), it);
+    if (increment) {
+      ++counter;
     }
+  }
 
-    std::vector<float> getEmpiricalMarginalFrequencies(categoric::VariablePtr var2Search, const std::vector<categoric::Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
-        if (samples.empty()) {
-            throw Error("samples container can't be empty");
-        }
-        std::size_t pos = findPosition(var2Search, samplesGroup);
-
-        std::vector<float> frequencies(var2Search->size(), 0.f);
-        std::for_each(samples.begin(), samples.end(), [&frequencies, &pos](const categoric::Combination& c) {
-            ++frequencies[c.data()[pos]];
-        });
-        for (std::size_t k = 0; k < frequencies.size(); ++k) {
-            frequencies[k] /= samples.size();
-        }
-        return frequencies;
-    }
-
-    float getEmpiricalFrequencies(const categoric::Combination& comb2Search, const categoric::Group& combGroup, const std::vector<categoric::Combination>& samples, const std::set<categoric::VariablePtr>& samplesGroup) {
-        if (samples.empty()) {
-            throw Error("samples container can't be empty");
-        }
-        std::vector<std::size_t> posInSamples;
-        posInSamples.reserve(combGroup.getVariables().size());
-        std::for_each(combGroup.getVariables().begin(), combGroup.getVariables().end(), [&posInSamples, &samplesGroup](const categoric::VariablePtr& v) {
-            posInSamples.push_back(findPosition(v , samplesGroup));
-        });
-
-        float freq = 0.f;
-        std::for_each(samples.begin(), samples.end(), [&](const categoric::Combination& c) {
-            for (std::size_t k = 0; k < posInSamples.size(); ++k) {
-                if (c.data()[posInSamples[k]] != comb2Search.data()[k]) {
-                    return;
-                }
-            }
-            ++freq;
-        });
-        return freq /= samples.size();
-    }
+  return static_cast<float>(counter) / static_cast<float>(samples.size());
 }

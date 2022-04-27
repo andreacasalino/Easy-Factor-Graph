@@ -162,6 +162,5 @@ TEST_CASE("evidence total reset", "[evidence]") {
   model.clusterExists(VariablesSet{model.getAllVariables().begin(),
                                    model.getAllVariables().end()});
   CHECK(model.getEvidences().empty());
-  // CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error); // TODO find
-  // a way to make it work
+  CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error);
 }

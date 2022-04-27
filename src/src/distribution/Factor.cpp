@@ -18,13 +18,16 @@ class BasicEvaluator : public Evaluator {
 public:
   BasicEvaluator() = default;
 
+  static std::shared_ptr<BasicEvaluator> make() {
+    std::shared_ptr<BasicEvaluator> result;
+    result.reset(new BasicEvaluator());
+    return result;
+  };
+
   float evaluate(const float &input) const final { return input; }
 };
 
-namespace {
-static const std::shared_ptr<BasicEvaluator> BASIC_EVALUATOR =
-    std::make_shared<BasicEvaluator>();
-}
+const EvaluatorPtr Factor::BASIC_EVALUATOR = BasicEvaluator::make();
 
 Factor::Factor(const Distribution &to_clone,
                const GenericCopyTag &GENERIC_COPY_TAG)

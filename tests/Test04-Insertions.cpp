@@ -224,8 +224,7 @@ TEST_CASE("check bad factor insertions are refused", "[insertion]") {
 
   SECTION("factor connecting same variables") {
     DistributionCnstPtr to_insert2 = make_corr_factor2(A, B);
-    // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO find
-    // a way to make it work
+    CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error);
   }
 
   SECTION("factor referring to a bad variable") {
@@ -234,15 +233,13 @@ TEST_CASE("check bad factor insertions are refused", "[insertion]") {
     SECTION("bad unary factor") {
       DistributionCnstPtr to_insert2 =
           std::make_shared<Factor>(Group{VariablesSoup{A_bis}});
-      // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO
-      // find a way to make it work
+      CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error);
     }
 
     SECTION("bad binary factor") {
       auto C = make_variable(2, "C");
       DistributionCnstPtr to_insert2 = make_corr_factor2(A_bis, C);
-      // CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error); // TODO
-      // find a way to make it work
+      CHECK_THROWS_AS(model.addConstFactor(to_insert2), Error);
     }
   }
 }
