@@ -123,7 +123,6 @@ std::vector<const distribution::Distribution *> gather_unaries(Node &subject) {
   return unary_factors;
 }
 
-namespace {
 void update_merged_unaries(Node &subject) {
   std::vector<const distribution::Distribution *> unary_factors =
       gather_unaries(subject);
@@ -133,7 +132,6 @@ void update_merged_unaries(Node &subject) {
   }
   subject.merged_unaries.reset(make_unary(unary_factors));
 }
-} // namespace
 
 void update_connectivity(HiddenCluster &subject) {
   auto &connectivity = subject.connectivity.reset(

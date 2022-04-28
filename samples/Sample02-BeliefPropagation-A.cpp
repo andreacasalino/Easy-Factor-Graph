@@ -86,7 +86,8 @@ int main() {
          << endl;
     cout << graph.getMarginalDistribution("A") << endl << endl;
 
-    // make a new belief propagation setting B=1 as observation
+    // make a new belief propagation setting B=1 as unique observation
+    graph.removeAllEvidences();
     graph.setEvidence(B, 1);
 
     cout << "P(A|B=1)\n";

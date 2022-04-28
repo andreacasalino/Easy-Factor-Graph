@@ -80,6 +80,12 @@ void BeliefAware::propagateBelief(const PropagationKind &kind) {
   for (auto &cluster : clusters) {
     if (cluster.connectivity.empty()) {
       update_connectivity(cluster);
+    } else {
+      for (auto *node : cluster.nodes) {
+        if (node->merged_unaries.empty()) {
+          update_merged_unaries(*node);
+        }
+      }
     }
     if (message_passing(cluster, kind, pool)) {
       auto &cluster_info = result.structure_found.emplace_back();

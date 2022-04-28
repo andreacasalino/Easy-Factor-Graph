@@ -50,8 +50,9 @@ void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
         evidence_location = EvidenceNodeLocation{
             state.evidences.emplace(node->variable, value).first, node};
       },
-      [&evidence_location](const EvidenceNodeLocation &location) {
+      [&evidence_location, &value](const EvidenceNodeLocation &location) {
         evidence_location = location;
+        evidence_location.evidence->second = value;
       });
   auto *node = evidence_location.node;
   for (auto &[connected_node, connection] : node->disabled_connections) {

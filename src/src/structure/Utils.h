@@ -34,6 +34,8 @@ void disable_connection(Node &a, Node &b,
 
 std::vector<const distribution::Distribution *> gather_unaries(Node &subject);
 
+void update_merged_unaries(Node &subject);
+
 void update_connectivity(HiddenCluster &subject);
 
 using MessageVariation = float;

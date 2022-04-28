@@ -69,6 +69,31 @@ bool are_equal(const PropagationResult &a, const PropagationResult &b) {
 }
 } // namespace
 
+TEST_CASE("trivial graph propagation", "[propagation]") {
+  TestModels<Graph> model;
+
+  const float w = 1.5f;
+  const float exp_w = expf(w);
+
+  model.addConstFactor(
+      make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
+
+  // B = 0
+  model.setEvidence(model.findVariable("B"), 0);
+  CHECK(model.checkMarginals("A", {exp_w, 1.f}));
+  // B = 1
+  model.setEvidence(model.findVariable("B"), 1);
+  CHECK(model.checkMarginals("A", {1.f, exp_w}));
+
+  model.removeAllEvidences();
+  // A = 0
+  model.setEvidence(model.findVariable("A"), 0);
+  CHECK(model.checkMarginals("B", {exp_w, 1.f}));
+  // A = 1
+  model.setEvidence(model.findVariable("A"), 1);
+  CHECK(model.checkMarginals("B", {1.f, exp_w}));
+}
+
 TEST_CASE("simple poly tree belief propagation", "[propagation]") {
   TestModels<SimpleTree> model;
 
