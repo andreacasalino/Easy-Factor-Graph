@@ -813,25 +813,18 @@ WARN_LOGFILE           =
 # spaces. See also FILE_PATTERNS and EXTENSION_MAPPING
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = ../../Lib/EFG/Header \
-						 ../../Lib/EFG/Header/categoric \
-						 ../../Lib/EFG/Header/distribution \
-						 ../../Lib/EFG/Header/distribution/factor \
-						 ../../Lib/EFG/Header/distribution/factor/const \
-						 ../../Lib/EFG/Header/distribution/factor/modifiable \
-						 ../../Lib/EFG/Header/distribution/modifiers \
-						 ../../Lib/EFG/Header/io \
-						 ../../Lib/EFG/Header/io/xml \
-						 ../../Lib/EFG/Header/io/json \
-						 ../../Lib/EFG/Header/iterator \
-						 ../../Lib/EFG/Header/model \
-						 ../../Lib/EFG/Header/nodes \
-						 ../../Lib/EFG/Header/nodes/bases \
-						 ../../Lib/EFG/Header/train \
-						 ../../Lib/EFG/Header/train/handlers \
-						 ../../Lib/EFG/Header/trainers \
-						 ../../Lib/EFG/Header/trainers/components \
-						 ../../Lib/EFG/Header/trainers/strategies
+INPUT                  = ../../src/header/EasyFactorGraph \
+						 ../../src/header/EasyFactorGraph/categoric \
+						 ../../src/header/EasyFactorGraph/distribution \
+						 ../../src/header/EasyFactorGraph/io \
+						 ../../src/header/EasyFactorGraph/io/xml \
+						 ../../src/header/EasyFactorGraph/io/json \
+						 ../../src/header/EasyFactorGraph/misc \
+						 ../../src/header/EasyFactorGraph/model \
+						 ../../src/header/EasyFactorGraph/structure \
+						 ../../src/header/EasyFactorGraph/structure/components \
+						 ../../src/header/EasyFactorGraph/trainable \
+						 ../../src/header/EasyFactorGraph/trainable/tuners
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
