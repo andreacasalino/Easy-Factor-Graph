@@ -20,6 +20,9 @@ std::ostream &operator<<(std::ostream &s, const EFG::categoric::Group &group);
 std::ostream &operator<<(std::ostream &s, const std::vector<float> &values);
 
 std::ostream &operator<<(std::ostream &s,
+                         const std::vector<std::size_t> &values);
+
+std::ostream &operator<<(std::ostream &s,
                          const EFG::categoric::Combination &comb);
 
 std::ostream &operator<<(std::ostream &s,

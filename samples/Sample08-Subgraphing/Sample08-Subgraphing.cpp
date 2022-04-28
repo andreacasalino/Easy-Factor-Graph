@@ -5,132 +5,192 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <model/RandomField.h>
-#include <distribution/factor/modifiable/Factor.h>
-#include <distribution/factor/const/FactorExponential.h>
-#include <distribution/DistributionIterator.h>
-#include <io/xml/Importer.h>
-#include <Presenter.h>
+// what is required from the EFG core library
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/model/Graph.h>
+
+using namespace EFG::model;
+using namespace EFG::distribution;
+using namespace EFG::categoric;
+using namespace EFG::strct;
+using namespace EFG::io;
+
+// just a bunch of utilities needed by the sample
 #include <Frequencies.h>
-#include <print/ProbabilityDistributionPrint.h>
-#include <CombinationMaker.h>
-#include <Error.h>
-#include <math.h>
+#include <Printing.h>
+#include <SampleSection.h>
+
 #include <iostream>
 using namespace std;
-using namespace EFG;
-using namespace EFG::categoric;
-using namespace EFG::distribution;
 
-float getDomainSum(const Distribution& d);
+float compute_images_sum(const Distribution &distribution);
 
 int main() {
-    EFG::sample::samplePart([]() {
-        VariablePtr A = makeVariable(2, "A");
-        VariablePtr B = makeVariable(2, "B");
-        VariablePtr C = makeVariable(2, "C");
-        VariablePtr D = makeVariable(2, "D");
-        float alfa = 0.5f, beta = 1.5f;        
-        //build the chain
-        model::RandomField graph;
-        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ A, B }, true), alfa));
-        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ B, C }, true), beta));
-        graph.insert(std::make_shared<factor::modif::FactorExponential>(factor::cnst::Factor({ C, D }, true), 1.f));
-        
-        // get the joint marginal probabilities of group ABC
-        cout << "P(A,B,C)" << endl;
-        cout << "theoretical " << endl;
-        cout << EFG::sample::makeDistribution({expf(alfa) * expf(beta),
-                                               expf(alfa),
-                                               1.f,
-                                               expf(beta),
-                                               expf(beta),
-                                               1.f,
-                                               expf(alfa),
-                                               expf(alfa) * expf(beta)}) << endl;
-        cout << graph.getJointMarginalDistribution({"A", "B", "C"}).getProbabilities() << endl << endl;
+  {
+    SampleSection section("Joint distribution of a subgroup of variables ",
+                          "4.8.1");
 
-        // get the joint marginal probabilities of group AB
-        cout << "P(A,B)" << endl;
-        cout << "theoretical " << endl;
-        cout << EFG::sample::makeDistribution({ expf(alfa), 1.f, 1.f, expf(alfa) }) << endl;
-        cout << graph.getJointMarginalDistribution({ "A", "B" }).getProbabilities() << endl << endl;
-    }, "Joint distribution of a subgroup of variables", "refer to Section 4.8.1 of the documentation");
+    Graph graph;
 
-    EFG::sample::samplePart([]() {        
-        model::RandomField graph;
-        io::xml::Importer::importFromXml(graph, EFG::io::FilePath(SAMPLE_FOLDER, "graph.xml"));
-        // set the evidences
-        graph.resetEvidences(map<string, size_t>{ {"X1", 0}, { "X2",0 }});
-        
-        // produce a list of samples for the hidden variables, conditioned by the observed values for the other ones
-        auto sample = graph.getHiddenSetSamples(500, 200);
-        {
-        	// compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
-            auto marginal_A12434 = graph.getJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
-        	vector<Combination> comb_raw = { sample::makeCombination(vector<size_t>{0, 0, 0, 0}) , sample::makeCombination(vector<size_t>{1,1,0,0}) };
+    // build the model
+    VariablePtr A = make_variable(2, "A");
+    VariablePtr B = make_variable(2, "B");
+    VariablePtr C = make_variable(2, "C");
+    VariablePtr D = make_variable(2, "D");
+    float alfa = 0.5f, beta = 1.5f;
+    graph.addConstFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+    graph.addConstFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
+    graph.addConstFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{C, D}}, USE_SIMPLE_CORRELATION_TAG}, 1.f));
 
-            float distrSum = getDomainSum(marginal_A12434);
+    // get the joint marginal probabilities of group ABC
+    cout << "P(A,B,C)" << endl;
+    cout << "theoretical " << endl;
+    cout << make_distribution({expf(alfa) * expf(beta), expf(alfa), 1.f,
+                               expf(beta), expf(beta), 1.f, expf(alfa),
+                               expf(alfa) * expf(beta)})
+         << endl;
+    cout << graph
+                .getJointMarginalDistribution(
+                    std::unordered_set<std::string>{"A", "B", "C"})
+                ->getProbabilities()
+         << endl
+         << endl;
 
-            cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=0,X2=0)" << endl;
-            cout << "empirical" << endl;
-            cout << sample::getEmpiricalFrequencies(comb_raw.front(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.front()) / distrSum << endl;
+    // get the joint marginal probabilities of group AB
+    cout << "P(A,B)" << endl;
+    cout << "theoretical " << endl;
+    cout << make_distribution({expf(alfa), 1.f, 1.f, expf(alfa)}) << endl;
+    cout << graph
+                .getJointMarginalDistribution(
+                    std::unordered_set<std::string>{"A", "B"})
+                ->getProbabilities()
+         << endl
+         << endl;
+  }
 
-            cout << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=0,X2=0)";
-            cout << "empirical" << endl;
-            cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.back()) / distrSum << endl;
-        }
-        {
-            // compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
-            auto marginal_B123 = graph.getJointMarginalDistribution({ "B1" , "B2" ,"B3" });
-            vector<Combination> comb_raw = { sample::makeCombination(vector<size_t>{0, 0, 0}) , sample::makeCombination(vector<size_t>{1,1,0}) };
+  {
+    SampleSection section(
+        "Joint distribution of a subgroup of variables inside a complex model ",
+        "4.8.2");
 
-            float distrSum = getDomainSum(marginal_B123);
+    Graph graph;
+    xml::Importer::importFromFile(graph,
+                                  SAMPLE_FOLDER + std::string{"graph.xml"});
+    // set the evidences
+    graph.setEvidence("X1", 0);
+    graph.setEvidence("X2", 0);
 
-            cout << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0)";
-            cout << "empirical" << endl;
-            cout << sample::getEmpiricalFrequencies(comb_raw.front(), marginal_B123.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_B123.find(comb_raw.front()) / distrSum << endl;
+    auto hidden_set = graph.getHiddenVariables();
+    VariablesSoup hidden_soup =
+        VariablesSoup{hidden_set.begin(), hidden_set.end()};
 
-            cout << "Prob(B1=1, B2=1, B3=0 | X1=0,X2=0)";
-            cout << "empirical" << endl;
-            cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_B123.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_B123.find(comb_raw.back()) / distrSum << endl;
-        }
-        
-        // set different observation values
-        graph.setEvidences({ 1,1 });
-        // produce a list of samples for the hidden variables, conditioned by the novel observations
-        sample = graph.getHiddenSetSamples(500, 200);
-        {
-            // compute the marginal probabilities of the following two combinations (values refer to variables in the subgraph, i.e. A1, 2, 3, 4)
-            auto marginal_A12434 = graph.getJointMarginalDistribution({ "A1" , "A2" ,"A3" ,"A4" });
-            vector<Combination> comb_raw = { sample::makeCombination(vector<size_t>{0, 0, 0, 0}) , sample::makeCombination(vector<size_t>{1,1,0,0}) };
+    // produce a list of samples for the hidden variables, conditioned by
+    // the observed values for the other ones
 
-            float distrSum = getDomainSum(marginal_A12434);
+    auto samples = graph.getHiddenSetSamples(
+        GibbsSampler::SamplesGenerationContext{500, 50});
+    {
+      // compute the marginal probabilities of the following two
+      // combinations (values refer to variables in the subgraph, i.e. A1,2,3,4)
+      vector<Combination> comb_raw = {Combination{vector<size_t>{0, 0, 0, 0}},
+                                      Combination{vector<size_t>{1, 1, 0, 0}}};
+      auto marginal_A_1234 = graph.getJointMarginalDistribution(
+          std::unordered_set<std::string>{"A1", "A2", "A3", "A4"});
 
-            cout << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=1,X2=1)" << endl;
-            cout << "empirical" << endl;
-            cout << sample::getEmpiricalFrequencies(comb_raw.front(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.front()) / distrSum << endl;
+      float images_sum = compute_images_sum(*marginal_A_1234);
 
-            cout << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=1,X2=1)";
-            cout << "empirical" << endl;
-            cout << sample::getEmpiricalFrequencies(comb_raw.back(), marginal_A12434.getGroup(), sample, graph.getHiddenVariables()) << endl;
-            cout << marginal_A12434.find(comb_raw.back()) / distrSum << endl;
-        }
-    }, "Joint distribution of a subgroup of variables inside a complex model", "refer to Section 4.8.2 of the documentation");
+      cout << endl << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=0,X2=0)" << endl;
+      cout << "empirical" << endl;
+      cout << getEmpiricalProbability(
+                  comb_raw.front(), marginal_A_1234->getGroup().getVariables(),
+                  samples, hidden_soup)
+           << endl;
+      cout << marginal_A_1234->evaluate(comb_raw.front()) / images_sum << endl;
 
-	return EXIT_SUCCESS;
+      cout << endl << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=0,X2=0)" << endl;
+      cout << "empirical" << endl;
+      cout << getEmpiricalProbability(
+                  comb_raw.back(), marginal_A_1234->getGroup().getVariables(),
+                  samples, hidden_soup)
+           << endl;
+      cout << marginal_A_1234->evaluate(comb_raw.back()) / images_sum << endl;
+    }
+
+    {
+      // compute the marginal probabilities of the following two
+      // combinations (values refer to variables in the subgraph, i.e. B1,2,3)
+      vector<Combination> comb_raw = {Combination(vector<size_t>{0, 0, 0}),
+                                      Combination(vector<size_t>{1, 1, 0})};
+      auto marginal_B_123 = graph.getJointMarginalDistribution(
+          std::unordered_set<std::string>{"B1", "B2", "B3"});
+
+      float images_sum = compute_images_sum(*marginal_B_123);
+
+      cout << endl << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0)" << endl;
+      cout << "empirical" << endl;
+      cout << getEmpiricalProbability(comb_raw.front(),
+                                      marginal_B_123->getGroup().getVariables(),
+                                      samples, hidden_soup)
+           << endl;
+      cout << marginal_B_123->evaluate(comb_raw.front()) / images_sum << endl;
+
+      cout << endl << "Prob(B1=1, B2=1, B3=0 | X1=0,X2=0)" << endl;
+      cout << "empirical" << endl;
+      cout << getEmpiricalProbability(comb_raw.back(),
+                                      marginal_B_123->getGroup().getVariables(),
+                                      samples, hidden_soup)
+           << endl;
+      cout << marginal_B_123->evaluate(comb_raw.back()) / images_sum << endl;
+    }
+
+    // set different evidences
+    graph.setEvidence("X1", 1);
+    graph.setEvidence("X2", 1);
+    // produce a list of samples for the hidden variables, conditioned by
+    // the novel evidences
+    samples = graph.getHiddenSetSamples(
+        GibbsSampler::SamplesGenerationContext{500, 50});
+    {
+      // compute the marginal probabilities of the following two
+      // combinations (values refer to variables in the subgraph, i.e. A1,2,3,4)
+      vector<Combination> comb_raw = {Combination(vector<size_t>{0, 0, 0, 0}),
+                                      Combination(vector<size_t>{1, 1, 0, 0})};
+      auto marginal_A_1234 = graph.getJointMarginalDistribution(
+          std::unordered_set<std::string>{"A1", "A2", "A3", "A4"});
+
+      float images_sum = compute_images_sum(*marginal_A_1234);
+
+      cout << endl << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=1,X2=1)" << endl;
+      cout << "empirical" << endl;
+      cout << getEmpiricalProbability(
+                  comb_raw.front(), marginal_A_1234->getGroup().getVariables(),
+                  samples, hidden_soup)
+           << endl;
+      cout << marginal_A_1234->evaluate(comb_raw.front()) / images_sum << endl;
+
+      cout << endl << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=1,X2=1)" << endl;
+      cout << "empirical" << endl;
+      cout << getEmpiricalProbability(
+                  comb_raw.back(), marginal_A_1234->getGroup().getVariables(),
+                  samples, hidden_soup)
+           << endl;
+      cout << marginal_A_1234->evaluate(comb_raw.back()) / images_sum << endl;
+    }
+  }
+
+  return EXIT_SUCCESS;
 }
 
-float getDomainSum(const Distribution& d) {
-    auto it = d.getIterator();
-    float sum = 0.f;
-    EFG::iterator::forEach(it, [&sum](const DistributionIterator& it) {
-        sum += it.getImage();
-    });
-    return sum;
+float compute_images_sum(const Distribution &distribution) {
+  const auto &evaluator = distribution.getEvaluator();
+  float result = 0;
+  for (const auto &[comb, val] : distribution.getCombinationsMap()) {
+    result += evaluator.evaluate(val);
+  }
+  return result;
 }

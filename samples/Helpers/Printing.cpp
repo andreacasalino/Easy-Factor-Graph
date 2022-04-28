@@ -48,6 +48,12 @@ std::ostream &operator<<(std::ostream &s, const std::vector<float> &values) {
 }
 
 std::ostream &operator<<(std::ostream &s,
+                         const std::vector<std::size_t> &values) {
+  print_vector(s, values);
+  return s;
+}
+
+std::ostream &operator<<(std::ostream &s,
                          const EFG::categoric::Combination &comb) {
   print_vector(s, comb.data());
   return s;
