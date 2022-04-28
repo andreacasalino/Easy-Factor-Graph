@@ -42,17 +42,20 @@ public:
    * returning the result.
    * @throw when some of the passed variable names are not found
    */
-  std::unique_ptr<distribution::Distribution>
-  getJointMarginalDistribution(const categoric::VariablesSet &subgroup,
+  distribution::Factor
+  getJointMarginalDistribution(const categoric::Group &subgroup,
                                const std::size_t threads = 1);
 
   /**
    * @brief same as getJointMarginalDistribution(const categoric::VariablesSet
    * &, const std::size_t), but passing the names of the variables, which are
    * internally searched.
+   *
+   * @throw in case the passed set of variables is not representative of a valid
+   * group
    */
-  std::unique_ptr<distribution::Distribution>
-  getJointMarginalDistribution(const std::unordered_set<std::string> &subgroup,
+  distribution::Factor
+  getJointMarginalDistribution(const std::vector<std::string> &subgroup,
                                const std::size_t threads = 1);
 
   /**

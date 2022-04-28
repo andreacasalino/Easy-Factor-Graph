@@ -129,15 +129,15 @@ public:
 };
 } // namespace
 
-std::unique_ptr<distribution::Distribution>
-QueryManager::getJointMarginalDistribution(
-    const categoric::VariablesSet &subgroup, const std::size_t threads) {
+distribution::Factor
+QueryManager::getJointMarginalDistribution(const categoric::Group &subgroup,
+                                           const std::size_t threads) {
   if (wouldNeedPropagation(SUM)) {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(SUM);
   }
   std::map<Node *, NodeLocation> subgroup_locations;
-  for (const auto &var_name : subgroup) {
+  for (const auto &var_name : subgroup.getVariables()) {
     auto location = locate(var_name);
     if (!location) {
       throw_inexistent_var(var_name->name());
@@ -177,19 +177,17 @@ QueryManager::getJointMarginalDistribution(
         });
   }
 
-  return std::make_unique<SubgraphFactor>(
-      std::vector<const distribution::Distribution *>{contributions.begin(),
-                                                      contributions.end()});
+  return SubgraphFactor{std::vector<const distribution::Distribution *>{
+                            contributions.begin(), contributions.end()}}
+      .cloneWithPermutedGroup(subgroup);
 }
 
-std::unique_ptr<distribution::Distribution>
-QueryManager::getJointMarginalDistribution(
-    const std::unordered_set<std::string> &subgroup,
-    const std::size_t threads) {
-  categoric::VariablesSet vars;
+distribution::Factor QueryManager::getJointMarginalDistribution(
+    const std::vector<std::string> &subgroup, const std::size_t threads) {
+  categoric::VariablesSoup vars;
   for (const auto &var : subgroup) {
-    vars.emplace(findVariable(var));
+    vars.push_back(findVariable(var));
   }
-  return getJointMarginalDistribution(vars, threads);
+  return getJointMarginalDistribution(categoric::Group{vars}, threads);
 }
 } // namespace EFG::strct
