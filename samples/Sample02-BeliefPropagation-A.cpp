@@ -37,7 +37,7 @@ int main() {
     graph.copyConstFactor(factor);
 
     // make a new belief propagation setting B=0 as observation
-    graph.setEvidence(graph.findVariable("B"), 0);
+    graph.setEvidence("B", 0);
 
     // compute the marginal probabilities
     cout << "P(A|B=0)" << endl;
@@ -46,7 +46,7 @@ int main() {
     cout << graph.getMarginalDistribution("A") << endl << endl;
 
     // make a new belief propagation setting B1=1 as observation
-    graph.setEvidence(graph.findVariable("B"), 1);
+    graph.setEvidence("B", 1);
 
     cout << "P(A|B=1)" << endl;
     cout << "theoretical " << endl;
@@ -77,14 +77,14 @@ int main() {
     cout << "P(B|C=1)\n";
     cout << "theoretical " << endl;
     cout << make_distribution({1.f, expf(alfa)}) << endl;
-    cout << graph.getMarginalDistribution("B") << endl << endl;
+    cout << graph.getMarginalDistribution(B) << endl << endl;
 
     cout << "P(A|C=1)\n";
     cout << "theoretical " << endl;
     cout << make_distribution(
                 {expf(alfa) + expf(beta), 1.f + expf(alfa) * expf(beta)})
          << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
+    cout << graph.getMarginalDistribution(A) << endl << endl;
 
     // make a new belief propagation setting B=1 as unique observation
     graph.removeAllEvidences();
@@ -93,12 +93,12 @@ int main() {
     cout << "P(A|B=1)\n";
     cout << "theoretical " << endl;
     cout << make_distribution({1.f, expf(beta)}) << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
+    cout << graph.getMarginalDistribution(A) << endl << endl;
 
     cout << "P(C|B=1)\n";
     cout << "theoretical " << endl;
     cout << make_distribution({1.f, expf(alfa)}) << endl;
-    cout << graph.getMarginalDistribution("C") << endl << endl;
+    cout << graph.getMarginalDistribution(C) << endl << endl;
   }
 
   {

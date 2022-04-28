@@ -25,6 +25,11 @@ public:
    */
   void setEvidence(const categoric::VariablePtr &variable,
                    const std::size_t value);
+  /**
+   * @brief Similar to setEvidence(const categoric::VariablePtr &, const
+   * std::size_t) , but passing the variable name, which is interally searched.
+   */
+  void setEvidence(const std::string &variable, const std::size_t value);
 };
 
 class EvidenceRemover : virtual public StateAware, virtual public BeliefAware {
@@ -38,6 +43,12 @@ public:
   void removeEvidence(const categoric::VariablePtr &variable);
 
   /**
+   * @brief similar to removeEvidence(const categoric::VariablePtr &), but
+   * passing the variable name, which is internally searched.
+   */
+  void removeEvidence(const std::string &variable);
+
+  /**
    * @brief update the evidence set by removing all the specified variables.
    * @param the involved variables
    * @throw in case one of the passed variable is not part of the model.
@@ -45,6 +56,12 @@ public:
    * evidence set.
    */
   void removeEvidences(const categoric::VariablesSet &variables);
+
+  /**
+   * @brief similar to removeEvidences(const categoric::VariablesSet &), but
+   * passing the variable names, which are internally searched.
+   */
+  void removeEvidences(const std::unordered_set<std::string> &variables);
 
   /**
    * @brief removes all the evidences currently set for this model.

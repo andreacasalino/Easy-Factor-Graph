@@ -65,6 +65,11 @@ void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
   resetBelief();
 }
 
+void EvidenceSetter::setEvidence(const std::string &variable,
+                                 const std::size_t value) {
+  setEvidence(findVariable(variable), value);
+}
+
 void EvidenceRemover::removeEvidence_(const categoric::VariablePtr &variable) {
   auto &state = getState_();
   auto evidence_it = state.evidences.find(variable);
@@ -88,6 +93,10 @@ void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
   resetState();
 }
 
+void EvidenceRemover::removeEvidence(const std::string &variable) {
+  removeEvidence(findVariable(variable));
+}
+
 void EvidenceRemover::removeEvidences(
     const categoric::VariablesSet &variables) {
   if (variables.empty()) {
@@ -97,6 +106,15 @@ void EvidenceRemover::removeEvidences(
     removeEvidence_(variable);
   }
   resetState();
+}
+
+void EvidenceRemover::removeEvidences(
+    const std::unordered_set<std::string> &variables) {
+  categoric::VariablesSet vars;
+  for (const auto &name : variables) {
+    vars.emplace(findVariable(name));
+  }
+  removeEvidences(vars);
 }
 
 void EvidenceRemover::removeAllEvidences() {

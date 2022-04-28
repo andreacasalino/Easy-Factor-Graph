@@ -54,7 +54,7 @@ void throw_inexistent_var(const std::string &var) {
 } // namespace
 
 std::vector<float>
-QueryManager::getMarginalDistribution(const std::string &var,
+QueryManager::getMarginalDistribution(const categoric::VariablePtr &var,
                                       const std::size_t threads) {
   if (wouldNeedPropagation(SUM)) {
     ScopedPoolActivator activator(*this, threads);
@@ -62,9 +62,15 @@ QueryManager::getMarginalDistribution(const std::string &var,
   }
   auto location = locate(var);
   if (!location) {
-    throw_inexistent_var(var);
+    throw_inexistent_var(var->name());
   }
   return get_marginal_distribution(*location);
+}
+
+std::vector<float>
+QueryManager::getMarginalDistribution(const std::string &var,
+                                      const std::size_t threads) {
+  return getMarginalDistribution(findVariable(var), threads);
 }
 
 namespace {
@@ -79,7 +85,7 @@ std::size_t find_max(const std::vector<float> &values) {
 }
 } // namespace
 
-std::size_t QueryManager::getMAP(const std::string &var,
+std::size_t QueryManager::getMAP(const categoric::VariablePtr &var,
                                  const std::size_t threads) {
   if (wouldNeedPropagation(MAP)) {
     ScopedPoolActivator activator(*this, threads);
@@ -87,10 +93,15 @@ std::size_t QueryManager::getMAP(const std::string &var,
   }
   auto location = locate(var);
   if (!location) {
-    throw_inexistent_var(var);
+    throw_inexistent_var(var->name());
   }
   auto values = get_marginal_distribution(*location);
   return find_max(values);
+}
+
+std::size_t QueryManager::getMAP(const std::string &var,
+                                 const std::size_t threads) {
+  return getMAP(findVariable(var), threads);
 }
 
 std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
@@ -120,8 +131,7 @@ public:
 
 std::unique_ptr<distribution::Distribution>
 QueryManager::getJointMarginalDistribution(
-    const std::unordered_set<std::string> &subgroup,
-    const std::size_t threads) {
+    const categoric::VariablesSet &subgroup, const std::size_t threads) {
   if (wouldNeedPropagation(SUM)) {
     ScopedPoolActivator activator(*this, threads);
     propagateBelief(SUM);
@@ -130,7 +140,7 @@ QueryManager::getJointMarginalDistribution(
   for (const auto &var_name : subgroup) {
     auto location = locate(var_name);
     if (!location) {
-      throw_inexistent_var(var_name);
+      throw_inexistent_var(var_name->name());
     }
     Node *node = nullptr;
     visit_location(
@@ -170,5 +180,16 @@ QueryManager::getJointMarginalDistribution(
   return std::make_unique<SubgraphFactor>(
       std::vector<const distribution::Distribution *>{contributions.begin(),
                                                       contributions.end()});
+}
+
+std::unique_ptr<distribution::Distribution>
+QueryManager::getJointMarginalDistribution(
+    const std::unordered_set<std::string> &subgroup,
+    const std::size_t threads) {
+  categoric::VariablesSet vars;
+  for (const auto &var : subgroup) {
+    vars.emplace(findVariable(var));
+  }
+  return getJointMarginalDistribution(vars, threads);
 }
 } // namespace EFG::strct

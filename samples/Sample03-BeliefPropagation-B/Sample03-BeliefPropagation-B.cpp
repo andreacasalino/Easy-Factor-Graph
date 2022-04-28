@@ -37,7 +37,7 @@ int main() {
     float a = expf(1.f), b = expf(2.f), g = expf(1.f), e = expf(1.5f);
 
     // set E=1 as an evidence
-    graph.setEvidence(graph.findVariable("E"), 1);
+    graph.setEvidence("E", 1);
     cout << endl << endl;
     cout << "E=1\n";
 
@@ -68,7 +68,7 @@ int main() {
     cout << graph.getMarginalDistribution("D") << endl << endl;
 
     // set E=0 as an evidence and recompute the marginals
-    graph.setEvidence(graph.findVariable("E"), 0);
+    graph.setEvidence("E", 0);
     cout << endl << endl;
     cout << "E=0\n";
 
@@ -99,7 +99,7 @@ int main() {
     // set D=1 as an evidence and recompute the marginals of the hidden
     // variables (including E)
     graph.removeAllEvidences();
-    graph.setEvidence(graph.findVariable("D"), 1);
+    graph.setEvidence("D", 1);
     cout << endl << endl;
     cout << "D=1\n";
 
@@ -141,9 +141,9 @@ int main() {
     // set v1,v2,v3 as observations and use Gibbs sampling
     // to produce samples for the joint conditioned (to the observations)
     // distribution of the hidden variables
-    politree.setEvidence(politree.findVariable("v1"), 1);
-    politree.setEvidence(politree.findVariable("v2"), 1);
-    politree.setEvidence(politree.findVariable("v3"), 1);
+    politree.setEvidence("v1", 1);
+    politree.setEvidence("v2", 1);
+    politree.setEvidence("v3", 1);
     auto samples =
         politree.getHiddenSetSamples(context_for_saples_generation, threads);
 
@@ -185,7 +185,7 @@ int main() {
                                            merge(SAMPLE_FOLDER, "graph_3.xml"));
 
     // set the observation
-    loop.setEvidence(loop.findVariable("E"), 1);
+    loop.setEvidence("E", 1);
     cout << endl << endl;
     cout << "E=1\n";
 
@@ -236,7 +236,7 @@ int main() {
     // set v1=1 as an evidence and use a Gibbs sampler
     // to produce samples for the joint conditioned (to the observations)
     // distribution of the hidden variables
-    loop.setEvidence(loop.findVariable("v1"), 1);
+    loop.setEvidence("v1", 1);
     auto samples =
         loop.getHiddenSetSamples(context_for_saples_generation, threads);
 
