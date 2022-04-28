@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <Politree>
-	<Variable name="X1" Size="3" flag="O"></Variable>
-	<Variable name="X2" Size="3" flag="O"></Variable>
-	<Variable name="X3" Size="3" flag="O"></Variable>
-	<Variable name="X4" Size="3" flag="O"></Variable>
+	<Variable name="X1" Size="3" evidence="0"></Variable>
+	<Variable name="X2" Size="3" evidence="0"></Variable>
+	<Variable name="X3" Size="3" evidence="0"></Variable>
+	<Variable name="X4" Size="3" evidence="0"></Variable>
 	<Variable name="Y1" Size="3"></Variable>
 	<Variable name="Y2" Size="3"></Variable>
 	<Variable name="Y3" Size="3"></Variable>
