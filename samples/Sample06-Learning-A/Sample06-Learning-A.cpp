@@ -5,260 +5,163 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <CombinationMaker.h>
-#include <Frequencies.h>
-#include <Presenter.h>
-#include <io/xml/Importer.h>
-#include <iostream>
-#include <math.h>
-#include <model/RandomField.h>
-#include <print/ProbabilityDistributionPrint.h>
-using namespace std;
-using namespace EFG;
-using namespace EFG::categoric;
+// what is required from the EFG core library
+#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/trainable/ModelTrainer.h>
+
+using namespace EFG::model;
 using namespace EFG::distribution;
+using namespace EFG::categoric;
+using namespace EFG::strct;
 using namespace EFG::io;
 using namespace EFG::train;
 
-#include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
+// you can also use another iterative trainer
 #include <TrainingTools/iterative/solvers/QuasiNewton.h>
 
-#define USE_QUASI_NEWTON // when commenting the conjugate gradient is used to
-                         // train the model
+using namespace train;
 
-std::vector<Combination> getGibbsSamples(model::RandomField &graph,
-                                         std::size_t numberOfSamples,
-                                         std::size_t deltaIteration);
+// just a bunch of utilities needed by the sample
+#include <Printing.h>
+#include <SampleSection.h>
 
-void trainModel(model::RandomField &graph, TrainSetPtr trainSet,
-                ::train::Trainer &trainer,
-                const std::pair<string, size_t> &checkObservation,
-                const string &checkVariable, const std::size_t &threads = 1);
+#include <iostream>
+using namespace std;
+
+/// Extracts samples using Gibbs sampler to generate a training set.
+/// Then, set all weights of the model to 1 and try to tune the model with the
+/// previously generated train set.
+/// The obtained weights are expected to be close to the initial ones.
+void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
+                 const std::size_t train_set_size);
 
 int main() {
-  EFG::sample::samplePart(
-      []() {
-        VariablePtr A = makeVariable(2, "A");
-        VariablePtr B = makeVariable(2, "B");
-        VariablePtr C = makeVariable(2, "C");
+  {
+    SampleSection section("Simple tunable model ", "4.6.1");
 
-        float alfa = 1.f, beta = 3.f, gamma = 0.1f;
+    RandomField model;
 
-        model::RandomField graph;
-        graph.insertCopy(factor::cnst::FactorExponential(
-            factor::cnst::Factor({A, B}, true),
-            alfa)); // the weight of this potential will be kept constant
-        graph.insertTunable(std::make_shared<factor::modif::FactorExponential>(
-            factor::cnst::Factor({A, C}, true), beta));
-        graph.insertTunable(std::make_shared<factor::modif::FactorExponential>(
-            factor::cnst::Factor({B, C}, true), gamma));
+    VariablePtr A = make_variable(2, "A");
+    VariablePtr B = make_variable(2, "B");
+    VariablePtr C = make_variable(2, "C");
 
-        // extract some samples form the joint distributions of the variable in
-        // the graph, using a Gibbs sampling method
-        auto samples = getGibbsSamples(graph, 500, 100);
+    float alfa = 1.f, beta = 3.f, gamma = 0.1f;
 
-        float Z = 2.f * (expf(alfa) + expf(beta) + expf(gamma) +
-                         expf(alfa) * expf(beta) * expf(gamma));
-        auto hidden_set = graph.getHiddenVariables();
+    model.addConstFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG},
+        alfa)); // the weight of this potential
+                // will be kept constant
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG}, gamma));
 
-        cout << "freq <0,0,0> " << endl;
-        cout << "theoretical " << expf(alfa) * expf(beta) * expf(gamma) / Z
-             << endl;
-        cout << "Gibbs sampler results "
-             << sample::getEmpiricalFrequencies(
-                    sample::makeCombination({0, 0, 0}), Group(A, B, C), samples,
-                    Group(A, B, C).getVariables())
-             << endl
-             << endl;
+    train_model(model, 50, 500);
+  }
 
-        cout << "freq <1,0,0> " << endl;
-        cout << "theoretical " << expf(gamma) / Z << endl;
-        cout << "Gibbs sampler results "
-             << sample::getEmpiricalFrequencies(
-                    sample::makeCombination({1, 0, 0}), Group(A, B, C), samples,
-                    Group(A, B, C).getVariables())
-             << endl
-             << endl;
+  {
+    SampleSection section("Medium tunable model ", "4.6.2");
 
-        cout << "freq <0,1,0> " << endl;
-        cout << "theoretical " << expf(beta) / Z << endl;
-        cout << "Gibbs sampler results "
-             << sample::getEmpiricalFrequencies(
-                    sample::makeCombination({0, 1, 0}), Group(A, B, C), samples,
-                    Group(A, B, C).getVariables())
-             << endl
-             << endl;
+    RandomField model;
 
-        cout << "freq <1,1,0> " << endl;
-        cout << "theoretical " << expf(alfa) / Z << endl;
-        cout << "Gibbs sampler results "
-             << sample::getEmpiricalFrequencies(
-                    sample::makeCombination({1, 1, 0}), Group(A, B, C), samples,
-                    Group(A, B, C).getVariables())
-             << endl
-             << endl;
+    VariablePtr A = make_variable(2, "A");
+    VariablePtr B = make_variable(2, "B");
+    VariablePtr C = make_variable(2, "C");
+    VariablePtr D = make_variable(2, "D");
+    VariablePtr E = make_variable(2, "E");
 
-#ifdef USE_QUASI_NEWTON
-        ::train::QuasiNewton trainer;
-#else
-        ::train::GradientDescendConjugate trainer;
-#endif
-        trainer.setMaxIterations(50);
-        trainModel(graph, std::make_shared<TrainSet>(samples), trainer,
-                   std::make_pair("C", 0), "A");
-      },
-      "Simple tunable model", "refer to Section 4.6.1 of the documentation");
+    float alfa = 0.4f, beta = 1.f, gamma = 0.3f, delta = 1.5f;
 
-  EFG::sample::samplePart(
-      []() {
-        VariablePtr A = makeVariable(2, "A");
-        VariablePtr B = makeVariable(2, "B");
-        VariablePtr C = makeVariable(2, "C");
-        VariablePtr D = makeVariable(2, "D");
-        VariablePtr E = makeVariable(2, "E");
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
+    model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{B, C}},
+                                                  USE_SIMPLE_CORRELATION_TAG));
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{B, E}}, USE_SIMPLE_CORRELATION_TAG}, gamma));
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{B, D}}, USE_SIMPLE_CORRELATION_TAG}, delta));
+    model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{D, E}},
+                                                  USE_SIMPLE_CORRELATION_TAG));
 
-        float alfa = 0.4f, beta = 1.f, gamma = 0.3f, delta = 1.5f;
+    train_model(model, 50, 1000);
+  }
 
-        model::RandomField graph;
-        graph.insertCopy(factor::cnst::FactorExponential(
-            factor::cnst::Factor({A, B}, true),
-            alfa)); // the weight of this potential will be kept constant
-        graph.insertTunableCopy(factor::modif::FactorExponential(
-            factor::cnst::Factor({A, C}, true), beta));
-        graph.insertCopy(factor::cnst::Factor({B, C}, true));
-        graph.insertCopy(factor::cnst::FactorExponential(
-            factor::cnst::Factor({B, E}, true),
-            gamma)); // the weight of this potential will be kept constant
-        graph.insertTunableCopy(factor::modif::FactorExponential(
-            factor::cnst::Factor({B, D}, true), delta));
-        graph.insertCopy(factor::cnst::Factor({D, E}, true));
+  {
+    SampleSection section("Complex tunable model ", "4.6.3");
 
-#ifdef USE_QUASI_NEWTON
-        ::train::QuasiNewton trainer;
-#else
-        ::train::GradientDescendConjugate trainer;
-#endif
-        trainModel(
-            graph,
-            std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)),
-            trainer, std::make_pair("D", 0), "A");
-      },
-      "Medium size tunable model",
-      "refer to Section 4.6.2 of the documentation");
+    RandomField model;
+    xml::Importer::importFromFile(model,
+                                  SAMPLE_FOLDER + std::string{"graph_3.xml"});
 
-  EFG::sample::samplePart(
-      []() {
-        model::RandomField graph;
-        xml::Importer::importFromXml(
-            graph, EFG::io::FilePath(SAMPLE_FOLDER, "graph_3.xml"));
+    train_model(model, 50, 1500);
+  }
 
-#ifdef USE_QUASI_NEWTON
-        ::train::QuasiNewton trainer;
-#else
-        ::train::GradientDescendConjugate trainer;
-#endif
-        trainModel(
-            graph,
-            std::make_shared<TrainSet>(getGibbsSamples(graph, 1500, 100)),
-            trainer, std::make_pair("v5", 0), "v1", 3);
-      },
-      "Complex tunable model", "refer to Section 4.6.3 of the documentation");
+  {
+    SampleSection section("Complex tunable model ", "4.6.4");
 
-  EFG::sample::samplePart(
-      []() {
-        VariablePtr X1 = makeVariable(2, "X1");
-        VariablePtr X2 = makeVariable(2, "X2");
-        VariablePtr X3 = makeVariable(2, "X3");
-        VariablePtr Y1 = makeVariable(2, "Y1");
-        VariablePtr Y2 = makeVariable(2, "Y2");
-        VariablePtr Y3 = makeVariable(2, "Y3");
+    RandomField model;
 
-        float alfa = 2.f;
-        float beta = 1.f;
+    VariablePtr X1 = make_variable(2, "X1");
+    VariablePtr X2 = make_variable(2, "X2");
+    VariablePtr X3 = make_variable(2, "X3");
 
-        model::RandomField graph;
-        graph.insertTunableCopy(factor::modif::FactorExponential(
-            factor::cnst::Factor({Y1, X1}, true), beta));
-        graph.insertTunableCopy(
-            factor::modif::FactorExponential(
-                factor::cnst::Factor({Y2, X2}, true), 1.f),
-            {Y1, X1}); // the same weight of X1-Y1 is assumed
-        graph.insertTunableCopy(
-            factor::modif::FactorExponential(
-                factor::cnst::Factor({Y3, X3}, true), 1.f),
-            {Y1, X1}); // the same weight of X1-Y1 is assumed
+    VariablePtr Y1 = make_variable(2, "Y1");
+    VariablePtr Y2 = make_variable(2, "Y2");
+    VariablePtr Y3 = make_variable(2, "Y3");
 
-        graph.insertTunableCopy(factor::modif::FactorExponential(
-            factor::cnst::Factor({Y1, Y2}, true), alfa));
-        graph.insertTunableCopy(
-            factor::modif::FactorExponential(
-                factor::cnst::Factor({Y2, X3}, true), 1.f),
-            {Y1, Y2}); // the same weight of Y1-Y2 is assumed
+    float alfa = 2.f;
+    float beta = 1.f;
 
-#ifdef USE_QUASI_NEWTON
-        ::train::QuasiNewton trainer;
-#else
-        ::train::GradientDescendConjugate trainer;
-#endif
-        trainer.setMaxIterations(50);
-        trainModel(
-            graph,
-            std::make_shared<TrainSet>(getGibbsSamples(graph, 1000, 100)),
-            trainer, std::make_pair("X1", 0), "Y2");
-      },
-      "Tunable model with shared weights",
-      "refer to Section 4.6.4 of the documentation");
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{Y1, Y2}}, USE_SIMPLE_CORRELATION_TAG},
+        alfa));
+    model.addTunableFactor(
+        std::make_shared<FactorExponential>(
+            Factor{Group{VariablesSoup{Y2, Y3}}, USE_SIMPLE_CORRELATION_TAG},
+            alfa),
+        VariablesSet{Y1, Y2}); // this will force this added factor to share the
+                               // weight with the one connecting variables Y1,Y2
+
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{Y1, X1}}, USE_SIMPLE_CORRELATION_TAG},
+        beta));
+    model.addTunableFactor(
+        std::make_shared<FactorExponential>(
+            Factor{Group{VariablesSoup{Y2, X2}}, USE_SIMPLE_CORRELATION_TAG},
+            beta),
+        VariablesSet{Y1, X1}); // this will force this added factor to share the
+                               // weight with the one connecting variables Y1,X1
+    model.addTunableFactor(
+        std::make_shared<FactorExponential>(
+            Factor{Group{VariablesSoup{Y3, X3}}, USE_SIMPLE_CORRELATION_TAG},
+            beta),
+        VariablesSet{Y1, X1}); // this will force this added factor to share the
+                               // weight with the one connecting variables Y1,X1
+
+    train_model(model, 50, 1000);
+  }
 
   return EXIT_SUCCESS;
 }
 
-std::vector<Combination> getGibbsSamples(model::RandomField &graph,
-                                         std::size_t numberOfSamples,
-                                         std::size_t deltaIteration) {
-#ifdef THREAD_POOL_ENABLED
-  graph.setThreadPoolSize(4);
-#endif
-  auto samples = graph.getHiddenSetSamples(numberOfSamples, deltaIteration);
-#ifdef THREAD_POOL_ENABLED
-  graph.setThreadPoolSize(1);
-#endif
-  return samples;
-}
+void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
+                 const std::size_t train_set_size) {
+  const auto expected_weights = model_to_tune.getWeights();
 
-void trainModel(model::RandomField &graph, TrainSetPtr trainSet,
-                ::train::Trainer &trainer,
-                const std::pair<string, size_t> &checkObservation,
-                const string &checkVariable, const std::size_t &threads) {
-  // build a second graph, with the same potentials, but all weights equal to 1.
-  // Then use the train set made by the previous samples to train this model,
-  // for obtaining a combination of weights similar to the original one
-  model::RandomField graph2Learn;
-  graph2Learn.absorbModel(graph, true);
-  graph2Learn.setOnes();
-#ifdef THREAD_POOL_ENABLED
-  if (threads > 1) {
-    graph2Learn.setThreadPoolSize(threads);
-  }
-#endif
-  graph2Learn.train(trainer, trainSet);
+  // generate the training set from the current model
+  auto samples = model_to_tune.getHiddenSetSamples(
+      GibbsSampler::SamplesGenerationContext{train_set_size, 50, 0});
 
-  cout << "\n real weights of the model\n";
-  cout << graph.getWeights() << endl;
+  // set all weights to 1 and train the model on the previously generated
+  // train set
+  set_ones(model_to_tune);
+  QuasiNewton trainer;
+  trainer.setMaxIterations(max_iterations);
+  train_model(model_to_tune, trainer, TrainSet{samples});
 
-  cout << "learnt weights\n";
-  cout << graph2Learn.getWeights() << endl;
-
-  // compare the marginals distributions of the real model and the learnt one
-  cout << "\nP(" << checkVariable << '|' << checkObservation.first << '='
-       << checkObservation.second << ")\n";
-
-  cout << "real model " << endl;
-  graph.resetEvidences(
-      map<string, size_t>{{checkObservation.first, checkObservation.second}});
-  cout << graph.getMarginalDistribution(checkVariable) << endl;
-
-  cout << "learnt model " << endl;
-  graph2Learn.resetEvidences(
-      map<string, size_t>{{checkObservation.first, checkObservation.second}});
-  cout << graph2Learn.getMarginalDistribution(checkVariable) << endl;
+  cout << "expected weights:    " << expected_weights << endl;
+  cout << "wieghts after train: " << model_to_tune.getWeights() << endl;
 }
