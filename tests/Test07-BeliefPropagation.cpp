@@ -342,12 +342,12 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
   CHECK(almost_equal(
       *ProbDistribution{{expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
                          expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}},
-      graph.getJointMarginalDistribution({"A", "B", "C"})->getProbabilities(),
+      graph.getJointMarginalDistribution({"A", "B", "C"}).getProbabilities(),
       0.15f));
 
   // joint distribution of A B
   CHECK(almost_equal(
       *ProbDistribution{{expf(alfa), 1.f, 1.f, expf(alfa)}},
-      graph.getJointMarginalDistribution({"A", "B"})->getProbabilities(),
+      graph.getJointMarginalDistribution({"A", "B"}).getProbabilities(),
       0.01f));
 }

@@ -30,11 +30,15 @@ std::vector<float> to_vector(const ::train::Vect &subject) {
 }
 
 struct TrainSetWrapper {
+  TrainSetWrapper(const TrainSet &source, const float percentage)
+      : source(source), percentage(percentage) {
+    combinations = std::make_unique<TrainSet::Iterator>(source, 1.f);
+  }
+
   const TrainSet &source;
   float percentage;
 
-  mutable std::unique_ptr<TrainSet::Iterator> combinations =
-      std::make_unique<TrainSet::Iterator>(source, 1.f);
+  mutable std::unique_ptr<TrainSet::Iterator> combinations;
 
   const TrainSet::Iterator &get() const {
     if (1.f != percentage) {
