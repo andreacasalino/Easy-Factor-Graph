@@ -220,7 +220,7 @@ assemble_combination(const strct::Evidences &evidences,
 std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
     const GibbsSampler::SamplesGenerationContext &context,
     const float range_percentage, const std::size_t threads) {
-  if ((range_percentage > 1.f) || (range_percentage, 0)) {
+  if ((range_percentage > 1.f) || (range_percentage < 0)) {
     throw Error{"Invalid range percentage"};
   }
 
