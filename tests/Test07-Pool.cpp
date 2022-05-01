@@ -6,6 +6,8 @@
 using namespace EFG;
 using namespace EFG::strct;
 
+#include <iostream>
+
 TEST_CASE("testing Pool", "[pool]") {
   auto threads = GENERATE(1, 2, 4);
 
@@ -28,6 +30,7 @@ TEST_CASE("testing Pool", "[pool]") {
 
     pool.parallelFor(tasks);
     for (const auto counter : counters) {
+      std::cout << counter << std::endl;
       CHECK(counter == times_x_thread);
     }
   }

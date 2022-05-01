@@ -66,7 +66,6 @@ protected:
   };
 
 private:
-  std::mutex pool_mtx;
   std::unique_ptr<Pool> pool;
 };
 } // namespace EFG::strct

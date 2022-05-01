@@ -25,11 +25,14 @@ public:
 private:
   const std::size_t threads_numb;
   const std::size_t thread_id;
-  std::atomic_bool life = true;
-  std::atomic_bool is_busy = false;
+  std::unique_ptr<std::thread> worker_;
+
   std::mutex tasks_mtx;
   const Tasks *tasks = nullptr;
-  std::thread worker_;
+
+  std::atomic_bool is_busy = false;
+
+  std::atomic_bool life = true;
 };
 
 namespace {
@@ -45,29 +48,36 @@ WorkerConcrete::WorkerConcrete(const std::size_t threads_numb,
                                const std::size_t thread_id)
     : threads_numb(threads_numb), thread_id(thread_id) {
   std::atomic_bool not_started = true;
-  worker_ = std::thread{[this, &not_started]() {
+  worker_ = std::make_unique<std::thread>([this, &not_started]() {
     not_started = false;
     while (this->life) {
-      std::scoped_lock lock(this->tasks_mtx);
-      if (nullptr != this->tasks) {
-        this->is_busy = true;
-        process(*this->tasks, this->threads_numb, this->thread_id);
-        this->tasks = nullptr;
-        this->is_busy = false;
+      bool something_to_process = false;
+      {
+        std::scoped_lock lock(this->tasks_mtx);
+        if (nullptr != this->tasks) {
+          something_to_process = true;
+        }
       }
+      if (something_to_process) {
+        process(*this->tasks, this->threads_numb, this->thread_id);
+      }
+      this->tasks = nullptr;
+      this->is_busy = false;
     }
-  }};
+  });
   while (not_started) {
   }
 }
 
 WorkerConcrete::~WorkerConcrete() {
   life = false;
-  worker_.join();
+  worker_->join();
+  worker_.reset();
 }
 
 void WorkerConcrete::dispatch(const Tasks &tasks) {
   std::scoped_lock lock(this->tasks_mtx);
+  this->is_busy = true;
   this->tasks = &tasks;
 }
 
@@ -100,7 +110,6 @@ PoolAware::~PoolAware() = default;
 void PoolAware::resetPool() { pool = std::make_unique<Pool>(1); }
 
 void PoolAware::setPoolSize(const std::size_t new_size) {
-  std::scoped_lock lock(pool_mtx);
   if (new_size == pool->size()) {
     return;
   }
