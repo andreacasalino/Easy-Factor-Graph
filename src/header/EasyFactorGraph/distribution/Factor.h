@@ -14,15 +14,15 @@ namespace EFG::distribution {
 class BasicEvaluator;
 
 struct UseSimpleCorrelation {};
-constexpr UseSimpleCorrelation USE_SIMPLE_CORRELATION_TAG =
+static constexpr UseSimpleCorrelation USE_SIMPLE_CORRELATION_TAG =
     UseSimpleCorrelation{};
 
 struct UseSimpleAntiCorrelation {};
-constexpr UseSimpleAntiCorrelation USE_SIMPLE_ANTI_CORRELATION_TAG =
+static constexpr UseSimpleAntiCorrelation USE_SIMPLE_ANTI_CORRELATION_TAG =
     UseSimpleAntiCorrelation{};
 
 struct GenericCopyTag {};
-constexpr GenericCopyTag GENERIC_COPY_TAG = GenericCopyTag{};
+static constexpr GenericCopyTag GENERIC_COPY_TAG = GenericCopyTag{};
 
 class Factor : public DistributionConcrete, public DistributionSetter {
 public:
