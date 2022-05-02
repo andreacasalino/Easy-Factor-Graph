@@ -8,98 +8,59 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/structure/components/PoolAware.h>
 
-#include <atomic>
-#include <mutex>
-#include <thread>
-
 namespace EFG::strct {
-class WorkerConcrete : public Pool::Worker {
-public:
-  WorkerConcrete(const std::size_t threads_numb, const std::size_t thread_id);
-  ~WorkerConcrete() override;
-
-  void dispatch(const Tasks &tasks);
-
-  bool isBusy() const { return is_busy; }
-
-private:
-  const std::size_t threads_numb;
-  const std::size_t thread_id;
-  std::unique_ptr<std::thread> worker_;
-
-  std::mutex tasks_mtx;
-  const Tasks *tasks = nullptr;
-
-  std::atomic_bool is_busy = false;
-
-  std::atomic_bool life = true;
-};
-
 namespace {
-void process(const Tasks &subject, const std::size_t threads_numb,
-             const std::size_t thread_id) {
+void process_tasks_in_parallel(const Tasks &subject,
+                               const std::size_t threads_numb,
+                               const std::size_t thread_id) {
   for (std::size_t k = thread_id; k < subject.size(); k += threads_numb) {
     subject[k](thread_id);
   }
 }
 } // namespace
 
-WorkerConcrete::WorkerConcrete(const std::size_t threads_numb,
-                               const std::size_t thread_id)
-    : threads_numb(threads_numb), thread_id(thread_id) {
-  std::atomic_bool not_started = true;
-  worker_ = std::make_unique<std::thread>([this, &not_started]() {
-    not_started = false;
-    while (this->life) {
-      bool something_to_process = false;
-      {
-        std::scoped_lock lock(this->tasks_mtx);
-        if (nullptr != this->tasks) {
-          something_to_process = true;
+Pool::Worker::Worker(const std::size_t th_id, WorkersContext &context)
+    : loop([thread_id = th_id, &context = context,
+            &tasks = this->notified_tasks]() {
+        while (context.life) {
+          if (nullptr == tasks) {
+            continue;
+          }
+          process_tasks_in_parallel(*tasks, context.pool_size, thread_id);
+          tasks = nullptr;
+          ++context.completed;
         }
-      }
-      if (something_to_process) {
-        process(*this->tasks, this->threads_numb, this->thread_id);
-      }
-      this->tasks = nullptr;
-      this->is_busy = false;
-    }
-  });
-  while (not_started) {
-  }
-}
-
-WorkerConcrete::~WorkerConcrete() {
-  life = false;
-  worker_->join();
-  worker_.reset();
-}
-
-void WorkerConcrete::dispatch(const Tasks &tasks) {
-  std::scoped_lock lock(this->tasks_mtx);
-  this->is_busy = true;
-  this->tasks = &tasks;
-}
+      }) {}
 
 Pool::Pool(const std::size_t size) {
   if (0 == size) {
     throw Error{"Invalid Pool size"};
   }
-  workers.reserve(size - 1);
+  workers_context.pool_size = size;
   for (std::size_t k = 1; k < size; ++k) {
-    workers.emplace_back(std::make_unique<WorkerConcrete>(size, k));
+    workers.emplace_back(std::make_unique<Worker>(k, workers_context));
   }
+}
+
+Pool::~Pool() {
+  workers_context.life = false;
+  for (auto &worker : workers) {
+    if (worker->loop.joinable()) {
+      worker->loop.join();
+    }
+  }
+  workers.clear();
 }
 
 void Pool::parallelFor(const std::vector<Task> &tasks) {
   std::scoped_lock lock(parallel_for_dispatch_mtx);
+  workers_context.completed = 0;
   for (auto &worker : workers) {
-    static_cast<WorkerConcrete *>(worker.get())->dispatch(tasks);
+    worker->notified_tasks = &tasks;
   }
-  process(tasks, workers.size() + 1, 0);
-  for (auto &worker : workers) {
-    while (static_cast<WorkerConcrete *>(worker.get())->isBusy()) {
-    }
+  process_tasks_in_parallel(tasks, workers_context.pool_size, 0);
+  ++workers_context.completed;
+  while (workers_context.completed != workers_context.pool_size) {
   }
 }
 

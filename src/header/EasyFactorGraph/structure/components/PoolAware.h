@@ -7,9 +7,11 @@
 
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <thread>
 #include <vector>
 
 namespace EFG::strct {
@@ -20,24 +22,28 @@ using Tasks = std::vector<Task>;
 class Pool {
 public:
   Pool(const std::size_t size);
+  ~Pool();
 
   void parallelFor(const std::vector<Task> &tasks);
 
-  std::size_t size() const { return workers.size() + 1; }
-
-  class Worker {
-  public:
-    virtual ~Worker() = default;
-
-  protected:
-    Worker() = default;
-  };
+  std::size_t size() const { return workers_context.pool_size; }
 
 private:
-  using WorkerPtr = std::unique_ptr<Worker>;
-
   std::mutex parallel_for_dispatch_mtx;
 
+  struct WorkersContext {
+    std::size_t pool_size;
+    std::atomic_bool life = true;
+    std::atomic<std::size_t> completed = 0;
+  };
+  WorkersContext workers_context;
+  struct Worker {
+    Worker(const std::size_t th_id, WorkersContext &context);
+
+    std::atomic<const Tasks *> notified_tasks = nullptr;
+    std::thread loop;
+  };
+  using WorkerPtr = std::unique_ptr<Worker>;
   std::vector<WorkerPtr> workers;
 };
 
