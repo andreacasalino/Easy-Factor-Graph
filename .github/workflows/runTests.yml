@@ -13,7 +13,7 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang]
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
@@ -21,6 +21,9 @@ jobs:
             - name: ubuntu-clang
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+            - name: windows-VS
+              os: windows-latest
+              compiler_opt: ""
 
     runs-on: ${{ matrix.os }}
     steps:
