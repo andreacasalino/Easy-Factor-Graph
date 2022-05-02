@@ -48,15 +48,18 @@ public:
     std::optional<std::size_t> seed;
   };
   /**
-   * @brief Use Gibbs sampling approach to draw empirical samples of the hidden
-   * variables, conditioned to the current evidences. Values inside the
-   * returned combiantion are ordered with the same order used for the variables
-   * returned by getHiddenVariables()
+   * @brief Use Gibbs sampling approach to draw empirical samples. Values inside
+   * the returned combiantion are ordered with the same order used for the
+   * variables returned by getAllVariables().
+   *
+   * In case some evidences are set, their values will appear as is in the
+   * sampled combinations.
+   *
    * @param number parameters for the samples generation
    * @param number of threads to use for the samples generation
    */
   std::vector<categoric::Combination>
-  getHiddenSetSamples(const SamplesGenerationContext &context,
-                      const std::size_t threads = 1);
+  makeSamples(const SamplesGenerationContext &context,
+              const std::size_t threads = 1);
 };
 } // namespace EFG::strct

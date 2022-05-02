@@ -38,101 +38,81 @@ void UniformSampler::resetSeed(const std::size_t &newSeed) {
 }
 
 namespace {
-struct SamplerNode;
-struct SamplerConnection {
-  const SamplerNode *sender;
-  distribution::DistributionCnstPtr factor;
-};
-
-distribution::UnaryFactor make_static_unaries(Node &n) {
-  auto unaries = gather_unaries(n);
-  if (unaries.empty()) {
-    return distribution::UnaryFactor{n.variable};
-  }
-  return distribution::UnaryFactor{unaries};
-}
-
 struct SamplerNode {
-  SamplerNode(Node &n, std::size_t &c)
-      : node(&n), combination_value(&c),
-        static_unaries(make_static_unaries(n)) {}
+  std::size_t *value_in_combination;
+  const distribution::UnaryFactor *static_dependencies;
 
-  const Node *node;
-  std::size_t *combination_value;
-  std::vector<SamplerConnection> connections;
-  distribution::UnaryFactor static_unaries;
-};
-using SamplerNodePtr = std::unique_ptr<SamplerNode>;
-using SamplerNodes = std::vector<SamplerNodePtr>;
-SamplerNodes make_nodes(const HiddenClusters &clusters,
-                        const categoric::VariablesSet &hidden_set_order,
-                        std::vector<std::size_t> &combination) {
-  std::size_t nodes_size = 0;
-  for (const auto &cluster : clusters) {
-    nodes_size += cluster.nodes.size();
-  }
-  combination.resize(nodes_size);
-  for (auto &comb : combination) {
-    comb = 0;
-  }
-  SamplerNodes result;
-  result.reserve(nodes_size);
-  for (const auto &cluster : clusters) {
-    for (auto *node : cluster.nodes) {
-      std::size_t position = std::distance(
-          hidden_set_order.begin(), hidden_set_order.find(node->variable));
-      SamplerNodePtr new_node =
-          std::make_unique<SamplerNode>(*node, combination[position]);
-      result.emplace_back(std::move(new_node));
-    }
-  }
-  // compute connections
-  for (auto &sampler_node : result) {
-    for (const auto &[connected_node, connection] :
-         sampler_node->node->active_connections) {
-      auto &added = sampler_node->connections.emplace_back();
-      added.factor = connection->factor;
-      auto result_it = std::find_if(
-          result.begin(), result.end(),
-          [&connected_node = connected_node](const SamplerNodePtr &node) {
-            return node->node == connected_node;
-          });
-      added.sender = (*result_it).get();
-    }
-  }
-  return result;
-}
-
-Task to_sampling_task(const SamplerNode &subject,
-                      const std::vector<UniformSampler> &engines) {
-  return [subject = subject, &engines](const std::size_t th_id) {
-    const auto &engine = engines[th_id];
-    std::vector<const distribution::Distribution *> contributions = {
-        &subject.static_unaries};
-    std::list<distribution::Evidence> incomings;
-    for (const auto &connection : subject.connections) {
-      const auto &added = incomings.emplace_back(
-          *connection.factor, connection.sender->node->variable,
-          *connection.sender->combination_value);
-      contributions.push_back(&added);
-    }
-    distribution::UnaryFactor merged(contributions);
-    auto sampled = engine.sampleFromDiscrete(merged.getProbabilities());
-    *subject.combination_value = sampled;
+  struct DynamicDependency {
+    categoric::VariablePtr sender;
+    const std::size_t *sender_value_in_combination;
+    distribution::DistributionCnstPtr factor;
   };
+  std::vector<DynamicDependency> dynamic_dependencies;
+};
+
+std::vector<SamplerNode>
+make_sampler_nodes(std::vector<std::size_t> &combination_buffer,
+                   const GraphState &state,
+                   const categoric::VariablesSoup &vars_order) {
+  const std::size_t size = vars_order.size();
+  combination_buffer.resize(size);
+  SmartMap<categoric::Variable, std::size_t *> combination_values_map;
+  for (std::size_t k = 0; k < size; ++k) {
+    combination_values_map.emplace(vars_order[k],
+                                   &combination_buffer.data()[k]);
+  }
+  std::vector<SamplerNode> result;
+  result.reserve(size);
+  for (const auto &[var, val] : state.evidences) {
+    *combination_values_map[var] = val;
+  }
+  for (auto &cluster : state.clusters) {
+    for (auto *node : cluster.nodes) {
+      update_merged_unaries(*node);
+      auto &added_node = result.emplace_back();
+      added_node.value_in_combination = combination_values_map[node->variable];
+      *added_node.value_in_combination = 0;
+      added_node.static_dependencies = node->merged_unaries.get();
+      for (const auto &[connected_node, connection] :
+           node->active_connections) {
+        auto &added_dep = added_node.dynamic_dependencies.emplace_back();
+        added_dep.sender = connected_node->variable;
+        added_dep.sender_value_in_combination =
+            combination_values_map[connected_node->variable];
+        added_dep.factor = connection->factor;
+      }
+    }
+    return result;
+  }
 }
 
 bool have_no_changing_deps(const SamplerNode &subject,
-                           const std::set<const SamplerNode *> &will_change) {
-  for (const auto &dep : subject.connections) {
-    if (exists(will_change, dep.sender)) {
+                           const std::set<const std::size_t *> &will_change) {
+  for (const auto &dep : subject.dynamic_dependencies) {
+    if (exists(will_change, dep.sender_value_in_combination)) {
       return false;
     }
   }
   return true;
 }
 
-std::vector<Tasks> make_sampling_tasks(const SamplerNodes &nodes,
+Task make_sampling_task(const SamplerNode &subject,
+                        std::vector<UniformSampler> &engines) {
+  return [&subject, &engines](const std::size_t thread_id) {
+    std::vector<const distribution::Distribution *> factors = {
+        subject.static_dependencies};
+    std::list<distribution::Evidence> marginalized;
+    for (const auto &dep : subject.dynamic_dependencies) {
+      factors.push_back(&marginalized.emplace_back(
+          *dep.factor, dep.sender, *dep.sender_value_in_combination));
+    }
+    distribution::UnaryFactor merged(factors);
+    *subject.value_in_combination =
+        engines[thread_id].sampleFromDiscrete(merged.getProbabilities());
+  };
+}
+
+std::vector<Tasks> make_sampling_tasks(const std::vector<SamplerNode> &nodes,
                                        std::vector<UniformSampler> &engines,
                                        const std::optional<std::size_t> &seed,
                                        Pool &pool) {
@@ -149,26 +129,26 @@ std::vector<Tasks> make_sampling_tasks(const SamplerNodes &nodes,
   if (1 == pool.size()) {
     auto &new_tasks = result.emplace_back();
     for (const auto &node : nodes) {
-      new_tasks.emplace_back(to_sampling_task(*node, engines));
+      new_tasks.emplace_back(make_sampling_task(node, engines));
     }
   } else {
     std::list<const SamplerNode *> open;
     for (auto &node : nodes) {
-      open.push_back(node.get());
+      open.push_back(&node);
     }
     while (!open.empty()) {
-      std::set<const SamplerNode *> should_not_change;
-      std::set<const SamplerNode *> will_change;
+      std::set<const std::size_t *> should_not_change;
+      std::set<const std::size_t *> will_change;
       auto &new_tasks = result.emplace_back();
       auto open_it = open.begin();
       while (open_it != open.end()) {
-        if (!exists(should_not_change, *open_it) &&
+        if (!exists(should_not_change, (*open_it)->value_in_combination) &&
             have_no_changing_deps(**open_it, will_change)) {
-          will_change.emplace(*open_it);
-          for (const auto &dep : (*open_it)->connections) {
-            should_not_change.emplace(dep.sender);
+          will_change.emplace((*open_it)->value_in_combination);
+          for (const auto &dep : (*open_it)->dynamic_dependencies) {
+            should_not_change.emplace(dep.sender_value_in_combination);
           }
-          new_tasks.emplace_back(to_sampling_task(**open_it, engines));
+          new_tasks.emplace_back(make_sampling_task(**open_it, engines));
           open_it = open.erase(open_it);
         } else {
           ++open_it;
@@ -178,12 +158,11 @@ std::vector<Tasks> make_sampling_tasks(const SamplerNodes &nodes,
   }
   return result;
 }
-
 } // namespace
 
 std::vector<categoric::Combination>
-GibbsSampler::getHiddenSetSamples(const SamplesGenerationContext &context,
-                                  const std::size_t threads) {
+GibbsSampler::makeSamples(const SamplesGenerationContext &context,
+                          const std::size_t threads) {
   std::size_t delta_iterations;
   if (context.delta_iterations) {
     delta_iterations = *context.delta_iterations;
@@ -191,18 +170,13 @@ GibbsSampler::getHiddenSetSamples(const SamplesGenerationContext &context,
     delta_iterations =
         static_cast<std::size_t>(ceil(context.samples_number * 0.1));
   }
-  if (0 == delta_iterations) {
-    delta_iterations = 1;
-  }
+  delta_iterations = std::max<std::size_t>(1, delta_iterations);
 
   ScopedPoolActivator activator(*this, threads);
 
   std::vector<std::size_t> combination;
   auto sampling_nodes =
-      make_nodes(getState().clusters, getHiddenVariables(), combination);
-  if (sampling_nodes.empty()) {
-    throw Error{"Cannot generate samples of a model having an empty hidden"};
-  }
+      make_sampler_nodes(combination, getState(), getAllVariables());
 
   std::vector<UniformSampler> engines;
   auto &pool = getPool();

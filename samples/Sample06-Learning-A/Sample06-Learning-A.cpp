@@ -152,7 +152,7 @@ void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
   const auto expected_weights = model_to_tune.getWeights();
 
   // generate the training set from the current model
-  auto samples = model_to_tune.getHiddenSetSamples(
+  auto samples = model_to_tune.makeSamples(
       GibbsSampler::SamplesGenerationContext{train_set_size, 50, 0});
 
   // set all weights to 1 and train the model on the previously generated

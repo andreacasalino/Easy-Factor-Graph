@@ -186,30 +186,6 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
   return alfas;
 }
 
-namespace {
-std::vector<std::size_t>
-assemble_combination(const strct::Evidences &evidences,
-                     const std::vector<std::size_t> &evidence_vars_position,
-                     const categoric::Combination &hidden_set_combiantion,
-                     const std::vector<std::size_t> &hidden_vars_position) {
-  std::vector<std::size_t> result;
-  {
-    std::size_t k = 0;
-    for (const auto &[var, val] : evidences) {
-      result[evidence_vars_position[k]] = val;
-      ++k;
-    }
-  }
-  {
-    const auto &data = hidden_set_combiantion.data();
-    for (std::size_t k = 0; k < data.size(); ++k) {
-      result[hidden_vars_position[k]] = data[k];
-    }
-  }
-  return result;
-}
-} // namespace
-
 std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
     const GibbsSampler::SamplesGenerationContext &context,
     const float range_percentage, const std::size_t threads) {
@@ -221,13 +197,10 @@ std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
       find_positions(getAllVariables(), getHiddenVariables());
 
   std::vector<categoric::Combination> result;
-  const auto &evidences = getState().evidences;
   auto emplace_samples = [&](const categoric::Combination &ev) {
     this->setEvidences(ev.data());
-    for (const auto &sample : this->getHiddenSetSamples(context, threads)) {
-      result.emplace_back(assemble_combination(evidences,
-                                               this->evidence_vars_positions,
-                                               sample, hidden_vars_position));
+    for (const auto &sample : this->makeSamples(context, threads)) {
+      result.push_back(sample);
     }
   };
 

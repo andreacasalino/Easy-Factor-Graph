@@ -144,8 +144,7 @@ int main() {
     politree.setEvidence("v1", 1);
     politree.setEvidence("v2", 1);
     politree.setEvidence("v3", 1);
-    auto samples =
-        politree.getHiddenSetSamples(context_for_saples_generation, threads);
+    auto samples = politree.makeSamples(context_for_saples_generation, threads);
 
     auto hidden_set = politree.getHiddenVariables();
 
@@ -237,8 +236,7 @@ int main() {
     // to produce samples for the joint conditioned (to the observations)
     // distribution of the hidden variables
     loop.setEvidence("v1", 1);
-    auto samples =
-        loop.getHiddenSetSamples(context_for_saples_generation, threads);
+    auto samples = loop.makeSamples(context_for_saples_generation, threads);
 
     auto hidden_set = loop.getHiddenVariables();
 

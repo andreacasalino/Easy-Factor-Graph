@@ -73,8 +73,8 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
 
   SECTION("specific variable frequency") {
     model.setEvidence(model.findVariable("A"), 1);
-    auto samples = model.getHiddenSetSamples(
-        GibbsSampler::SamplesGenerationContext{500, 50, 0});
+    auto samples =
+        model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
     REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
     CHECK(check_second_prob(1.f, expf(w),
                             getFrequency1(samples, model.getHiddenVariables(),
@@ -82,8 +82,8 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
   }
 
   SECTION("combinations involving all variables") {
-    auto samples = model.getHiddenSetSamples(
-        GibbsSampler::SamplesGenerationContext{500, 50, 0});
+    auto samples =
+        model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
     model.removeAllEvidences();
     const float exp_w = expf(w);
     const float Z = 2.f * (1.f + exp_w);
@@ -133,8 +133,8 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
   float beta = 2.f;
   model.addConstFactor(make_corr_expfactor2(B, C, beta));
 
-  auto samples = model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{1000, 50, 0});
+  auto samples =
+      model.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 0});
 
   {
     const float exp_alfa = expf(alfa);
@@ -174,8 +174,8 @@ TEST_CASE("simple graph gibbs sampling", "[gibbs_sampling]") {
   float beta = 1.5f;
   model.addConstFactor(make_corr_expfactor2(B, C, beta));
 
-  auto samples = model.getHiddenSetSamples(
-      GibbsSampler::SamplesGenerationContext{500, 50, 0});
+  auto samples =
+      model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
 
   const float exp_alfa = expf(alfa);
   const float exp_beta = expf(beta);
@@ -216,7 +216,7 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
-  auto samples = model.getHiddenSetSamples(
+  auto samples = model.makeSamples(
       GibbsSampler::SamplesGenerationContext{500, 20, 0}, threads);
   REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
 
@@ -247,7 +247,7 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
-  auto samples = model.getHiddenSetSamples(
+  auto samples = model.makeSamples(
       GibbsSampler::SamplesGenerationContext{500, 20, 0}, threads);
   REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
   CHECK(check_second_prob(3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
