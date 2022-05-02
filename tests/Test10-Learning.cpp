@@ -307,20 +307,20 @@ TEST_CASE("Medium random field tuning", "[train]") {
       };
       CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
     }
-    SECTION("Gradient Descend Adaptive") {
-      CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
-          context, 1));
-    }
-    SECTION("Gradient Descend Conjugate") {
-      CHECK(check_trainer<
-            ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
-                                                                       1));
-    }
-    SECTION("Quasi Newton") {
-      CHECK(check_trainer<
-            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
-          context, 1));
-    }
+    // SECTION("Gradient Descend Adaptive") {
+    //   CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
+    //       context, 1));
+    // }
+    // SECTION("Gradient Descend Conjugate") {
+    //   CHECK(check_trainer<
+    //         ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
+    //                                                                    1));
+    // }
+    // SECTION("Quasi Newton") {
+    //   CHECK(check_trainer<
+    //         ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+    //       context, 1));
+    // }
   }
 }
 
@@ -361,6 +361,74 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
     CHECK(check_trainer<
           ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
                                                                      1));
+  }
+  SECTION("Quasi Newton") {
+    context.check_likelihood_trend_toll = std::nullopt;
+    CHECK(check_trainer<
+          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
+                                                                       1));
+  }
+}
+
+#include <sstream>
+
+namespace {
+RandomField make_shared_w_chain(const std::size_t size, const float alfa,
+                                const float beta) {
+  auto make_var_name = [](const char &name, const std::size_t pos) {
+    std::stringstream stream;
+    stream << name << std::to_string(pos);
+    return stream.str();
+  };
+
+  RandomField model;
+  auto make_vars_set = [&model](const std::vector<std::string> &names) {
+    VariablesSet result;
+    for (const auto &name : names) {
+      result.emplace(model.findVariable(name));
+    }
+    return result;
+  };
+
+  for (std::size_t k = 0; k < size; ++k) {
+    auto Y = make_variable(3, make_var_name('Y', k));
+    auto X = make_variable(3, make_var_name('X', k));
+    auto pot_XY = make_corr_expfactor2(X, Y, beta);
+    if (0 == k) {
+      model.addTunableFactor(pot_XY);
+    } else {
+      model.addTunableFactor(pot_XY, make_vars_set({"X0", "Y0"}));
+      auto pot_YY = make_corr_expfactor2(
+          Y, model.findVariable(make_var_name('Y', k - 1)), alfa);
+      if (1 == k) {
+        model.addTunableFactor(pot_YY);
+      } else {
+        model.addTunableFactor(pot_YY, make_vars_set({"Y0", "Y1"}));
+      }
+    }
+  }
+  return model;
+}
+} // namespace
+
+TEST_CASE("Shared weights tuning", "[train]") {
+  auto chain_size = GENERATE(3, 6);
+
+  auto reference_model = make_shared_w_chain(chain_size, 0.7f, 1.2f);
+
+  RandomField to_tune(reference_model);
+
+  CheckContext context(Models{reference_model, to_tune},
+                       make_good_trainset(reference_model, 1000));
+  context.check_likelihood_trend_toll = std::nullopt;
+  context.check_marginal_toll = std::nullopt;
+
+  SECTION("Gradient Descend Fixed") {
+    context.trainer_setting = [](::train::IterativeTrainer &trainer) {
+      static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
+          0.5f);
+    };
+    CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
   }
   SECTION("Quasi Newton") {
     context.check_likelihood_trend_toll = std::nullopt;

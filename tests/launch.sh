@@ -22,5 +22,4 @@
 
 ./Tests "[gradient]"
 
-# ./Tests "[train]"
-
+./Tests "[train]"
