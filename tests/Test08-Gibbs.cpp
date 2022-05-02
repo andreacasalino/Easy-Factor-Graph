@@ -18,21 +18,30 @@ using namespace EFG::test::library;
 
 namespace {
 bool are_samples_valid(const std::vector<Combination> &samples,
-                       const VariablesSet &group) {
+                       const VariablesSoup &group) {
   if (samples.empty()) {
     return false;
   }
-  auto samples_it = std::find_if(samples.begin(), samples.end(),
-                                 [&group](const Combination &comb) {
-                                   return comb.data().size() != group.size();
-                                 });
+  auto samples_it = std::find_if(
+      samples.begin(), samples.end(), [&group](const Combination &comb) {
+        if (comb.data().size() != group.size()) {
+          return true;
+        }
+        for (std::size_t k = 0; k < comb.size(); ++k) {
+          if (group[k]->size() <= comb.data()[k]) {
+            return true;
+          }
+        }
+        return false;
+      });
   return samples_it == samples.end();
 }
 
 // frequency of var = 1 is returned
 float getFrequency1(const std::vector<Combination> &samples,
-                    const VariablesSet &group, const VariablePtr &var) {
-  std::size_t varPos = std::distance(group.begin(), group.find(var));
+                    const VariablesSoup &group, const VariablePtr &var) {
+  auto var_it = std::find(group.begin(), group.end(), var);
+  std::size_t varPos = std::distance(group.begin(), var_it);
   std::size_t instances = 0;
   for (const auto &sample : samples) {
     if (1 == sample.data()[varPos]) {
@@ -71,16 +80,6 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
   model.addConstFactor(
       make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
 
-  SECTION("specific variable frequency") {
-    model.setEvidence(model.findVariable("A"), 1);
-    auto samples =
-        model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
-    REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
-    CHECK(check_second_prob(1.f, expf(w),
-                            getFrequency1(samples, model.getHiddenVariables(),
-                                          model.findVariable("B"))));
-  }
-
   SECTION("combinations involving all variables") {
     auto samples =
         model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
@@ -89,13 +88,23 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
     const float Z = 2.f * (1.f + exp_w);
 
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0}),
-                       exp_w / Z, 0.02f));
+                       exp_w / Z, 0.05f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 1}),
-                       1.f / Z, 0.02f));
+                       1.f / Z, 0.05f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 0}),
-                       1.f / Z, 0.02f));
+                       1.f / Z, 0.05f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1}),
-                       exp_w / Z, 0.02f));
+                       exp_w / Z, 0.05f));
+  }
+
+  SECTION("specific variable frequency") {
+    model.setEvidence(model.findVariable("A"), 1);
+    auto samples =
+        model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
+    REQUIRE(are_samples_valid(samples, model.getAllVariables()));
+    CHECK(check_second_prob(1.f, expf(w),
+                            getFrequency1(samples, model.getAllVariables(),
+                                          model.findVariable("B"))));
   }
 }
 
@@ -127,17 +136,19 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
   auto B = make_variable(2, "B");
   auto C = make_variable(2, "C");
 
-  float alfa = 0.2f;
+  float alfa = 0.3f;
   model.addConstFactor(make_corr_expfactor2(A, B, alfa));
 
-  float beta = 2.f;
+  float beta = 1.3f;
   model.addConstFactor(make_corr_expfactor2(B, C, beta));
 
   auto samples =
       model.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 0});
 
+  const float exp_alfa = expf(alfa);
+  const float exp_beta = expf(beta);
+
   {
-    const float exp_alfa = expf(alfa);
     const float Z = 2.f * (1.f + exp_alfa);
 
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0},
@@ -149,7 +160,6 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
   }
 
   {
-    const float exp_beta = expf(beta);
     const float Z = 2.f * (1.f + exp_beta);
 
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0},
@@ -159,49 +169,28 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
                                     std::vector<std::size_t>{1, 2}),
                        exp_beta / Z, 0.05f));
   }
-}
 
-TEST_CASE("simple graph gibbs sampling", "[gibbs_sampling]") {
-  Graph model;
+  {
+    const float Z = 2.f * (1.f + exp_alfa + exp_beta + exp_alfa * exp_beta);
 
-  auto A = make_variable(2, "A");
-  auto B = make_variable(2, "B");
-  auto C = make_variable(2, "C");
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0, 0}),
+                       exp_alfa * exp_beta / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0, 1}),
+                       exp_alfa / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 1, 0}),
+                       1.f / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 1, 1}),
+                       exp_beta / Z, 0.05f));
 
-  float alfa = 1.2f;
-  model.addConstFactor(make_corr_expfactor2(A, B, alfa));
-
-  float beta = 1.5f;
-  model.addConstFactor(make_corr_expfactor2(B, C, beta));
-
-  auto samples =
-      model.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
-
-  const float exp_alfa = expf(alfa);
-  const float exp_beta = expf(beta);
-  const float Z = 2.f * (1.f + exp_alfa + exp_beta + exp_alfa * exp_beta);
-
-  CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0, 0}),
-                     exp_alfa * exp_beta / Z, 0.02f));
-  CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0, 1}),
-                     exp_alfa / Z, 0.02f));
-  // CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0,
-  // 1, 0}),
-  //                    1.f / Z, 0.02f));
-  // CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0,
-  // 1, 1}),
-  //                    exp_beta / Z, 0.02f));
-
-  // CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1,
-  // 0, 0}),
-  //                    exp_beta / Z, 0.02f));
-  // CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1,
-  // 0, 1}),
-  //                    1.f / Z, 0.02f));
-  CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1, 0}),
-                     exp_alfa / Z, 0.02f));
-  CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1, 1}),
-                     exp_alfa * exp_beta / Z, 0.02f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 0, 0}),
+                       exp_beta / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 0, 1}),
+                       1.f / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1, 0}),
+                       exp_alfa / Z, 0.05f));
+    CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1, 1}),
+                       exp_alfa * exp_beta / Z, 0.05f));
+  }
 }
 
 TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
@@ -213,27 +202,30 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
   const float e = expf(SimpleTree::eps);
 
   auto threads = GENERATE(1, 2, 3);
+  float toll = (threads > 1) ? 0.1f : 0.06f;
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
   auto samples = model.makeSamples(
-      GibbsSampler::SamplesGenerationContext{500, 20, 0}, threads);
-  REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
+      GibbsSampler::SamplesGenerationContext{1500, 50, 0}, threads);
+  REQUIRE(are_samples_valid(samples, model.getAllVariables()));
 
-  CHECK(check_second_prob((a * (g + e) + (1 + g * e)),
-                          ((g + e) + a * (1 + g * e)),
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("A"))));
-  CHECK(check_second_prob((g + e), (1 + g * e),
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("B"))));
-  CHECK(check_second_prob((b * (g + e) + (1 + g * e)),
-                          ((g + e) + b * (1 + g * e)),
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("C"))));
-  CHECK(check_second_prob(1.f, e,
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("D"))));
+  CHECK(check_second_prob(
+      (a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e)),
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("A")),
+      toll));
+  CHECK(check_second_prob(
+      (g + e), (1 + g * e),
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("B")),
+      toll));
+  CHECK(check_second_prob(
+      (b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e)),
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("C")),
+      toll));
+  CHECK(check_second_prob(
+      1.f, e,
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("D")),
+      toll));
 }
 
 TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
@@ -244,26 +236,27 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
   float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
 
   auto threads = GENERATE(1, 2, 3);
+  float toll = (threads > 1) ? 0.1f : 0.06f;
 
   // E=1
   model.setEvidence(model.findVariable("E"), 1);
   auto samples = model.makeSamples(
-      GibbsSampler::SamplesGenerationContext{500, 20, 0}, threads);
-  REQUIRE(are_samples_valid(samples, model.getHiddenVariables()));
-  CHECK(check_second_prob(3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("D")),
-                          0.06));
-  CHECK(check_second_prob(M_alfa, M_beta,
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("C")),
-                          0.06));
-  CHECK(check_second_prob(M_alfa, M_beta,
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("B")),
-                          0.06));
-  CHECK(check_second_prob(M * M_alfa + M_beta, M_alfa + M * M_beta,
-                          getFrequency1(samples, model.getHiddenVariables(),
-                                        model.findVariable("A")),
-                          0.06));
+      GibbsSampler::SamplesGenerationContext{1500, 50, 0}, threads);
+  REQUIRE(are_samples_valid(samples, model.getAllVariables()));
+  CHECK(check_second_prob(
+      3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("D")),
+      toll));
+  CHECK(check_second_prob(
+      M_alfa, M_beta,
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("C")),
+      toll));
+  CHECK(check_second_prob(
+      M_alfa, M_beta,
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("B")),
+      toll));
+  CHECK(check_second_prob(
+      M * M_alfa + M_beta, M_alfa + M * M_beta,
+      getFrequency1(samples, model.getAllVariables(), model.findVariable("A")),
+      toll));
 }
