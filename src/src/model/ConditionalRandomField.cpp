@@ -132,20 +132,6 @@ void ConditionalRandomField::setEvidences(
   }
 }
 
-namespace {
-std::vector<std::size_t>
-extract_evidences(const categoric::Combination &comb,
-                  const std::vector<std::size_t> &evidence_vars_positions) {
-  std::vector<std::size_t> result;
-  result.reserve(evidence_vars_positions.size());
-  const auto &data = comb.data();
-  for (const auto pos : evidence_vars_positions) {
-    result.push_back(data[pos]);
-  }
-  return result;
-}
-} // namespace
-
 std::vector<float> ConditionalRandomField::getWeightsGradient_(
     const train::TrainSet::Iterator &train_set_combinations) {
   // compute alfa part
@@ -175,14 +161,21 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
     for (std::size_t t = 0; t < this->tuners.size(); ++t) {
       tasks.emplace_back([&receiver = betas[t], &tuner = tuners[t],
                           &coeff](const std::size_t) {
-        receiver = coeff * tuner->getGradientBeta();
+        receiver += coeff * tuner->getGradientBeta();
       });
     }
     train_set_combinations.forEachSample(
         [this, &betas, &coeff,
          &tasks](const categoric::Combination &combination) {
-          this->setEvidences(
-              extract_evidences(combination, this->evidence_vars_positions));
+          {
+            std::size_t var_pos = 0;
+            for (auto &[var, val] : this->getState().evidences) {
+              this->setEvidence(
+                  var,
+                  combination.data()[this->evidence_vars_positions[var_pos]]);
+              ++var_pos;
+            }
+          }
           propagateBelief(strct::SUM);
           this->getPool().parallelFor(tasks);
         });

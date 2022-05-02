@@ -342,6 +342,7 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
 
   CheckContext context(Models{reference_model, to_tune},
                        make_good_trainset(reference_model, 1000));
+  context.check_marginal_toll = std::nullopt;
 
   SECTION("Gradient Descend Fixed") {
     context.trainer_setting = [](::train::IterativeTrainer &trainer) {
