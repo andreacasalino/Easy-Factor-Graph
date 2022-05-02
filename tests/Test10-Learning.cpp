@@ -168,7 +168,7 @@ struct CheckContext {
 
   std::optional<float> check_weights_toll = 0.5f;
   std::optional<float> check_likelihood_trend_toll = 5.f;
-  std::optional<float> check_marginal_info = 0.15f;
+  std::optional<float> check_marginal_toll = 0.15f;
 };
 template <typename TrainerT>
 bool check_trainer(const CheckContext &ctxt, const std::size_t threads) {
@@ -198,8 +198,8 @@ bool check_trainer(const CheckContext &ctxt, const std::size_t threads) {
     return false;
   }
   // check marginal computation
-  if (ctxt.check_marginal_info &&
-      (!almost_equal_marginals(ctxt.models, *ctxt.check_marginal_info))) {
+  if (ctxt.check_marginal_toll &&
+      (!almost_equal_marginals(ctxt.models, *ctxt.check_marginal_toll))) {
     return false;
   }
   return true;
@@ -218,10 +218,8 @@ TEST_CASE("Small random field tuning", "[train]") {
 
   RandomField to_tune(reference_model);
 
-  CheckContext context(
-      Models{reference_model, to_tune},
-      TrainSet(reference_model.getHiddenSetSamples(
-          GibbsSampler::SamplesGenerationContext{500, 20, 0})));
+  CheckContext context(Models{reference_model, to_tune},
+                       make_good_trainset(reference_model, 500));
 
   SECTION("Gradient Descend Fixed") {
     context.trainer_setting = [](::train::IterativeTrainer &trainer) {
@@ -231,15 +229,18 @@ TEST_CASE("Small random field tuning", "[train]") {
     CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
   }
   SECTION("Gradient Descend Adaptive") {
+    context.check_likelihood_trend_toll = std::nullopt;
     CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
         context, 1));
   }
   SECTION("Gradient Descend Conjugate") {
+    context.check_likelihood_trend_toll = std::nullopt;
     CHECK(check_trainer<
           ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
                                                                      1));
   }
   SECTION("Quasi Newton") {
+    context.check_likelihood_trend_toll = std::nullopt;
     CHECK(check_trainer<
           ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
                                                                        1));
@@ -263,29 +264,30 @@ TEST_CASE("Medium random field tuning", "[train]") {
   RandomField to_tune(reference_model);
 
   SECTION("Full training set") {
-    CheckContext context(
-        Models{reference_model, to_tune},
-        TrainSet(reference_model.getHiddenSetSamples(
-            GibbsSampler::SamplesGenerationContext{1000, 20, 0})));
+    CheckContext context(Models{reference_model, to_tune},
+                         make_good_trainset(reference_model, 1000));
 
     SECTION("Gradient Descend Fixed") {
       context.trainer_setting = [](::train::IterativeTrainer &trainer) {
         static_cast<::train::GradientDescendFixed &>(trainer)
-            .setOptimizationStep(0.5f);
+            .setOptimizationStep(0.2f);
       };
       auto threads = GENERATE(1, 2, 4);
       CHECK(check_trainer<::train::GradientDescendFixed>(context, threads));
     }
     SECTION("Gradient Descend Adaptive") {
+      context.check_likelihood_trend_toll = std::nullopt;
       CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
           context, 1));
     }
     SECTION("Gradient Descend Conjugate") {
+      context.check_likelihood_trend_toll = std::nullopt;
       CHECK(check_trainer<
             ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
                                                                        1));
     }
     SECTION("Quasi Newton") {
+      context.check_likelihood_trend_toll = std::nullopt;
       CHECK(check_trainer<
             ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
           context, 1));
@@ -293,17 +295,15 @@ TEST_CASE("Medium random field tuning", "[train]") {
   }
 
   SECTION("Stochastic training set") {
-    CheckContext context(
-        Models{reference_model, to_tune},
-        TrainSet(reference_model.getHiddenSetSamples(
-            GibbsSampler::SamplesGenerationContext{3000, 20, 0})));
+    CheckContext context(Models{reference_model, to_tune},
+                         make_good_trainset(reference_model, 5000));
     context.check_likelihood_trend_toll.reset();
     context.stoch_percentage = 0.2f;
 
     SECTION("Gradient Descend Fixed") {
       context.trainer_setting = [](::train::IterativeTrainer &trainer) {
         static_cast<::train::GradientDescendFixed &>(trainer)
-            .setOptimizationStep(0.3f);
+            .setOptimizationStep(0.2f);
       };
       CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
     }
@@ -340,29 +340,29 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
   ConditionalRandomField to_tune(reference_model);
   Models models{reference_model, to_tune};
 
-  CheckContext context(
-      Models{reference_model, to_tune},
-      TrainSet{reference_model.makeTrainSet(
-          GibbsSampler::SamplesGenerationContext{50, 20, 0}, 1.f)});
-  throw std::runtime_error{"comment makeTrainSet(...) and check above values"};
+  CheckContext context(Models{reference_model, to_tune},
+                       make_good_trainset(reference_model, 1000));
 
   SECTION("Gradient Descend Fixed") {
     context.trainer_setting = [](::train::IterativeTrainer &trainer) {
       static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
-          0.5f);
+          0.2f);
     };
     CHECK(check_trainer<::train::GradientDescendFixed>(context, 1));
   }
   SECTION("Gradient Descend Adaptive") {
+    context.check_likelihood_trend_toll = std::nullopt;
     CHECK(check_trainer<::train::GradientDescend<::train::YundaSearcher>>(
         context, 1));
   }
   SECTION("Gradient Descend Conjugate") {
+    context.check_likelihood_trend_toll = std::nullopt;
     CHECK(check_trainer<
           ::train::GradientDescendConjugate<::train::YundaSearcher>>(context,
                                                                      1));
   }
   SECTION("Quasi Newton") {
+    context.check_likelihood_trend_toll = std::nullopt;
     CHECK(check_trainer<
           ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(context,
                                                                        1));

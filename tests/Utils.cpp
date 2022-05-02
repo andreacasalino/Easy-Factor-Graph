@@ -1,5 +1,6 @@
 #include "Utils.h"
 #include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/structure/GibbsSampler.h>
 
 #include <math.h>
 #include <sstream>
@@ -95,5 +96,19 @@ compute_combinations_and_probs(const strct::ConnectionsManager &model) {
                                     combinations.push_back(comb);
                                   });
   return result;
+}
+
+train::TrainSet make_good_trainset(const strct::ConnectionsManager &model,
+                                   const std::size_t samples) {
+  auto combs_and_prob = compute_combinations_and_probs(model);
+  std::vector<categoric::Combination> sampled;
+  sampled.reserve(samples);
+  strct::UniformSampler sampler;
+  sampler.resetSeed(0);
+  while (sampled.size() != samples) {
+    auto pos = sampler.sampleFromDiscrete(combs_and_prob.probs);
+    sampled.push_back(combs_and_prob.combinations[pos]);
+  }
+  return train::TrainSet{sampled};
 }
 } // namespace EFG::test

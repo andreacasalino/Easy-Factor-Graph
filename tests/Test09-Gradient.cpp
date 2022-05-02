@@ -27,16 +27,7 @@ public:
   TunableModelTest() = default;
 
   TrainSet makeGoodTrainset(const std::size_t samples) const {
-    auto combs_and_prob = compute_combinations_and_probs(*this);
-    std::vector<categoric::Combination> sampled;
-    sampled.reserve(samples);
-    UniformSampler sampler;
-    sampler.resetSeed(0);
-    while (sampled.size() != samples) {
-      auto pos = sampler.sampleFromDiscrete(combs_and_prob.probs);
-      sampled.push_back(combs_and_prob.combinations[pos]);
-    }
-    return TrainSet{sampled};
+    return make_good_trainset(*this, samples);
   }
 
   bool checkGradient(const std::vector<float> &for_samples_generation,

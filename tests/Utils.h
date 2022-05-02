@@ -3,6 +3,7 @@
 #include <EasyFactorGraph/distribution/Factor.h>
 #include <EasyFactorGraph/distribution/FactorExponential.h>
 #include <EasyFactorGraph/structure/ConnectionsManager.h>
+#include <EasyFactorGraph/trainable/TrainSet.h>
 
 #include <math.h>
 #include <memory>
@@ -44,4 +45,7 @@ struct CombinationsAndProbabilities {
 };
 CombinationsAndProbabilities
 compute_combinations_and_probs(const strct::ConnectionsManager &model);
+
+train::TrainSet make_good_trainset(const strct::ConnectionsManager &model,
+                                   const std::size_t samples);
 } // namespace EFG::test
