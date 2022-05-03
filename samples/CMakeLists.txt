@@ -1,3 +1,6 @@
+add_executable(ReadMe ReadMe.cpp)
+target_link_libraries(ReadMe PUBLIC EFG)
+
 add_subdirectory(Helpers)
 
 function(SetUpSample NAME_)
