@@ -5,6 +5,7 @@ find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
   Threads::Threads
 )
+target_compile_options(${PROJECT_SHORTNAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
 option(BUILD_EFG_XML_CONVERTER "Compile features supporting conversion from and to xml files" ON)
 if(BUILD_EFG_XML_CONVERTER)

@@ -22,7 +22,7 @@ void printGroup(const categoric::Group &group, nlohmann::json &recipient) {
     auto &added = recipient.emplace_back();
     added = var->name();
   }
-};
+}
 
 nlohmann::json &printPotential(const distribution::Distribution &distr,
                                nlohmann::json &recipient) {
@@ -38,7 +38,7 @@ nlohmann::json &printPotential(const distribution::Distribution &distr,
     }
   }
   return potential;
-};
+}
 
 nlohmann::json &printExpPotential(const distribution::FactorExponential &distr,
                                   nlohmann::json &recipient) {

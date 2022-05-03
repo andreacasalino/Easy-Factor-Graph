@@ -49,7 +49,7 @@ categoric::VariablePtr findVariable(const std::string &name,
     throw Error("Inexistent variable");
   }
   return *itV;
-};
+}
 
 categoric::Group importGroup(const nlohmann::json &subject,
                              const categoric::VariablesSet &variables) {
@@ -61,7 +61,7 @@ categoric::Group importGroup(const nlohmann::json &subject,
     throw Error("only unary or binary factor are supported");
   }
   return categoric::Group{group};
-};
+}
 
 std::shared_ptr<distribution::Factor>
 importFactor(const nlohmann::json &subject,
@@ -98,7 +98,7 @@ importFactor(const nlohmann::json &subject,
   }
 
   return result;
-};
+}
 
 void importPotential(const nlohmann::json &subject,
                      const categoric::VariablesSet &variables,
@@ -124,7 +124,7 @@ void importPotential(const nlohmann::json &subject,
     return;
   }
   importer.importConst(factor);
-};
+}
 } // namespace
 
 std::unordered_map<std::string, std::size_t>
@@ -148,7 +148,7 @@ Importer::convert(const AdderPtrs &recipient, const nlohmann::json &source) {
     }
   }
   // import potentials
-  ImportPredicate importer{recipient};
+  ImportPredicate importer(recipient);
   for (const auto &factor : source["Potentials"]) {
     importPotential(factor, variables, importer);
   }

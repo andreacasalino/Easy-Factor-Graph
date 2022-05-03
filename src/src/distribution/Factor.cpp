@@ -35,8 +35,7 @@ const EvaluatorPtr &get_basic_evaluator() {
 }
 } // namespace
 
-Factor::Factor(const Distribution &to_clone,
-               const GenericCopyTag &GENERIC_COPY_TAG)
+Factor::Factor(const Distribution &to_clone, const GenericCopyTag &)
     : Factor(to_clone.getGroup()) {
   auto &comb_map = getCombinationsMap_();
   for (const auto &[comb, raw_val] : to_clone.getCombinationsMap()) {
@@ -200,14 +199,14 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
   categoric::for_each_combination(
       range, [&distribution, &finders](const categoric::Combination &comb) {
         float val = 1.f;
-        for (const auto& finder : finders) {
-            CombinationFinderProxyVisitor visitor{ comb };
-            std::visit(visitor, finder);
-            if (0 == visitor.result) {
-                val = 0;
-                break;
-            }
-            val *= visitor.result;
+        for (const auto &finder : finders) {
+          CombinationFinderProxyVisitor visitor{comb};
+          std::visit(visitor, finder);
+          if (0 == visitor.result) {
+            val = 0;
+            break;
+          }
+          val *= visitor.result;
         }
         if (val != 0) {
           distribution.emplace(comb, val);

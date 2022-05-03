@@ -25,7 +25,7 @@ public:
     nlohmann::json result;
     convert(result, getAwareComponents(model));
     return result;
-  };
+  }
 
   /**
    * @brief exports the model (variables and factors) into an json file

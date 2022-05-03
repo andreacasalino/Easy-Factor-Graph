@@ -19,5 +19,5 @@ Variable::Variable(const std::size_t &size, const std::string &name)
 
 VariablePtr make_variable(const std::size_t &size, const std::string &name) {
   return std::make_shared<Variable>(size, name);
-};
+}
 } // namespace EFG::categoric

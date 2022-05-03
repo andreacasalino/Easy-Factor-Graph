@@ -33,7 +33,7 @@ public:
     std::stringstream stream;
     convert(stream, getAwareComponents(model), model_name);
     return stream.str();
-  };
+  }
 
   /**
    * @brief exports the model (variables and factors) into an xml file

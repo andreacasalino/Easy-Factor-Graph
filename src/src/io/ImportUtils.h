@@ -11,6 +11,8 @@
 
 namespace EFG::io {
 struct ImportPredicate {
+  ImportPredicate(const AdderPtrs &m) : model(m) {}
+
   const AdderPtrs model;
 
   struct FactorAndSharingGroup {

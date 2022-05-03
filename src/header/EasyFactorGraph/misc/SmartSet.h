@@ -30,5 +30,5 @@ void for_each(const SmartSet<T> &subject, const Predicate &pred) {
   for (const auto &element : subject) {
     pred(*element);
   }
-};
+}
 } // namespace EFG

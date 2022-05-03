@@ -28,7 +28,7 @@ void printGroup(const categoric::Group &group, xmlPrs::Tag &recipient) {
   for (const auto &var : group.getVariables()) {
     attributes.emplace("var", var->name());
   }
-};
+}
 
 xmlPrs::Tag &printPotential(const distribution::Distribution &distr,
                             xmlPrs::Tag &recipient) {
@@ -43,7 +43,7 @@ xmlPrs::Tag &printPotential(const distribution::Distribution &distr,
     }
   }
   return pot_tag;
-};
+}
 
 xmlPrs::Tag &printExpPotential(const distribution::FactorExponential &distr,
                                xmlPrs::Tag &recipient) {

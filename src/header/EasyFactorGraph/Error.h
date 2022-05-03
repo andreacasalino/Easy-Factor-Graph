@@ -41,6 +41,6 @@ public:
 
   template <typename T1, typename T2, typename... Slices>
   Error(const T1 &first, const T2 &second, const Slices &...args)
-      : Error(MessagesMerger::merge(first, second, args...)){};
+      : Error(MessagesMerger::merge(first, second, args...)) {}
 };
 } // namespace EFG

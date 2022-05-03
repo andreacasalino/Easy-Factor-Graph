@@ -23,7 +23,7 @@ TrainSet::TrainSet(const std::vector<categoric::Combination> &combinations) {
   }
   this->combinations =
       std::make_shared<const std::vector<categoric::Combination>>(combinations);
-};
+}
 
 TrainSet::Iterator::Iterator(const TrainSet &subject, const float percentage) {
   this->combinations = subject.combinations;

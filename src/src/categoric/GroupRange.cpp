@@ -56,12 +56,12 @@ GroupRange &GroupRange::operator++() {
   }
   data->combination = std::make_unique<Combination>(std::move(new_comb));
   return *this;
-};
+}
 
 bool operator==(const GroupRange &a, const GroupRange &b) {
   return a.isEqual(b);
-};
+}
 bool operator!=(const GroupRange &a, const GroupRange &b) {
   return !a.isEqual(b);
-};
+}
 } // namespace EFG::categoric

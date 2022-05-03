@@ -30,7 +30,7 @@ public:
     nlohmann::json source = nlohmann::json::parse(*stream);
     auto evidences = convert(getAdderComponents(model), source);
     set_evidences(model, evidences);
-  };
+  }
 
   /**
    * @brief parse the model (variables and factors) described by the passed
@@ -42,7 +42,7 @@ public:
   static void importFromJson(Model &model, const nlohmann::json &source) {
     auto evidences = convert(getAdderComponents(model), source);
     set_evidences(model, evidences);
-  };
+  }
 
 private:
   static std::unordered_map<std::string, std::size_t>

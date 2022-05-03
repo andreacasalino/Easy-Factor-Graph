@@ -26,7 +26,7 @@ public:
   static void importFromFile(Model &model, const File &file_path) {
     auto evidences = convert(getAdderComponents(model), file_path);
     set_evidences(model, evidences);
-  };
+  }
 
 private:
   static std::unordered_map<std::string, std::size_t>

@@ -79,5 +79,5 @@ VariablesSet get_complementary(const VariablesSet &entire_set,
   VariablesSet result = entire_set;
   result -= subset;
   return result;
-};
+}
 } // namespace EFG::categoric

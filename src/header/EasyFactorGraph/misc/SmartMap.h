@@ -31,12 +31,12 @@ void for_each(SmartMap<K, V> &subject, const Predicate &pred) {
   for (auto it = subject.begin(); it != subject.end(); ++it) {
     pred(*it->first, it->second);
   }
-};
+}
 
 template <typename K, typename V, typename Predicate>
 void for_each(const SmartMap<K, V> &subject, const Predicate &pred) {
   for (auto it = subject.begin(); it != subject.end(); ++it) {
     pred(*it->first, it->second);
   }
-};
+}
 } // namespace EFG

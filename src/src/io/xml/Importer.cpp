@@ -53,7 +53,7 @@ categoric::VariablePtr findVariable(const std::string &name,
     throw Error("Inexistent variable");
   }
   return *itV;
-};
+}
 
 categoric::Group importGroup(const xmlPrs::Tag &tag,
                              const categoric::VariablesSet &variables) {
@@ -66,7 +66,7 @@ categoric::Group importGroup(const xmlPrs::Tag &tag,
     throw Error("only unary or binary factor are supported");
   }
   return categoric::Group{group};
-};
+}
 
 std::shared_ptr<distribution::Factor>
 importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
@@ -112,7 +112,7 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
                });
 
   return result;
-};
+}
 
 void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
                      const categoric::VariablesSet &variables,
@@ -139,7 +139,7 @@ void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
     return;
   }
   importer.importConst(factor);
-};
+}
 } // namespace
 
 std::unordered_map<std::string, std::size_t>

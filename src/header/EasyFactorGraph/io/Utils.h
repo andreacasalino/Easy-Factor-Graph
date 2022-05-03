@@ -33,7 +33,7 @@ template <typename Model> AwarePtrs getAwareComponents(Model &model) {
     throw Error{"A model should be at least FactorsAware"};
   }
   return components;
-};
+}
 
 struct AdderPtrs {
   strct::FactorsAdder *as_factors_const_adder;
@@ -48,7 +48,7 @@ template <typename Model> AdderPtrs getAdderComponents(Model &model) {
     throw Error{"A model should be at least FactorsAdder"};
   }
   return components;
-};
+}
 
 using IStream = std::unique_ptr<std::ifstream>;
 IStream make_in_stream(const std::string &file_name);

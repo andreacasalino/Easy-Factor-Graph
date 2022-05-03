@@ -43,13 +43,13 @@ bool Combination::operator<(const Combination &o) const {
     }
   }
   return false;
-};
+}
 
 bool operator==(const Combination &a, const Combination &b) {
   return a.data() == b.data();
-};
+}
 
 bool operator!=(const Combination &a, const Combination &b) {
   return a.data() != b.data();
-};
+}
 } // namespace EFG::categoric
