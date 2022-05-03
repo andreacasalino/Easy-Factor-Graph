@@ -24,7 +24,7 @@ File::File(const std::string &path) {
     throw Error{
         "File object should be representative of file and not directory"};
   }
-  parent = absolute_path.parent_path();
-  file_name = absolute_path.filename();
+  parent = absolute_path.parent_path().string();
+  file_name = absolute_path.filename().string();
 }
 } // namespace EFG::io

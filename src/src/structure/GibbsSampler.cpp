@@ -82,8 +82,8 @@ make_sampler_nodes(std::vector<std::size_t> &combination_buffer,
         added_dep.factor = connection->factor;
       }
     }
-    return result;
   }
+  return result;
 }
 
 bool have_no_changing_deps(const SamplerNode &subject,

@@ -15,7 +15,7 @@ namespace {
 ::train::Vect to_Vect(const std::vector<float> &subject) {
   ::train::Vect result(subject.size());
   for (std::size_t k = 0; k < subject.size(); ++k) {
-    result(static_cast<Eigen::Index>(k)) = subject[k];
+    result(static_cast<Eigen::Index>(k)) = static_cast<double>(subject[k]);
   }
   return result;
 }
@@ -24,7 +24,7 @@ std::vector<float> to_vector(const ::train::Vect &subject) {
   std::vector<float> result;
   result.resize(subject.size());
   for (Eigen::Index k = 0; k < subject.size(); ++k) {
-    result[static_cast<std::size_t>(k)] = subject(k);
+    result[static_cast<std::size_t>(k)] = static_cast<float>(subject(k));
   }
   return result;
 }

@@ -39,3 +39,7 @@ If you have found this library useful, please find the time to leave a star :). 
 
 ![What you should see when running the application](https://github.com/andreacasalino/Easy-Factor-Graph-GUI/blob/master/Example.png)
 
+
+
+https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-3-c4996?view=msvc-170
+warning code 4250

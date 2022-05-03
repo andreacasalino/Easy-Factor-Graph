@@ -70,7 +70,7 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
   return result;
 }
 
-static const MessageVariation DEFAULT_VARIATION_TOLLERANCE = 1e-3;
+static const MessageVariation DEFAULT_VARIATION_TOLLERANCE = static_cast<float>(1e-3);
 
 MessageVariation
 max_variation(const std::vector<MessageVariation> &variations) {

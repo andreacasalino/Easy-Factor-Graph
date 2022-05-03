@@ -200,17 +200,15 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
   categoric::for_each_combination(
       range, [&distribution, &finders](const categoric::Combination &comb) {
         float val = 1.f;
-        std::find_if(finders.begin(), finders.end(),
-                     [&comb, &val](const CombinationFinderProxy &finder) {
-                       CombinationFinderProxyVisitor visitor{comb};
-                       std::visit(visitor, finder);
-                       if (0 == visitor.result) {
-                         val = 0;
-                         return true;
-                       }
-                       val *= visitor.result;
-                       return false;
-                     });
+        for (const auto& finder : finders) {
+            CombinationFinderProxyVisitor visitor{ comb };
+            std::visit(visitor, finder);
+            if (0 == visitor.result) {
+                val = 0;
+                break;
+            }
+            val *= visitor.result;
+        }
         if (val != 0) {
           distribution.emplace(comb, val);
         }
