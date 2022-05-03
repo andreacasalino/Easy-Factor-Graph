@@ -41,17 +41,19 @@ int main() {
 
     // compute the marginal probabilities
     cout << "P(A|B=0)" << endl;
-    cout << "theoretical " << endl;
-    cout << make_distribution({expf(teta), 1.f}) << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
+    cout << make_distribution({expf(teta), 1.f}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution("A") << "  computed values" << endl
+         << endl;
 
     // make a new belief propagation setting B1=1 as observation
     graph.setEvidence("B", 1);
 
     cout << "P(A|B=1)" << endl;
-    cout << "theoretical " << endl;
-    cout << make_distribution({1.f, expf(teta)}) << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
+    cout << make_distribution({1.f, expf(teta)}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution("A") << "  computed values" << endl
+         << endl;
   }
 
   {
@@ -75,30 +77,33 @@ int main() {
     // compute the marginals of A,B and then compare results with the
     // theoretical ones, see documentation
     cout << "P(B|C=1)\n";
-    cout << "theoretical " << endl;
-    cout << make_distribution({1.f, expf(alfa)}) << endl;
-    cout << graph.getMarginalDistribution(B) << endl << endl;
+    cout << make_distribution({1.f, expf(alfa)}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution(B) << "  computed values" << endl
+         << endl;
 
     cout << "P(A|C=1)\n";
-    cout << "theoretical " << endl;
     cout << make_distribution(
                 {expf(alfa) + expf(beta), 1.f + expf(alfa) * expf(beta)})
+         << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution(A) << "  computed values" << endl
          << endl;
-    cout << graph.getMarginalDistribution(A) << endl << endl;
 
     // make a new belief propagation setting B=1 as unique observation
     graph.removeAllEvidences();
     graph.setEvidence(B, 1);
 
     cout << "P(A|B=1)\n";
-    cout << "theoretical " << endl;
-    cout << make_distribution({1.f, expf(beta)}) << endl;
-    cout << graph.getMarginalDistribution(A) << endl << endl;
+    cout << make_distribution({1.f, expf(beta)}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution(A) << "  computed values" << endl
+         << endl;
 
     cout << "P(C|B=1)\n";
-    cout << "theoretical " << endl;
-    cout << make_distribution({1.f, expf(alfa)}) << endl;
-    cout << graph.getMarginalDistribution(C) << endl << endl;
+    cout << make_distribution({1.f, expf(alfa)}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution(C) << "  computed values" << endl
+         << endl;
   }
 
   {

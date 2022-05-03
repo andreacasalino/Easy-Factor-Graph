@@ -44,28 +44,29 @@ int main() {
     // compute the marginals distributions of the other variables and
     // compare it
     cout << "P(A|E)\n";
-    cout << "theoretical\n";
     cout << make_distribution(
                 {(a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e))})
+         << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("A") << "  computed values" << endl
          << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
 
     cout << "P(B|E)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({(g + e), (1 + g * e)}) << endl;
-    cout << graph.getMarginalDistribution("B") << endl << endl;
+    cout << make_distribution({(g + e), (1 + g * e)}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution("B") << "  computed values" << endl
+         << endl;
 
     cout << "P(C|E)\n";
-    cout << "theoretical\n";
     cout << make_distribution(
                 {(b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e))})
+         << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("C") << "  computed values" << endl
          << endl;
-    cout << graph.getMarginalDistribution("C") << endl << endl;
 
     cout << "P(D|E)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({1.f, e}) << endl;
-    cout << graph.getMarginalDistribution("D") << endl << endl;
+    cout << make_distribution({1.f, e}) << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("D") << "  computed values" << endl
+         << endl;
 
     // set E=0 as an evidence and recompute the marginals
     graph.setEvidence("E", 0);
@@ -73,28 +74,29 @@ int main() {
     cout << "E=0\n";
 
     cout << "P(A|E)\n";
-    cout << "theoretical\n";
     cout << make_distribution(
                 {(g + e) + a * (1 + g * e), a * (g + e) + (1 + g * e)})
+         << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("A") << "  computed values" << endl
          << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
 
     cout << "P(B|E)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({1 + g * e, g + e}) << endl;
-    cout << graph.getMarginalDistribution("B") << endl << endl;
+    cout << make_distribution({1 + g * e, g + e}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution("B") << "  computed values" << endl
+         << endl;
 
     cout << "P(C|E)\n";
-    cout << "theoretical\n";
     cout << make_distribution(
                 {(g + e) + b * (1 + g * e), b * (g + e) + (1 + g * e)})
+         << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("C") << "  computed values" << endl
          << endl;
-    cout << graph.getMarginalDistribution("C") << endl << endl;
 
     cout << "P(D|E)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({e, 1.f}) << endl;
-    cout << graph.getMarginalDistribution("D") << endl << endl;
+    cout << make_distribution({e, 1.f}) << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("D") << "  computed values" << endl
+         << endl;
 
     // set D=1 as an evidence and recompute the marginals of the hidden
     // variables (including E)
@@ -104,24 +106,26 @@ int main() {
     cout << "D=1\n";
 
     cout << "P(A|D)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({a + g, 1.f + a * g}) << endl;
-    cout << graph.getMarginalDistribution("A") << endl << endl;
+    cout << make_distribution({a + g, 1.f + a * g}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution("A") << "  computed values" << endl
+         << endl;
 
     cout << "P(B|D)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({1.f, g}) << endl;
-    cout << graph.getMarginalDistribution("B") << endl << endl;
+    cout << make_distribution({1.f, g}) << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("B") << "  computed values" << endl
+         << endl;
 
     cout << "P(C|D)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({b + g, 1.f + b * g}) << endl;
-    cout << graph.getMarginalDistribution("C") << endl << endl;
+    cout << make_distribution({b + g, 1.f + b * g}) << "  theoretical values"
+         << endl;
+    cout << graph.getMarginalDistribution("C") << "  computed values" << endl
+         << endl;
 
     cout << "P(E|D)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({1.f, e}) << endl;
-    cout << graph.getMarginalDistribution("E") << endl << endl;
+    cout << make_distribution({1.f, e}) << "  theoretical values" << endl;
+    cout << graph.getMarginalDistribution("E") << "  computed values" << endl
+         << endl;
   }
 
   {
@@ -151,28 +155,31 @@ int main() {
     // compare the computed marginals with the ones coming from the samples
     // obtained by the Gibbs sampler
     cout << "P(v10 | Observations): \n";
-    cout << "empirical\n";
     cout << getEmpiricalMarginals(
                 politree.findVariable("v10"), samples,
                 VariablesSoup{hidden_set.begin(), hidden_set.end()})
+         << "  empirical values from Gibbs sampling" << endl;
+    cout << politree.getMarginalDistribution("v10") << "  computed values"
+         << endl
          << endl;
-    cout << politree.getMarginalDistribution("v10") << endl << endl;
 
     cout << "P(v11 | Observations): \n";
-    cout << "empirical\n";
     cout << getEmpiricalMarginals(
                 politree.findVariable("v11"), samples,
                 VariablesSoup{hidden_set.begin(), hidden_set.end()})
+         << "  empirical values from Gibbs sampling" << endl;
+    cout << politree.getMarginalDistribution("v11") << "  computed values"
+         << endl
          << endl;
-    cout << politree.getMarginalDistribution("v11") << endl << endl;
 
     cout << "P(v12 | Observations): \n";
-    cout << "empirical\n";
     cout << getEmpiricalMarginals(
                 politree.findVariable("v12"), samples,
                 VariablesSoup{hidden_set.begin(), hidden_set.end()})
+         << "  empirical values from Gibbs sampling" << endl;
+    cout << politree.getMarginalDistribution("v12") << "  computed values"
+         << endl
          << endl;
-    cout << politree.getMarginalDistribution("v12") << endl << endl;
   }
 
   {
@@ -195,27 +202,29 @@ int main() {
     float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
 
     cout << "P(D|E)\n";
-    cout << "theoretical\n";
     cout << make_distribution(
                 {3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2)})
+         << "  theoretical values" << endl;
+    cout << loop.getMarginalDistribution("D") << "  computed values" << endl
          << endl;
-    cout << loop.getMarginalDistribution("D") << endl << endl;
 
     cout << "P(C|E)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({M_alfa, M_beta}) << endl;
-    cout << loop.getMarginalDistribution("C") << endl << endl;
+    cout << make_distribution({M_alfa, M_beta}) << "  theoretical values"
+         << endl;
+    cout << loop.getMarginalDistribution("C") << "  computed values" << endl
+         << endl;
 
     cout << "P(B|E)\n";
-    cout << "theoretical\n";
-    cout << make_distribution({M_alfa, M_beta}) << endl;
-    cout << loop.getMarginalDistribution("B") << endl << endl;
+    cout << make_distribution({M_alfa, M_beta}) << "  theoretical values"
+         << endl;
+    cout << loop.getMarginalDistribution("B") << "  computed values" << endl
+         << endl;
 
     cout << "P(A|E)\n";
-    cout << "theoretical\n";
     cout << make_distribution({M * M_alfa + M_beta, M_alfa + M * M_beta})
+         << "  theoretical values" << endl;
+    cout << loop.getMarginalDistribution("A") << "  computed values" << endl
          << endl;
-    cout << loop.getMarginalDistribution("A") << endl << endl;
   }
 
   {
@@ -243,12 +252,12 @@ int main() {
     // compare the computed marginals with the ones coming from the samples
     // obtained by the Gibbs sampler
     cout << "P(v8 | Observations): \n";
-    cout << "empirical\n";
     cout << getEmpiricalMarginals(
                 loop.findVariable("v8"), samples,
                 VariablesSoup{hidden_set.begin(), hidden_set.end()})
-         << endl;
-    cout << loop.getMarginalDistribution("v8", threads) << endl
+         << "  empirical values from Gibbs sampling" << endl;
+    cout << loop.getMarginalDistribution("v8", threads) << "  computed values"
+         << endl
          << endl; // use the interal thread pool to also fasten the compuations
                   // of the amrginal distribution
   }

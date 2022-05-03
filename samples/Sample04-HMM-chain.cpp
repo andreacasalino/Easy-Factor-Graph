@@ -32,8 +32,9 @@ Graph make_graph_chain(const std::size_t &chain_size,
 
 int main() {
   SampleSection section(
-      "Simple polytree belief propagation, check the content of the created "
-      "Graph_XY.xml, Graph_YY.xml  Graph_XY.json and Graph_YY.json, ",
+      "Chain like structure. After running the sample, check the content of "
+      "the generated Graph_XY.xml, Graph_YY.xml, Graph_XY.json and "
+      "Graph_YY.json ",
       "4.4");
 
   size_t chain_size = 10;  // you can change it
@@ -52,10 +53,10 @@ int main() {
     cout << "Strong correlation with edivences,   MAP on Y0,1,..   " << Y_MAP
          << endl;
 
-    // export chains into an xml (just as an exporting example)
+    // export into an xml (just as an exporting example)
     xml::Exporter::exportToFile(G_XY,
                                 xml::ExportInfo{"Graph_XY.xml", "Graph_XY"});
-    // export chains into a json (just as an exporting example)
+    // export into a json (just as an exporting example)
     json::Exporter::exportToFile(G_XY, "Graph_XY.json");
   }
 
@@ -70,10 +71,10 @@ int main() {
     cout << "Strong correlation among hidden variables,   MAP on Y0,1,..   "
          << Y_MAP << endl;
 
-    // export chains into an xml (just as an exporting example)
+    // export into an xml (just as an exporting example)
     xml::Exporter::exportToFile(G_YY,
                                 xml::ExportInfo{"Graph_YY.xml", "Graph_YY"});
-    // export chains into a json (just as an exporting example)
+    // export into a json (just as an exporting example)
     json::Exporter::exportToFile(G_YY, "Graph_YY.json");
   }
 

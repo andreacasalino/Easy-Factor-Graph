@@ -20,7 +20,7 @@ using namespace std;
 
 int main() {
   {
-    SampleSection section("Group of variables managing", "4.1.1.1");
+    SampleSection section("Managing group of variables", "4.1.1.1");
 
     // define a group of variables, all with size = 2
     Group groupABCD(make_variable(2, "A"), make_variable(2, "B"));
@@ -36,7 +36,6 @@ int main() {
     } catch (...) {
       cout << "insertion of C in ABCD group correctly refused" << endl;
     }
-    cout << "groupABCD: " << groupABCD << endl;
   }
 
   {

@@ -72,12 +72,6 @@ int main() {
     cout << "Correlating factor" << endl;
     cout << Phi_C << endl << endl;
 
-    // build a factor correlating V1, V2 and V3
-    Factor Phi_A = Factor(Group{VariablesSoup{V1, V2, V3}},
-                          USE_SIMPLE_ANTI_CORRELATION_TAG);
-    cout << "Anti correlating factor" << endl;
-    cout << Phi_A << endl << endl;
-
     float weight =
         1.5f; // you can tune this value to see how the probabilities change
 
@@ -86,6 +80,12 @@ int main() {
     cout << "probabilities taken from the correlating exponential factor "
          << endl;
     cout << Psi_C.getProbabilities() << endl << endl;
+
+    // build a factor correlating V1, V2 and V3
+    Factor Phi_A = Factor(Group{VariablesSoup{V1, V2, V3}},
+                          USE_SIMPLE_ANTI_CORRELATION_TAG);
+    cout << "Anti correlating factor" << endl;
+    cout << Phi_A << endl << endl;
 
     // build the exponential anti correlating factor and evaluates the
     // probabilities
@@ -113,7 +113,7 @@ int main() {
     auto bigger_group = factor.getGroup().getVariables();
     bigger_group.push_back(make_variable(2, "E"));
     auto combination_finder = factor.makeFinder(bigger_group);
-    cout << "value found for <1,0,1,1,0> from group " << bigger_group << "  -> "
+    cout << "value found for 1,0,1,1,0 from group " << bigger_group << "  -> "
          << combination_finder.find(std::vector<std::size_t>{1, 0, 1, 1, 0})
                 .value
          << endl;

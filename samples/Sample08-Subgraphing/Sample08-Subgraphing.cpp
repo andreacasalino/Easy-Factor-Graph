@@ -49,22 +49,21 @@ int main() {
 
     // get the joint marginal probabilities of group ABC
     cout << "P(A,B,C)" << endl;
-    cout << "theoretical " << endl;
     cout << make_distribution({expf(alfa) * expf(beta), expf(alfa), 1.f,
                                expf(beta), expf(beta), 1.f, expf(alfa),
                                expf(alfa) * expf(beta)})
-         << endl;
+         << "  theoretical values" << endl;
     cout << graph.getJointMarginalDistribution({"A", "B", "C"})
                 .getProbabilities()
-         << endl
+         << "  computed values" << endl
          << endl;
 
     // get the joint marginal probabilities of group AB
     cout << "P(A,B)" << endl;
-    cout << "theoretical " << endl;
-    cout << make_distribution({expf(alfa), 1.f, 1.f, expf(alfa)}) << endl;
+    cout << make_distribution({expf(alfa), 1.f, 1.f, expf(alfa)})
+         << "  theoretical values" << endl;
     cout << graph.getJointMarginalDistribution({"A", "B"}).getProbabilities()
-         << endl
+         << "  computed values" << endl
          << endl;
   }
 
@@ -88,7 +87,7 @@ int main() {
     // the observed values for the other ones
 
     auto samples =
-        graph.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 0});
+        graph.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 0});
     {
       // compute the marginal probabilities of the following two
       // combinations (values refer to variables in the subgraph, i.e. A1,2,3,4)
@@ -99,21 +98,21 @@ int main() {
 
       float images_sum = compute_images_sum(marginal_A_1234);
 
-      cout << endl << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=0,X2=0)" << endl;
-      cout << "empirical" << endl;
+      cout << endl << "Prob(A1=0, A2=0, A3=0, A4=0 | X1=0,X2=0)" << endl;
       cout << getEmpiricalProbability(comb_raw.front(),
                                       marginal_A_1234.getGroup().getVariables(),
                                       samples, hidden_soup)
-           << endl;
-      cout << marginal_A_1234.evaluate(comb_raw.front()) / images_sum << endl;
+           << "  empirical values from Gibbs sampling" << endl;
+      cout << marginal_A_1234.evaluate(comb_raw.front()) / images_sum
+           << "  computed values" << endl;
 
-      cout << endl << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=0,X2=0)" << endl;
-      cout << "empirical" << endl;
+      cout << endl << "Prob(A1=1, A2=1, A3=0, A4=0 | X1=0,X2=0)" << endl;
       cout << getEmpiricalProbability(comb_raw.back(),
                                       marginal_A_1234.getGroup().getVariables(),
                                       samples, hidden_soup)
-           << endl;
-      cout << marginal_A_1234.evaluate(comb_raw.back()) / images_sum << endl;
+           << "  empirical values from Gibbs sampling" << endl;
+      cout << marginal_A_1234.evaluate(comb_raw.back()) / images_sum
+           << "  computed values" << endl;
     }
 
     {
@@ -127,20 +126,20 @@ int main() {
       float images_sum = compute_images_sum(marginal_B_123);
 
       cout << endl << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0)" << endl;
-      cout << "empirical" << endl;
       cout << getEmpiricalProbability(comb_raw.front(),
                                       marginal_B_123.getGroup().getVariables(),
                                       samples, hidden_soup)
-           << endl;
-      cout << marginal_B_123.evaluate(comb_raw.front()) / images_sum << endl;
+           << "  empirical values from Gibbs sampling" << endl;
+      cout << marginal_B_123.evaluate(comb_raw.front()) / images_sum
+           << "  computed values" << endl;
 
       cout << endl << "Prob(B1=1, B2=1, B3=0 | X1=0,X2=0)" << endl;
-      cout << "empirical" << endl;
       cout << getEmpiricalProbability(comb_raw.back(),
                                       marginal_B_123.getGroup().getVariables(),
                                       samples, hidden_soup)
-           << endl;
-      cout << marginal_B_123.evaluate(comb_raw.back()) / images_sum << endl;
+           << "  empirical values from Gibbs sampling" << endl;
+      cout << marginal_B_123.evaluate(comb_raw.back()) / images_sum
+           << "  computed values" << endl;
     }
 
     // set different evidences
@@ -149,7 +148,7 @@ int main() {
     // produce a list of samples for the hidden variables, conditioned by
     // the novel evidences
     samples =
-        graph.makeSamples(GibbsSampler::SamplesGenerationContext{500, 50, 2});
+        graph.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 2});
     {
       // compute the marginal probabilities of the following two
       // combinations (values refer to variables in the subgraph, i.e. A1,2,3,4)
@@ -160,21 +159,21 @@ int main() {
 
       float images_sum = compute_images_sum(marginal_A_1234);
 
-      cout << endl << "Prob(A1=0, A2=0, A3=0,A4=0 | X1=1,X2=1)" << endl;
-      cout << "empirical" << endl;
+      cout << endl << "Prob(A1=0, A2=0, A3=0, A4=0 | X1=1,X2=1)" << endl;
       cout << getEmpiricalProbability(comb_raw.front(),
                                       marginal_A_1234.getGroup().getVariables(),
                                       samples, hidden_soup)
-           << endl;
-      cout << marginal_A_1234.evaluate(comb_raw.front()) / images_sum << endl;
+           << "  empirical values from Gibbs sampling" << endl;
+      cout << marginal_A_1234.evaluate(comb_raw.front()) / images_sum
+           << "  computed values" << endl;
 
-      cout << endl << "Prob(A1=1, A2=1, A3=0,A4=0 | X1=1,X2=1)" << endl;
-      cout << "empirical" << endl;
+      cout << endl << "Prob(A1=1, A2=1, A3=0, A4=0 | X1=1,X2=1)" << endl;
       cout << getEmpiricalProbability(comb_raw.back(),
                                       marginal_A_1234.getGroup().getVariables(),
                                       samples, hidden_soup)
-           << endl;
-      cout << marginal_A_1234.evaluate(comb_raw.back()) / images_sum << endl;
+           << "  empirical values from Gibbs sampling" << endl;
+      cout << marginal_A_1234.evaluate(comb_raw.back()) / images_sum
+           << "  computed values" << endl;
     }
   }
 

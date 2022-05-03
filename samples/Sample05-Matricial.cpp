@@ -30,8 +30,8 @@ Graph makeMatrix(const std::size_t &matrix_size, const std::size_t &var_size,
 
 int main() {
   SampleSection section(
-      "Simple polytree belief propagation, check the content of the created "
-      "Matrix.xml and Matrix.json, ",
+      "Matrix like structure. After running the sample, check the content of "
+      "the generated Matrix.xml, Matrix.xml",
       "4.5");
 
   size_t matrix_size = 10; // A matrix of Size x Size variables will be created,
