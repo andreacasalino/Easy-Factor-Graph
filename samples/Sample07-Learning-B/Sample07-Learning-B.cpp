@@ -42,8 +42,9 @@ int main() {
 
     cout << "creating the training set, might take a while" << endl;
     TrainSet train_set(conditional_field.makeTrainSet(
-        GibbsSampler::SamplesGenerationContext{200, 50, 0}, 3));
+        GibbsSampler::SamplesGenerationContext{20, 50, 0}, 0.7f, 3));
     cout << "training set created" << endl;
+    cout << train_set.getCombinations().size() << endl;
 
     const auto expected_weights = conditional_field.getWeights();
 
@@ -51,11 +52,12 @@ int main() {
     // train set
     set_ones(conditional_field);
     QuasiNewton trainer;
-    trainer.setMaxIterations(100);
+    trainer.setMaxIterations(15);
     cout << "training the model, this might take a while as conditional random "
             "field are much more computationally demanding"
          << endl;
-    train_model(conditional_field, trainer, train_set);
+    trainer.enablePrintAdvancement();
+    train_model(conditional_field, trainer, train_set, TrainInfo{3, 1.f});
 
     cout << "expected weights:    " << expected_weights << endl;
     cout << "wieghts after train: " << conditional_field.getWeights() << endl;

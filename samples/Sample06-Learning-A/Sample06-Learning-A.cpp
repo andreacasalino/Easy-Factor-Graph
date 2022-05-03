@@ -86,7 +86,7 @@ int main() {
     model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{D, E}},
                                                   USE_SIMPLE_CORRELATION_TAG));
 
-    train_model(model, 50, 1000);
+    train_model(model, 50, 1500);
   }
 
   {
@@ -96,11 +96,11 @@ int main() {
     xml::Importer::importFromFile(model,
                                   SAMPLE_FOLDER + std::string{"graph_3.xml"});
 
-    train_model(model, 50, 1500);
+    train_model(model, 50, 2000);
   }
 
   {
-    SampleSection section("Complex tunable model ", "4.6.4");
+    SampleSection section("Model with sharing weights", "4.6.4");
 
     RandomField model;
 
@@ -163,5 +163,5 @@ void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
   train_model(model_to_tune, trainer, TrainSet{samples});
 
   cout << "expected weights:    " << expected_weights << endl;
-  cout << "wieghts after train: " << model_to_tune.getWeights() << endl;
+  cout << "weights after train: " << model_to_tune.getWeights() << endl;
 }
