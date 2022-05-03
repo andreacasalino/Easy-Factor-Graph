@@ -9,6 +9,11 @@ properties. Not familiar with this kind of concepts? Don't worry, have a look at
 
 Training can be done using the gradient-base approaches implemented of [this](https://github.com/andreacasalino/TrainingTools) external library.
 
+With respect to similar libraries, **EFG** is able to:
+ * TODO
+ * TODO
+ * TODO
+
 ## CONTENTS
 
 This project is structured as follows:
