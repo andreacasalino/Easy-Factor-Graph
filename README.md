@@ -15,7 +15,9 @@
 properties. Not familiar with this kind of concepts? Don't worry, have a look at the [documentation](https://github.com/andreacasalino/Easy-Factor-Graph/blob/master/doc/EFG.pdf) in the **doc** folder before diving into the code ;).
 **Random Fields** as well as **Conditional Random Fields** are particular classes of **undirected graphical models** and can be easily created and **trained** using this library.
 
-![What you should see when running the application](./img/img2.png)
+Rememebr to leave a **star** if you have found this repository useful.
+
+![Undirect models](./img/img2.png)
 
 Training can be done using the gradient-base approaches implemented of [this](https://github.com/andreacasalino/TrainingTools) external library.
 
