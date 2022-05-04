@@ -42,9 +42,8 @@ int main() {
 
     cout << "creating the training set, might take a while" << endl;
     TrainSet train_set(conditional_field.makeTrainSet(
-        GibbsSampler::SamplesGenerationContext{20, 50, 0}, 0.7f, 3));
+        GibbsSampler::SamplesGenerationContext{30, 50, 0}, 1.f, 4));
     cout << "training set created" << endl;
-    cout << train_set.getCombinations().size() << endl;
 
     const auto expected_weights = conditional_field.getWeights();
 
@@ -57,7 +56,7 @@ int main() {
             "field are much more computationally demanding"
          << endl;
     trainer.enablePrintAdvancement();
-    train_model(conditional_field, trainer, train_set, TrainInfo{3, 1.f});
+    train_model(conditional_field, trainer, train_set, TrainInfo{4, 1.f});
 
     cout << "expected weights:    " << expected_weights << endl;
     cout << "wieghts after train: " << conditional_field.getWeights() << endl;

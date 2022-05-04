@@ -46,12 +46,10 @@ int main() {
     VariablePtr B = make_variable(2, "B");
     VariablePtr C = make_variable(2, "C");
 
-    float alfa = 1.f, beta = 3.f, gamma = 0.1f;
+    float alfa = 1.f, beta = 1.5f, gamma = 0.5f;
 
-    model.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG},
-        alfa)); // the weight of this potential
-                // will be kept constant
+    model.addTunableFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
     model.addTunableFactor(std::make_shared<FactorExponential>(
         Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
     model.addTunableFactor(std::make_shared<FactorExponential>(
@@ -71,16 +69,20 @@ int main() {
     VariablePtr D = make_variable(2, "D");
     VariablePtr E = make_variable(2, "E");
 
-    float alfa = 0.4f, beta = 1.f, gamma = 0.3f, delta = 1.5f;
+    float alfa = 0.4f, beta = 0.7f, gamma = 0.3f, delta = 1.5f;
 
-    model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+    model.addConstFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG},
+        alfa)); // the weight of this potential will be
+                // kept constant
     model.addTunableFactor(std::make_shared<FactorExponential>(
         Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
     model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{B, C}},
                                                   USE_SIMPLE_CORRELATION_TAG));
-    model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{B, E}}, USE_SIMPLE_CORRELATION_TAG}, gamma));
+    model.addConstFactor(std::make_shared<FactorExponential>(
+        Factor{Group{VariablesSoup{B, E}}, USE_SIMPLE_CORRELATION_TAG},
+        gamma)); // the weight of this potential will be
+                 // kept constant
     model.addTunableFactor(std::make_shared<FactorExponential>(
         Factor{Group{VariablesSoup{B, D}}, USE_SIMPLE_CORRELATION_TAG}, delta));
     model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{D, E}},

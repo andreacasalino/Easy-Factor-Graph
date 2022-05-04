@@ -37,7 +37,7 @@ int main() {
   size_t matrix_size = 10; // A matrix of Size x Size variables will be created,
                            // you can change it
   size_t var_dom_size = 3; // you can change it
-  float weight_potential = 1.1f;
+  float weight_potential = 0.9f;
 
   auto Matrix = makeMatrix(matrix_size, var_dom_size, weight_potential);
   // set V0_0 = 0 as an edivence and compute marginals of the variables
