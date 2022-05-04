@@ -14,6 +14,9 @@
 #include <random>
 
 namespace EFG::strct {
+/**
+ * @brief Refer also to https://en.wikipedia.org/wiki/Gibbs_sampling
+ */
 class UniformSampler {
 public:
   UniformSampler();
@@ -46,6 +49,13 @@ public:
      * using the current time.
      */
     std::optional<std::size_t> seed;
+    /**
+     * @brief number of samples to discard before actually starting the sampling
+     * procedure.
+     *
+     * When nothing is specified, 10 times delta_iterations is assumed.
+     */
+    std::optional<std::size_t> transient;
   };
   /**
    * @brief Use Gibbs sampling approach to draw empirical samples. Values inside

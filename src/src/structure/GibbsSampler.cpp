@@ -183,16 +183,31 @@ GibbsSampler::makeSamples(const SamplesGenerationContext &context,
   auto sampling_tasks =
       make_sampling_tasks(sampling_nodes, engines, context.seed, pool);
 
-  std::vector<categoric::Combination> result;
-  result.reserve(context.samples_number);
-  while (result.size() != context.samples_number) {
-    for (std::size_t iter = 0; iter < delta_iterations; ++iter) {
+  std::size_t burn_out;
+  if (context.transient) {
+    burn_out = *context.transient;
+  } else {
+    burn_out = 10 * delta_iterations;
+  }
+
+  auto evolver = [&](const std::size_t iterations) {
+    for (std::size_t iter = 0; iter < iterations; ++iter) {
       for (const auto &tasks : sampling_tasks) {
         pool.parallelFor(tasks);
       }
     }
+  };
+
+  evolver(burn_out);
+  std::vector<categoric::Combination> result;
+  result.reserve(context.samples_number);
+  while (true) {
     std::vector<std::size_t> combination_copy = combination;
     result.emplace_back(std::move(combination_copy));
+    if (result.size() == context.samples_number) {
+      break;
+    }
+    evolver(delta_iterations);
   }
   return result;
 }
