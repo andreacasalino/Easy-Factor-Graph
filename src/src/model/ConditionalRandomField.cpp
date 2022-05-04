@@ -165,8 +165,7 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
       });
     }
     train_set_combinations.forEachSample(
-        [this, &betas, &coeff,
-         &tasks](const categoric::Combination &combination) {
+        [this, &tasks](const categoric::Combination &combination) {
           {
             std::size_t var_pos = 0;
             for (auto &[var, val] : this->getState().evidences) {
