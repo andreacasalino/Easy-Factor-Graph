@@ -356,7 +356,7 @@ TEST_CASE("Belief propagation with Pool efficiency", "[propagation]") {
   auto depth = GENERATE(8, 10);
   auto loopy = GENERATE(false, true);
 
-  ScalableModel model(depth, 3, loopy);
+  ScalableModel model(depth, 7, loopy);
 
   auto measure_time =
       [&](const std::size_t threads) -> std::chrono::nanoseconds {

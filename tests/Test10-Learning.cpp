@@ -468,22 +468,32 @@ TEST_CASE("Train with Pool efficiency", "[train]") {
   }
   TrainSet train_set(samples);
 
-  auto threads = 2;
-
   auto measure_time =
-      [&](const std::size_t threads) -> std::chrono::nanoseconds {
+      [&](const std::size_t threads,
+          FactorsTunableAware &subject) -> std::chrono::nanoseconds {
     ::train::GradientDescendFixed trainer;
     trainer.setMaxIterations(20);
     trainer.setOptimizationStep(static_cast<float>(1e-5));
     return test::measure_time([&]() {
-      train_model(model, trainer, train_set,
+      train_model(subject, trainer, train_set,
                   EFG::train::TrainInfo{threads, 1.f});
     });
   };
 
-  auto single_thread_time = measure_time(1);
-  auto multi_thread_time = measure_time(2);
+  auto single_thread_time = measure_time(1, model);
+  auto multi_thread_time = measure_time(2, model);
 
   CHECK(static_cast<double>(multi_thread_time.count()) <
         static_cast<double>(single_thread_time.count()));
+
+  SECTION("conditional model") {
+    model.setEvidence(model.root(), 0);
+    ConditionalRandomField as_conditional_random_field(model, false);
+
+    single_thread_time = measure_time(1, as_conditional_random_field);
+    multi_thread_time = measure_time(2, as_conditional_random_field);
+
+    CHECK(static_cast<double>(multi_thread_time.count()) <
+          static_cast<double>(single_thread_time.count()));
+  }
 }
