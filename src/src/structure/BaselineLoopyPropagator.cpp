@@ -70,7 +70,8 @@ compute_loopy_order(HiddenCluster &cluster, const PropagationKind &kind,
   return result;
 }
 
-static const MessageVariation DEFAULT_VARIATION_TOLLERANCE = static_cast<float>(1e-3);
+static const MessageVariation DEFAULT_VARIATION_TOLLERANCE =
+    static_cast<float>(1e-3);
 
 MessageVariation
 max_variation(const std::vector<MessageVariation> &variations) {
@@ -106,7 +107,7 @@ bool BaselineLoopyPropagator::propagateBelief(HiddenCluster &subject,
     for (const auto &tasks : order) {
       pool.parallelFor(tasks);
     }
-    if (0 == max_variation(variations)) {
+    if (max_variation(variations) < DEFAULT_VARIATION_TOLLERANCE) {
       return true;
     }
   }

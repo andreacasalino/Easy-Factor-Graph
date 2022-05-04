@@ -66,7 +66,7 @@ public:
   virtual ~BeliefAware() = default;
 
   const PropagationContext &getPropagationContext() const { return context; }
-  PropagationContext &getPropagationContext() { return context; }
+  void setPropagationContext(const PropagationContext &ctxt) { context = ctxt; }
 
   bool hasPropagationResult() const { return nullptr != lastPropagation; }
   const PropagationResult &getLastPropagationResult() const {
