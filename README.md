@@ -9,10 +9,23 @@ properties. Not familiar with this kind of concepts? Don't worry, have a look at
 
 Training can be done using the gradient-base approaches implemented of [this](https://github.com/andreacasalino/TrainingTools) external library.
 
-With respect to similar libraries, **EFG** is able to:
- * TODO
- * TODO
- * TODO
+With **EFG** is able to:
+ * dynamically build and update undirected factor graph, inserting one by one the factors that compose the model
+ * dynamically set the group of evidences
+ * perform belief propagation on both ***loopy graph** and **polytree** like structure in order to
+   * get the **marginal conditioned distribution** of an hidden variable w.r.t. the current evidence set
+   * get the **maximum a posteriori** of an hidden variable (or for the entire hidden set in one single call) w.r.t. the current evidence set
+ * import or export models from and to xml file
+ * import or export models from and to json string (or file)
+ * draw samples for the variables composing the model
+ * train **random** and **conditional random fields** with gradient based approaches (**gradient descend**, **conjugate gradient descend**, **quasi newton method**, etc.)
+
+With respect to similar libraries, **EFG** is also able to:
+ * enforce the fact that group of tunable factors should have the same weight
+ * exploits an internal thread pool in order to dramatically reduce the time required to:
+   * perform belief propagation
+   * train **random** and **conditional random fields**
+   * draw samples for the variables involved in the model
 
 ## CONTENTS
 
