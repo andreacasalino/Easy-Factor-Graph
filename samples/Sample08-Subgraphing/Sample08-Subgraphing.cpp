@@ -79,10 +79,6 @@ int main() {
     graph.setEvidence("X1", 0);
     graph.setEvidence("X2", 0);
 
-    auto hidden_set = graph.getHiddenVariables();
-    VariablesSoup hidden_soup =
-        VariablesSoup{hidden_set.begin(), hidden_set.end()};
-
     // produce a list of samples for the hidden variables, conditioned by
     // the observed values for the other ones
 
@@ -101,7 +97,7 @@ int main() {
       cout << endl << "Prob(A1=0, A2=0, A3=0, A4=0 | X1=0,X2=0)" << endl;
       cout << getEmpiricalProbability(comb_raw.front(),
                                       marginal_A_1234.getGroup().getVariables(),
-                                      samples, hidden_soup)
+                                      samples, graph.getAllVariables())
            << "  empirical values from Gibbs sampling" << endl;
       cout << marginal_A_1234.evaluate(comb_raw.front()) / images_sum
            << "  computed values" << endl;
@@ -109,7 +105,7 @@ int main() {
       cout << endl << "Prob(A1=1, A2=1, A3=0, A4=0 | X1=0,X2=0)" << endl;
       cout << getEmpiricalProbability(comb_raw.back(),
                                       marginal_A_1234.getGroup().getVariables(),
-                                      samples, hidden_soup)
+                                      samples, graph.getAllVariables())
            << "  empirical values from Gibbs sampling" << endl;
       cout << marginal_A_1234.evaluate(comb_raw.back()) / images_sum
            << "  computed values" << endl;
@@ -128,7 +124,7 @@ int main() {
       cout << endl << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0)" << endl;
       cout << getEmpiricalProbability(comb_raw.front(),
                                       marginal_B_123.getGroup().getVariables(),
-                                      samples, hidden_soup)
+                                      samples, graph.getAllVariables())
            << "  empirical values from Gibbs sampling" << endl;
       cout << marginal_B_123.evaluate(comb_raw.front()) / images_sum
            << "  computed values" << endl;
@@ -136,7 +132,7 @@ int main() {
       cout << endl << "Prob(B1=1, B2=1, B3=0 | X1=0,X2=0)" << endl;
       cout << getEmpiricalProbability(comb_raw.back(),
                                       marginal_B_123.getGroup().getVariables(),
-                                      samples, hidden_soup)
+                                      samples, graph.getAllVariables())
            << "  empirical values from Gibbs sampling" << endl;
       cout << marginal_B_123.evaluate(comb_raw.back()) / images_sum
            << "  computed values" << endl;
@@ -162,7 +158,7 @@ int main() {
       cout << endl << "Prob(A1=0, A2=0, A3=0, A4=0 | X1=1,X2=1)" << endl;
       cout << getEmpiricalProbability(comb_raw.front(),
                                       marginal_A_1234.getGroup().getVariables(),
-                                      samples, hidden_soup)
+                                      samples, graph.getAllVariables())
            << "  empirical values from Gibbs sampling" << endl;
       cout << marginal_A_1234.evaluate(comb_raw.front()) / images_sum
            << "  computed values" << endl;
@@ -170,7 +166,7 @@ int main() {
       cout << endl << "Prob(A1=1, A2=1, A3=0, A4=0 | X1=1,X2=1)" << endl;
       cout << getEmpiricalProbability(comb_raw.back(),
                                       marginal_A_1234.getGroup().getVariables(),
-                                      samples, hidden_soup)
+                                      samples, graph.getAllVariables())
            << "  empirical values from Gibbs sampling" << endl;
       cout << marginal_A_1234.evaluate(comb_raw.back()) / images_sum
            << "  computed values" << endl;

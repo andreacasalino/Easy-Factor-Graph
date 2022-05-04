@@ -137,8 +137,9 @@ int main() {
                                            merge(SAMPLE_FOLDER, "graph_2.xml"));
 
     GibbsSampler::SamplesGenerationContext context_for_saples_generation =
-        GibbsSampler::SamplesGenerationContext{500, // number of desired samples
-                                               50, 0};
+        GibbsSampler::SamplesGenerationContext{
+            1500, // number of desired samples
+            50, 0};
     // use internal thread pool to fasten various computations below
     std::size_t threads = 3;
 
@@ -155,27 +156,24 @@ int main() {
     // compare the computed marginals with the ones coming from the samples
     // obtained by the Gibbs sampler
     cout << "P(v10 | Observations): \n";
-    cout << getEmpiricalMarginals(
-                politree.findVariable("v10"), samples,
-                VariablesSoup{hidden_set.begin(), hidden_set.end()})
+    cout << getEmpiricalMarginals(politree.findVariable("v10"), samples,
+                                  politree.getAllVariables())
          << "  empirical values from Gibbs sampling" << endl;
     cout << politree.getMarginalDistribution("v10") << "  computed values"
          << endl
          << endl;
 
     cout << "P(v11 | Observations): \n";
-    cout << getEmpiricalMarginals(
-                politree.findVariable("v11"), samples,
-                VariablesSoup{hidden_set.begin(), hidden_set.end()})
+    cout << getEmpiricalMarginals(politree.findVariable("v11"), samples,
+                                  politree.getAllVariables())
          << "  empirical values from Gibbs sampling" << endl;
     cout << politree.getMarginalDistribution("v11") << "  computed values"
          << endl
          << endl;
 
     cout << "P(v12 | Observations): \n";
-    cout << getEmpiricalMarginals(
-                politree.findVariable("v12"), samples,
-                VariablesSoup{hidden_set.begin(), hidden_set.end()})
+    cout << getEmpiricalMarginals(politree.findVariable("v12"), samples,
+                                  politree.getAllVariables())
          << "  empirical values from Gibbs sampling" << endl;
     cout << politree.getMarginalDistribution("v12") << "  computed values"
          << endl
@@ -252,9 +250,8 @@ int main() {
     // compare the computed marginals with the ones coming from the samples
     // obtained by the Gibbs sampler
     cout << "P(v8 | Observations): \n";
-    cout << getEmpiricalMarginals(
-                loop.findVariable("v8"), samples,
-                VariablesSoup{hidden_set.begin(), hidden_set.end()})
+    cout << getEmpiricalMarginals(loop.findVariable("v8"), samples,
+                                  loop.getAllVariables())
          << "  empirical values from Gibbs sampling" << endl;
     cout << loop.getMarginalDistribution("v8", threads) << "  computed values"
          << endl

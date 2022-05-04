@@ -6,6 +6,7 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
+#include <Frequencies.h>
 #include <Printing.h>
 
 #include <algorithm>
