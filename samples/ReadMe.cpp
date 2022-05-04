@@ -3,6 +3,14 @@
 #include <EasyFactorGraph/model/RandomField.h>
 
 int main() {
+  {
+      // FACTORS CONSTRUCTION
+  }
+
+  {
+    // MODELS CONSTRUCTION
+  }
+
   // define a couple of variables, all with size = 3
   EFG::categoric::VariablePtr A = EFG::categoric::make_variable(3, "A");
   EFG::categoric::VariablePtr B = EFG::categoric::make_variable(3, "B");

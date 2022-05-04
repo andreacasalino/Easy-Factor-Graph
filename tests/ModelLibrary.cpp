@@ -77,4 +77,73 @@ ComplexLoopy::ComplexLoopy() {
   addTunableFactor(make_corr_expfactor2(vars[6], vars[7], w));
   addTunableFactor(make_corr_expfactor2(vars[7], vars[8], w));
 }
+
+namespace {
+std::string make_scalable_var_name(const std::size_t counter) {
+  return "var_" + std::to_string(counter);
+}
+
+struct BinaryTreeContext {
+  model::RandomField &subject;
+  std::size_t var_size;
+  float w;
+  bool loopy;
+};
+void fill_scalable_model(const BinaryTreeContext &ctxt,
+                         const std::size_t remaining_levels, std::size_t parent,
+                         std::size_t &counter) {
+  if (0 == remaining_levels) {
+    return;
+  }
+
+  categoric::VariablePtr parent_var;
+  if (0 == counter) {
+    ++counter;
+    parent = counter;
+    parent_var =
+        categoric::make_variable(ctxt.var_size, make_scalable_var_name(parent));
+
+  } else {
+    parent_var = ctxt.subject.findVariable(make_scalable_var_name(parent));
+  }
+
+  auto add_child = [&]() {
+    ++counter;
+    const auto new_var_id = counter;
+    auto new_var = categoric::make_variable(ctxt.var_size,
+                                            make_scalable_var_name(new_var_id));
+    ctxt.subject.addTunableFactor(
+        make_corr_expfactor2(parent_var, new_var, ctxt.w));
+
+    fill_scalable_model(ctxt, remaining_levels - 1, new_var_id, counter);
+    return new_var;
+  };
+
+  auto left_var = add_child();
+  auto right_var = add_child();
+
+  if (ctxt.loopy) {
+    ctxt.subject.addTunableFactor(
+        make_corr_expfactor2(left_var, right_var, ctxt.w));
+  }
+}
+} // namespace
+
+ScalableModel::ScalableModel(const std::size_t size, const std::size_t var_size,
+                             const bool loopy) {
+  if (0 == size) {
+    throw Error{"Invalid depth"};
+  }
+  std::size_t counter = 0;
+  fill_scalable_model(BinaryTreeContext{*this, var_size, 1.f, loopy}, size, 0,
+                      counter);
+}
+
+categoric::VariablePtr ScalableModel::root() const {
+  return findVariable(make_scalable_var_name(1));
+}
+
+categoric::VariablePtr ScalableModel::nonRoot() const {
+  return findVariable(make_scalable_var_name(2));
+}
 } // namespace EFG::test::library

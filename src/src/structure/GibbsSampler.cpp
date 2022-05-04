@@ -58,27 +58,28 @@ make_sampler_nodes(std::vector<std::size_t> &combination_buffer,
   combination_buffer.resize(size);
   SmartMap<categoric::Variable, std::size_t *> combination_values_map;
   for (std::size_t k = 0; k < size; ++k) {
-    combination_values_map.emplace(vars_order[k],
-                                   &combination_buffer.data()[k]);
+    auto *comb_ptr = &combination_buffer.data()[k];
+    *comb_ptr = 0;
+    combination_values_map.emplace(vars_order[k], comb_ptr);
   }
   std::vector<SamplerNode> result;
   result.reserve(size);
   for (const auto &[var, val] : state.evidences) {
-    *combination_values_map[var] = val;
+    *combination_values_map.find(var)->second = val;
   }
   for (auto &cluster : state.clusters) {
     for (auto *node : cluster.nodes) {
       update_merged_unaries(*node);
       auto &added_node = result.emplace_back();
-      added_node.value_in_combination = combination_values_map[node->variable];
-      *added_node.value_in_combination = 0;
+      added_node.value_in_combination =
+          combination_values_map.find(node->variable)->second;
       added_node.static_dependencies = node->merged_unaries.get();
       for (const auto &[connected_node, connection] :
            node->active_connections) {
         auto &added_dep = added_node.dynamic_dependencies.emplace_back();
         added_dep.sender = connected_node->variable;
         added_dep.sender_value_in_combination =
-            combination_values_map[connected_node->variable];
+            combination_values_map.find(connected_node->variable)->second;
         added_dep.factor = connection->factor;
       }
     }

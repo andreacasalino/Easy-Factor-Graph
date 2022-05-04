@@ -13,6 +13,7 @@ std::vector<float> RandomField::getWeightsGradient_(
   if (!getEvidences().empty()) {
     removeAllEvidences();
   }
+  resetBelief();
   propagateBelief(strct::SUM);
   std::vector<float> result;
   result.resize(tuners.size());

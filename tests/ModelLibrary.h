@@ -33,4 +33,14 @@ public:
   ComplexLoopy();
 };
 static const ComplexLoopy COMPLEX_LOOPY = ComplexLoopy{};
+
+class ScalableModel : public model::RandomField {
+public:
+  ScalableModel(const std::size_t size, const std::size_t var_size,
+                const bool loopy);
+
+  categoric::VariablePtr root() const;
+
+  categoric::VariablePtr nonRoot() const;
+};
 } // namespace EFG::test::library

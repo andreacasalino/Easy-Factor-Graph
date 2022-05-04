@@ -437,3 +437,53 @@ TEST_CASE("Shared weights tuning", "[train]") {
                                                                        1));
   }
 }
+
+#include "ModelLibrary.h"
+
+using namespace EFG::test::library;
+
+namespace {
+std::vector<std::size_t> make_ones(const std::size_t size) {
+  std::vector<std::size_t> result;
+  result.resize(size);
+  for (auto &val : result) {
+    val = 0;
+  }
+  return result;
+}
+} // namespace
+
+TEST_CASE("Train with Pool efficiency", "[train]") {
+  auto depth = GENERATE(8, 10);
+  auto loopy = false;
+
+  ScalableModel model(depth, 3, loopy);
+  const std::size_t vars_numb = model.getAllVariables().size();
+
+  const std::size_t train_set_size = 500;
+  std::vector<Combination> samples;
+  samples.reserve(train_set_size);
+  for (std::size_t k = 0; k < train_set_size; ++k) {
+    samples.emplace_back(make_ones(vars_numb));
+  }
+  TrainSet train_set(samples);
+
+  auto threads = 2;
+
+  auto measure_time =
+      [&](const std::size_t threads) -> std::chrono::nanoseconds {
+    ::train::GradientDescendFixed trainer;
+    trainer.setMaxIterations(20);
+    trainer.setOptimizationStep(static_cast<float>(1e-5));
+    return test::measure_time([&]() {
+      train_model(model, trainer, train_set,
+                  EFG::train::TrainInfo{threads, 1.f});
+    });
+  };
+
+  auto single_thread_time = measure_time(1);
+  auto multi_thread_time = measure_time(2);
+
+  CHECK(static_cast<double>(multi_thread_time.count()) <
+        static_cast<double>(single_thread_time.count()));
+}

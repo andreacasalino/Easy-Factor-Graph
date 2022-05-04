@@ -3,6 +3,8 @@
 
 #include <EasyFactorGraph/structure/components/PoolAware.h>
 
+#include "Utils.h"
+
 using namespace EFG;
 using namespace EFG::strct;
 
@@ -53,13 +55,11 @@ TEST_CASE("testing Pool", "[pool]") {
 }
 
 TEST_CASE("testing Pool efficiency", "[pool]") {
-  auto threads = 2;
-
   const std::size_t tasks_size = 20;
   Tasks tasks;
   for (std::size_t k = 0; k < tasks_size; ++k) {
     tasks.emplace_back([](const std::size_t) {
-      std::this_thread::sleep_for(std::chrono::milliseconds{100});
+      std::this_thread::sleep_for(std::chrono::milliseconds{20});
     });
   }
   const std::size_t cycles = 5;
@@ -67,12 +67,11 @@ TEST_CASE("testing Pool efficiency", "[pool]") {
   auto measure_time =
       [&](const std::size_t threads) -> std::chrono::nanoseconds {
     Pool pool(threads);
-    auto tic = std::chrono::high_resolution_clock::now();
-    for (std::size_t k = 0; k < cycles; ++k) {
-      pool.parallelFor(tasks);
-    }
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(
-        std::chrono::high_resolution_clock::now() - tic);
+    return test::measure_time([&]() {
+      for (std::size_t k = 0; k < cycles; ++k) {
+        pool.parallelFor(tasks);
+      }
+    });
   };
 
   auto single_thread_time = measure_time(1);

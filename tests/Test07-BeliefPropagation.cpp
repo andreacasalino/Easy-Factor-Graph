@@ -351,3 +351,24 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
       graph.getJointMarginalDistribution({"A", "B"}).getProbabilities(),
       0.01f));
 }
+
+TEST_CASE("Belief propagation with Pool efficiency", "[propagation]") {
+  auto depth = GENERATE(8, 10);
+  auto loopy = GENERATE(false, true);
+
+  ScalableModel model(depth, 3, loopy);
+
+  auto measure_time =
+      [&](const std::size_t threads) -> std::chrono::nanoseconds {
+    model.removeAllEvidences();
+    model.setEvidence(model.root(), 0);
+    return test::measure_time(
+        [&]() { model.getMarginalDistribution(model.nonRoot(), threads); });
+  };
+
+  auto single_thread_time = measure_time(1);
+  auto multi_thread_time = measure_time(2);
+
+  CHECK(static_cast<double>(multi_thread_time.count()) <
+        static_cast<double>(single_thread_time.count()));
+}

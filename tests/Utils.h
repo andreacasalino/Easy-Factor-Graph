@@ -5,6 +5,8 @@
 #include <EasyFactorGraph/structure/ConnectionsManager.h>
 #include <EasyFactorGraph/trainable/TrainSet.h>
 
+#include <chrono>
+#include <functional>
 #include <math.h>
 #include <memory>
 
@@ -48,4 +50,6 @@ compute_combinations_and_probs(const strct::ConnectionsManager &model);
 
 train::TrainSet make_good_trainset(const strct::ConnectionsManager &model,
                                    const std::size_t samples);
+
+std::chrono::nanoseconds measure_time(const std::function<void()> &subject);
 } // namespace EFG::test

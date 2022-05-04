@@ -111,4 +111,11 @@ train::TrainSet make_good_trainset(const strct::ConnectionsManager &model,
   }
   return train::TrainSet{sampled};
 }
+
+std::chrono::nanoseconds measure_time(const std::function<void()> &subject) {
+  auto tic = std::chrono::high_resolution_clock::now();
+  subject();
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::high_resolution_clock::now() - tic);
+}
 } // namespace EFG::test

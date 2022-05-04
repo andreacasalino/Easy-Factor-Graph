@@ -14,9 +14,6 @@
 #include <random>
 
 namespace EFG::strct {
-/**
- * @brief Refer also to https://en.wikipedia.org/wiki/Gibbs_sampling
- */
 class UniformSampler {
 public:
   UniformSampler();
@@ -32,6 +29,9 @@ private:
   mutable std::uniform_real_distribution<float> distribution;
 };
 
+/**
+ * @brief Refer also to https://en.wikipedia.org/wiki/Gibbs_sampling
+ */
 class GibbsSampler : virtual public StateAware,
                      virtual public BeliefAware,
                      virtual public PoolAware {

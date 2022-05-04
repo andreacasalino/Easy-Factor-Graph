@@ -86,8 +86,8 @@ int main() {
     // produce a list of samples for the hidden variables, conditioned by
     // the observed values for the other ones
 
-    auto samples =
-        graph.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 0});
+    auto samples = graph.makeSamples(
+        GibbsSampler::SamplesGenerationContext{1000, 50, 0, 1000});
     {
       // compute the marginal probabilities of the following two
       // combinations (values refer to variables in the subgraph, i.e. A1,2,3,4)
@@ -147,8 +147,8 @@ int main() {
     graph.setEvidence("X2", 1);
     // produce a list of samples for the hidden variables, conditioned by
     // the novel evidences
-    samples =
-        graph.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 2});
+    samples = graph.makeSamples(
+        GibbsSampler::SamplesGenerationContext{1000, 50, 2, 1000});
     {
       // compute the marginal probabilities of the following two
       // combinations (values refer to variables in the subgraph, i.e. A1,2,3,4)
