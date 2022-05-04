@@ -5,7 +5,10 @@ find_package(Threads REQUIRED)
 target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
   Threads::Threads
 )
-target_compile_options(${PROJECT_SHORTNAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+option(BUILD_EFG_COMPILER_CHECK "Enable extra compiler checks" OFF)
+if(BUILD_EFG_COMPILER_CHECK)
+	target_compile_options(${PROJECT_SHORTNAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 option(BUILD_EFG_XML_CONVERTER "Compile features supporting conversion from and to xml files" ON)
 if(BUILD_EFG_XML_CONVERTER)
@@ -14,7 +17,7 @@ if(BUILD_EFG_XML_CONVERTER)
   FetchContent_Declare(
     xml_parser
     GIT_REPOSITORY https://github.com/andreacasalino/XML-parser.git
-    GIT_TAG        5006262a76192b1af4988f1530be12cec4e8b74a
+    GIT_TAG        67c5e5146ef57fd70abe2e6c02b82e28cbecb382
   )
   FetchContent_MakeAvailable(xml_parser)
   target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
@@ -27,14 +30,17 @@ endif()
 
 option(BUILD_EFG_JSON_CONVERTER "Compile features supporting conversion from and to json files" ON)
 if(BUILD_EFG_JSON_CONVERTER)
-  message(STATUS "fetching nlohmann json")
-  include(FetchContent)
-  FetchContent_Declare(
-    nlohmann_json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG        7194245a314d142a5560f6906a87f7c67ebbcf2e
-  )
-  FetchContent_MakeAvailable(nlohmann_json)
+  if (NOT TARGET nlohmann_json::nlohmann_json)
+    message(STATUS "fetching nlohmann json")
+    include(FetchContent)
+    FetchContent_Declare(
+      nlohmann_json
+      GIT_REPOSITORY https://github.com/nlohmann/json.git
+      GIT_TAG        7194245a314d142a5560f6906a87f7c67ebbcf2e
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+  endif()
+  
   target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
     nlohmann_json::nlohmann_json
   )

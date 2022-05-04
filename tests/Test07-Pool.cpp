@@ -51,3 +51,33 @@ TEST_CASE("testing Pool", "[pool]") {
     }
   }
 }
+
+TEST_CASE("testing Pool efficiency", "[pool]") {
+  auto threads = 2;
+
+  const std::size_t tasks_size = 20;
+  Tasks tasks;
+  for (std::size_t k = 0; k < tasks_size; ++k) {
+    tasks.emplace_back([](const std::size_t) {
+      std::this_thread::sleep_for(std::chrono::milliseconds{100});
+    });
+  }
+  const std::size_t cycles = 5;
+
+  auto measure_time =
+      [&](const std::size_t threads) -> std::chrono::nanoseconds {
+    Pool pool(threads);
+    auto tic = std::chrono::high_resolution_clock::now();
+    for (std::size_t k = 0; k < cycles; ++k) {
+      pool.parallelFor(tasks);
+    }
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::high_resolution_clock::now() - tic);
+  };
+
+  auto single_thread_time = measure_time(1);
+  auto multi_thread_time = measure_time(2);
+
+  CHECK(static_cast<double>(multi_thread_time.count()) <
+        static_cast<double>(0.7 * single_thread_time.count()));
+}
