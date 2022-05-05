@@ -18,6 +18,7 @@ using namespace EFG::io;
 using namespace EFG::train;
 
 // you can also use another iterative trainer
+#include <TrainingTools/iterative/solvers/GradientDescend.h>
 #include <TrainingTools/iterative/solvers/QuasiNewton.h>
 
 using namespace train;
@@ -33,7 +34,8 @@ using namespace std;
 /// Then, set all weights of the model to 1 and try to tune the model with the
 /// previously generated train set.
 /// The obtained weights are expected to be close to the initial ones.
-void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
+void train_model(RandomField &model_to_tune, ::train::IterativeTrainer &tuner,
+                 const std::size_t max_iterations,
                  const std::size_t train_set_size);
 
 int main() {
@@ -55,7 +57,8 @@ int main() {
     model.addTunableFactor(std::make_shared<FactorExponential>(
         Factor{Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG}, gamma));
 
-    train_model(model, 50, 500);
+    ::train::QuasiNewton tuner;
+    train_model(model, tuner, 50, 500);
   }
 
   {
@@ -88,7 +91,8 @@ int main() {
     model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{D, E}},
                                                   USE_SIMPLE_CORRELATION_TAG));
 
-    train_model(model, 50, 1500);
+    ::train::GradientDescend tuner;
+    train_model(model, tuner, 50, 1500);
   }
 
   {
@@ -98,7 +102,8 @@ int main() {
     xml::Importer::importFromFile(model,
                                   SAMPLE_FOLDER + std::string{"graph_3.xml"});
 
-    train_model(model, 50, 2000);
+    ::train::QuasiNewton tuner;
+    train_model(model, tuner, 50, 2000);
   }
 
   {
@@ -143,13 +148,15 @@ int main() {
         VariablesSet{Y1, X1}); // this will force this added factor to share the
                                // weight with the one connecting variables Y1,X1
 
-    train_model(model, 50, 1000);
+    ::train::QuasiNewton tuner;
+    train_model(model, tuner, 50, 1000);
   }
 
   return EXIT_SUCCESS;
 }
 
-void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
+void train_model(RandomField &model_to_tune, ::train::IterativeTrainer &tuner,
+                 const std::size_t max_iterations,
                  const std::size_t train_set_size) {
   const auto expected_weights = model_to_tune.getWeights();
 
@@ -160,9 +167,8 @@ void train_model(RandomField &model_to_tune, const std::size_t max_iterations,
   // set all weights to 1 and train the model on the previously generated
   // train set
   set_ones(model_to_tune);
-  QuasiNewton trainer;
-  trainer.setMaxIterations(max_iterations);
-  train_model(model_to_tune, trainer, TrainSet{samples});
+  tuner.setMaxIterations(max_iterations);
+  train_model(model_to_tune, tuner, TrainSet{samples});
 
   cout << "expected weights:    " << expected_weights << endl;
   cout << "weights after train: " << model_to_tune.getWeights() << endl;
