@@ -118,8 +118,8 @@ int main() {
     EFG::model::RandomField model;
 
     // set some evidences
-    model.setEvidence("evid_1", 0); // setting evid_1 = 0
-    model.setEvidence("evid_2", 2); // setting evid_2 = 2
+    model.setEvidence("variable_1", 0); // setting variable_1 = 0
+    model.setEvidence("variable_2", 2); // setting variable_2 = 2
 
     // get the marginal conditioned distribution of an hidden variable
     std::vector<float> conditioned_marginals =
