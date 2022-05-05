@@ -35,7 +35,7 @@ ConditionalRandomField::ConditionalRandomField(const ConditionalRandomField &o)
           find_positions(o.getAllVariables(), o.getObservedVariables())) {
   absorb(SourceStructure{static_cast<const strct::FactorsAware *>(&o),
                          static_cast<const train::FactorsTunableAware *>(&o)},
-         true);
+         false);
 }
 
 ConditionalRandomField::ConditionalRandomField(const RandomField &source,

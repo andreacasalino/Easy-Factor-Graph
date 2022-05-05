@@ -8,6 +8,27 @@
 #include <EasyFactorGraph/model/RandomField.h>
 
 namespace EFG::model {
+void RandomField::absorb(const strct::ConnectionsManager& to_absorb, const bool copy) {
+    {
+        const strct::FactorsAware* model =
+            dynamic_cast<const strct::FactorsAware*>(&to_absorb);
+        if (nullptr != model) {
+            const auto& factors = model->getConstFactors();
+            absorbConstFactors(factors.begin(), factors.end(), copy);
+        }
+    }
+    {
+        const train::FactorsTunableAware* model =
+            dynamic_cast<const train::FactorsTunableAware*>(&to_absorb);
+        if (nullptr != model) {
+            absorbTunableClusters(*model, copy);
+        }
+    }
+    for (const auto& [var, val] : to_absorb.getEvidences()) {
+        setEvidence(var, val);
+    }
+}
+
 std::vector<float> RandomField::getWeightsGradient_(
     const train::TrainSet::Iterator &train_set_combinations) {
   if (!getEvidences().empty()) {

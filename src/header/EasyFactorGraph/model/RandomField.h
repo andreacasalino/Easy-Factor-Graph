@@ -27,7 +27,7 @@ class RandomField : public strct::EvidenceSetter,
 public:
   RandomField() = default;
 
-  RandomField(const RandomField &o) { absorb(o, true); };
+  RandomField(const RandomField &o) { absorb(o, false); };
   RandomField &operator=(const RandomField &) = delete;
 
   /**
@@ -38,26 +38,10 @@ public:
    * others inserted/copied using the strct::FactorsAdder interface.
    * @param the model whose factors should be inserted/copied
    * @param when passing true the factors are deep copied, while in the contrary
-   * case shallow copies of the smart pointers are inserted into this model.
+   * case shallow copies of the smart pointers storing the factors are inserted 
+   * into this model.
    */
-  template <typename Model>
-  void absorb(const Model &to_absorb, const bool copy) {
-    {
-      const strct::FactorsAware *model =
-          dynamic_cast<const strct::FactorsAware *>(&to_absorb);
-      if (nullptr != model) {
-        const auto &factors = model->getConstFactors();
-        absorbConstFactors(factors.begin(), factors.end(), copy);
-      }
-    }
-    {
-      const train::FactorsTunableAware *model =
-          dynamic_cast<const train::FactorsTunableAware *>(&to_absorb);
-      if (nullptr != model) {
-        absorbTunableClusters(*model, copy);
-      }
-    }
-  }
+  void absorb(const strct::ConnectionsManager& to_absorb, const bool copy);
 
 protected:
   std::vector<float> getWeightsGradient_(

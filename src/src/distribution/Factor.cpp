@@ -15,23 +15,16 @@
 #include <variant>
 
 namespace EFG::distribution {
+namespace {
 class BasicEvaluator : public Evaluator {
 public:
-  BasicEvaluator() = default;
+    BasicEvaluator() = default;
 
-  float evaluate(const float &input) const final { return input; }
+    float evaluate(const float& input) const final { return input; }
 };
 
-namespace {
-static EvaluatorPtr BASIC_EVALUATOR;
-static std::mutex BASIC_EVALUATOR_MTX;
-
-const EvaluatorPtr &get_basic_evaluator() {
-  std::scoped_lock lock(BASIC_EVALUATOR_MTX);
-  if (nullptr == BASIC_EVALUATOR) {
-    BASIC_EVALUATOR.reset(new BasicEvaluator());
-  }
-  return BASIC_EVALUATOR;
+std::shared_ptr<BasicEvaluator> make_basic_evaluator() {
+    return std::make_shared<BasicEvaluator>();
 }
 } // namespace
 
@@ -46,7 +39,7 @@ Factor::Factor(const Distribution &to_clone, const GenericCopyTag &)
 Factor::Factor(const Factor &o) : Factor(o, GENERIC_COPY_TAG) {}
 
 Factor::Factor(const categoric::Group &vars)
-    : DistributionConcrete(get_basic_evaluator(), vars) {}
+    : DistributionConcrete(make_basic_evaluator(), vars) {}
 
 namespace {
 void check_all_same_size(const categoric::VariablesSoup &vars) {
@@ -216,7 +209,7 @@ Factor::Factor(const std::vector<const Distribution *> &factors)
 
 Factor::Factor(const categoric::Group &vars,
                const CombinationRawValuesMapPtr &map)
-    : DistributionConcrete(get_basic_evaluator(), vars, map) {}
+    : DistributionConcrete(make_basic_evaluator(), vars, map) {}
 
 namespace {
 std::vector<std::size_t>
