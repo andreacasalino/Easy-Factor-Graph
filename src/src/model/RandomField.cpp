@@ -6,8 +6,22 @@
  **/
 
 #include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/misc/DynamicPredicate.h>
 
 namespace EFG::model {
+void RandomField::absorb(const strct::ConnectionsManager& to_absorb, const bool copy) {
+    dynamic_const_predicate<strct::FactorsAware>(to_absorb, [this, &copy](const strct::FactorsAware& as_factor_aware) {
+        const auto& factors = as_factor_aware.getConstFactors();
+        this->absorbConstFactors(factors.begin(), factors.end(), copy);
+    });
+    dynamic_const_predicate<train::FactorsTunableAware>(to_absorb, [this, &copy](const train::FactorsTunableAware& as_factor_tunable_aware) {
+        this->absorbTunableClusters(as_factor_tunable_aware, copy);
+    });
+    for (const auto& [var, val] : to_absorb.getEvidences()) {
+        setEvidence(var, val);
+    }
+}
+
 std::vector<float> RandomField::getWeightsGradient_(
     const train::TrainSet::Iterator &train_set_combinations) {
   if (!getEvidences().empty()) {

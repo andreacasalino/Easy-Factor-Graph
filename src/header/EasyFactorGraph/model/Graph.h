@@ -25,7 +25,7 @@ class Graph : public strct::EvidenceSetter,
 public:
   Graph() = default;
 
-  Graph(const Graph &o) { absorb(o, true); };
+  Graph(const Graph &o) { absorb(o, false); };
   Graph &operator=(const Graph &) = delete;
 
   /**
