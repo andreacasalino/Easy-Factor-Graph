@@ -6,24 +6,17 @@
  **/
 
 #include <EasyFactorGraph/model/RandomField.h>
+#include <EasyFactorGraph/misc/DynamicPredicate.h>
 
 namespace EFG::model {
 void RandomField::absorb(const strct::ConnectionsManager& to_absorb, const bool copy) {
-    {
-        const strct::FactorsAware* model =
-            dynamic_cast<const strct::FactorsAware*>(&to_absorb);
-        if (nullptr != model) {
-            const auto& factors = model->getConstFactors();
-            absorbConstFactors(factors.begin(), factors.end(), copy);
-        }
-    }
-    {
-        const train::FactorsTunableAware* model =
-            dynamic_cast<const train::FactorsTunableAware*>(&to_absorb);
-        if (nullptr != model) {
-            absorbTunableClusters(*model, copy);
-        }
-    }
+    dynamic_const_predicate<strct::FactorsAware>(to_absorb, [this, &copy](const strct::FactorsAware& as_factor_aware) {
+        const auto& factors = as_factor_aware.getConstFactors();
+        this->absorbConstFactors(factors.begin(), factors.end(), copy);
+    });
+    dynamic_const_predicate<train::FactorsTunableAware>(to_absorb, [this, &copy](const train::FactorsTunableAware& as_factor_tunable_aware) {
+        this->absorbTunableClusters(as_factor_tunable_aware, copy);
+    });
     for (const auto& [var, val] : to_absorb.getEvidences()) {
         setEvidence(var, val);
     }

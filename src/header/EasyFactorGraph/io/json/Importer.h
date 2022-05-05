@@ -12,6 +12,7 @@
 #include <EasyFactorGraph/io/File.h>
 #include <EasyFactorGraph/io/Utils.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
+#include <EasyFactorGraph/misc/DynamicPredicate.h>
 
 #include <nlohmann/json.hpp>
 
@@ -52,14 +53,11 @@ private:
   static void
   set_evidences(Model &model,
                 const std::unordered_map<std::string, std::size_t> &ev) {
-    strct::EvidenceSetter *as_setter =
-        dynamic_cast<strct::EvidenceSetter *>(&model);
-    if (nullptr == as_setter) {
-      return;
-    }
-    for (const auto &[var, val] : ev) {
-      as_setter->setEvidence(as_setter->findVariable(var), val);
-    }
+    dynamic_predicate<strct::EvidenceSetter>(model, [&ev](strct::EvidenceSetter& as_setter) {
+        for (const auto& [var, val] : ev) {
+            as_setter.setEvidence(as_setter.findVariable(var), val);
+        }
+    });
   }
 };
 } // namespace EFG::io::json
