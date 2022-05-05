@@ -4,8 +4,6 @@
 
 "Tests" "[factor]"
 
-"Tests" "[factor]"
-
 "Tests" "[factor-special]"
 
 "Tests" "[insertion]"
