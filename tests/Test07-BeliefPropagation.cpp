@@ -352,7 +352,8 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
       0.01f));
 }
 
-TEST_CASE("Belief propagation with Pool efficiency", "[propagation]") {
+TEST_CASE("Belief propagation with Pool efficiency",
+          "[propagation][!mayfail]") {
   auto depth = GENERATE(8, 10);
   auto loopy = GENERATE(false, true);
 

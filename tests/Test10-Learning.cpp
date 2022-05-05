@@ -453,7 +453,7 @@ std::vector<std::size_t> make_ones(const std::size_t size) {
 }
 } // namespace
 
-TEST_CASE("Train with Pool efficiency", "[train]") {
+TEST_CASE("Train with Pool efficiency", "[train][!mayfail]") {
   auto depth = GENERATE(8, 10);
   auto loopy = false;
 
