@@ -56,11 +56,17 @@ jobs:
     - name: Tests
       run: ./artifacts/bin/Tests "[pool]"
     - name: Tests
-      run: ./artifacts/bin/Tests "[gibbs_sampling]"
-    - name: Tests
       run: ./artifacts/bin/Tests "[gradient]"
     - name: Tests
       run: ./artifacts/bin/Tests "[train]"
+    - name: Tests
+      run: ./artifacts/bin/Tests "binary factor gibbs sampling"
+    - name: Tests
+      run: ./artifacts/bin/Tests "2 binary factors gibbs sampling"
+    - name: Tests
+      run: ./artifacts/bin/Tests "polyTree gibbs sampling"
+    - name: Tests
+      run: ./artifacts/bin/Tests "loopy model gibbs sampling"
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
