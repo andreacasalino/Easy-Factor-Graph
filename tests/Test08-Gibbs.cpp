@@ -73,7 +73,7 @@ bool check_second_prob(const float expected_value_0,
 }
 } // namespace
 
-TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
+TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling][!mayfail]") {
   Graph model;
 
   auto w = GENERATE(0.5f, 1.f, 2.f);
@@ -129,7 +129,7 @@ float getFrequency(const std::vector<Combination> &samples,
 }
 } // namespace
 
-TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
+TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling][!mayfail]") {
   Graph model;
 
   auto A = make_variable(2, "A");
@@ -193,7 +193,7 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
   }
 }
 
-TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
+TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling][!mayfail]") {
   RandomField model(SIMPLE_TREE);
 
   const float a = expf(SimpleTree::alfa);
@@ -228,7 +228,7 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
       toll));
 }
 
-TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
+TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling][!mayfail]") {
   RandomField model(SIMPLE_LOOPY);
 
   float M = expf(SimpleLoopy::w);
