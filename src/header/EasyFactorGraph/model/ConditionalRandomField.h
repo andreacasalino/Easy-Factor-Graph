@@ -50,10 +50,24 @@ public:
    */
   void setEvidences(const std::vector<std::size_t> &values);
 
-  // TODO comment
+  /**
+   * @brief Builds a training set for the conditioned model.
+   * Instead of using Gibbs sampler for a single combination of evidence, it
+   * tries to span all the possible combination of evidences and generate some
+   * samples conditioned to each of this evidences value.
+   * Then, gather results to build the training set.
+   * Actually, not ALL possible evidence are spwan if that would be too much
+   * computationally demanding. In such cases, simply pass a number lower than 1
+   * as range_percentage.
+   *
+   * @param information used for samples generation
+   * @param parameter handling how many evidence values are accounted for the
+   * samples generation
+   * @param the number of threads to use for speeding up the process
+   */
   std::vector<categoric::Combination>
   makeTrainSet(const GibbsSampler::SamplesGenerationContext &context,
-               const float range_percentage = 0.2f,
+               const float range_percentage = 1.f,
                const std::size_t threads = 1);
 
 protected:
