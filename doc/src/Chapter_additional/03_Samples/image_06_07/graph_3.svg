@@ -14,7 +14,7 @@
    viewBox="0 0 253.4762 129.89335"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.1 r15371"
+   inkscape:version="0.92.5 (2060ec1f9f, 2020-04-08)"
    sodipodi:docname="graph_3.svg">
   <defs
      id="defs2">
@@ -146,9 +146,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.49497475"
-     inkscape:cx="498.27306"
-     inkscape:cy="288.74825"
+     inkscape:zoom="0.9899495"
+     inkscape:cx="567.8389"
+     inkscape:cy="150.59045"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -156,11 +156,11 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:window-width="1360"
-     inkscape:window-height="705"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
-     inkscape:window-maximized="1" />
+     inkscape:window-width="2044"
+     inkscape:window-height="1403"
+     inkscape:window-x="2560"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -278,33 +278,13 @@
     </g>
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M 138.32353,28.125648 90.025356,114.27906"
-       id="path4556-4-0-8-7-3"
-       inkscape:connector-curvature="0"
-       sodipodi:nodetypes="cc" />
-    <g
-       style="display:inline"
-       inkscape:label="Livello 1"
-       id="layer1-8-6-0"
-       transform="matrix(0.18723159,0,0,0.21801296,93.940959,47.172343)">
-      <rect
-         style="fill:#121213;fill-opacity:1;stroke:#000000;stroke-width:1.83151484;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect5052-9-5"
-         width="82.384499"
-         height="78.108185"
-         x="61.792385"
-         y="71.610207"
-         ry="2.1984103" />
-    </g>
-    <path
-       style="display:inline;fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 138.32353,28.125648 100.24649,0.0488"
        id="path4556-4-0-8-1-0"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
     <path
        style="display:inline;fill:none;stroke:#000000;stroke-width:2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 138.32353,28.125648 60.2638,87.336142"
+       d="m 85.973828,116.38309 112.613502,-0.9213"
        id="path4556-4-0-8-7-9"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
@@ -322,38 +302,16 @@
          style="stroke-width:0.19440912">$exp(\gamma \Phi)$</tspan></text>
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:7.7763648px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.19440912"
-       x="232.23372"
-       y="38.862808"
+       style="font-style:normal;font-weight:normal;font-size:6.98670053px;line-height:1.25;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.17466751"
+       x="333.91077"
+       y="60.36797"
        id="text4540-6-4-7"
-       transform="scale(0.73477464,1.3609615)"><tspan
+       transform="scale(0.66016069,1.5147827)"><tspan
          sodipodi:role="line"
          id="tspan4538-4-6-3"
-         x="232.23372"
-         y="38.862808"
-         style="stroke-width:0.19440912">$exp(\delta \Phi)$</tspan></text>
-    <g
-       style="display:inline"
-       transform="matrix(0.21720292,0,0,0.22070774,144.67052,43.901478)"
-       id="layer1-4-9-6-1-2"
-       inkscape:label="Livello 1">
-      <rect
-         ry="2.1552138"
-         y="72.69886"
-         x="63.107822"
-         height="76.573441"
-         width="80.093803"
-         id="rect5052-6-7-4-8-4"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:6.83385181;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <rect
-         ry="0.8575573"
-         y="95.169029"
-         x="86.512009"
-         height="30.468493"
-         width="31.832348"
-         id="rect5052-9-2-8-1-0-0"
-         style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2.71760798;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-    </g>
+         x="333.91077"
+         y="60.36797"
+         style="stroke-width:0.17466751">$exp(\delta \Phi)$</tspan></text>
     <g
        style="display:inline"
        transform="matrix(0.19072126,0,0,0.22607754,176.40247,3.186065)"
@@ -386,7 +344,7 @@
        style="display:inline"
        inkscape:label="Livello 1"
        id="layer1-8-6-0-5"
-       transform="matrix(0.18723159,0,0,0.21801296,202.50293,48.355068)">
+       transform="matrix(0.18723159,0,0,0.21801296,122.86161,92.775812)">
       <rect
          style="fill:#121213;fill-opacity:1;stroke:#000000;stroke-width:1.83151484;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect5052-9-5-9"
@@ -468,5 +426,31 @@
          x="239.62956"
          y="30.894367"
          style="stroke-width:0.26458332">$E$</tspan></text>
+    <a
+       style=""
+       id="a971">
+      <g
+         inkscape:label="Livello 1"
+         id="layer1-4-9-6-1-2"
+         transform="matrix(0.21720292,0,0,0.22070774,200.98897,47.114276)"
+         style="display:inline">
+        <rect
+           style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:6.83385181;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect5052-6-7-4-8-4"
+           width="80.093803"
+           height="76.573441"
+           x="63.107822"
+           y="72.69886"
+           ry="2.1552138" />
+        <rect
+           style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2.71760798;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:1.60000002;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect5052-9-2-8-1-0-0"
+           width="31.832348"
+           height="30.468493"
+           x="86.512009"
+           y="95.169029"
+           ry="0.8575573" />
+      </g>
+    </a>
   </g>
 </svg>

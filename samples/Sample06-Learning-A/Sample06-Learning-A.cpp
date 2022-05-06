@@ -80,18 +80,16 @@ int main() {
                 // kept constant
     model.addTunableFactor(std::make_shared<FactorExponential>(
         Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
-    model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{B, C}},
+    model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{C, D}},
                                                   USE_SIMPLE_CORRELATION_TAG));
     model.addConstFactor(std::make_shared<FactorExponential>(
         Factor{Group{VariablesSoup{B, E}}, USE_SIMPLE_CORRELATION_TAG},
         gamma)); // the weight of this potential will be
                  // kept constant
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{B, D}}, USE_SIMPLE_CORRELATION_TAG}, delta));
-    model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{D, E}},
-                                                  USE_SIMPLE_CORRELATION_TAG));
+        Factor{Group{VariablesSoup{D, E}}, USE_SIMPLE_CORRELATION_TAG}, delta));
 
-    ::train::GradientDescend tuner;
+    ::train::QuasiNewton tuner;
     train_model(model, tuner, 50, 1500);
   }
 
