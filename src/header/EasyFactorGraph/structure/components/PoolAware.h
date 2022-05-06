@@ -34,14 +34,15 @@ private:
   struct WorkersContext {
     std::size_t pool_size;
     std::atomic_bool life = true;
-    std::atomic<std::size_t> completed = 0;
   };
   WorkersContext workers_context;
   struct Worker {
     Worker(const std::size_t th_id, WorkersContext &context);
 
-    std::atomic<const Tasks *> notified_tasks = nullptr;
     std::thread loop;
+
+    std::atomic_bool has_something_to_process = false;
+    const Tasks *to_process = nullptr;
   };
   using WorkerPtr = std::unique_ptr<Worker>;
   std::vector<WorkerPtr> workers;

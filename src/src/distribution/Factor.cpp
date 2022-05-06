@@ -11,20 +11,19 @@
 #include <EasyFactorGraph/distribution/Factor.h>
 
 #include <algorithm>
-#include <mutex>
 #include <variant>
 
 namespace EFG::distribution {
 namespace {
 class BasicEvaluator : public Evaluator {
 public:
-    BasicEvaluator() = default;
+  BasicEvaluator() = default;
 
-    float evaluate(const float& input) const final { return input; }
+  float evaluate(const float &input) const final { return input; }
 };
 
 std::shared_ptr<BasicEvaluator> make_basic_evaluator() {
-    return std::make_shared<BasicEvaluator>();
+  return std::make_shared<BasicEvaluator>();
 }
 } // namespace
 

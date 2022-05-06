@@ -20,15 +20,15 @@ void process_tasks_in_parallel(const Tasks &subject,
 } // namespace
 
 Pool::Worker::Worker(const std::size_t th_id, WorkersContext &context)
-    : loop([thread_id = th_id, &context = context,
-            &tasks = this->notified_tasks]() {
+    : loop([thread_id = th_id, &context = context, this]() {
         while (context.life) {
-          if (nullptr == tasks) {
+          if (!this->has_something_to_process) {
             continue;
           }
-          process_tasks_in_parallel(*tasks, context.pool_size, thread_id);
-          tasks = nullptr;
-          ++context.completed;
+          process_tasks_in_parallel(*this->to_process, context.pool_size,
+                                    thread_id);
+          this->to_process = nullptr;
+          this->has_something_to_process = false;
         }
       }) {}
 
@@ -45,23 +45,30 @@ Pool::Pool(const std::size_t size) {
 Pool::~Pool() {
   workers_context.life = false;
   for (auto &worker : workers) {
-    if (worker->loop.joinable()) {
-      worker->loop.join();
-    }
+    // if (worker->loop.joinable()) {
+    worker->loop.join();
+    // }
   }
   workers.clear();
 }
 
 void Pool::parallelFor(const std::vector<Task> &tasks) {
   std::scoped_lock lock(parallel_for_dispatch_mtx);
-  workers_context.completed = 0;
   for (auto &worker : workers) {
-    worker->notified_tasks = &tasks;
+    worker->to_process = &tasks;
+    worker->has_something_to_process = true;
   }
   process_tasks_in_parallel(tasks, workers_context.pool_size, 0);
-  ++workers_context.completed;
-  while (workers_context.completed != workers_context.pool_size) {
-  }
+  bool keep_wait;
+  do {
+    keep_wait = false;
+    for (const auto &worker : workers) {
+      if (worker->has_something_to_process) {
+        keep_wait = true;
+        break;
+      }
+    }
+  } while (keep_wait);
 }
 
 PoolAware::PoolAware() { resetPool(); }
