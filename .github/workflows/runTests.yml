@@ -38,35 +38,7 @@ jobs:
     - name: Install
       run:  cmake --install ./build --config Release
     - name: Tests
-      run: ./artifacts/bin/Tests "[range]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[distribution]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[factor]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[factor-special]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[insertion]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[evidence]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[io]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[propagation]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[pool]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[gradient]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "[train]"
-    - name: Tests
-      run: ./artifacts/bin/Tests "binary factor gibbs sampling"
-    - name: Tests
-      run: ./artifacts/bin/Tests "2 binary factors gibbs sampling"
-    - name: Tests
-      run: ./artifacts/bin/Tests "polyTree gibbs sampling"
-    - name: Tests
-      run: ./artifacts/bin/Tests "loopy model gibbs sampling"
+      run: ./artifacts/bin/Tests
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts
