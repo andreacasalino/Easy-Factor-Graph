@@ -201,7 +201,7 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling][!mayfail]") {
   const float g = expf(SimpleTree::gamma);
   const float e = expf(SimpleTree::eps);
 
-  auto threads = GENERATE(1, 2, 3);
+  auto threads = 1; // GENERATE(1, 2, 3);
   float toll = (threads > 1) ? 0.1f : 0.06f;
 
   // E=1
@@ -235,7 +235,7 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling][!mayfail]") {
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
   float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
 
-  auto threads = GENERATE(1, 2, 3);
+  auto threads = 1; // GENERATE(1, 2, 3);
   float toll = (threads > 1) ? 0.1f : 0.06f;
 
   // E=1
