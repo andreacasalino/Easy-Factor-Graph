@@ -66,8 +66,7 @@ Such variables can be used to define factor correlating them. In order to build 
 ```cpp
 // build a simply correlating factor connecting the 2 variables
 EFG::distribution::Factor factor_AB(
-    EFG::categoric::Group{
-        EFG::categoric::VariablesSoup{B, A}}, // the order in the specified
+         EFG::categoric::VariablesSoup{B, A}, // the order in the specified
                                               // group matters: B is assumed
                                               // as the first variable, A
                                               // will be the second
@@ -92,8 +91,7 @@ EFG::categoric::VariablePtr C =
     EFG::categoric::make_variable(2, "C"); // size is 2
 // define a factor connecting C to B
 // we start building an empty factor, having all images equal to 0
-EFG::distribution::Factor factor_BC(
-    EFG::categoric::Group{EFG::categoric::VariablesSoup{B, C}});
+EFG::distribution::Factor factor_BC(EFG::categoric::VariablesSoup{B, C});
 // set some individual images of factor_BC
 // set for <0,1> -> 2
 factor_BC.setImageRaw(std::vector<std::size_t>{0, 1}, 2.f);
@@ -119,13 +117,11 @@ auto C = EFG::categoric::make_variable(4, "varC");
 
 // without loss of generality, add to the model some simply correlating
 // factors
-model.addConstFactor(std::make_shared<EFG::distribution::Factor>(
-    EFG::categoric::Group{EFG::categoric::VariablesSoup{A, B}},
+model.addConstFactor(std::make_shared<EFG::distribution::Factor>(EFG::categoric::VariablesSoup{A, B},
     EFG::distribution::USE_SIMPLE_CORRELATION_TAG)); // the generated smart
                                                       // pointer is shallow
                                                       // copied
-model.copyConstFactor(EFG::distribution::Factor{
-    EFG::categoric::Group{EFG::categoric::VariablesSoup{A, C}},
+model.copyConstFactor(EFG::distribution::Factor{EFG::categoric::VariablesSoup{A, C},
     EFG::distribution::USE_SIMPLE_CORRELATION_TAG}); // the passed factor is
                                                       // deep-copied into the
                                                       // model
@@ -135,16 +131,14 @@ The previously added factor are kept constant in the model. In order to enrich t
 ```cpp
 // build some additional tunable exponential factors that will be too added
 auto factor_exp_BC = std::make_shared<EFG::distribution::FactorExponential>(
-    EFG::distribution::Factor{
-        EFG::categoric::Group{EFG::categoric::VariablesSoup{B, C}},
+    EFG::distribution::Factor{EFG::categoric::VariablesSoup{B, C},
         EFG::distribution::USE_SIMPLE_CORRELATION_TAG},
     1.f);
 model.addTunableFactor(factor_exp_BC);
 
 auto D = EFG::categoric::make_variable(4, "varD");
 auto factor_exp_CD = std::make_shared<EFG::distribution::FactorExponential>(
-    EFG::distribution::Factor{
-        EFG::categoric::Group{EFG::categoric::VariablesSoup{C, D}},
+    EFG::distribution::Factor{EFG::categoric::VariablesSoup{C, D},
         EFG::distribution::USE_SIMPLE_CORRELATION_TAG},
     1.5f);
 model.addTunableFactor(factor_exp_CD);
@@ -157,8 +151,7 @@ You can also add a tunable factor, specifying that it must share the weigth with
 // and C
 model.addTunableFactor(
     std::make_shared<EFG::distribution::FactorExponential>(
-        EFG::distribution::Factor{
-            EFG::categoric::Group{EFG::categoric::VariablesSoup{C, D}},
+        EFG::distribution::Factor{EFG::categoric::VariablesSoup{C, D},
             EFG::distribution::USE_SIMPLE_CORRELATION_TAG},
         2.f // actually this value is irrelevant, as the weight of
             // factor_exp_BC will be assumed from now on

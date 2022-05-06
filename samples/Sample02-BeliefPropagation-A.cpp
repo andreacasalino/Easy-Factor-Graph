@@ -30,10 +30,10 @@ int main() {
     Graph graph;
 
     float teta = 1.5f;
-    FactorExponential factor(Factor{Group{VariablesSoup{make_variable(2, "A"),
-                                                        make_variable(2, "B")}},
-                                    USE_SIMPLE_CORRELATION_TAG},
-                             teta);
+    FactorExponential factor(
+        Factor{VariablesSoup{make_variable(2, "A"), make_variable(2, "B")},
+               USE_SIMPLE_CORRELATION_TAG},
+        teta);
     graph.copyConstFactor(factor);
 
     // make a new belief propagation setting B=0 as observation
@@ -67,9 +67,9 @@ int main() {
 
     float alfa = 0.5f, beta = 1.f;
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+        Factor{VariablesSoup{B, C}, USE_SIMPLE_CORRELATION_TAG}, alfa));
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, beta));
+        Factor{VariablesSoup{A, B}, USE_SIMPLE_CORRELATION_TAG}, beta));
 
     // make a new belief propagation setting C=1 as observation
     graph.setEvidence(C, 1);
@@ -123,8 +123,7 @@ int main() {
       // build the correlating potentials and add it to the chain
       for (size_t k = 1; k < chain_size; ++k) {
         graph.addConstFactor(std::make_shared<FactorExponential>(
-            Factor(Group{VariablesSoup{Y[k - 1], Y[k]}},
-                   USE_SIMPLE_CORRELATION_TAG),
+            Factor(VariablesSoup{Y[k - 1], Y[k]}, USE_SIMPLE_CORRELATION_TAG),
             weight));
       }
       // set Y_0 as an observations and compute the marginals of the last

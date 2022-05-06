@@ -29,7 +29,7 @@ int main() {
     auto B = make_variable(4, "B");
 
     // create a Simple shape involving A and B
-    Factor Phi_AB(Group{VariablesSoup{A, B}});
+    Factor Phi_AB(VariablesSoup{A, B});
     // fill the domain in order to have for Phi_AB(a,b) = a + 2*b (just to put
     // some numbers)
     {
@@ -53,8 +53,7 @@ int main() {
     cout << Phi_XY << endl << endl;
 
     // permute X with Y
-    Factor Phi_XY_permuted =
-        Phi_XY.cloneWithPermutedGroup(Group{VariablesSoup{Y, X}});
+    Factor Phi_XY_permuted = Phi_XY.cloneWithPermutedGroup(VariablesSoup{Y, X});
     cout << Phi_XY_permuted << endl << endl;
   }
 
@@ -68,7 +67,7 @@ int main() {
 
     // build a factor correlating V1, V2 and V3
     Factor Phi_C =
-        Factor(Group{VariablesSoup{V1, V2, V3}}, USE_SIMPLE_CORRELATION_TAG);
+        Factor(VariablesSoup{V1, V2, V3}, USE_SIMPLE_CORRELATION_TAG);
     cout << "Correlating factor" << endl;
     cout << Phi_C << endl << endl;
 
@@ -82,8 +81,8 @@ int main() {
     cout << Psi_C.getProbabilities() << endl << endl;
 
     // build a factor correlating V1, V2 and V3
-    Factor Phi_A = Factor(Group{VariablesSoup{V1, V2, V3}},
-                          USE_SIMPLE_ANTI_CORRELATION_TAG);
+    Factor Phi_A =
+        Factor(VariablesSoup{V1, V2, V3}, USE_SIMPLE_ANTI_CORRELATION_TAG);
     cout << "Anti correlating factor" << endl;
     cout << Phi_A << endl << endl;
 
@@ -98,9 +97,8 @@ int main() {
   {
     SampleSection section("Find specific combination in Factors");
 
-    Factor factor(
-        Group{VariablesSoup{make_variable(2, "A"), make_variable(3, "B"),
-                            make_variable(2, "C"), make_variable(3, "D")}});
+    Factor factor(VariablesSoup{make_variable(2, "A"), make_variable(3, "B"),
+                                make_variable(2, "C"), make_variable(3, "D")});
     factor.setImageRaw(std::vector<std::size_t>{0, 0, 0, 0}, 1.f);
     factor.setImageRaw(std::vector<std::size_t>{0, 0, 1, 0}, 2.f);
     factor.setImageRaw(std::vector<std::size_t>{1, 0, 1, 1}, 3.f);
@@ -126,8 +124,8 @@ int main() {
     auto B = make_variable(2, "B");
     auto C = make_variable(2, "C");
 
-    Factor factor_AC(Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG);
-    Factor factor_BC(Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG);
+    Factor factor_AC(VariablesSoup{A, C}, USE_SIMPLE_CORRELATION_TAG);
+    Factor factor_BC(VariablesSoup{B, C}, USE_SIMPLE_CORRELATION_TAG);
 
     std::cout << "distributions to merge" << std::endl;
     cout << factor_AC << endl << endl;

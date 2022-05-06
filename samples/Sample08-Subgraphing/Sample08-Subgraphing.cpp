@@ -41,11 +41,11 @@ int main() {
     VariablePtr D = make_variable(2, "D");
     float alfa = 0.5f, beta = 1.5f;
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+        Factor{VariablesSoup{A, B}, USE_SIMPLE_CORRELATION_TAG}, alfa));
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
+        Factor{VariablesSoup{B, C}, USE_SIMPLE_CORRELATION_TAG}, beta));
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{C, D}}, USE_SIMPLE_CORRELATION_TAG}, 1.f));
+        Factor{VariablesSoup{C, D}, USE_SIMPLE_CORRELATION_TAG}, 1.f));
 
     // get the joint marginal probabilities of group ABC
     cout << "P(A,B,C)" << endl;

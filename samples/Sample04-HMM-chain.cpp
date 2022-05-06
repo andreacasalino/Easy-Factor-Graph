@@ -96,12 +96,10 @@ Graph make_graph_chain(const std::size_t &chain_size,
   auto Ybis = make_variable(var_size, "Y_placeholder_bis");
 
   FactorExponential P_YY(
-      Factor{Group{VariablesSoup{Y, Ybis}}, USE_SIMPLE_CORRELATION_TAG},
-      weight_YY);
+      Factor{VariablesSoup{Y, Ybis}, USE_SIMPLE_CORRELATION_TAG}, weight_YY);
 
   FactorExponential P_XY(
-      Factor{Group{VariablesSoup{Y, X}}, USE_SIMPLE_CORRELATION_TAG},
-      weight_XY);
+      Factor{VariablesSoup{Y, X}, USE_SIMPLE_CORRELATION_TAG}, weight_XY);
 
   // build the chain and set the value of the evidences equal to:
   // X_0 = 0, X_1=var_size-1, X_2= 0, X_3 = var_size-1, etc..

@@ -87,7 +87,7 @@ Graph makeMatrix(const std::size_t &matrix_size, const std::size_t &var_size,
   auto A = make_variable(var_size, "placeholder");
   auto B = make_variable(var_size, "placeholder_bis");
   FactorExponential factor(
-      Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG},
+      Factor{VariablesSoup{A, B}, USE_SIMPLE_CORRELATION_TAG},
       weight_correlation);
 
   for (std::size_t row = 0; row < matrix_size; ++row) {

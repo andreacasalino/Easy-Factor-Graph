@@ -51,11 +51,11 @@ int main() {
     float alfa = 1.f, beta = 1.5f, gamma = 0.5f;
 
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+        Factor{VariablesSoup{A, B}, USE_SIMPLE_CORRELATION_TAG}, alfa));
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
+        Factor{VariablesSoup{A, C}, USE_SIMPLE_CORRELATION_TAG}, beta));
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{B, C}}, USE_SIMPLE_CORRELATION_TAG}, gamma));
+        Factor{VariablesSoup{B, C}, USE_SIMPLE_CORRELATION_TAG}, gamma));
 
     ::train::QuasiNewton tuner;
     train_model(model, tuner, 50, 500);
@@ -75,19 +75,19 @@ int main() {
     float alfa = 0.4f, beta = 0.7f, gamma = 0.3f, delta = 1.5f;
 
     model.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, B}}, USE_SIMPLE_CORRELATION_TAG},
+        Factor{VariablesSoup{A, B}, USE_SIMPLE_CORRELATION_TAG},
         alfa)); // the weight of this potential will be
                 // kept constant
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{A, C}}, USE_SIMPLE_CORRELATION_TAG}, beta));
-    model.addConstFactor(std::make_shared<Factor>(Group{VariablesSoup{C, D}},
+        Factor{VariablesSoup{A, C}, USE_SIMPLE_CORRELATION_TAG}, beta));
+    model.addConstFactor(std::make_shared<Factor>(VariablesSoup{C, D},
                                                   USE_SIMPLE_CORRELATION_TAG));
     model.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{B, E}}, USE_SIMPLE_CORRELATION_TAG},
+        Factor{VariablesSoup{B, E}, USE_SIMPLE_CORRELATION_TAG},
         gamma)); // the weight of this potential will be
                  // kept constant
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{D, E}}, USE_SIMPLE_CORRELATION_TAG}, delta));
+        Factor{VariablesSoup{D, E}, USE_SIMPLE_CORRELATION_TAG}, delta));
 
     ::train::QuasiNewton tuner;
     train_model(model, tuner, 50, 1500);
@@ -121,28 +121,23 @@ int main() {
     float beta = 1.f;
 
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{Y1, Y2}}, USE_SIMPLE_CORRELATION_TAG},
-        alfa));
+        Factor{VariablesSoup{Y1, Y2}, USE_SIMPLE_CORRELATION_TAG}, alfa));
     model.addTunableFactor(
         std::make_shared<FactorExponential>(
-            Factor{Group{VariablesSoup{Y2, Y3}}, USE_SIMPLE_CORRELATION_TAG},
-            alfa),
+            Factor{VariablesSoup{Y2, Y3}, USE_SIMPLE_CORRELATION_TAG}, alfa),
         VariablesSet{Y1, Y2}); // this will force this added factor to share the
                                // weight with the one connecting variables Y1,Y2
 
     model.addTunableFactor(std::make_shared<FactorExponential>(
-        Factor{Group{VariablesSoup{Y1, X1}}, USE_SIMPLE_CORRELATION_TAG},
-        beta));
+        Factor{VariablesSoup{Y1, X1}, USE_SIMPLE_CORRELATION_TAG}, beta));
     model.addTunableFactor(
         std::make_shared<FactorExponential>(
-            Factor{Group{VariablesSoup{Y2, X2}}, USE_SIMPLE_CORRELATION_TAG},
-            beta),
+            Factor{VariablesSoup{Y2, X2}, USE_SIMPLE_CORRELATION_TAG}, beta),
         VariablesSet{Y1, X1}); // this will force this added factor to share the
                                // weight with the one connecting variables Y1,X1
     model.addTunableFactor(
         std::make_shared<FactorExponential>(
-            Factor{Group{VariablesSoup{Y3, X3}}, USE_SIMPLE_CORRELATION_TAG},
-            beta),
+            Factor{VariablesSoup{Y3, X3}, USE_SIMPLE_CORRELATION_TAG}, beta),
         VariablesSet{Y1, X1}); // this will force this added factor to share the
                                // weight with the one connecting variables Y1,X1
 
