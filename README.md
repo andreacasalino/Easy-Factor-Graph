@@ -24,7 +24,7 @@ Training can be done using the gradient-base approaches implemented of [this](ht
 In particular, **EFG** is able to:
  * dynamically build and update undirected factor graph, inserting one by one the factors that compose the model
  * dynamically set the group of evidences
- * perform belief propagation on both ***loopy graph** and **polytree** like structure in order to
+ * perform belief propagation on both **loopy graph** and **polytree** like structure in order to
    * get the **marginal conditioned distribution** of an hidden variable w.r.t. the current evidence set
    * get the **maximum a posteriori** of an hidden variable (or for the entire hidden set in one single call) w.r.t. the current evidence set
  * import or export models from and to xml file

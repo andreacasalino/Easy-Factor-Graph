@@ -23,7 +23,7 @@ public:
   void resetSeed(const std::size_t &newSeed);
 
 private:
-  inline float sample() const { return this->distribution(this->generator); };
+  float sample() const { return this->distribution(this->generator); };
 
   mutable std::default_random_engine generator;
   mutable std::uniform_real_distribution<float> distribution;

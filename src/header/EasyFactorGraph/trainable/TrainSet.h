@@ -21,7 +21,7 @@ public:
    * @throw if the combinations don't have all the same size
    * @throw if the combinations container is empty
    */
-  explicit TrainSet(const std::vector<categoric::Combination> &combinations);
+  TrainSet(const std::vector<categoric::Combination> &combinations);
 
   const std::vector<categoric::Combination> &getCombinations() const {
     return *this->combinations;

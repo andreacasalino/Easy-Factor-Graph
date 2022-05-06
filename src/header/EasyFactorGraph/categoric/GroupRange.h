@@ -47,7 +47,7 @@ public:
 
   /** @param the group of variables whose joint domain must be iterated
    */
-  explicit GroupRange(const Group &variables);
+  GroupRange(const Group &variables);
 
   GroupRange(const GroupRange &o);
 

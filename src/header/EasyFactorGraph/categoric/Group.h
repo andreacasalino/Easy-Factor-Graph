@@ -31,12 +31,12 @@ public:
    * @throw when passing a collection containing multiple times a certain
    * variable
    */
-  explicit Group(const VariablesSoup &group);
+  Group(const VariablesSoup &group);
 
   /**
    * @param the initial variable to put in the group
    */
-  explicit Group(const VariablePtr &var);
+  Group(const VariablePtr &var);
 
   /**
    * @param the first initial variable to put in the group
@@ -57,7 +57,7 @@ public:
    */
   void replaceVariables(const VariablesSoup &new_variables);
 
-  inline bool operator==(const Group &o) const {
+  bool operator==(const Group &o) const {
     return (this->group_sorted == o.group_sorted);
   };
 

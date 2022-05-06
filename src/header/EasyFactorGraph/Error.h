@@ -37,7 +37,7 @@ private:
 
 class Error : public std::runtime_error {
 public:
-  explicit Error(const std::string &what);
+  Error(const std::string &what);
 
   template <typename T1, typename T2, typename... Slices>
   Error(const T1 &first, const T2 &second, const Slices &...args)
