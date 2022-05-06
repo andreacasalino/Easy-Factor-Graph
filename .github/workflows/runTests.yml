@@ -17,10 +17,10 @@ jobs:
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\" -DBUILD_EFG_COMPILER_CHECK=ON"
             - name: ubuntu-clang
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\" -DBUILD_EFG_COMPILER_CHECK=ON"
             - name: windows-VS
               os: windows-latest
               compiler_opt: ""
@@ -37,28 +37,8 @@ jobs:
       run:  cmake --build ./build --config Release
     - name: Install
       run:  cmake --install ./build --config Release
-    - name: Test-01
-      run: ./artifacts/bin/Test01-Range
-    - name: Test-02
-      run: ./artifacts/bin/Test02-Distribution
-    - name: Test-03
-      run: ./artifacts/bin/Test03-DistributionFinder
-    - name: Test-04
-      run: ./artifacts/bin/Test04-FactorSetting
-    - name: Test-05
-      run: ./artifacts/bin/Test05-FactorConstruction
-    - name: Test-06
-      run: ./artifacts/bin/Test06-Insertions
-    - name: Test-07
-      run: ./artifacts/bin/Test07-Evidences
-    - name: Test-08
-      run: ./artifacts/bin/Test08-BeliefPropagation
-    - name: Test-09
-      run: ./artifacts/bin/Test09-Gibbs
-    - name: Test-10
-      run: ./artifacts/bin/Test10-Learning
-    # - name: Test-11
-      # run: ./artifacts/bin/Test11-ThreadPoolEfficiency
+    - name: Tests
+      run: ./artifacts/bin/Tests
     - uses: actions/upload-artifact@v2
       with:
         path: artifacts

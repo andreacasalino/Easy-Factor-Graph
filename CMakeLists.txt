@@ -18,17 +18,17 @@ include(MakeLibrary)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 project(EFG-Core)
-option(THREAD_POOL_OPT "thread pool enabled (ON) or disabled (OFF)" ON)
-add_subdirectory(Lib)
+add_subdirectory(src)
 
 option(BUILD_EFG_SAMPLES "Build the samples showing how to use EFG" ON)
 if(BUILD_EFG_SAMPLES)
 	project(EFG-Samples)
-    add_subdirectory(Samples)
+    add_subdirectory(samples)
 endif()
 
 option(BUILD_EFG_TESTS "" OFF)
 if(BUILD_EFG_TESTS)
 	project(EFG-Tests)
-    add_subdirectory(Tests)
+    add_subdirectory(tests)
 endif()
+

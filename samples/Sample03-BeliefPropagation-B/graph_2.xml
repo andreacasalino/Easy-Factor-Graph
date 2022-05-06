@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<Politree>
+	<Variable name="v1" Size="2"></Variable>
+	<Variable name="v2" Size="2"></Variable>
+	<Variable name="v3" Size="2"></Variable>
+	<Variable name="v4" Size="2"></Variable>
+	<Variable name="v5" Size="2"></Variable>
+	<Variable name="v6" Size="2"></Variable>
+	<Variable name="v7" Size="2"></Variable>
+	<Variable name="v8" Size="2"></Variable>
+	<Variable name="v9" Size="2"></Variable>
+	<Variable name="v10" Size="2"></Variable>
+	<Variable name="v11" Size="2"></Variable>
+	<Variable name="v12" Size="2"></Variable>
+	<Variable name="v13" Size="2"></Variable>
+	<Potential var="v1" var="v4" weight="1" Correlation="T"></Potential>
+	<Potential var="v2" var="v4" weight="1" Correlation="T"></Potential>
+	<Potential var="v3" var="v5" weight="1" Correlation="T"></Potential>
+	<Potential var="v4" var="v6" weight="1" Correlation="T"></Potential>
+	<Potential var="v4" var="v7" weight="1" Correlation="T"></Potential>
+	<Potential var="v5" var="v7" weight="1" Correlation="T"></Potential>
+	<Potential var="v5" var="v8" weight="1" Correlation="T"></Potential>
+	<Potential var="v6" var="v9" weight="1" Correlation="T"></Potential>
+	<Potential var="v6" var="v10" weight="1" Correlation="T"></Potential>
+	<Potential var="v7" var="v11" weight="1" Correlation="T"></Potential>
+	<Potential var="v8" var="v12" weight="1" Correlation="T"></Potential>
+	<Potential var="v8" var="v13" weight="1" Correlation="T"></Potential>
+</Politree>

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<Politree>
+	<Variable name="A" Size="2"></Variable>
+	<Variable name="B" Size="2"></Variable>
+	<Variable name="C" Size="2"></Variable>
+	<Variable name="D" Size="2"></Variable>
+	<Variable name="E" Size="2"></Variable>
+	<Potential var="A" var="B" weight="1" Correlation="T"></Potential>
+	<Potential var="B" var="C" weight="2" Correlation="T"></Potential>
+	<Potential var="B" var="D" weight="1" Correlation="T"></Potential>
+	<Potential var="D" var="E" weight="1.5" Correlation="T"></Potential>
+</Politree>

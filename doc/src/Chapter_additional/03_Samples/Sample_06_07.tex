@@ -6,6 +6,7 @@ In all the examples contained in this Section, learning is done with the followi
 A Gibbs sampler is used to take samples from the joint distribution correlating all the variables in a model A. Model A is actually the model to learn. The training set obtained from model A, is used to train a model B. Model B has the same variables and factors of model A, but with different values for the free parameters $w_{1,2,\cdots}$ (Section \ref{sec:00:LEARN}). In this way, after having performed the learning, the value of the free parameters in model B will assume similar values to the ones in model A, showing the effectiveness of the functionalities contained in EFG. Clearly, this is not the approach followed in real applications, were the real coefficient of the model are unknown and only a training set of examples are available.
 
 \subsection{part 01}
+\label{sample_tuning}
 
 \begin{figure}
 	\centering
@@ -17,35 +18,9 @@ A Gibbs sampler is used to take samples from the joint distribution correlating 
 
 Part 01 considers the loopy graph reported in Figure \ref{fig:sample_06:0}. $A$, $B$ and $C$ are all binary variables, while $\Psi_{AB}$, $\Psi_{AC}$ and $\Psi_{BC}$ are simple correlating exponential distributions having as weights, respectively, $\alpha$, $\beta$ and $\gamma$. 
 \\
-In the initial part of this example, a Gibbs sampler draw samples from the joint distribution of $A,B$ and $C$, with the aim of validating the Gibbs sampler. Indeed, some empirical frequencies of some specific combinations are compared with the theoretical probabilities. The theoretical results are computed considering the energy function $E(A,B,C)$ of the graph, reported in table \ref{tab:06:t1} (for instance $\mathbb{P}(A=0, B=0, C=1) = \frac{E(0,0,1)}{Z}$).
-\\
-At a second stage, the samples obtained by the Gibbs sampler are exploited for performing learning on model B (see the initial part of this Section).
-
-\begin{table}[]
-\centering
-\begin{tabular}{|l|l|l|l|l|l|l|}
-$A$ & $B$ & $C$ & $\Psi_{AB}$ & $\Psi_{BC}$ & $\Psi_{AC}$ & $E(A,B,C) =\Psi_{AB} \cdot \Psi_{BC} \cdot \Psi_{AC} $ \\
-\hline
-$0$ & $0$ & $0$ & $exp(\alpha)$ & $exp(\gamma)$ & $exp(\beta)$ & $exp(\alpha)exp(\beta)exp(\gamma)$ \\
-\hline
-$1$ & $0$ & $0$ & $1$ & $exp(\gamma)$ & $1$ & $exp(\gamma)$ \\
-\hline
-$0$ & $1$ & $0$ & $1$ & $1$ & $exp(\beta)$ & $exp(\beta)$ \\
-\hline
-$1$ & $1$ & $0$ & $exp(\alpha)$ & $1$ & $1$ & $exp(\alpha)$ \\
-\hline
-$0$ & $0$ & $1$ & $exp(\alpha)$ & $1$ & $1$ & $exp(\alpha)$ \\
-\hline
-$1$ & $0$ & $1$ & $1$ & $1$ & $exp(\beta)$ & $exp(\beta)$ \\
-\hline
-$0$ & $1$ & $1$ & $1$ & $exp(\gamma)$ & $1$ & $exp(\gamma)$ \\
-\hline
-$1$ & $1$ & $1$ & $exp(\alpha)$ & $exp(\gamma)$ & $exp(\beta)$ & $exp(\alpha)exp(\beta)exp(\gamma)$ \\
-\hline 
-\end{tabular}
-\caption{Factors involved in the graph of Figure \ref{fig:00:MAP_sample}. Summing all the possible values of $E$, the ripartition function results equal to $Z = \sum E(A,B,C) = 2 \bigg( exp(\alpha) +  exp(\beta) + exp(\gamma) + exp(\alpha)exp(\beta)exp(\gamma) \bigg)$.} 
-\label{tab:06:t1}
-\end{table} 
+Some samples are generated from the model with a Gibbs sampling, in order to use it later as a training set.
+All the weigths in the model are set to 1, and tuned using a quasi newton trainer that consider the previously generated training set.
+The aim is to show that after training the values of the weights are similar to the initial ones.
 
 \subsection{part 02}
 
@@ -58,7 +33,7 @@ $1$ & $1$ & $1$ & $exp(\alpha)$ & $exp(\gamma)$ & $exp(\beta)$ & $exp(\alpha)exp
 \end{figure}
 
 Part 02 considers a structure made of both tunable and non-tunable factors. The considered structure is reported in Figure \ref{fig:sample_06:1}.
-Weights $\beta$ and $\gamma$ must be tuned through learning, while $\alpha$ and $\gamma$ are constant and known (refer also to the formalism described in Figure \ref{fig:00:example}).
+Weights $\beta$ and $\delta$ must be tuned through learning, as similarly described in Section \ref{sample_tuning}, while $\alpha$ and $\gamma$ are constant and known (refer also to the formalism described in Figure \ref{fig:00:example}).
 
 \subsection{part 03}
 
@@ -71,6 +46,7 @@ Weights $\beta$ and $\gamma$ must be tuned through learning, while $\alpha$ and 
 \end{figure}
 
 Part 03 considers the loopy structure reported in Section \ref{sec:Sample_03_part_04}. However, here instead of having constant exponential shapes, all the factors are made of tunable exponentials. The value assumed by the weight of model A (see the introduction of this Section) are showed in Figure \ref{fig:sample_06:2}.
+Weights are tuned through learning as similarly described in Section \ref{sample_tuning}.
 
 \subsection{part 04}
 
@@ -82,7 +58,8 @@ Part 03 considers the loopy structure reported in Section \ref{sec:Sample_03_par
 \label{fig:sample_06:3}
 \end{figure}
 
-Part 04 considers the structure reported in Figure \ref{fig:sample_06:3}, for which all the potentials connecting pairs $Y_{i-1}, Y_i$ share the same weight $\alpha$, while the factors connecting pairs $X_i,Y_i$ share the weight $\beta$. The approach described in Section \ref{sec:00:MODULE_LEARN} is internally followed by EFG to learn such a structure.
+Part 04 considers the structure reported in Figure \ref{fig:sample_06:3}, for which all the potentials connecting pairs $Y_{i-1}, Y_i$ share the same weight $\alpha$, while the factors connecting pairs $X_i,Y_i$ share the weight $\beta$. The approach described
+Weights are tuned through learning as similarly described in Section \ref{sample_tuning}.
 
 \section{Sample 07: Learning, part B}
 
