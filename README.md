@@ -39,6 +39,8 @@ With respect to similar libraries, **EFG** is also able to:
    * train **random** and **conditional random fields**
    * draw samples for the variables involved in the model
 
+Haven't yet left a **star**? Do it now! :).
+
 ## CONTENTS
 
 This project is structured as follows:
