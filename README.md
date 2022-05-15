@@ -10,8 +10,8 @@
 
 ## INTRO
 
-**Easy Factor Graph**, aka **EFG**, is a general purpose c++ library for handling **undirected graphical models**.
-**undirected graphical models** are probabilistic models similar to **bayesian networks**, but offerring some nicer 
+**Easy Factor Graph**, aka **EFG**, is a general purpose c++ library for handling **undirected graphical models**, sometimes called also **factor graphs**.
+**Undirected graphical models** are probabilistic models similar to **bayesian networks**, but offerring some nicer 
 properties. Not familiar with this kind of concepts? Don't worry, have a look at the [documentation](https://github.com/andreacasalino/Easy-Factor-Graph/blob/master/doc/EFG.pdf) in the **doc** folder before diving into the code ;).
 **Random Fields** as well as **Conditional Random Fields** are particular classes of **undirected graphical models** and can be easily created and **trained** using this library.
 
