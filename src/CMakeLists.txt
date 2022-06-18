@@ -13,11 +13,12 @@ endif()
 option(BUILD_EFG_XML_CONVERTER "Compile features supporting conversion from and to xml files" ON)
 if(BUILD_EFG_XML_CONVERTER)
   SET(BUILD_XML_Parser_SAMPLES OFF CACHE BOOL "Override xml parser sample option" FORCE)
+  message("fetching XML parser")
   include(FetchContent)
   FetchContent_Declare(
     xml_parser
     GIT_REPOSITORY https://github.com/andreacasalino/XML-parser.git
-    GIT_TAG        67c5e5146ef57fd70abe2e6c02b82e28cbecb382
+    GIT_TAG        d3f2810bd5b1e278d0fb2e8eadd2b24ff533f11e
   )
   FetchContent_MakeAvailable(xml_parser)
   target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
@@ -51,10 +52,12 @@ endif()
 
 option(BUILD_EFG_TRAINER_TOOLS "Compile features supporting learning of tunable models" ON)
 if(BUILD_EFG_TRAINER_TOOLS)
+  message("fetching training utils")
+  include(FetchContent)
   FetchContent_Declare(
     trainers
     GIT_REPOSITORY https://github.com/andreacasalino/TrainingTools.git
-    GIT_TAG        4d81b25919e7f37dba98481a914279bcac5f17fc
+    GIT_TAG        BetterEigenSupport
   )
   FetchContent_MakeAvailable(trainers)
   target_link_libraries(${PROJECT_SHORTNAME} PUBLIC
