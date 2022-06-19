@@ -297,9 +297,13 @@ target_link_libraries(${TARGET_NAME}
 ```
 ### TRAINING CAPABILITIES
 
-The possibility to train a model is by deafult enabled. However, such functionalities rely on [this](https://github.com/andreacasalino/TrainingTools) heavy external library. This consumes a significant amount of time when configuring the project.
-Therefore, if you don't need such functionalities you can set the CMake option **BUILD_EFG_TRAINER_TOOLS** equal to **OFF**.
+The possibility to train a model is enabled by deafult. However, such functionality rely on [this](https://github.com/andreacasalino/TrainingTools) external library, which might slow down the time required to set up the cmake project.
+Therefore, if you don't need that you can set the CMake option **BUILD_EFG_TRAINER_TOOLS** equal to **OFF**.
 However, after disabling that option you will still able to get the tunable weights of a model, as well as their gradient, allowing you to use or implement another gradient based trainer. 
+
+The external package for performing training uses [**Eigen**](https://gitlab.com/libeigen/eigen) as internal linear algebra engine. 
+**Eigen** is by default [fetched](https://cmake.org/cmake/help/latest/module/FetchContent.html) from the official gitlab repo by **CMake** and made available.
+However, if you already have installed **Eigen** on your machine you can also decide to use that local version, by [setting](https://www.youtube.com/watch?v=LxHV-KNEG3k&t=1s) the **CMake** option **EIGEN_INSTALL_FOLDER** equal to the root folder storing the local **Eigen** you want to use.
 
 ### XML SUPPORT
 
