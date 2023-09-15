@@ -30,7 +30,7 @@ std::vector<float> to_vector(const ::train::Vect &subject) {
 }
 
 struct TrainSetWrapper {
-  TrainSetWrapper(const TrainSet &source, const float percentage)
+  TrainSetWrapper(const TrainSet &source, float percentage)
       : source(source), percentage(percentage) {
     combinations = std::make_unique<TrainSet::Iterator>(source, 1.f);
   }
@@ -49,9 +49,9 @@ struct TrainSetWrapper {
 };
 } // namespace
 
-class FactorsTunableAware::ModelWrapper : public ::train::ParametersAware {
+class FactorsTunableGetter::ModelWrapper : public ::train::ParametersAware {
 public:
-  ModelWrapper(FactorsTunableAware &subject, const TrainSet &train_set,
+  ModelWrapper(FactorsTunableGetter &subject, const TrainSet &train_set,
                const TrainInfo &info)
       : subject(subject),
         train_set(TrainSetWrapper{train_set, info.stochastic_percentage}),
@@ -69,14 +69,14 @@ public:
   }
 
 private:
-  FactorsTunableAware &subject;
+  FactorsTunableGetter &subject;
   TrainSetWrapper train_set;
   strct::PoolAware::ScopedPoolActivator activator;
 };
 
-void train_model(FactorsTunableAware &subject, ::train::Trainer &trainer,
+void train_model(FactorsTunableGetter &subject, ::train::Trainer &trainer,
                  const TrainSet &train_set, const TrainInfo &info) {
-  FactorsTunableAdder::ModelWrapper wrapper(subject, train_set, info);
+  FactorsTunableGetter::ModelWrapper wrapper(subject, train_set, info);
   trainer.train(wrapper);
 }
 

@@ -6,18 +6,18 @@
 
 #include "Utils.h"
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/structure/FactorsConstManager.h>
 
-using namespace EFG;
-using namespace EFG::categoric;
-using namespace EFG::distribution;
-using namespace EFG::strct;
-using namespace EFG::test;
+namespace EFG::test {
+using namespace categoric;
+using namespace factor;
+using namespace strct;
+using namespace test;
 
 namespace {
 class EvidenceTest : public EvidenceSetter,
                      public EvidenceRemover,
-                     protected FactorsAdder {
+                     protected FactorsConstInserter {
 public:
   VariablesSoup uVars;
   VariablesSoup mVars;
@@ -25,7 +25,7 @@ public:
 
   EvidenceTest() {
     auto connect = [this](const VariablePtr &a, const VariablePtr &b) {
-      addConstFactor(make_corr_factor2(a, b));
+      addConstFactor(make_corr_factor_ptr(a, b));
     };
 
     auto createVariable = [](const std::string &name, std::size_t id) {
@@ -57,19 +57,18 @@ public:
   };
 
   void clusterExists(const VariablesSet &vars) {
-    std::set<Variable *> to_find;
-    for (const auto &var : vars) {
-      to_find.emplace(var.get());
-    }
-    std::vector<std::set<Variable *>> clusters_as_vars;
-    for (const auto &cluster : getState().clusters) {
-      auto &set = clusters_as_vars.emplace_back();
-      for (const auto *node : cluster.nodes) {
-        set.emplace(node->variable.get());
+    auto convert = [](const std::unordered_set<Node *> &nodes) {
+      VariablesSet res;
+      for (auto *node : nodes) {
+        res.emplace(node->variable);
       }
-    }
-    if (std::find(clusters_as_vars.begin(), clusters_as_vars.end(), to_find) ==
-        clusters_as_vars.end()) {
+      return res;
+    };
+    const auto &clusters = state().clusters;
+    auto it =
+        std::find_if(clusters.begin(), clusters.end(),
+                     [&](const auto &cl) { return convert(cl.nodes) == vars; });
+    if (it == clusters.end()) {
       std::stringstream stream;
       stream << "Hidden cluster: <";
       for (const auto &var : vars) {
@@ -164,3 +163,5 @@ TEST_CASE("evidence total reset", "[evidence]") {
   CHECK(model.getEvidences().empty());
   CHECK_THROWS_AS(model.removeEvidence(model.mVars[2]), Error);
 }
+
+} // namespace EFG::test

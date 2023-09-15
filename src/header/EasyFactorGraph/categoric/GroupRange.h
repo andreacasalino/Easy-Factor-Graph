@@ -7,8 +7,9 @@
 
 #pragma once
 
-#include <EasyFactorGraph/categoric/Combination.h>
 #include <EasyFactorGraph/categoric/Group.h>
+
+#include <optional>
 
 namespace EFG::categoric {
 /**
@@ -41,9 +42,11 @@ public:
   // https://www.internalpointers.com/post/writing-custom-iterators-modern-cpp
   using iterator_category = std::input_iterator_tag;
   // using difference_type = std::ptrdiff_t;
-  using value_type = Combination;
-  using pointer = Combination *;
-  using reference = Combination &;
+  using value_type = std::vector<std::size_t>;
+  using pointer = const std::vector<std::size_t> *;
+  using reference = const std::vector<std::size_t> &;
+
+  GroupRange(const std::vector<std::size_t> &sizes);
 
   /** @param the group of variables whose joint domain must be iterated
    */
@@ -51,8 +54,8 @@ public:
 
   GroupRange(const GroupRange &o);
 
-  pointer operator->() const { return data->combination.get(); }
-  reference operator*() const { return *data->combination.get(); }
+  pointer operator->() const { return &data->combination; }
+  reference operator*() const { return data->combination; }
 
   /**
    * @brief Make the object to point to the next element in the joint domain.
@@ -68,11 +71,17 @@ private:
   GroupRange() = default;
 
   struct Data {
+    Data(const std::vector<size_t> &s, bool eor);
+
     const std::vector<size_t> sizes;
-    std::unique_ptr<Combination> combination;
+    std::vector<std::size_t> combination;
     bool end_of_range;
+
+    bool operator==(const Data &o) const {
+      return (end_of_range == o.end_of_range) && (combination == o.combination);
+    }
   };
-  std::unique_ptr<Data> data;
+  std::optional<Data> data;
 };
 
 static const GroupRange RANGE_END = GroupRange::end();

@@ -19,9 +19,9 @@ namespace EFG::model {
 class ConditionalRandomField : protected strct::EvidenceSetter,
                                protected strct::EvidenceRemover,
                                virtual public strct::FactorsAware,
-                               protected strct::FactorsAdder,
-                               virtual public train::FactorsTunableAware,
-                               protected train::FactorsTunableAdder,
+                               protected strct::FactorsConstInserter,
+                               virtual public train::FactorsTunableGetter,
+                               protected train::FactorsTunableInserter,
                                public strct::GibbsSampler,
                                public strct::QueryManager {
 public:
@@ -39,7 +39,7 @@ public:
    * inserted.
    * @throw in case the passed source has no evidences
    */
-  ConditionalRandomField(const RandomField &source, const bool copy);
+  ConditionalRandomField(const RandomField &source, bool copy);
 
   /**
    * @brief Sets the new set of evidences.
@@ -65,10 +65,9 @@ public:
    * samples generation
    * @param the number of threads to use for speeding up the process
    */
-  std::vector<categoric::Combination>
+  std::vector<std::vector<std::size_t>>
   makeTrainSet(const GibbsSampler::SamplesGenerationContext &context,
-               const float range_percentage = 1.f,
-               const std::size_t threads = 1);
+               float range_percentage = 1.f, std::size_t threads = 1);
 
 protected:
   std::vector<float> getWeightsGradient_(
@@ -76,10 +75,10 @@ protected:
 
 private:
   struct SourceStructure {
-    const strct::FactorsAware *factors_structure;
-    const train::FactorsTunableAware *factors_tunable_structure;
+    const strct::FactorsConstGetter *factors_structure;
+    const train::FactorsTunableGetter *factors_tunable_structure;
   };
-  void absorb(const SourceStructure &source, const bool copy);
+  void absorb(const SourceStructure &source, bool copy);
 
   void replaceIfNeeded(train::TunerPtr &container,
                        const train::BaseTuner &subject);

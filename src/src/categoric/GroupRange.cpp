@@ -9,6 +9,14 @@
 #include <EasyFactorGraph/categoric/GroupRange.h>
 
 namespace EFG::categoric {
+GroupRange::Data::Data(const std::vector<size_t> &s, bool eor)
+    : sizes{s}, end_of_range{eor} {
+  combination.resize(sizes.size());
+  for (auto &v : combination) {
+    v = 0;
+  }
+}
+
 namespace {
 std::vector<size_t> get_sizes(const Group &variables) {
   std::vector<size_t> result;
@@ -20,41 +28,39 @@ std::vector<size_t> get_sizes(const Group &variables) {
 }
 } // namespace
 
-GroupRange::GroupRange(const Group &variables) {
-  data = std::make_unique<Data>(Data{get_sizes(variables), nullptr, false});
-  data->combination =
-      std::make_unique<Combination>(variables.getVariables().size());
+GroupRange::GroupRange(const std::vector<std::size_t> &sizes) {
+  data.emplace(sizes, false);
 }
 
+GroupRange::GroupRange(const Group &variables)
+    : GroupRange{get_sizes(variables)} {}
+
 GroupRange::GroupRange(const GroupRange &o) {
-  if (nullptr != o.data) {
-    data = std::make_unique<Data>(
-        Data{o.data->sizes, nullptr, o.data->end_of_range});
-    data->combination = std::make_unique<Combination>(*o.data->combination);
+  if (o.data) {
+    data.emplace(o.data->sizes, o.data->end_of_range);
+    data->combination = o.data->combination;
   }
 }
 
 GroupRange &GroupRange::operator++() {
-  if (nullptr == data) {
+  if (!data.has_value()) {
     throw Error{"GroupRange not incrementable"};
   }
-  auto new_comb = this->data->combination->data();
-  std::size_t k = new_comb.size() - 1;
+  auto &comb = data->combination;
+  std::size_t k = comb.size() - 1;
   while (true) {
-    ++new_comb[k];
-    if (new_comb[k] == data->sizes[k]) {
+    if (++comb[k] == data->sizes[k]) {
       if (k == 0) {
         this->data->end_of_range = true;
         data.reset();
         return *this;
       } else {
-        new_comb[k] = 0;
+        comb[k] = 0;
         --k;
       }
     } else
       break;
   }
-  data->combination = std::make_unique<Combination>(std::move(new_comb));
   return *this;
 }
 

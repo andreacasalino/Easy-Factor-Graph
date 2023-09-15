@@ -8,12 +8,11 @@
 #include <EasyFactorGraph/model/Graph.h>
 
 namespace EFG::model {
-void Graph::absorb(const strct::ConnectionsManager &to_absorb,
-                   const bool copy) {
+void Graph::absorb(const strct::FactorsAware &to_absorb, bool copy) {
   const auto &factors = to_absorb.getAllFactors();
   absorbConstFactors(factors.begin(), factors.end(), copy);
-  for (const auto& [var, val] : to_absorb.getEvidences()) {
-      setEvidence(var, val);
+  for (const auto &[var, val] : to_absorb.getEvidences()) {
+    setEvidence(var, val);
   }
 }
 } // namespace EFG::model

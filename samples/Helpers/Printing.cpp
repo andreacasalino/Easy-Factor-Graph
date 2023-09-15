@@ -53,12 +53,6 @@ std::ostream &operator<<(std::ostream &s,
   return s;
 }
 
-std::ostream &operator<<(std::ostream &s,
-                         const EFG::categoric::Combination &comb) {
-  print_vector(s, comb.data());
-  return s;
-}
-
 namespace {
 using Line = std::vector<std::string>;
 
@@ -105,29 +99,36 @@ private:
 #include <sstream>
 
 std::ostream &operator<<(std::ostream &s,
-                         const EFG::distribution::Distribution &distribution) {
+                         const EFG::factor::Function &distribution) {
   TabularStream<4> table;
   std::stringstream group_stream;
-  group_stream << distribution.getGroup().getVariables();
+  group_stream << distribution.vars().getVariables();
   table.addLine(
       Line{group_stream.str(), "", "raw image value   ", "image value"});
-  EFG::categoric::GroupRange range(distribution.getGroup());
-  EFG::categoric::for_each_combination(
-      range, [&table, &distribution](const EFG::categoric::Combination &comb) {
-        Line to_add;
-        std::stringstream comb_stream;
-        print_vector(comb_stream, comb.data());
-        to_add.push_back(comb_stream.str());
-        to_add.push_back(" -> ");
-        auto map_it = distribution.getCombinationsMap().find(comb);
-        if (map_it == distribution.getCombinationsMap().end()) {
-          to_add.push_back("null");
-        } else {
-          to_add.push_back(std::to_string(map_it->second));
-        }
-        to_add.push_back(std::to_string(distribution.evaluate(comb)));
-        table.addLine(to_add);
+  EFG::categoric::GroupRange range(distribution.vars());
+
+  std::vector<std::vector<std::size_t>> combinations;
+  std::vector<float> images, transformations;
+  distribution.forEachCombination<false>(
+      [&combinations, &images](const auto &comb, float img) {
+        combinations.push_back(comb);
+        images.push_back(img);
       });
+  distribution.forEachCombination<true>(
+      [&transformations](const auto &, float img) {
+        transformations.push_back(img);
+      });
+
+  for (std::size_t k = 0; k < combinations.size(); ++k) {
+    Line to_add;
+    std::stringstream comb_stream;
+    print_vector(comb_stream, combinations[k]);
+    to_add.push_back(comb_stream.str());
+    to_add.push_back(" -> ");
+    to_add.push_back(std::to_string(images[k]));
+    to_add.push_back(std::to_string(transformations[k]));
+    table.addLine(to_add);
+  }
   table.print(s);
   return s;
 }

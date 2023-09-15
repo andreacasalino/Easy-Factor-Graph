@@ -33,23 +33,23 @@ find_positions(const categoric::VariablesSoup &all_vars,
 ConditionalRandomField::ConditionalRandomField(const ConditionalRandomField &o)
     : evidence_vars_positions(
           find_positions(o.getAllVariables(), o.getObservedVariables())) {
-  absorb(SourceStructure{static_cast<const strct::FactorsAware *>(&o),
-                         static_cast<const train::FactorsTunableAware *>(&o)},
+  absorb(SourceStructure{static_cast<const strct::FactorsConstGetter *>(&o),
+                         static_cast<const train::FactorsTunableGetter *>(&o)},
          false);
 }
 
 ConditionalRandomField::ConditionalRandomField(const RandomField &source,
-                                               const bool copy)
+                                               bool copy)
     : evidence_vars_positions(find_positions(source.getAllVariables(),
                                              source.getObservedVariables())) {
   absorb(
-      SourceStructure{static_cast<const strct::FactorsAware *>(&source),
-                      static_cast<const train::FactorsTunableAware *>(&source)},
+      SourceStructure{
+          static_cast<const strct::FactorsConstGetter *>(&source),
+          static_cast<const train::FactorsTunableGetter *>(&source)},
       copy);
 }
 
-void ConditionalRandomField::absorb(const SourceStructure &source,
-                                    const bool copy) {
+void ConditionalRandomField::absorb(const SourceStructure &source, bool copy) {
   const auto &evidences = source.factors_structure->getEvidences();
   if (evidences.empty()) {
     throw Error{"ConditionalRandomField must have at least 1 evidence"};
@@ -62,8 +62,8 @@ void ConditionalRandomField::absorb(const SourceStructure &source,
   }
   // replace tuners of factors connected to an evidence
   for (auto &tuner : tuners) {
-    train::visit_tuner(
-        tuner,
+    train::visitTuner(
+        tuner.get(),
         [this, &tuner](train::BaseTuner &subject) {
           this->replaceIfNeeded(tuner, subject);
         },
@@ -80,12 +80,12 @@ void ConditionalRandomField::absorb(const SourceStructure &source,
 void ConditionalRandomField::replaceIfNeeded(train::TunerPtr &container,
                                              const train::BaseTuner &subject) {
   const auto &evidences = this->getEvidences();
-  const auto &vars = subject.getFactor().getGroup().getVariables();
+  const auto &vars = subject.getFactor().function().vars().getVariables();
   switch (vars.size()) {
   case 1: {
     if (evidences.find(vars.front()) != evidences.end()) {
-      throw Error{"Found unary factor attached to permanent evidence: ",
-                  vars.front()->name()};
+      throw Error::make("Found unary factor attached to permanent evidence: ",
+                        vars.front()->name());
     }
   } break;
   case 2: {
@@ -97,19 +97,19 @@ void ConditionalRandomField::replaceIfNeeded(train::TunerPtr &container,
     }
     if ((first_as_evidence != evidences.end()) &&
         (second_as_evidence != evidences.end())) {
-      throw Error{"Found factor connecting the permanent evidences: ",
-                  first_as_evidence->first->name(), " and ",
-                  second_as_evidence->first->name()};
+      throw Error::make("Found factor connecting the permanent evidences: ",
+                        first_as_evidence->first->name(), " and ",
+                        second_as_evidence->first->name());
       return;
     }
     train::TunerPtr replacing_tuner;
     if (first_as_evidence == evidences.end()) {
-      strct::Node &hidden = *getState_().nodes.find(vars.front())->second;
+      strct::Node &hidden = *stateMutable().nodes.find(vars.front())->second;
       replacing_tuner = std::make_unique<train::HiddenObservedTuner>(
           hidden, second_as_evidence, subject.getFactorPtr(),
           getAllVariables());
     } else {
-      strct::Node &hidden = *getState_().nodes.find(vars.back())->second;
+      strct::Node &hidden = *stateMutable().nodes.find(vars.back())->second;
       replacing_tuner = std::make_unique<train::HiddenObservedTuner>(
           hidden, first_as_evidence, subject.getFactorPtr(), getAllVariables());
     }
@@ -120,10 +120,10 @@ void ConditionalRandomField::replaceIfNeeded(train::TunerPtr &container,
 
 void ConditionalRandomField::setEvidences(
     const std::vector<std::size_t> &values) {
-  const auto &state = getState();
+  const auto &state = this->state();
   if (values.size() != state.evidences.size()) {
-    throw Error{"Expected ", std::to_string(state.evidences.size()),
-                " evidences, but got instead ", values.size()};
+    throw Error::make("Expected ", std::to_string(state.evidences.size()),
+                      " evidences, but got instead ", values.size());
   }
   std::size_t k = 0;
   for (const auto &[var, val] : state.evidences) {
@@ -165,17 +165,16 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
       });
     }
     train_set_combinations.forEachSample(
-        [this, &tasks](const categoric::Combination &combination) {
+        [this, &tasks](const auto &combination) {
           {
             std::size_t var_pos = 0;
-            for (auto &[var, val] : this->getState().evidences) {
+            for (auto &[var, val] : this->state().evidences) {
               this->setEvidence(
-                  var,
-                  combination.data()[this->evidence_vars_positions[var_pos]]);
+                  var, combination[this->evidence_vars_positions[var_pos]]);
               ++var_pos;
             }
           }
-          propagateBelief(strct::SUM);
+          propagateBelief(strct::PropagationKind::SUM);
           this->getPool().parallelFor(tasks);
         });
   }
@@ -185,9 +184,9 @@ std::vector<float> ConditionalRandomField::getWeightsGradient_(
   return alfas;
 }
 
-std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
+std::vector<std::vector<std::size_t>> ConditionalRandomField::makeTrainSet(
     const GibbsSampler::SamplesGenerationContext &context,
-    const float range_percentage, const std::size_t threads) {
+    float range_percentage, const std::size_t threads) {
   if ((range_percentage > 1.f) || (range_percentage < 0)) {
     throw Error{"Invalid range percentage"};
   }
@@ -195,9 +194,9 @@ std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
   std::vector<std::size_t> hidden_vars_position =
       find_positions(getAllVariables(), getHiddenVariables());
 
-  std::vector<categoric::Combination> result;
-  auto emplace_samples = [&](const categoric::Combination &ev) {
-    this->setEvidences(ev.data());
+  std::vector<std::vector<std::size_t>> result;
+  auto emplace_samples = [&](const auto &ev) {
+    this->setEvidences(ev);
     for (const auto &sample : this->makeSamples(context, threads)) {
       result.push_back(sample);
     }
@@ -208,9 +207,7 @@ std::vector<categoric::Combination> ConditionalRandomField::makeTrainSet(
       categoric::VariablesSoup{evidence_set.begin(), evidence_set.end()}};
   categoric::GroupRange evidences_range(evidences_group);
   if (1.f == range_percentage) {
-    categoric::for_each_combination(
-        evidences_range,
-        [&](const categoric::Combination &ev) { emplace_samples(ev); });
+    categoric::for_each_combination(evidences_range, emplace_samples);
   } else {
     const std::size_t result_max_size = evidences_group.size();
     const std::size_t result_size_approx =

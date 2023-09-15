@@ -7,14 +7,25 @@
 
 #pragma once
 
+#include <iostream>
 #include <string>
 
-class SampleSection {
-public:
-  SampleSection(const std::string &description,
-                const std::string &doc_reference);
+template <typename SampleBody>
+void SAMPLE_SECTION(const std::string &DESCRIPTION,
+                    const std::string &DOC_SECTION, SampleBody BODY) {
+  std::cout << "-------------------------------------------------------------"
+               "-------------------------\n\n";
+  std::cout << DESCRIPTION;
+  if (auto DOC_SECTION_STR = std::string{DOC_SECTION};
+      !DOC_SECTION_STR.empty()) {
+    std::cout << " , refer to Section " << DOC_SECTION_STR
+              << " of the documentation";
+  }
+  std::cout << "\n-----------------------------------------------------------"
+               "---------------------------\n\n";
 
-  SampleSection(const std::string &description);
+  BODY();
 
-  ~SampleSection();
+  std::cout << "\n=========================================================="
+               "============================\n";
 };

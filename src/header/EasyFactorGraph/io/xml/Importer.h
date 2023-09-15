@@ -9,10 +9,11 @@
 
 #pragma once
 
-#include <EasyFactorGraph/io/File.h>
-#include <EasyFactorGraph/io/Utils.h>
+#include <EasyFactorGraph/io/ModelComponents.h>
+#include <EasyFactorGraph/misc/Cast.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/misc/DynamicPredicate.h>
+
+#include <filesystem>
 
 namespace EFG::io::xml {
 class Importer {
@@ -24,18 +25,20 @@ public:
    * @param location of the model to parse and add to the passed one
    */
   template <typename Model>
-  static void importFromFile(Model &model, const File &file_path) {
-    auto evidences = convert(getAdderComponents(model), file_path);
-    dynamic_predicate<strct::EvidenceSetter>(model, [&evidences](strct::EvidenceSetter& as_setter) {
-        for (const auto& [var, val] : evidences) {
+  static void importFromFile(Model &model,
+                             const std::filesystem::path &file_path) {
+    auto evidences = convert(castToInserters(model), file_path);
+    castAndUse<strct::EvidenceSetter>(
+        model, [&evidences](strct::EvidenceSetter &as_setter) {
+          for (const auto &[var, val] : evidences) {
             as_setter.setEvidence(as_setter.findVariable(var), val);
-        }
-    });
+          }
+        });
   }
 
 private:
   static std::unordered_map<std::string, std::size_t>
-  convert(const AdderPtrs &recipient, const File &file_path);
+  convert(Inserters recipient, const std::filesystem::path &file_path);
 };
 } // namespace EFG::io::xml
 #endif

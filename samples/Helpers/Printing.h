@@ -8,7 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/categoric/GroupRange.h>
-#include <EasyFactorGraph/distribution/Distribution.h>
+#include <EasyFactorGraph/factor/Function.h>
 
 #include <ostream>
 
@@ -23,7 +23,4 @@ std::ostream &operator<<(std::ostream &s,
                          const std::vector<std::size_t> &values);
 
 std::ostream &operator<<(std::ostream &s,
-                         const EFG::categoric::Combination &comb);
-
-std::ostream &operator<<(std::ostream &s,
-                         const EFG::distribution::Distribution &distribution);
+                         const EFG::factor::Function &distribution);

@@ -22,23 +22,23 @@ public:
    * @throw passing 0 as size
    * @throw passing an empty string as name
    */
-  Variable(const std::size_t &size, const std::string &name);
+  Variable(std::size_t size, const std::string &name);
 
-  std::size_t size() const { return this->Size; };
-  const std::string &name() const { return this->Name; };
+  std::size_t size() const { return this->size_; };
+  const std::string &name() const { return this->name_; };
 
   bool operator==(const Variable &o) const {
-    return (this->Name == o.Name) && (this->Size == o.Size);
+    return (this->name_ == o.name_) && (this->size_ == o.size_);
   }
 
 protected:
-  const size_t Size;
-  const std::string Name;
+  const size_t size_;
+  const std::string name_;
 };
 
 using VariablePtr = std::shared_ptr<Variable>;
 
-VariablePtr make_variable(const std::size_t &size, const std::string &name);
+VariablePtr make_variable(std::size_t size, const std::string &name);
 } // namespace EFG::categoric
 
 namespace std {

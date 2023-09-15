@@ -6,42 +6,38 @@
  **/
 
 #include "HiddenObservedTuner.h"
-#include "../structure/Utils.h"
 
 namespace EFG::train {
 HiddenObservedTuner::HiddenObservedTuner(
     strct::Node &nodeHidden, const strct::Evidences::const_iterator &evidence,
-    const std::shared_ptr<distribution::FactorExponential> &factor,
+    const std::shared_ptr<factor::FactorExponential> &factor,
     const categoric::VariablesSoup &variables_in_model)
     : BaseTuner(factor, variables_in_model), nodeHidden(nodeHidden),
       evidence(evidence) {
   pos_in_factor_hidden = 0;
   pos_in_factor_evidence = 1;
-  if (factor->getGroup().getVariables().front().get() ==
+  if (factor->function().vars().getVariables().front().get() ==
       evidence->first.get()) {
     std::swap(pos_in_factor_hidden, pos_in_factor_evidence);
   }
 }
 
 float HiddenObservedTuner::getGradientBeta() {
-  std::vector<const distribution::Distribution *> hidden_unaries = {
+  std::vector<const factor::Immutable *> hidden_unaries = {
       nodeHidden.merged_unaries.get()};
   for (const auto &[connected_node, connection] :
        nodeHidden.active_connections) {
-    hidden_unaries.push_back(connection->message.get());
+    hidden_unaries.push_back(connection.message.get());
   }
-  auto hidden_probs =
-      distribution::UnaryFactor{hidden_unaries}.getProbabilities();
+  auto hidden_probs = factor::MergedUnaries{hidden_unaries}.getProbabilities();
   float result = 0;
-  const auto factor_map = getFactor().getCombinationsMap();
+  const auto &factor_map = getFactor().function();
+  std::vector<std::size_t> comb;
+  comb.resize(2);
+  comb[pos_in_factor_evidence] = evidence->second;
   for (std::size_t h = 0; h < hidden_probs.size(); ++h) {
-    std::vector<std::size_t> comb;
-    if (0 == pos_in_factor_hidden) {
-      comb = {h, evidence->second};
-    } else {
-      comb = {evidence->second, h};
-    }
-    result += hidden_probs[h] * factor_map.find(std::move(comb))->second;
+    comb[pos_in_factor_hidden] = h;
+    result += hidden_probs[h] * factor_map.findImage(comb);
   }
   return result;
 }

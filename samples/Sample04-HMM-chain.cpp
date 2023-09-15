@@ -7,7 +7,7 @@
 
 // what is required from the EFG core library
 #include <EasyFactorGraph/Error.h>
-#include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/factor/FactorExponential.h>
 #include <EasyFactorGraph/io/json/Exporter.h>
 #include <EasyFactorGraph/io/xml/Exporter.h>
 #include <EasyFactorGraph/model/Graph.h>
@@ -15,7 +15,7 @@
 
 using namespace EFG::model;
 using namespace EFG::io;
-using namespace EFG::distribution;
+using namespace EFG::factor;
 using namespace EFG::categoric;
 using namespace EFG::strct;
 
@@ -31,52 +31,53 @@ Graph make_graph_chain(const std::size_t &chain_size,
                        const float &weight_YY);
 
 int main() {
-  SampleSection section(
+  SAMPLE_SECTION(
       "Chain like structure. After running the sample, check the content of "
       "the generated Graph_XY.xml, Graph_YY.xml, Graph_XY.json and "
       "Graph_YY.json ",
-      "4.4");
+      "4.4", [] {
+        size_t chain_size = 10;  // you can change it
+        size_t var_dom_size = 2; // you can change it
 
-  size_t chain_size = 10;  // you can change it
-  size_t var_dom_size = 2; // you can change it
+        vector<size_t> Y_MAP;
+        Y_MAP.reserve(chain_size);
 
-  vector<size_t> Y_MAP;
-  Y_MAP.reserve(chain_size);
+        {
+          // create a chain with a strong weight on the potentials XY.
+          auto G_XY = make_graph_chain(chain_size, var_dom_size, 2.f, 0.5f);
+          // compute MAP on hidden variables and display it
+          for (size_t k = 0; k < chain_size; ++k) {
+            Y_MAP.push_back(G_XY.getMAP("Y_" + to_string(k)));
+          }
+          cout << "Strong correlation with evidences,   MAP on Y0,1,..   "
+               << Y_MAP << endl;
 
-  {
-    // create a chain with a strong weight on the potentials XY.
-    auto G_XY = make_graph_chain(chain_size, var_dom_size, 2.f, 0.5f);
-    // compute MAP on hidden variables and display it
-    for (size_t k = 0; k < chain_size; ++k) {
-      Y_MAP.push_back(G_XY.getMAP("Y_" + to_string(k)));
-    }
-    cout << "Strong correlation with edivences,   MAP on Y0,1,..   " << Y_MAP
-         << endl;
+          // export into an xml (just as an exporting example)
+          xml::Exporter::exportToFile(
+              G_XY, xml::ExportInfo{"Graph_XY.xml", "Graph_XY"});
+          // export into a json (just as an exporting example)
+          json::Exporter::exportToFile(G_XY, "Graph_XY.json");
+        }
 
-    // export into an xml (just as an exporting example)
-    xml::Exporter::exportToFile(G_XY,
-                                xml::ExportInfo{"Graph_XY.xml", "Graph_XY"});
-    // export into a json (just as an exporting example)
-    json::Exporter::exportToFile(G_XY, "Graph_XY.json");
-  }
+        {
+          // create a chain with a strong weight on the potentials YY.
+          auto G_YY = make_graph_chain(chain_size, var_dom_size, 0.5f, 2.f);
+          // compute MAP on hidden variables and display it
+          Y_MAP.clear();
+          for (size_t k = 0; k < chain_size; ++k) {
+            Y_MAP.push_back(G_YY.getMAP("Y_" + to_string(k)));
+          }
+          cout << "Strong correlation among hidden variables,   MAP on Y0,1,.. "
+                  "  "
+               << Y_MAP << endl;
 
-  {
-    // create a chain with a strong weight on the potentials YY.
-    auto G_YY = make_graph_chain(chain_size, var_dom_size, 0.5f, 2.f);
-    // compute MAP on hidden variables and display it
-    Y_MAP.clear();
-    for (size_t k = 0; k < chain_size; ++k) {
-      Y_MAP.push_back(G_YY.getMAP("Y_" + to_string(k)));
-    }
-    cout << "Strong correlation among hidden variables,   MAP on Y0,1,..   "
-         << Y_MAP << endl;
-
-    // export into an xml (just as an exporting example)
-    xml::Exporter::exportToFile(G_YY,
-                                xml::ExportInfo{"Graph_YY.xml", "Graph_YY"});
-    // export into a json (just as an exporting example)
-    json::Exporter::exportToFile(G_YY, "Graph_YY.json");
-  }
+          // export into an xml (just as an exporting example)
+          xml::Exporter::exportToFile(
+              G_YY, xml::ExportInfo{"Graph_YY.xml", "Graph_YY"});
+          // export into a json (just as an exporting example)
+          json::Exporter::exportToFile(G_YY, "Graph_YY.json");
+        }
+      });
 
   return EXIT_SUCCESS;
 }
@@ -96,10 +97,10 @@ Graph make_graph_chain(const std::size_t &chain_size,
   auto Ybis = make_variable(var_size, "Y_placeholder_bis");
 
   FactorExponential P_YY(
-      Factor{VariablesSoup{Y, Ybis}, USE_SIMPLE_CORRELATION_TAG}, weight_YY);
+      Factor{VariablesSoup{Y, Ybis}, Factor::SimplyCorrelatedTag{}}, weight_YY);
 
   FactorExponential P_XY(
-      Factor{VariablesSoup{Y, X}, USE_SIMPLE_CORRELATION_TAG}, weight_XY);
+      Factor{VariablesSoup{Y, X}, Factor::SimplyCorrelatedTag{}}, weight_XY);
 
   // build the chain and set the value of the evidences equal to:
   // X_0 = 0, X_1=var_size-1, X_2= 0, X_3 = var_size-1, etc..
@@ -112,7 +113,7 @@ Graph make_graph_chain(const std::size_t &chain_size,
     G.addConstFactor(temp_XY);
   }
   for (size_t k = 0; k < chain_size; k++) {
-    DistributionCnstPtr factor;
+    ImmutablePtr factor;
     if (0 == k) {
       factor = std::make_shared<Indicator>(Y_vars[0], 0);
     } else {

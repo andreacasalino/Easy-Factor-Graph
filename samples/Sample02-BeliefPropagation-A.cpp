@@ -6,12 +6,12 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/distribution/Factor.h>
-#include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/factor/FactorExponential.h>
 #include <EasyFactorGraph/model/Graph.h>
 
 using namespace EFG::model;
-using namespace EFG::distribution;
+using namespace EFG::factor;
 using namespace EFG::categoric;
 
 // just a bunch of utilities needed by the sample
@@ -23,16 +23,14 @@ using namespace EFG::categoric;
 using namespace std;
 
 int main() {
-  {
-    SampleSection section("Graph with a single potential", "4.2.1");
-
+  SAMPLE_SECTION("Graph with a single potential", "4.2.1", [] {
     // create a simple graph with two nodes
     Graph graph;
 
     float teta = 1.5f;
     FactorExponential factor(
         Factor{VariablesSoup{make_variable(2, "A"), make_variable(2, "B")},
-               USE_SIMPLE_CORRELATION_TAG},
+               Factor::SimplyCorrelatedTag{}},
         teta);
     graph.copyConstFactor(factor);
 
@@ -54,11 +52,9 @@ int main() {
          << endl;
     cout << graph.getMarginalDistribution("A") << "  computed values" << endl
          << endl;
-  }
+  });
 
-  {
-    SampleSection section("Graph with two potentials and 3 variables", "4.2.2");
-
+  SAMPLE_SECTION("Graph with two potentials and 3 variables", "4.2.2", [] {
     Graph graph;
 
     auto A = make_variable(2, "A");
@@ -67,9 +63,9 @@ int main() {
 
     float alfa = 0.5f, beta = 1.f;
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{VariablesSoup{B, C}, USE_SIMPLE_CORRELATION_TAG}, alfa));
+        Factor{VariablesSoup{B, C}, Factor::SimplyCorrelatedTag{}}, alfa));
     graph.addConstFactor(std::make_shared<FactorExponential>(
-        Factor{VariablesSoup{A, B}, USE_SIMPLE_CORRELATION_TAG}, beta));
+        Factor{VariablesSoup{A, B}, Factor::SimplyCorrelatedTag{}}, beta));
 
     // make a new belief propagation setting C=1 as observation
     graph.setEvidence(C, 1);
@@ -104,11 +100,9 @@ int main() {
          << endl;
     cout << graph.getMarginalDistribution(C) << "  computed values" << endl
          << endl;
-  }
+  });
 
-  {
-    SampleSection section("Belief degradation on a chain of variables",
-                          "4.2.3");
+  SAMPLE_SECTION("Belief degradation on a chain of variables", "4.2.3", [] {
     const std::size_t domain_size = 5;
     const float weight = 2.5f;
     for (int k = 2; k <= 10; k++) {
@@ -123,7 +117,8 @@ int main() {
       // build the correlating potentials and add it to the chain
       for (size_t k = 1; k < chain_size; ++k) {
         graph.addConstFactor(std::make_shared<FactorExponential>(
-            Factor(VariablesSoup{Y[k - 1], Y[k]}, USE_SIMPLE_CORRELATION_TAG),
+            Factor(VariablesSoup{Y[k - 1], Y[k]},
+                   Factor::SimplyCorrelatedTag{}),
             weight));
       }
       // set Y_0 as an observations and compute the marginals of the last
@@ -133,7 +128,7 @@ int main() {
       cout << graph.getMarginalDistribution(Y.back()->name()) << endl;
       cout << endl;
     }
-  }
+  });
 
   return EXIT_SUCCESS;
 }

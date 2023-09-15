@@ -11,7 +11,7 @@
 #include <EasyFactorGraph/trainable/ModelTrainer.h>
 
 using namespace EFG::model;
-using namespace EFG::distribution;
+using namespace EFG::factor;
 using namespace EFG::categoric;
 using namespace EFG::strct;
 using namespace EFG::io;
@@ -30,9 +30,7 @@ using namespace train;
 using namespace std;
 
 int main() {
-  {
-    SampleSection section("Tuning of a conditional random field ", "4.7");
-
+  SAMPLE_SECTION("Tuning of a conditional random field ", "4.7", [] {
     RandomField temporary_imported_structure;
     xml::Importer::importFromFile(temporary_imported_structure,
                                   SAMPLE_FOLDER +
@@ -52,7 +50,8 @@ int main() {
     set_ones(conditional_field);
     QuasiNewton trainer;
     trainer.setMaxIterations(15);
-    cout << "training the model, this might take a while as conditional random "
+    cout << "training the model, this might take a while as conditional "
+            "random "
             "field are much more computationally demanding"
          << endl;
     trainer.enablePrintAdvancement();
@@ -60,7 +59,7 @@ int main() {
 
     cout << "expected weights:    " << expected_weights << endl;
     cout << "wieghts after train: " << conditional_field.getWeights() << endl;
-  }
+  });
 
   return EXIT_SUCCESS;
 }

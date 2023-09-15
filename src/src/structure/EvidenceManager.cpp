@@ -6,86 +6,82 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/misc/Visitor.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-
-#include "Utils.h"
+#include <EasyFactorGraph/structure/bases/StateAware.h>
 
 #include <algorithm>
 
 namespace EFG::strct {
 void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
-                                 const std::size_t value) {
+                                 std::size_t value) {
   if (variable->size() <= value) {
-    throw Error{std::to_string(value), " is an invalid evidence for variable ",
-                variable->name()};
+    throw Error::make(std::to_string(value),
+                      " is an invalid evidence for variable ",
+                      variable->name());
   }
-  auto node_location = locate(variable);
-  if (std::nullopt == node_location) {
-    throw Error{variable->name(), " is a non existing variable"};
+  auto info = locate(variable);
+  if (!info.has_value()) {
+    throw Error::make(variable->name(), " is a non existing variable");
   }
-  EvidenceNodeLocation evidence_location;
-  visit_location(
-      *node_location,
-      [&](const HiddenNodeLocation &location) {
-        auto *node = location.node;
-        for (const auto &[connected_node, connection] :
-             node->active_connections) {
-          disable_connection(*node, *connected_node, connection->factor);
-          connected_node->active_connections.erase(node);
+  auto *node = info->node;
+  Evidences::iterator evidence_location;
+  VisitorConst<HiddenClusters::iterator, Evidences::iterator>{
+      [&](const HiddenClusters::iterator &it) {
+        while (!node->active_connections.empty()) {
+          Node::disable(*node, *node->active_connections.begin()->first);
         }
-        node->active_connections.clear();
         // update clusters
-        auto &state = this->getState_();
-        if (1 == location.cluster->nodes.size()) {
-          state.clusters.erase(location.cluster);
+        auto &state = stateMutable();
+        if (1 == it->nodes.size()) {
+          state.clusters.erase(it);
         } else {
-          auto nodes = location.cluster->nodes;
-          state.clusters.erase(location.cluster);
+          auto nodes = it->nodes;
+          state.clusters.erase(it);
           nodes.erase(node);
-          auto split_clusters = compute_clusters(nodes);
-          for (auto &cluster : split_clusters) {
+          for (auto &&cluster : compute_clusters(nodes)) {
             state.clusters.emplace_back(std::move(cluster));
           }
         }
-        evidence_location = EvidenceNodeLocation{
-            state.evidences.emplace(node->variable, value).first, node};
+        evidence_location =
+            state.evidences.emplace(node->variable, value).first;
       },
-      [&evidence_location, &value](const EvidenceNodeLocation &location) {
-        evidence_location = location;
-        evidence_location.evidence->second = value;
-      });
-  auto *node = evidence_location.node;
+      [&](const Evidences::iterator &it) {
+        evidence_location = it;
+        evidence_location->second = value;
+      }}
+      .visit(info->location);
+
   for (auto &[connected_node, connection] : node->disabled_connections) {
     auto connection_it = connected_node->disabled_connections.find(node);
-    connection_it->second->message =
-        make_evidence(*connection_it->second->factor, node->variable,
-                      evidence_location.evidence->second);
+    connection_it->second.message = std::make_unique<factor::Evidence>(
+        *connection_it->second.factor, node->variable,
+        evidence_location->second);
     connected_node->merged_unaries.reset();
   }
   resetBelief();
 }
 
 void EvidenceSetter::setEvidence(const std::string &variable,
-                                 const std::size_t value) {
+                                 std::size_t value) {
   setEvidence(findVariable(variable), value);
 }
 
 void EvidenceRemover::removeEvidence_(const categoric::VariablePtr &variable) {
-  auto &state = getState_();
+  auto &state = stateMutable();
   auto evidence_it = state.evidences.find(variable);
   if (evidence_it == state.evidences.end()) {
-    throw Error{variable->name(), " is not an evidence"};
+    throw Error::make(variable->name(), " is not an evidence");
   }
   resetBelief();
   state.evidences.erase(evidence_it);
   auto &node = *state.nodes[variable].get();
-  for (const auto &[connected_node, connection] : node.disabled_connections) {
-    activate_connection(node, *connected_node, connection->factor);
-    connected_node->disabled_connections.erase(&node);
-    connected_node->merged_unaries.reset();
+  while (!node.disabled_connections.empty()) {
+    auto it = node.disabled_connections.begin();
+    it->first->merged_unaries.reset();
+    Node::activate(node, *it->first, it->second.factor);
   }
   node.merged_unaries.reset();
-  node.disabled_connections.clear();
 }
 
 void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
@@ -118,7 +114,7 @@ void EvidenceRemover::removeEvidences(
 }
 
 void EvidenceRemover::removeAllEvidences() {
-  const auto &state = getState();
+  const auto &state = this->state();
   while (!state.evidences.empty()) {
     auto var = state.evidences.begin()->first;
     removeEvidence_(var);
@@ -127,8 +123,8 @@ void EvidenceRemover::removeAllEvidences() {
 }
 
 void EvidenceRemover::resetState() {
-  auto &state = getState_();
-  std::set<Node *> nodes;
+  auto &state = stateMutable();
+  std::unordered_set<Node *> nodes;
   for (auto &[var, node] : state.nodes) {
     if (state.evidences.find(var) == state.evidences.end()) {
       nodes.emplace(node.get());

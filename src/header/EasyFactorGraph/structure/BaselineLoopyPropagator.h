@@ -7,12 +7,12 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/components/BeliefAware.h>
+#include <EasyFactorGraph/structure/bases/BeliefAware.h>
 
 namespace EFG::strct {
 class BaselineLoopyPropagator : public LoopyBeliefPropagationStrategy {
 public:
-  bool propagateBelief(HiddenCluster &subject, const PropagationKind &kind,
+  bool propagateBelief(HiddenCluster &subject, PropagationKind kind,
                        const PropagationContext &context, Pool &pool) final;
 };
 } // namespace EFG::strct

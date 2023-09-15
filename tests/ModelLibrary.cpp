@@ -14,10 +14,10 @@ SimpleTree::SimpleTree() {
   auto D = categoric::make_variable(2, "D");
   auto E = categoric::make_variable(2, "E");
 
-  addTunableFactor(make_corr_expfactor2(A, B, alfa));
-  addTunableFactor(make_corr_expfactor2(B, C, beta));
-  addTunableFactor(make_corr_expfactor2(B, D, gamma));
-  addTunableFactor(make_corr_expfactor2(D, E, eps));
+  addTunableFactor(make_corr_expfactor_ptr(A, B, alfa));
+  addTunableFactor(make_corr_expfactor_ptr(B, C, beta));
+  addTunableFactor(make_corr_expfactor_ptr(B, D, gamma));
+  addTunableFactor(make_corr_expfactor_ptr(D, E, eps));
 }
 
 ComplexTree::ComplexTree() {
@@ -28,18 +28,18 @@ ComplexTree::ComplexTree() {
   }
 
   const float w = 1.f;
-  addTunableFactor(make_corr_expfactor2(vars[1], vars[4], w));
-  addTunableFactor(make_corr_expfactor2(vars[2], vars[4], w));
-  addTunableFactor(make_corr_expfactor2(vars[3], vars[5], w));
-  addTunableFactor(make_corr_expfactor2(vars[4], vars[6], w));
-  addTunableFactor(make_corr_expfactor2(vars[4], vars[7], w));
-  addTunableFactor(make_corr_expfactor2(vars[5], vars[7], w));
-  addTunableFactor(make_corr_expfactor2(vars[5], vars[8], w));
-  addTunableFactor(make_corr_expfactor2(vars[6], vars[9], w));
-  addTunableFactor(make_corr_expfactor2(vars[6], vars[10], w));
-  addTunableFactor(make_corr_expfactor2(vars[7], vars[11], w));
-  addTunableFactor(make_corr_expfactor2(vars[8], vars[12], w));
-  addTunableFactor(make_corr_expfactor2(vars[8], vars[13], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[1], vars[4], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[2], vars[4], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[3], vars[5], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[4], vars[6], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[4], vars[7], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[5], vars[7], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[5], vars[8], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[6], vars[9], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[6], vars[10], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[7], vars[11], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[8], vars[12], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[8], vars[13], w));
 }
 
 const float SimpleLoopy::w = 1.f;
@@ -51,11 +51,11 @@ SimpleLoopy::SimpleLoopy() {
   auto D = categoric::make_variable(2, "D");
   auto E = categoric::make_variable(2, "E");
 
-  addTunableFactor(make_corr_expfactor2(A, B, w));
-  addTunableFactor(make_corr_expfactor2(B, C, w));
-  addTunableFactor(make_corr_expfactor2(B, D, w));
-  addTunableFactor(make_corr_expfactor2(C, D, w));
-  addTunableFactor(make_corr_expfactor2(E, D, w));
+  addTunableFactor(make_corr_expfactor_ptr(A, B, w));
+  addTunableFactor(make_corr_expfactor_ptr(B, C, w));
+  addTunableFactor(make_corr_expfactor_ptr(B, D, w));
+  addTunableFactor(make_corr_expfactor_ptr(C, D, w));
+  addTunableFactor(make_corr_expfactor_ptr(E, D, w));
 }
 
 ComplexLoopy::ComplexLoopy() {
@@ -66,20 +66,20 @@ ComplexLoopy::ComplexLoopy() {
   }
 
   const float w = 1.f;
-  addTunableFactor(make_corr_expfactor2(vars[1], vars[2], w));
-  addTunableFactor(make_corr_expfactor2(vars[2], vars[4], w));
-  addTunableFactor(make_corr_expfactor2(vars[2], vars[3], w));
-  addTunableFactor(make_corr_expfactor2(vars[3], vars[4], w));
-  addTunableFactor(make_corr_expfactor2(vars[4], vars[5], w));
-  addTunableFactor(make_corr_expfactor2(vars[3], vars[5], w));
-  addTunableFactor(make_corr_expfactor2(vars[4], vars[6], w));
-  addTunableFactor(make_corr_expfactor2(vars[5], vars[7], w));
-  addTunableFactor(make_corr_expfactor2(vars[6], vars[7], w));
-  addTunableFactor(make_corr_expfactor2(vars[7], vars[8], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[1], vars[2], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[2], vars[4], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[2], vars[3], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[3], vars[4], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[4], vars[5], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[3], vars[5], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[4], vars[6], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[5], vars[7], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[6], vars[7], w));
+  addTunableFactor(make_corr_expfactor_ptr(vars[7], vars[8], w));
 }
 
 namespace {
-std::string make_scalable_var_name(const std::size_t counter) {
+std::string make_scalable_var_name(std::size_t counter) {
   return "var_" + std::to_string(counter);
 }
 
@@ -90,7 +90,7 @@ struct BinaryTreeContext {
   bool loopy;
 };
 void fill_scalable_model(const BinaryTreeContext &ctxt,
-                         const std::size_t remaining_levels, std::size_t parent,
+                         std::size_t remaining_levels, std::size_t parent,
                          std::size_t &counter) {
   if (0 == remaining_levels) {
     return;
@@ -113,7 +113,7 @@ void fill_scalable_model(const BinaryTreeContext &ctxt,
     auto new_var = categoric::make_variable(ctxt.var_size,
                                             make_scalable_var_name(new_var_id));
     ctxt.subject.addTunableFactor(
-        make_corr_expfactor2(parent_var, new_var, ctxt.w));
+        make_corr_expfactor_ptr(parent_var, new_var, ctxt.w));
 
     fill_scalable_model(ctxt, remaining_levels - 1, new_var_id, counter);
     return new_var;
@@ -124,12 +124,12 @@ void fill_scalable_model(const BinaryTreeContext &ctxt,
 
   if (ctxt.loopy) {
     ctxt.subject.addTunableFactor(
-        make_corr_expfactor2(left_var, right_var, ctxt.w));
+        make_corr_expfactor_ptr(left_var, right_var, ctxt.w));
   }
 }
 } // namespace
 
-ScalableModel::ScalableModel(const std::size_t size, const std::size_t var_size,
+ScalableModel::ScalableModel(std::size_t size, std::size_t var_size,
                              const bool loopy) {
   if (0 == size) {
     throw Error{"Invalid depth"};

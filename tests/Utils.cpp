@@ -6,53 +6,56 @@
 #include <sstream>
 
 namespace EFG::test {
-distribution::Factor make_corr_factor(const categoric::VariablePtr &first,
-                                      const categoric::VariablePtr &second) {
-  return distribution::Factor(categoric::Group{first, second},
-                              distribution::USE_SIMPLE_CORRELATION_TAG);
-}
-
-std::shared_ptr<distribution::Factor>
-make_corr_factor2(const categoric::VariablePtr &first,
-                  const categoric::VariablePtr &second) {
-  return std::make_shared<distribution::Factor>(
-      categoric::Group{first, second},
-      distribution::USE_SIMPLE_CORRELATION_TAG);
-}
-
-distribution::FactorExponential
-make_corr_expfactor(const categoric::VariablePtr &first,
-                    const categoric::VariablePtr &second, const float w) {
-  auto factor = make_corr_factor(first, second);
-  return distribution::FactorExponential(factor, w);
-}
-
-std::shared_ptr<distribution::FactorExponential>
-make_corr_expfactor2(const categoric::VariablePtr &first,
-                     const categoric::VariablePtr &second, const float w) {
-  auto factor = make_corr_factor(first, second);
-  return std::make_shared<distribution::FactorExponential>(factor, w);
-}
-
-bool almost_equal(const float a, const float b, const float tollerance) {
-  return fabs(a - b) < tollerance;
-}
-
-bool almost_equal(const std::vector<float> &a, const std::vector<float> &b,
-                  const float tollerance) {
-  if (a.size() != b.size()) {
-    return false;
-  }
-  for (std::size_t k = 0; k < a.size(); ++k) {
-    if (!almost_equal(a[k], b[k], tollerance)) {
-      return false;
+bool almost_equal_fnct(const factor::Function &a, const factor::Function &b) {
+  bool res = true;
+  a.forEachCombination<true>([&b, &res](const auto &comb, float img) {
+    if (!almost_equal(img, b.findTransformed(comb), 0.001f)) {
+      res = false;
     }
-  }
-  return true;
+  });
+  return res;
 }
 
-namespace {
-std::vector<float> make_normalized(const std::vector<float> &values) {
+categoric::Group make_group(const std::vector<std::size_t> &sizes) {
+  if (sizes.empty()) {
+    throw Error{"empty sizes"};
+  }
+  categoric::Group group{categoric::make_variable(sizes.front(), "V0")};
+  std::size_t count = 1;
+  std::for_each(sizes.begin() + 1, sizes.end(), [&group, &count](auto size) {
+    group.add(categoric::make_variable(size, "V" + std::to_string(count++)));
+  });
+  return group;
+}
+
+factor::Factor make_corr_factor(const categoric::VariablePtr &first,
+                                const categoric::VariablePtr &second) {
+  return factor::Factor(categoric::Group{first, second},
+                        factor::Factor::SimplyCorrelatedTag{});
+}
+
+std::shared_ptr<factor::Factor>
+make_corr_factor_ptr(const categoric::VariablePtr &first,
+                     const categoric::VariablePtr &second) {
+  return std::make_shared<factor::Factor>(
+      categoric::Group{first, second}, factor::Factor::SimplyCorrelatedTag{});
+}
+
+factor::FactorExponential
+make_corr_expfactor(const categoric::VariablePtr &first,
+                    const categoric::VariablePtr &second, float w) {
+  auto factor = make_corr_factor(first, second);
+  return factor::FactorExponential(factor, w);
+}
+
+std::shared_ptr<factor::FactorExponential>
+make_corr_expfactor_ptr(const categoric::VariablePtr &first,
+                        const categoric::VariablePtr &second, float w) {
+  auto factor = make_corr_factor(first, second);
+  return std::make_shared<factor::FactorExponential>(factor, w);
+}
+
+std::vector<float> make_prob_distr(const std::vector<float> &values) {
   float coeff = 0;
   for (const auto &val : values) {
     coeff += val;
@@ -64,58 +67,79 @@ std::vector<float> make_normalized(const std::vector<float> &values) {
   }
   return result;
 }
-} // namespace
 
-ProbDistribution::ProbDistribution(const std::vector<float> &values)
-    : values_normalized(make_normalized(values)) {}
-
-namespace {
-class MergingFactor : public distribution::Factor {
-public:
-  MergingFactor(const std::vector<const distribution::Distribution *> &factors)
-      : distribution::Factor(factors) {}
-};
-} // namespace
+void setAllImages(factor::Factor &subject, float img) {
+  categoric::GroupRange range{subject.function().vars()};
+  categoric::for_each_combination(
+      range, [&](const auto &comb) { subject.set(comb, img); });
+}
 
 CombinationsAndProbabilities
-compute_combinations_and_probs(const strct::ConnectionsManager &model) {
+compute_combinations_and_probs(const strct::FactorsAware &model) {
   categoric::Group all_vars(model.getAllVariables());
   CombinationsAndProbabilities result;
-  std::vector<const distribution::Distribution *> factors;
+  std::vector<const factor::Immutable *> factors;
   for (const auto &factor : model.getAllFactors()) {
     factors.push_back(factor.get());
   }
-  MergingFactor merged(factors);
-  distribution::Factor merged_sorted = merged.cloneWithPermutedGroup(all_vars);
+  factor::Factor merged_sorted =
+      factor::Factor{factors}.cloneWithPermutedGroup(all_vars);
   result.probs = merged_sorted.getProbabilities();
   result.combinations.reserve(all_vars.size());
   categoric::GroupRange range(all_vars);
-  categoric::for_each_combination(range,
-                                  [&combinations = result.combinations](
-                                      const categoric::Combination &comb) {
-                                    combinations.push_back(comb);
-                                  });
+  categoric::for_each_combination(
+      range, [&combinations = result.combinations](const auto &comb) {
+        combinations.emplace_back(comb);
+      });
   return result;
 }
 
-train::TrainSet make_good_trainset(const strct::ConnectionsManager &model,
-                                   const std::size_t samples) {
-  auto combs_and_prob = compute_combinations_and_probs(model);
-  std::vector<categoric::Combination> sampled;
+train::TrainSet make_good_trainset(const strct::FactorsAware &model,
+                                   std::size_t samples) {
+  auto &&[probs, combinations] = compute_combinations_and_probs(model);
+  std::vector<std::vector<std::size_t>> sampled;
   sampled.reserve(samples);
   strct::UniformSampler sampler;
   sampler.resetSeed(0);
   while (sampled.size() != samples) {
-    auto pos = sampler.sampleFromDiscrete(combs_and_prob.probs);
-    sampled.push_back(combs_and_prob.combinations[pos]);
+    auto pos = sampler.sampleFromDiscrete(probs);
+    sampled.emplace_back(combinations[pos]);
   }
   return train::TrainSet{sampled};
 }
 
-std::chrono::nanoseconds measure_time(const std::function<void()> &subject) {
-  auto tic = std::chrono::high_resolution_clock::now();
-  subject();
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(
-      std::chrono::high_resolution_clock::now() - tic);
+LikelihoodGetter::LikelihoodGetter(const strct::FactorsAware &model)
+    : vars{model.getAllVariables()} {
+  const auto &factors = model.getAllFactors();
+  finders.reserve(factors.size());
+  for (const auto &factor : factors) {
+    finders.emplace_back(factor->makeFinder(vars.getVariables()));
+  }
+};
+
+float LikelihoodGetter::getLogActivation(
+    const std::vector<std::size_t> &c) const {
+  float res = 0.f;
+  for (const auto &finder : finders) {
+    res += logf(finder.findTransformed(c));
+  }
+  return res;
+};
+
+float LikelihoodGetter::getLogLikeliHood(
+    const EFG::train::TrainSet::Iterator &combinations) {
+  float Z = 0.f;
+  {
+    categoric::GroupRange range(categoric::Group{vars});
+    for_each_combination(range, [this, &Z](const auto &comb) {
+      Z += this->getLogActivation(comb);
+    });
+  }
+  float lkl = 0.f, coeff = 1.f / static_cast<float>(combinations.size());
+  combinations.forEachSample([this, &lkl, &coeff](const auto &comb) {
+    lkl += coeff * this->getLogActivation(comb);
+  });
+  return lkl - Z;
 }
+
 } // namespace EFG::test

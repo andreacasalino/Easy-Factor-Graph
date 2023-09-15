@@ -9,15 +9,15 @@
 #include <EasyFactorGraph/categoric/Variable.h>
 
 namespace EFG::categoric {
-Variable::Variable(const std::size_t &size, const std::string &name)
-    : Size(size), Name(name) {
+Variable::Variable(std::size_t size, const std::string &name)
+    : size_(size), name_(name) {
   if (name.size() == 0)
     throw Error("Empty name for Variable forbidden");
   if (size == 0)
     throw Error("Null size for Variable forbidden");
 }
 
-VariablePtr make_variable(const std::size_t &size, const std::string &name) {
+VariablePtr make_variable(std::size_t size, const std::string &name) {
   return std::make_shared<Variable>(size, name);
 }
 } // namespace EFG::categoric

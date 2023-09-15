@@ -5,13 +5,14 @@
 #include "Utils.h"
 #include <EasyFactorGraph/model/Graph.h>
 
-using namespace EFG;
-using namespace EFG::model;
-using namespace EFG::strct;
-using namespace EFG::categoric;
-using namespace EFG::distribution;
-using namespace EFG::test;
-using namespace EFG::test::library;
+namespace EFG::test {
+using namespace model;
+using namespace strct;
+using namespace categoric;
+using namespace factor;
+using namespace library;
+
+using ClusterInfo = PropagationResult::ClusterInfo;
 
 namespace {
 template <typename ModelT> class TestModels : public ModelT {
@@ -20,11 +21,11 @@ public:
 
   // check all messages were computed after propagation
   bool areAllMessagesComputed() const {
-    for (const auto &cluster : this->getState().clusters) {
+    for (const auto &cluster : this->state().clusters) {
       for (const auto *node : cluster.nodes) {
         for (const auto &[connected_node, connection] :
              node->active_connections) {
-          if (connection->message == nullptr) {
+          if (connection.message == nullptr) {
             return false;
           }
         }
@@ -35,10 +36,9 @@ public:
 
   bool checkMarginals(const std::string &var_name,
                       const std::vector<float> &expected,
-                      const float threshold = 0.01f) {
-    const auto var = this->findVariable(var_name);
-    return almost_equal(*ProbDistribution{expected},
-                        this->getMarginalDistribution(var_name), threshold);
+                      float threshold = 0.01f) {
+    return almost_equal_it(make_prob_distr(expected),
+                           this->getMarginalDistribution(var_name), threshold);
   }
 };
 
@@ -65,18 +65,18 @@ bool are_equal(const std::vector<ClusterInfo> &a,
 bool are_equal(const PropagationResult &a, const PropagationResult &b) {
   return (a.propagation_kind_done == b.propagation_kind_done) &&
          (a.was_completed == b.was_completed) &&
-         are_equal(a.structure_found, b.structure_found);
+         are_equal(a.structures, b.structures);
 }
 } // namespace
 
-TEST_CASE("trivial graph propagation", "[propagation]") {
+TEST_CASE("trivial graph propagation", "[propagation][trivial]") {
   TestModels<Graph> model;
 
-  const float w = 1.5f;
+  auto w = GENERATE(1.f, 1.5f, 2.f);
   const float exp_w = expf(w);
 
   model.addConstFactor(
-      make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
+      make_corr_expfactor_ptr(make_variable(2, "A"), make_variable(2, "B"), w));
 
   // B = 0
   model.setEvidence(model.findVariable("B"), 0);
@@ -94,7 +94,7 @@ TEST_CASE("trivial graph propagation", "[propagation]") {
   CHECK(model.checkMarginals("B", {1.f, exp_w}));
 }
 
-TEST_CASE("simple poly tree belief propagation", "[propagation]") {
+TEST_CASE("simple poly tree belief propagation", "[propagation][tree]") {
   TestModels<SimpleTree> model;
 
   REQUIRE_FALSE(model.hasPropagationResult());
@@ -114,7 +114,7 @@ TEST_CASE("simple poly tree belief propagation", "[propagation]") {
     strct::PropagationResult propagation_expected;
     propagation_expected.propagation_kind_done = PropagationKind::SUM;
     propagation_expected.was_completed = true;
-    propagation_expected.structure_found =
+    propagation_expected.structures =
         std::vector<ClusterInfo>{ClusterInfo{true, 4}};
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
@@ -135,7 +135,7 @@ TEST_CASE("simple poly tree belief propagation", "[propagation]") {
     strct::PropagationResult propagation_expected;
     propagation_expected.propagation_kind_done = PropagationKind::SUM;
     propagation_expected.was_completed = true;
-    propagation_expected.structure_found =
+    propagation_expected.structures =
         std::vector<ClusterInfo>{ClusterInfo{true, 3}, ClusterInfo{true, 1}};
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
@@ -145,7 +145,7 @@ TEST_CASE("simple poly tree belief propagation", "[propagation]") {
   CHECK(model.checkMarginals("E", {1.f, e}));
 }
 
-TEST_CASE("complex poly tree belief propagation", "[propagation]") {
+TEST_CASE("complex poly tree belief propagation", "[propagation][tree]") {
   TestModels<ComplexTree> model;
   model.setEvidence(model.findVariable("v1"), 1);
   model.setEvidence(model.findVariable("v2"), 1);
@@ -169,7 +169,7 @@ TEST_CASE("complex poly tree belief propagation", "[propagation]") {
   CHECK(model.areAllMessagesComputed());
 }
 
-TEST_CASE("simple loopy graph belief propagation", "[propagation]") {
+TEST_CASE("simple loopy graph belief propagation", "[propagation][loopy]") {
   TestModels<SimpleLoopy> model;
 
   float M = expf(SimpleLoopy::w);
@@ -186,7 +186,7 @@ TEST_CASE("simple loopy graph belief propagation", "[propagation]") {
     strct::PropagationResult propagation_expected;
     propagation_expected.propagation_kind_done = PropagationKind::SUM;
     propagation_expected.was_completed = true;
-    propagation_expected.structure_found =
+    propagation_expected.structures =
         std::vector<ClusterInfo>{ClusterInfo{false, 4}};
     REQUIRE(are_equal(propagation_expected, propagation_result));
   }
@@ -197,7 +197,7 @@ TEST_CASE("simple loopy graph belief propagation", "[propagation]") {
                              0.045f));
 }
 
-TEST_CASE("complex loopy graph belief propagation", "[propagation]") {
+TEST_CASE("complex loopy graph belief propagation", "[propagation][loopy]") {
   TestModels<ComplexLoopy> model;
 
   model.setEvidence(model.findVariable("v1"), 1);
@@ -211,10 +211,10 @@ TEST_CASE("complex loopy graph belief propagation", "[propagation]") {
 
 #include <sstream>
 
-TEST_CASE("big loopy graph", "[propagation]") {
+TEST_CASE("big loopy graph", "[propagation][loopy]") {
   std::vector<std::vector<VariablePtr>> vars;
 
-  auto make_name = [](const std::size_t r, const std::size_t c) {
+  auto make_name = [](std::size_t r, std::size_t c) {
     std::stringstream stream;
     stream << "V_" << std::to_string(r) << std::to_string(c);
     return stream.str();
@@ -234,9 +234,9 @@ TEST_CASE("big loopy graph", "[propagation]") {
 
   using Coord = std::pair<std::size_t, std::size_t>;
   auto add_factor = [&](const Coord &first, const Coord &second) {
-    model.addConstFactor(make_corr_expfactor2(vars[first.first][first.second],
-                                              vars[second.first][second.second],
-                                              0.1f));
+    model.addConstFactor(
+        make_corr_expfactor_ptr(vars[first.first][first.second],
+                                vars[second.first][second.second], 0.1f));
   };
 
   for (std::size_t r = 0; r < size; ++r) {
@@ -260,16 +260,15 @@ TEST_CASE("big loopy graph", "[propagation]") {
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
 namespace {
-model::Graph make_chain_model(const float wXY, const float wYY) {
+model::Graph make_chain_model(float wXY, float wYY) {
   categoric::VariablesSoup Y = {make_variable(2, "Y0"), make_variable(2, "Y1"),
                                 make_variable(2, "Y2"), make_variable(2, "Y3")};
   categoric::VariablesSoup X = {make_variable(2, "X0"), make_variable(2, "X1"),
                                 make_variable(2, "X2"), make_variable(2, "X3")};
 
   model::Graph model;
-  auto connect = [&model](const VariablePtr &a, const VariablePtr &b,
-                          const float w) {
-    model.addConstFactor(make_corr_expfactor2(a, b, w));
+  auto connect = [&model](const VariablePtr &a, const VariablePtr &b, float w) {
+    model.addConstFactor(make_corr_expfactor_ptr(a, b, w));
   };
 
   connect(X[0], Y[0], wXY);
@@ -282,7 +281,7 @@ model::Graph make_chain_model(const float wXY, const float wYY) {
   connect(Y[2], Y[3], wYY);
 
   model.copyConstFactor(
-      distribution::FactorExponential(distribution::Indicator{Y[0], 1}, wYY));
+      factor::FactorExponential(factor::Indicator{Y[0], 1}, wYY));
 
   model.setEvidence(X[0], 0);
   model.setEvidence(X[1], 1);
@@ -293,7 +292,7 @@ model::Graph make_chain_model(const float wXY, const float wYY) {
 };
 } // namespace
 
-TEST_CASE("MAPTest", "[propagation]") {
+TEST_CASE("MAPTest", "[propagation][MAP]") {
   SECTION("strong weight between hidden") {
     auto model = make_chain_model(0.1f, 1.f);
     std::vector<std::size_t> mapExpected = {1, 1, 1, 1};
@@ -326,7 +325,7 @@ TEST_CASE("MAPTest", "[propagation]") {
   }
 }
 
-TEST_CASE("Sub graph distribution", "[propagation]") {
+TEST_CASE("Sub graph distribution", "[propagation][subgraph]") {
   VariablePtr A = make_variable(2, "A");
   VariablePtr B = make_variable(2, "B");
   VariablePtr C = make_variable(2, "C");
@@ -334,33 +333,32 @@ TEST_CASE("Sub graph distribution", "[propagation]") {
   float alfa = 0.5f, beta = 1.5f;
   // build the chain
   model::Graph graph;
-  graph.addConstFactor(make_corr_expfactor2(A, B, alfa));
-  graph.addConstFactor(make_corr_expfactor2(B, C, alfa));
-  graph.addConstFactor(make_corr_expfactor2(C, D, alfa));
+  graph.addConstFactor(make_corr_expfactor_ptr(A, B, alfa));
+  graph.addConstFactor(make_corr_expfactor_ptr(B, C, alfa));
+  graph.addConstFactor(make_corr_expfactor_ptr(C, D, alfa));
 
   // joint distribution of A B C
-  CHECK(almost_equal(
-      *ProbDistribution{{expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
-                         expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}},
+  CHECK(almost_equal_it(
+      make_prob_distr({expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
+                       expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}),
       graph.getJointMarginalDistribution({"A", "B", "C"}).getProbabilities(),
       0.15f));
 
   // joint distribution of A B
-  CHECK(almost_equal(
-      *ProbDistribution{{expf(alfa), 1.f, 1.f, expf(alfa)}},
+  CHECK(almost_equal_it(
+      make_prob_distr({expf(alfa), 1.f, 1.f, expf(alfa)}),
       graph.getJointMarginalDistribution({"A", "B"}).getProbabilities(),
       0.01f));
 }
 
 TEST_CASE("Belief propagation with Pool efficiency",
-          "[propagation][!mayfail]") {
+          "[propagation][performance][!mayfail]") {
   auto depth = GENERATE(8, 10);
   auto loopy = GENERATE(false, true);
 
   ScalableModel model(depth, 7, loopy);
 
-  auto measure_time =
-      [&](const std::size_t threads) -> std::chrono::nanoseconds {
+  auto measure_time = [&](std::size_t threads) -> std::chrono::nanoseconds {
     model.removeAllEvidences();
     model.setEvidence(model.root(), 0);
     return test::measure_time(
@@ -373,3 +371,5 @@ TEST_CASE("Belief propagation with Pool efficiency",
   CHECK(static_cast<double>(multi_thread_time.count()) <
         static_cast<double>(single_thread_time.count()));
 }
+
+} // namespace EFG::test

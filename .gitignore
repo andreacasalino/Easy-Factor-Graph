@@ -3,6 +3,7 @@ TODO_branchPlanning.svg
 bin
 build
 .vscode
+.vs
 latex
 html
 EFG_debug.pdf

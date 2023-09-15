@@ -39,7 +39,7 @@ float CompositeTuner::getGradientBeta() {
   return grad;
 }
 
-void CompositeTuner::setWeight(const float &w) {
+void CompositeTuner::setWeight(float w) {
   for (auto &element : elements) {
     element->setWeight(w);
   }

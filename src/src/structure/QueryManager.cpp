@@ -6,26 +6,26 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/misc/Visitor.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
-
-#include "Utils.h"
+#include <EasyFactorGraph/structure/bases/StateAware.h>
 
 namespace EFG::strct {
 namespace {
-distribution::UnaryFactor gather_incoming_messages(Node &subject) {
-  std::vector<const distribution::Distribution *> messages = {
+factor::MergedUnaries gather_incoming_messages(Node &subject) {
+  std::vector<const factor::Immutable *> messages = {
       subject.merged_unaries.get()};
   for (const auto &[connected_node, message] : subject.active_connections) {
-    messages.push_back(message->message.get());
+    messages.push_back(message.message.get());
   }
   if (messages.empty()) {
-    return distribution::UnaryFactor{subject.variable};
+    return factor::MergedUnaries{subject.variable};
   }
-  return distribution::UnaryFactor{messages};
+  return factor::MergedUnaries{messages};
 }
 
-std::vector<float> zeros(const std::size_t size) {
+std::vector<float> zeros(std::size_t size) {
   std::vector<float> result;
   result.reserve(size);
   for (std::size_t k = 0; k < size; ++k) {
@@ -34,85 +34,63 @@ std::vector<float> zeros(const std::size_t size) {
   return result;
 }
 
-std::vector<float> get_marginal_distribution(const NodeLocation &location) {
-  std::vector<float> result;
-  visit_location(
-      location,
-      [&result](const HiddenNodeLocation &location) {
-        result = gather_incoming_messages(*location.node).getProbabilities();
-      },
-      [&result](const EvidenceNodeLocation &location) {
-        result = zeros(location.node->variable->size());
-        result[location.evidence->second] = 1.f;
-      });
-  return result;
-}
-
-void throw_inexistent_var(const std::string &var) {
-  throw Error{var, " is a not part of the graph"};
-}
 } // namespace
 
 std::vector<float>
-QueryManager::getMarginalDistribution(const categoric::VariablePtr &var,
-                                      const std::size_t threads) {
-  if (wouldNeedPropagation(SUM)) {
-    ScopedPoolActivator activator(*this, threads);
-    propagateBelief(SUM);
-  }
-  auto location = locate(var);
-  if (!location) {
-    throw_inexistent_var(var->name());
-  }
-  return get_marginal_distribution(*location);
+QueryManager::getMarginalDistribution(const NodeLocation &location) {
+  std::vector<float> result;
+  auto &[node, it] = location;
+  VisitorConst<HiddenClusters::iterator, Evidences::iterator>{
+      [&result, &node = node](const HiddenClusters::iterator &) {
+        result = gather_incoming_messages(*node).getProbabilities();
+      },
+      [&result, &node = node](const Evidences::iterator &location) {
+        result = zeros(node->variable->size());
+        result[location->second] = 1.f;
+      }}
+      .visit(it);
+  return result;
 }
 
-std::vector<float>
-QueryManager::getMarginalDistribution(const std::string &var,
-                                      const std::size_t threads) {
+void QueryManager::throwInexistentVar(const std::string &var) {
+  throw Error::make(var, " is a not part of the graph");
+}
+
+std::vector<float> QueryManager::getMarginalDistribution(const std::string &var,
+                                                         std::size_t threads) {
   return getMarginalDistribution(findVariable(var), threads);
 }
 
 namespace {
 std::size_t find_max(const std::vector<float> &values) {
-  std::size_t result_max_pos = 0;
-  for (std::size_t k = 0; k < values.size(); ++k) {
-    if (values[k] > values[result_max_pos]) {
-      result_max_pos = k;
+  std::size_t res = 0;
+  float max = values.front();
+  for (std::size_t k = 1; k < values.size(); ++k) {
+    if (values[k] > max) {
+      max = values[k];
+      res = k;
     }
   }
-  return result_max_pos;
+  return res;
 }
 } // namespace
 
 std::size_t QueryManager::getMAP(const categoric::VariablePtr &var,
-                                 const std::size_t threads) {
-  if (wouldNeedPropagation(MAP)) {
-    ScopedPoolActivator activator(*this, threads);
-    propagateBelief(MAP);
-  }
-  auto location = locate(var);
-  if (!location) {
-    throw_inexistent_var(var->name());
-  }
-  auto values = get_marginal_distribution(*location);
+                                 std::size_t threads) {
+  auto values = marginalQuery_<PropagationKind::MAP>(var, threads);
   return find_max(values);
 }
 
-std::size_t QueryManager::getMAP(const std::string &var,
-                                 const std::size_t threads) {
+std::size_t QueryManager::getMAP(const std::string &var, std::size_t threads) {
   return getMAP(findVariable(var), threads);
 }
 
-std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
-  if (wouldNeedPropagation(MAP)) {
-    ScopedPoolActivator activator(*this, threads);
-    propagateBelief(MAP);
-  }
+std::vector<size_t> QueryManager::getHiddenSetMAP(std::size_t threads) {
+  checkPropagation_<PropagationKind::MAP>(threads);
   auto vars = getHiddenVariables();
   std::vector<size_t> result;
   result.reserve(vars.size());
-  auto &nodes = getState_().nodes;
+  auto &nodes = stateMutable().nodes;
   for (const auto &var : vars) {
     auto values = gather_incoming_messages(*nodes[var]).getProbabilities();
     result.push_back(find_max(values));
@@ -120,70 +98,53 @@ std::vector<size_t> QueryManager::getHiddenSetMAP(const std::size_t threads) {
   return result;
 }
 
-namespace {
-class SubgraphFactor : public distribution::Factor {
-public:
-  SubgraphFactor(
-      const std::vector<const distribution::Distribution *> &contributions)
-      : distribution::Factor(contributions) {}
-};
-} // namespace
-
-distribution::Factor
+factor::Factor
 QueryManager::getJointMarginalDistribution(const categoric::Group &subgroup,
-                                           const std::size_t threads) {
-  if (wouldNeedPropagation(SUM)) {
-    ScopedPoolActivator activator(*this, threads);
-    propagateBelief(SUM);
-  }
-  std::map<Node *, NodeLocation> subgroup_locations;
+                                           std::size_t threads) {
+  checkPropagation_<PropagationKind::SUM>(threads);
+  std::vector<NodeLocation> locations;
+  std::unordered_set<Node *> subgroup_nodes;
   for (const auto &var_name : subgroup.getVariables()) {
     auto location = locate(var_name);
-    if (!location) {
-      throw_inexistent_var(var_name->name());
+    if (!location.has_value()) {
+      throwInexistentVar(var_name->name());
     }
-    Node *node = nullptr;
-    visit_location(
-        *location,
-        [&node](const HiddenNodeLocation &location) { node = location.node; },
-        [&node](const EvidenceNodeLocation &location) {
-          node = location.node;
-        });
-    subgroup_locations[node] = *location;
+    subgroup_nodes.emplace(location->node);
+    locations.emplace_back(location.value());
   }
 
-  std::set<const distribution::Distribution *> contributions;
-  std::vector<distribution::Indicator> indicators;
-  for (const auto &[node, location] : subgroup_locations) {
-    visit_location(
-        location,
-        [&](const HiddenNodeLocation &location) {
-          contributions.emplace(location.node->merged_unaries.get());
+  std::unordered_set<const factor::Immutable *> contributions;
+  std::vector<factor::Indicator> indicators;
+  for (auto &[node, location] : locations) {
+    VisitorConst<HiddenClusters::iterator, Evidences::iterator>{
+        [&node = node, &subgroup_nodes,
+         &contributions](const HiddenClusters::iterator &) {
+          contributions.emplace(node->merged_unaries.get());
           for (const auto &[connected_node, connection] :
-               location.node->active_connections) {
-            auto subgroup_locations_it =
-                subgroup_locations.find(connected_node);
-            if (subgroup_locations_it == subgroup_locations.end()) {
-              contributions.emplace(connection->message.get());
+               node->active_connections) {
+            if (subgroup_nodes.find(connected_node) == subgroup_nodes.end()) {
+              contributions.emplace(connection.message.get());
             } else {
-              contributions.emplace(connection->factor.get());
+              contributions.emplace(connection.factor.get());
             }
           }
         },
-        [&](const EvidenceNodeLocation &location) {
-          auto &added = indicators.emplace_back(location.node->variable,
-                                                location.evidence->second);
+        [&node = node, &contributions,
+         &indicators](const Evidences::iterator &location) {
+          auto &added =
+              indicators.emplace_back(node->variable, location->second);
           contributions.emplace(&added);
-        });
+        }}
+        .visit(location);
   }
 
-  return SubgraphFactor{std::vector<const distribution::Distribution *>{
+  return factor::Factor{std::vector<const factor::Immutable *>{
                             contributions.begin(), contributions.end()}}
       .cloneWithPermutedGroup(subgroup);
 }
 
-distribution::Factor QueryManager::getJointMarginalDistribution(
-    const std::vector<std::string> &subgroup, const std::size_t threads) {
+factor::Factor QueryManager::getJointMarginalDistribution(
+    const std::vector<std::string> &subgroup, std::size_t threads) {
   categoric::VariablesSoup vars;
   for (const auto &var : subgroup) {
     vars.push_back(findVariable(var));

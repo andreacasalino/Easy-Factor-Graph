@@ -1,12 +1,12 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include <EasyFactorGraph/structure/components/PoolAware.h>
+#include <EasyFactorGraph/structure/bases/PoolAware.h>
 
 #include "Utils.h"
 
-using namespace EFG;
-using namespace EFG::strct;
+namespace EFG::test {
+using namespace strct;
 
 TEST_CASE("testing Pool", "[pool]") {
   auto threads = GENERATE(1, 2, 4);
@@ -80,3 +80,4 @@ TEST_CASE("testing Pool efficiency", "[pool]") {
   CHECK(static_cast<double>(multi_thread_time.count()) <
         static_cast<double>(0.7 * single_thread_time.count()));
 }
+} // namespace EFG::test

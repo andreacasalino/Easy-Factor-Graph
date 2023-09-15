@@ -1,55 +1,86 @@
 #pragma once
 
-#include <EasyFactorGraph/distribution/Factor.h>
-#include <EasyFactorGraph/distribution/FactorExponential.h>
-#include <EasyFactorGraph/structure/ConnectionsManager.h>
+#include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/factor/FactorExponential.h>
+#include <EasyFactorGraph/structure/bases/FactorsAware.h>
 #include <EasyFactorGraph/trainable/TrainSet.h>
 
 #include <chrono>
-#include <functional>
+#include <cmath>
 #include <math.h>
-#include <memory>
 
 namespace EFG::test {
-distribution::Factor make_corr_factor(const categoric::VariablePtr &first,
-                                      const categoric::VariablePtr &second);
+template <typename T> bool almost_equal(T a, T b, T tollerance) {
+  return std::abs(a - b) < tollerance;
+}
 
-std::shared_ptr<distribution::Factor>
-make_corr_factor2(const categoric::VariablePtr &first,
-                  const categoric::VariablePtr &second);
+template <typename IterableA, typename IterableB>
+bool almost_equal_it(const IterableA &a, const IterableB &b, float tollerance) {
+  if (a.size() != b.size()) {
+    return false;
+  }
+  auto it_a = a.begin();
+  auto it_b = b.begin();
+  for (; it_a != a.end(); ++it_a, ++it_b) {
+    if (!almost_equal(*it_a, *it_b, tollerance)) {
+      return false;
+    }
+  }
+  return true;
+}
 
-distribution::FactorExponential
+bool almost_equal_fnct(const factor::Function &a, const factor::Function &b);
+
+categoric::Group make_group(const std::vector<std::size_t> &sizes);
+
+factor::Factor make_corr_factor(const categoric::VariablePtr &first,
+                                const categoric::VariablePtr &second);
+
+std::shared_ptr<factor::Factor>
+make_corr_factor_ptr(const categoric::VariablePtr &first,
+                     const categoric::VariablePtr &second);
+
+factor::FactorExponential
 make_corr_expfactor(const categoric::VariablePtr &first,
-                    const categoric::VariablePtr &second, const float w);
+                    const categoric::VariablePtr &second, float w);
 
-std::shared_ptr<distribution::FactorExponential>
-make_corr_expfactor2(const categoric::VariablePtr &first,
-                     const categoric::VariablePtr &second, const float w);
+std::shared_ptr<factor::FactorExponential>
+make_corr_expfactor_ptr(const categoric::VariablePtr &first,
+                        const categoric::VariablePtr &second, float w);
 
-bool almost_equal(const float a, const float b, const float tollerance);
+std::vector<float> make_prob_distr(const std::vector<float> &values);
 
-bool almost_equal(const std::vector<float> &a, const std::vector<float> &b,
-                  const float tollerance);
-
-class ProbDistribution {
-public:
-  ProbDistribution(const std::vector<float> &values);
-
-  const std::vector<float> &operator*() const { return values_normalized; };
-
-private:
-  const std::vector<float> values_normalized;
-};
+void setAllImages(factor::Factor &subject, float img);
 
 struct CombinationsAndProbabilities {
   std::vector<float> probs;
-  std::vector<categoric::Combination> combinations;
+  std::vector<std::vector<std::size_t>> combinations;
 };
 CombinationsAndProbabilities
-compute_combinations_and_probs(const strct::ConnectionsManager &model);
+compute_combinations_and_probs(const strct::FactorsAware &model);
 
-train::TrainSet make_good_trainset(const strct::ConnectionsManager &model,
-                                   const std::size_t samples);
+train::TrainSet make_good_trainset(const strct::FactorsAware &model,
+                                   std::size_t samples);
 
-std::chrono::nanoseconds measure_time(const std::function<void()> &subject);
+template <typename Pred> std::chrono::nanoseconds measure_time(Pred &&pred) {
+  auto tic = std::chrono::high_resolution_clock::now();
+  pred();
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::high_resolution_clock::now() - tic);
+}
+
+class LikelihoodGetter {
+public:
+  LikelihoodGetter(const strct::FactorsAware &model);
+
+  float getLogActivation(const std::vector<std::size_t> &c) const;
+
+  float getLogLikeliHood(const EFG::train::TrainSet::Iterator &combinations);
+
+private:
+  categoric::Group vars;
+  std::vector<factor::ImageFinder> finders;
+};
+
 } // namespace EFG::test

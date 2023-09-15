@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/components/BeliefAware.h>
-#include <EasyFactorGraph/structure/components/StateAware.h>
+#include <EasyFactorGraph/structure/bases/BeliefAware.h>
+#include <EasyFactorGraph/structure/bases/StateAware.h>
 
 namespace EFG::strct {
 class EvidenceSetter : virtual public StateAware, virtual public BeliefAware {
@@ -23,13 +23,12 @@ public:
    * @param the evidence value
    * @throw in case the passed variable is not part of the model.
    */
-  void setEvidence(const categoric::VariablePtr &variable,
-                   const std::size_t value);
+  void setEvidence(const categoric::VariablePtr &variable, std::size_t value);
   /**
    * @brief Similar to setEvidence(const categoric::VariablePtr &, const
    * std::size_t) , but passing the variable name, which is interally searched.
    */
-  void setEvidence(const std::string &variable, const std::size_t value);
+  void setEvidence(const std::string &variable, std::size_t value);
 };
 
 class EvidenceRemover : virtual public StateAware, virtual public BeliefAware {

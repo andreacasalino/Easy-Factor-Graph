@@ -8,11 +8,11 @@
 #pragma once
 
 #include <EasyFactorGraph/categoric/Group.h>
-#include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/factor/FactorExponential.h>
 #include <EasyFactorGraph/trainable/TrainSet.h>
 
 namespace EFG::train {
-using FactorExponentialPtr = std::shared_ptr<distribution::FactorExponential>;
+using FactorExponentialPtr = std::shared_ptr<factor::FactorExponential>;
 
 class Tuner {
 public:
@@ -21,11 +21,8 @@ public:
   virtual float getGradientAlpha(const TrainSet::Iterator &iter) = 0;
   virtual float getGradientBeta() = 0;
 
-  virtual void setWeight(const float &w) = 0;
+  virtual void setWeight(float w) = 0;
   virtual float getWeight() const = 0;
-
-protected:
-  Tuner() = default;
 };
 
 using TunerPtr = std::unique_ptr<Tuner>;
