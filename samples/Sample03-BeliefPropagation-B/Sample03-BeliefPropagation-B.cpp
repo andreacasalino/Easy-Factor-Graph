@@ -6,13 +6,13 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/distribution/Factor.h>
-#include <EasyFactorGraph/distribution/FactorExponential.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/factor/FactorExponential.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
 #include <EasyFactorGraph/model/Graph.h>
 
 using namespace EFG::model;
-using namespace EFG::distribution;
+using namespace EFG::factor;
 using namespace EFG::categoric;
 using namespace EFG::strct;
 
@@ -27,9 +27,7 @@ using namespace std;
 std::string merge(const std::string &first, const std::string &second);
 
 int main() {
-  {
-    SampleSection section("Simple polytree belief propagation", "4.3.1");
-
+  SAMPLE_SECTION("Simple polytree belief propagation", "4.3.1", [] {
     Graph graph;
     // import the graph from an xml file
     EFG::io::xml::Importer::importFromFile(graph,
@@ -126,11 +124,9 @@ int main() {
     cout << make_distribution({1.f, e}) << "  theoretical values" << endl;
     cout << graph.getMarginalDistribution("E") << "  computed values" << endl
          << endl;
-  }
+  });
 
-  {
-    SampleSection section("Complex polytree belief propagation", "4.3.2");
-
+  SAMPLE_SECTION("Complex polytree belief propagation", "4.3.2", [] {
     Graph politree;
     // import the graph an existing xml file
     EFG::io::xml::Importer::importFromFile(politree,
@@ -178,11 +174,9 @@ int main() {
     cout << politree.getMarginalDistribution("v12") << "  computed values"
          << endl
          << endl;
-  }
+  });
 
-  {
-    SampleSection section("Simple loopy model belief propagation", "4.3.3");
-
+  SAMPLE_SECTION("Simple loopy model belief propagation", "4.3.3", [] {
     Graph loop;
     // import the graph an existing xml file
     EFG::io::xml::Importer::importFromFile(loop,
@@ -223,11 +217,9 @@ int main() {
          << "  theoretical values" << endl;
     cout << loop.getMarginalDistribution("A") << "  computed values" << endl
          << endl;
-  }
+  });
 
-  {
-    SampleSection section("Complex loopy model belief propagation", "4.3.4");
-
+  SAMPLE_SECTION("Complex loopy model belief propagation", "4.3.4", [] {
     Graph loop;
     // import the graph an existing xml file
     EFG::io::xml::Importer::importFromFile(loop,
@@ -257,7 +249,7 @@ int main() {
          << endl
          << endl; // use the interal thread pool to also fasten the compuations
                   // of the amrginal distribution
-  }
+  });
 
   return EXIT_SUCCESS;
 }

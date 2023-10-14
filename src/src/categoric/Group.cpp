@@ -39,7 +39,8 @@ void Group::add(const VariablePtr &var) {
     group_sorted.emplace(var);
     return;
   }
-  throw Error{var->name(), ", already existing inside group of variables"};
+  throw Error::make(var->name(),
+                    ", already existing inside group of variables");
 }
 
 void Group::replaceVariables(const VariablesSoup &new_variables) {

@@ -5,18 +5,28 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
-#include <EasyFactorGraph/trainable/tuners/BinaryTuner.h>
+#pragma once
+
+#include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 #include <EasyFactorGraph/trainable/tuners/CompositeTuner.h>
 
-#include <functional>
-
 namespace EFG::train {
-void visit_tuner(
-    const TunerPtr &to_visit,
-    const std::function<void(const BaseTuner &)> &base_case,
-    const std::function<void(const CompositeTuner &)> &composite_case);
+template <typename BasePred, typename CompositePred>
+void visitTuner(const Tuner *tuner, BasePred &&base,
+                CompositePred &&composite) {
+  if (auto *basePtr = dynamic_cast<const BaseTuner *>(tuner); basePtr) {
+    base(*basePtr);
+  } else {
+    composite(static_cast<const CompositeTuner &>(*tuner));
+  }
+}
 
-void visit_tuner(TunerPtr &to_visit,
-                 const std::function<void(BaseTuner &)> &base_case,
-                 const std::function<void(CompositeTuner &)> &composite_case);
+template <typename BasePred, typename CompositePred>
+void visitTuner(Tuner *tuner, BasePred &&base, CompositePred &&composite) {
+  if (auto *basePtr = dynamic_cast<BaseTuner *>(tuner); basePtr) {
+    base(*basePtr);
+  } else {
+    composite(static_cast<CompositeTuner &>(*tuner));
+  }
+}
 } // namespace EFG::train

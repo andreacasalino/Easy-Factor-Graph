@@ -23,7 +23,7 @@ find_var_position(EFG::categoric::VariablePtr var2Search,
 
 std::vector<float>
 getEmpiricalMarginals(EFG::categoric::VariablePtr var2Search,
-                      const std::vector<EFG::categoric::Combination> &samples,
+                      const std::vector<std::vector<std::size_t>> &samples,
                       const EFG::categoric::VariablesSoup &samplesGroup) {
   std::vector<std::size_t> counters;
   counters.reserve(var2Search->size());
@@ -46,9 +46,9 @@ getEmpiricalMarginals(EFG::categoric::VariablePtr var2Search,
 }
 
 float getEmpiricalProbability(
-    const EFG::categoric::Combination &comb2Search,
+    const std::vector<std::size_t> &comb2Search,
     const EFG::categoric::VariablesSoup &combGroup,
-    const std::vector<EFG::categoric::Combination> &samples,
+    const std::vector<std::vector<std::size_t>> &samples,
     const EFG::categoric::VariablesSoup &samplesGroup) {
   std::size_t counter = 0;
 

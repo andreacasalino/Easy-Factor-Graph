@@ -8,7 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/structure/FactorsConstManager.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 
@@ -19,7 +19,7 @@ namespace EFG::model {
  */
 class Graph : public strct::EvidenceSetter,
               public strct::EvidenceRemover,
-              public strct::FactorsAdder,
+              public strct::FactorsConstInserter,
               public strct::GibbsSampler,
               public strct::QueryManager {
 public:
@@ -35,6 +35,6 @@ public:
    * @param when passing true the factors are deep copied, while in the contrary
    * case shallow copies of the smart pointers are inserted into this model.
    */
-  void absorb(const strct::ConnectionsManager &to_absorb, const bool copy);
+  void absorb(const strct::FactorsAware &to_absorb, bool copy);
 };
 } // namespace EFG::model

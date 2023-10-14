@@ -6,37 +6,43 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
+#include <EasyFactorGraph/misc/Visitor.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
+#include <EasyFactorGraph/trainable/tuners/BinaryTuner.h>
+#include <EasyFactorGraph/trainable/tuners/CompositeTuner.h>
 #include <EasyFactorGraph/trainable/tuners/TunerVisitor.h>
 #include <EasyFactorGraph/trainable/tuners/UnaryTuner.h>
-
-#include "../structure/Utils.h"
 
 #include <algorithm>
 
 namespace EFG::train {
-std::vector<std::vector<FactorExponentialPtr>>
-FactorsTunableAware::getTunableClusters() const {
-  std::vector<std::vector<FactorExponentialPtr>> result;
-  result.reserve(tuners.size());
+namespace {
+FactorExponentialPtr extract_factor(const Tuner &subject) {
+  return static_cast<const BaseTuner &>(subject).getFactorPtr();
+}
+} // namespace
+
+std::vector<std::variant<FactorExponentialPtr, TunableClusters>>
+FactorsTunableGetter::getTunableClusters() const {
+  std::vector<std::variant<FactorExponentialPtr, TunableClusters>> result;
   for (const auto &tuner : tuners) {
-    auto &cluster = result.emplace_back();
-    visit_tuner(
-        tuner,
-        [&cluster](const BaseTuner &tuner) {
-          cluster.push_back(tuner.getFactorPtr());
+    visitTuner(
+        tuner.get(),
+        [&result](const BaseTuner &base) {
+          result.emplace_back(extract_factor(base));
         },
-        [&cluster](const CompositeTuner &composite) {
-          for (const auto &element : composite.getElements()) {
-            cluster.push_back(
-                static_cast<const BaseTuner *>(element.get())->getFactorPtr());
+        [&result](const CompositeTuner &composite) {
+          TunableClusters cluster;
+          for (const auto &f : composite.getElements()) {
+            cluster.push_back(extract_factor(*f));
           }
+          result.emplace_back(std::move(cluster));
         });
   }
   return result;
 }
 
-std::vector<float> FactorsTunableAware::getWeights() const {
+std::vector<float> FactorsTunableGetter::getWeights() const {
   std::vector<float> result;
   result.reserve(tuners.size());
   for (const auto &tuner : tuners) {
@@ -45,41 +51,41 @@ std::vector<float> FactorsTunableAware::getWeights() const {
   return result;
 }
 
-void FactorsTunableAware::setWeights(const std::vector<float> &weights) {
+void FactorsTunableGetter::setWeights(const std::vector<float> &weights) {
   if (weights.size() != tuners.size()) {
     throw Error{"Invalid weights"};
   }
-  std::size_t pos = 0;
-  for (auto &tuner : tuners) {
-    tuner->setWeight(weights[pos]);
-    ++pos;
+  for (std::size_t k = 0; k < tuners.size(); ++k) {
+    tuners[k]->setWeight(weights[k]);
   }
+  resetBelief();
 }
 
-std::vector<float> FactorsTunableAware::getWeightsGradient(
+std::vector<float> FactorsTunableGetter::getWeightsGradient(
     const TrainSet::Iterator &train_set_combinations,
     const std::size_t threads) {
   ScopedPoolActivator activator(*this, threads);
   return getWeightsGradient_(train_set_combinations);
 }
 
-TunerPtr &FactorsTunableAdder::findTuner(
+Tuners::iterator FactorsTunableInserter::findTuner(
     const categoric::VariablesSet &tuned_vars_group) {
   auto tuners_it = std::find_if(
       tuners.begin(), tuners.end(),
       [&group = tuned_vars_group](const TunerPtr &tuner) {
         bool is_here = false;
-        visit_tuner(
-            tuner,
+        visitTuner(
+            tuner.get(),
             [&is_here, &group](const BaseTuner &tuner) {
-              is_here = tuner.getFactor().getGroup().getVariablesSet() == group;
+              is_here = tuner.getFactor().function().vars().getVariablesSet() ==
+                        group;
             },
             [&is_here, &group](const CompositeTuner &composite) {
               for (const auto &element : composite.getElements()) {
-                const auto *as_base_tuner =
-                    static_cast<const BaseTuner *>(element.get());
-                if (as_base_tuner->getFactor().getGroup().getVariablesSet() ==
-                    group) {
+                if (extract_factor(*element)
+                        ->function()
+                        .vars()
+                        .getVariablesSet() == group) {
                   is_here = true;
                   return;
                 }
@@ -90,42 +96,27 @@ TunerPtr &FactorsTunableAdder::findTuner(
   if (tuners_it == tuners.end()) {
     throw Error{"Tuner not found"};
   }
-  return *tuners_it;
+  return tuners_it;
 }
 
-namespace {
-strct::Node *extract_node(const strct::NodeLocation &location) {
-  strct::Node *result;
-  strct::visit_location(
-      location,
-      [&result](const strct::HiddenNodeLocation &location) {
-        result = location.node;
-      },
-      [&result](const strct::EvidenceNodeLocation &location) {
-        result = location.node;
-      });
-  return result;
-}
-} // namespace
-
-TunerPtr FactorsTunableAdder::makeTuner(const FactorExponentialPtr &factor) {
+TunerPtr FactorsTunableInserter::makeTuner(const FactorExponentialPtr &factor) {
   auto vars = getAllVariables();
-  const auto &factor_vars = factor->getGroup().getVariables();
+  const auto &factor_vars = factor->function().vars().getVariables();
   switch (factor_vars.size()) {
   case 1: {
-    auto *node = extract_node(*locate(factor_vars.front()));
+    auto *node = locate(factor_vars.front())->node;
     return std::make_unique<UnaryTuner>(*node, factor, vars);
   }
   case 2: {
-    auto *nodeA = extract_node(*locate(factor_vars.front()));
-    auto *nodeB = extract_node(*locate(factor_vars.back()));
+    auto *nodeA = locate(factor_vars.front())->node;
+    auto *nodeB = locate(factor_vars.back())->node;
     return std::make_unique<BinaryTuner>(*nodeA, *nodeB, factor, vars);
   }
   }
   throw Error{"Invalid tunable factor"};
 }
 
-void FactorsTunableAdder::addTunableFactor(
+void FactorsTunableInserter::addTunableFactor(
     const FactorExponentialPtr &factor,
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
   addDistribution(factor);
@@ -135,15 +126,15 @@ void FactorsTunableAdder::addTunableFactor(
     tuners.emplace_back(std::move(tuner));
     return;
   }
-  auto &tuner_sharing_w = findTuner(*group_sharing_weight);
-  visit_tuner(
-      tuner_sharing_w,
-      [&tuner, &tuner_sharing_w](BaseTuner &) {
+  auto other_it = findTuner(*group_sharing_weight);
+  visitTuner(
+      other_it->get(),
+      [&tuner, &other_it](BaseTuner &) {
         std::unique_ptr<CompositeTuner> new_composite =
-            std::make_unique<CompositeTuner>(std::move(tuner_sharing_w),
+            std::make_unique<CompositeTuner>(std::move(*other_it),
                                              std::move(tuner));
-        tuner_sharing_w = std::move(new_composite);
-        tuner_sharing_w->setWeight(tuner_sharing_w->getWeight());
+        *other_it = std::move(new_composite);
+        other_it->get()->setWeight(other_it->get()->getWeight());
       },
       [&tuner](CompositeTuner &tuner_sharing) {
         tuner_sharing.addElement(std::move(tuner));
@@ -151,37 +142,50 @@ void FactorsTunableAdder::addTunableFactor(
       });
 }
 
-void FactorsTunableAdder::copyTunableFactor(
-    const distribution::FactorExponential &factor,
+void FactorsTunableInserter::copyTunableFactor(
+    const factor::FactorExponential &factor,
     const std::optional<categoric::VariablesSet> &group_sharing_weight) {
-  auto cloned = std::make_shared<distribution::FactorExponential>(factor);
+  auto cloned = std::make_shared<factor::FactorExponential>(factor);
   addTunableFactor(cloned, group_sharing_weight);
 }
 
-void FactorsTunableAdder::absorbTunableClusters(
-    const FactorsTunableAware &source, const bool copy) {
+void FactorsTunableInserter::absorbTunableClusters(
+    const FactorsTunableGetter &source, bool copy) {
+  auto insertFactor =
+      [copy = copy, this](
+          const FactorExponentialPtr &factor,
+          const std::optional<categoric::VariablesSet> &group_sharing_weight) {
+        if (copy) {
+          copyTunableFactor(*factor, group_sharing_weight);
+        } else {
+          addTunableFactor(factor, group_sharing_weight);
+        }
+      };
+
   for (const auto &cluster : source.getTunableClusters()) {
     try {
-      const auto &front_factor = cluster.front();
-      if (copy) {
-        copyTunableFactor(*front_factor);
-      } else {
-        addTunableFactor(front_factor);
-      }
-      const auto &front_vars = front_factor->getGroup().getVariablesSet();
-      for (std::size_t k = 1; k < cluster.size(); ++k) {
-        if (copy) {
-          copyTunableFactor(*cluster[k], front_vars);
-        } else {
-          addTunableFactor(cluster[k], front_vars);
-        }
-      }
+      VisitorConst<FactorExponentialPtr, TunableClusters>{
+          [&insertFactor](const FactorExponentialPtr &base) {
+            insertFactor(base, std::nullopt);
+          },
+          [&insertFactor](const TunableClusters &composite) {
+            auto front_factor = composite.front();
+            const auto &vars =
+                front_factor->function().vars().getVariablesSet();
+            insertFactor(front_factor, std::nullopt);
+            std::for_each(
+                composite.begin() + 1, composite.end(),
+                [&insertFactor, &vars](const FactorExponentialPtr &tuner) {
+                  insertFactor(tuner, vars);
+                });
+          }}
+          .visit(cluster);
     } catch (...) {
     }
   }
 }
 
-void set_ones(FactorsTunableAware &subject) {
+void set_ones(FactorsTunableGetter &subject) {
   std::vector<float> weights = subject.getWeights();
   for (auto &w : weights) {
     w = 1.f;

@@ -7,8 +7,10 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/components/BeliefAware.h>
-#include <EasyFactorGraph/structure/components/PoolAware.h>
+#include <EasyFactorGraph/structure/bases/BeliefAware.h>
+#include <EasyFactorGraph/structure/bases/PoolAware.h>
+
+#include <algorithm>
 
 namespace EFG::strct {
 class QueryManager : virtual public StateAware,
@@ -24,15 +26,17 @@ public:
    * @throw when the passed variable name is not found
    */
   std::vector<float> getMarginalDistribution(const categoric::VariablePtr &var,
-                                             const std::size_t threads = 1);
+                                             std::size_t threads = 1) {
+    return marginalQuery_<PropagationKind::SUM>(var, threads);
+  }
 
   /**
    * @brief same as getMarginalDistribution(const categoric::VariablePtr &,
-   * const std::size_t), but passing the name of the variable, which is
+   * std::size_t), but passing the name of the variable, which is
    * internally searched.
    */
   std::vector<float> getMarginalDistribution(const std::string &var,
-                                             const std::size_t threads = 1);
+                                             std::size_t threads = 1);
 
   /**
    * @return a factor representing the joint distribution of the subgraph
@@ -42,21 +46,21 @@ public:
    * returning the result.
    * @throw when some of the passed variable names are not found
    */
-  distribution::Factor
+  factor::Factor
   getJointMarginalDistribution(const categoric::Group &subgroup,
-                               const std::size_t threads = 1);
+                               std::size_t threads = 1);
 
   /**
    * @brief same as getJointMarginalDistribution(const categoric::VariablesSet
-   * &, const std::size_t), but passing the names of the variables, which are
+   * &, std::size_t), but passing the names of the variables, which are
    * internally searched.
    *
    * @throw in case the passed set of variables is not representative of a valid
    * group
    */
-  distribution::Factor
+  factor::Factor
   getJointMarginalDistribution(const std::vector<std::string> &subgroup,
-                               const std::size_t threads = 1);
+                               std::size_t threads = 1);
 
   /**
    * @return the Maximum a Posteriori estimation of a specific variable in
@@ -67,14 +71,14 @@ public:
    * @throw when the passed variable name is not found
    */
   std::size_t getMAP(const categoric::VariablePtr &var,
-                     const std::size_t threads = 1);
+                     std::size_t threads = 1);
 
   /**
    * @brief same as getMAP(const categoric::VariablePtr &,
-   * const std::size_t), but passing the name of the variable, which is
+   * std::size_t), but passing the name of the variable, which is
    * internally searched.
    */
-  std::size_t getMAP(const std::string &var, const std::size_t threads = 1);
+  std::size_t getMAP(const std::string &var, std::size_t threads = 1);
 
   /**
    * @return the Maximum a Posteriori estimation of the hidden variables,
@@ -83,6 +87,29 @@ public:
    * @param the number of threads to use for propagating the belief before
    * returning the result.
    */
-  std::vector<size_t> getHiddenSetMAP(const std::size_t threads = 1);
+  std::vector<size_t> getHiddenSetMAP(std::size_t threads = 1);
+
+private:
+  static void throwInexistentVar(const std::string &var);
+
+  std::vector<float> getMarginalDistribution(const NodeLocation &location);
+
+  template <PropagationKind Kind> void checkPropagation_(std::size_t threads) {
+    if (wouldNeedPropagation(Kind)) {
+      ScopedPoolActivator activator(*this, threads);
+      propagateBelief(Kind);
+    }
+  }
+
+  template <PropagationKind Kind>
+  std::vector<float> marginalQuery_(const categoric::VariablePtr &var,
+                                    std::size_t threads) {
+    checkPropagation_<Kind>(threads);
+    auto location = locate(var);
+    if (!location) {
+      throwInexistentVar(var->name());
+    }
+    return getMarginalDistribution(*location);
+  }
 };
 } // namespace EFG::strct

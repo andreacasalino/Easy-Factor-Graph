@@ -9,12 +9,13 @@
 
 #pragma once
 
-#include <EasyFactorGraph/io/File.h>
-#include <EasyFactorGraph/io/Utils.h>
+#include <EasyFactorGraph/io/ModelComponents.h>
+#include <EasyFactorGraph/misc/Cast.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/misc/DynamicPredicate.h>
 
 #include <nlohmann/json.hpp>
+
+#include <filesystem>
 
 namespace EFG::io::json {
 class Importer {
@@ -26,11 +27,10 @@ public:
    * @param the path storing the xml to import
    */
   template <typename Model>
-  static void importFromFile(Model &model, const File &file_path) {
-    auto stream = make_in_stream(file_path.str());
-    nlohmann::json source = nlohmann::json::parse(*stream);
-    auto evidences = convert(getAdderComponents(model), source);
-    set_evidences(model, evidences);
+  static void importFromFile(Model &model,
+                             const std::filesystem::path &file_path) {
+    auto asJson = importJsonFromFile(file_path);
+    importFromJson(model, asJson);
   }
 
   /**
@@ -41,23 +41,27 @@ public:
    */
   template <typename Model>
   static void importFromJson(Model &model, const nlohmann::json &source) {
-    auto evidences = convert(getAdderComponents(model), source);
+    auto evidences = convert(castToInserters(model), source);
     set_evidences(model, evidences);
   }
 
 private:
   static std::unordered_map<std::string, std::size_t>
-  convert(const AdderPtrs &recipient, const nlohmann::json &source);
+  convert(Inserters recipient, const nlohmann::json &source);
+
+  static nlohmann::json
+  importJsonFromFile(const std::filesystem::path &file_path);
 
   template <typename Model>
   static void
   set_evidences(Model &model,
                 const std::unordered_map<std::string, std::size_t> &ev) {
-    dynamic_predicate<strct::EvidenceSetter>(model, [&ev](strct::EvidenceSetter& as_setter) {
-        for (const auto& [var, val] : ev) {
+    castAndUse<strct::EvidenceSetter>(
+        model, [&ev](strct::EvidenceSetter &as_setter) {
+          for (const auto &[var, val] : ev) {
             as_setter.setEvidence(as_setter.findVariable(var), val);
-        }
-    });
+          }
+        });
   }
 };
 } // namespace EFG::io::json

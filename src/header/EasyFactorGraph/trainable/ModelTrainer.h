@@ -31,7 +31,7 @@ struct TrainInfo {
  * @param the training approach to adopt
  * @param the train set to use
  */
-void train_model(FactorsTunableAware &subject, ::train::Trainer &trainer,
+void train_model(FactorsTunableGetter &subject, ::train::Trainer &trainer,
                  const TrainSet &train_set,
                  const TrainInfo &info = TrainInfo{});
 

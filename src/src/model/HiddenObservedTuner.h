@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/components/StateAware.h>
+#include <EasyFactorGraph/structure/bases/StateAware.h>
 #include <EasyFactorGraph/trainable/tuners/BaseTuner.h>
 
 namespace EFG::train {
@@ -15,7 +15,7 @@ class HiddenObservedTuner : public BaseTuner {
 public:
   HiddenObservedTuner(
       strct::Node &nodeHidden, const strct::Evidences::const_iterator &evidence,
-      const std::shared_ptr<distribution::FactorExponential> &factor,
+      const std::shared_ptr<factor::FactorExponential> &factor,
       const categoric::VariablesSoup &variables_in_model);
 
   float getGradientBeta() final;

@@ -46,7 +46,9 @@ public:
    */
   template <typename... Vars>
   Group(const VariablePtr &varA, const VariablePtr &varB, const Vars &...vars) {
-    this->add(varA, varB, vars...);
+    this->add(varA);
+    this->add(varB);
+    (this->add(vars), ...);
   }
 
   /**
@@ -66,12 +68,6 @@ public:
    * @throw in case a variable with the same name is already part of the group
    */
   void add(const VariablePtr &var);
-
-  template <typename... Vars>
-  void add(const VariablePtr &var, const Vars &...vars) {
-    this->add(var);
-    this->add(vars...);
-  }
 
   /** @return the size of the joint domain of the group.
    * For example the group <A,B,C> with sizes <2,4,3> will have a joint domain

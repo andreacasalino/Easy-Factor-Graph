@@ -7,13 +7,16 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/structure/bases/FactorsAware.h>
 #include <EasyFactorGraph/trainable/tuners/Tuner.h>
 
 #include <optional>
+#include <variant>
 
 namespace EFG::train {
-class FactorsTunableAware : virtual public strct::ConnectionsManager {
+using TunableClusters = std::vector<FactorExponentialPtr>;
+
+class FactorsTunableGetter : virtual public strct::FactorsAware {
 public:
   /**
    * @brief Get the collections of tunable exponential factors.
@@ -26,7 +29,8 @@ public:
    * @brief Get the clusters of tunable exponential factors. Elements in the
    * same cluster, shares the weight.
    */
-  std::vector<std::vector<FactorExponentialPtr>> getTunableClusters() const;
+  std::vector<std::variant<FactorExponentialPtr, TunableClusters>>
+  getTunableClusters() const;
 
   /**
    * @return the weights of all the tunable factors that are part of the model.
@@ -50,7 +54,7 @@ public:
    */
   std::vector<float>
   getWeightsGradient(const TrainSet::Iterator &train_set_combinations,
-                     const std::size_t threads = 1);
+                     std::size_t threads = 1);
 
   class ModelWrapper;
 
@@ -62,7 +66,7 @@ protected:
   Tuners tuners;
 };
 
-class FactorsTunableAdder : virtual public FactorsTunableAware {
+class FactorsTunableInserter : virtual public FactorsTunableGetter {
 public:
   /**
    * @brief add a shallow copy of the passed tunable expoenential factor to this
@@ -84,7 +88,7 @@ public:
    * should share the weight with the one to insert. When passing a nullopt the
    * factor will be inserted without sharing its weight.
    */
-  void copyTunableFactor(const distribution::FactorExponential &factor,
+  void copyTunableFactor(const factor::FactorExponential &factor,
                          const std::optional<categoric::VariablesSet>
                              &group_sharing_weight = std::nullopt);
 
@@ -96,7 +100,7 @@ public:
    */
   template <typename FactorExponentialIt>
   void absorbTunableFactors(const FactorExponentialIt &begin,
-                            const FactorExponentialIt &end, const bool copy) {
+                            const FactorExponentialIt &end, bool copy) {
     for (auto it = begin; it != end; ++it) {
       try {
         if (copy) {
@@ -117,11 +121,10 @@ public:
    * Passing copy = false, shallow copies are created and inserted in this
    * model.
    */
-  void absorbTunableClusters(const FactorsTunableAware &source,
-                             const bool copy);
+  void absorbTunableClusters(const FactorsTunableGetter &source, bool copy);
 
 protected:
-  TunerPtr &findTuner(const categoric::VariablesSet &tuned_vars_group);
+  Tuners::iterator findTuner(const categoric::VariablesSet &tuned_vars_group);
 
 private:
   TunerPtr makeTuner(const FactorExponentialPtr &factor);
@@ -130,5 +133,5 @@ private:
 /**
  * @param sets equal to 1 the weight of all the tunable clusters
  */
-void set_ones(FactorsTunableAware &subject);
+void set_ones(FactorsTunableGetter &subject);
 } // namespace EFG::train

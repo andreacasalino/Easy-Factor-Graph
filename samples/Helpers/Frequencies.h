@@ -11,13 +11,13 @@
 
 std::vector<float>
 getEmpiricalMarginals(EFG::categoric::VariablePtr var2Search,
-                      const std::vector<EFG::categoric::Combination> &samples,
+                      const std::vector<std::vector<std::size_t>> &samples,
                       const EFG::categoric::VariablesSoup &samplesGroup);
 
 float getEmpiricalProbability(
-    const EFG::categoric::Combination &comb2Search,
+    const std::vector<std::size_t> &comb2Search,
     const EFG::categoric::VariablesSoup &combGroup,
-    const std::vector<EFG::categoric::Combination> &samples,
+    const std::vector<std::vector<std::size_t>> &samples,
     const EFG::categoric::VariablesSoup &samplesGroup);
 
 std::vector<float> make_distribution(const std::vector<float> &values);

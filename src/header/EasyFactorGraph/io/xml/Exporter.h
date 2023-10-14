@@ -9,9 +9,9 @@
 
 #pragma once
 
-#include <EasyFactorGraph/io/Utils.h>
+#include <EasyFactorGraph/io/ModelComponents.h>
 
-#include <sstream>
+#include <filesystem>
 
 namespace EFG::io::xml {
 struct ExportInfo {
@@ -31,7 +31,7 @@ public:
   static std::string exportToString(const Model &model,
                                     const std::string &model_name) {
     std::stringstream stream;
-    convert(stream, getAwareComponents(model), model_name);
+    convert(stream, castToGetters(model), model_name);
     return stream.str();
   }
 
@@ -42,12 +42,11 @@ public:
    */
   template <typename Model>
   static void exportToFile(const Model &model, const ExportInfo &info) {
-    auto stream = make_out_stream(info.file_path);
-    convert(*stream, getAwareComponents(model), info.model_name);
+    convert(info.file_path, castToGetters(model), info.model_name);
   }
 
 private:
-  static void convert(std::ostream &recipient, const AwarePtrs &subject,
+  static void convert(const std::filesystem::path &out_file, Getters subject,
                       const std::string &model_name);
 };
 } // namespace EFG::io::xml

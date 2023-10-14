@@ -7,17 +7,17 @@
 
 #pragma once
 
-#include <EasyFactorGraph/distribution/CombinationFinder.h>
+#include <EasyFactorGraph/factor/ImageFinder.h>
 #include <EasyFactorGraph/trainable/tuners/Tuner.h>
 
 namespace EFG::train {
 class BaseTuner : public Tuner {
 public:
   FactorExponentialPtr getFactorPtr() const { return factor; }
-  const distribution::FactorExponential &getFactor() const { return *factor; }
+  const factor::FactorExponential &getFactor() const { return *factor; }
 
   float getGradientAlpha(const TrainSet::Iterator &iter) final;
-  void setWeight(const float &w) final { factor->setWeight(w); }
+  void setWeight(float w) final { factor->setWeight(w); }
   float getWeight() const final { return factor->getWeight(); };
 
 protected:
@@ -29,7 +29,7 @@ protected:
 private:
   FactorExponentialPtr factor;
 
-  const distribution::CombinationFinder finder;
+  factor::ImageFinder finder;
   struct GradientAlphaPart {
     const TrainSet::Iterator *train_set_iterator;
     float value;

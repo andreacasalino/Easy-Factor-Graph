@@ -19,9 +19,17 @@ using namespace EFG::categoric;
 using namespace std;
 
 int main() {
-  {
-    SampleSection section("Managing group of variables", "4.1.1.1");
+  SAMPLE_SECTION("Managing group of variables", "4.1.1.1", [] {
+    // define a group of variables, all with size = 2
+    Group groupABCD(make_variable(2, "A"), make_variable(2, "B"));
+    cout << "groupABCD with only A and B for the moment: " << groupABCD << endl;
 
+    groupABCD.add(make_variable(2, "C"));
+    groupABCD.add(make_variable(2, "D"));
+    cout << "groupABCD after adding also C and D: " << groupABCD << endl;
+  });
+
+  SAMPLE_SECTION("Managing group of variables", "4.1.1.1", [] {
     // define a group of variables, all with size = 2
     Group groupABCD(make_variable(2, "A"), make_variable(2, "B"));
     cout << "groupABCD with only A and B for the moment: " << groupABCD << endl;
@@ -36,10 +44,9 @@ int main() {
     } catch (...) {
       cout << "insertion of C in ABCD group correctly refused" << endl;
     }
-  }
+  });
 
-  {
-    SampleSection section("Joint domain of variables", "4.1.1.2");
+  SAMPLE_SECTION("Joint domain of variables", "4.1.1.2", [] {
     // build some variables
     auto A = make_variable(2, "A");
     auto B = make_variable(4, "B");
@@ -50,8 +57,9 @@ int main() {
       cout << AB_group.getVariables() << endl;
       // display all combinations in the joint domain
       GroupRange range(AB_group);
-      for_each_combination(
-          range, [](const Combination &comb) { cout << comb << std::endl; });
+      for_each_combination(range, [](const std::vector<std::size_t> &comb) {
+        cout << comb << std::endl;
+      });
       cout << endl;
     }
 
@@ -60,8 +68,9 @@ int main() {
       cout << AC_group.getVariables() << endl;
       // display all combinations in the joint domain
       GroupRange range(AC_group);
-      for_each_combination(
-          range, [](const Combination &comb) { cout << comb << std::endl; });
+      for_each_combination(range, [](const std::vector<std::size_t> &comb) {
+        cout << comb << std::endl;
+      });
       cout << endl;
     }
 
@@ -70,11 +79,12 @@ int main() {
       cout << ABC_group.getVariables() << endl;
       // display all combinations in the joint domain
       GroupRange range(ABC_group);
-      for_each_combination(
-          range, [](const Combination &comb) { cout << comb << std::endl; });
+      for_each_combination(range, [](const std::vector<std::size_t> &comb) {
+        cout << comb << std::endl;
+      });
       cout << endl;
     }
-  }
+  });
 
   return EXIT_SUCCESS;
 }

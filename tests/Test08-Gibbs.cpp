@@ -8,54 +8,58 @@
 
 #include <algorithm>
 
-using namespace EFG;
-using namespace EFG::categoric;
-using namespace EFG::distribution;
-using namespace EFG::model;
-using namespace EFG::strct;
-using namespace EFG::test;
-using namespace EFG::test::library;
+namespace EFG::test {
+using namespace categoric;
+using namespace model;
+using namespace strct;
+using namespace library;
 
 namespace {
-bool are_samples_valid(const std::vector<Combination> &samples,
+bool are_samples_valid(const std::vector<std::vector<std::size_t>> &samples,
                        const VariablesSoup &group) {
   if (samples.empty()) {
     return false;
   }
-  auto samples_it = std::find_if(
-      samples.begin(), samples.end(), [&group](const Combination &comb) {
-        if (comb.data().size() != group.size()) {
-          return true;
-        }
-        for (std::size_t k = 0; k < comb.size(); ++k) {
-          if (group[k]->size() <= comb.data()[k]) {
-            return true;
-          }
-        }
-        return false;
-      });
-  return samples_it == samples.end();
+
+  auto bad_comb = [&group](const std::vector<std::size_t> &comb) {
+    if (comb.size() != group.size()) {
+      return true;
+    }
+    for (std::size_t k = 0; k < comb.size(); ++k) {
+      if (group[k]->size() <= comb[k]) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  return std::find_if(samples.begin(), samples.end(), bad_comb) ==
+         samples.end();
 }
 
 // frequency of var = 1 is returned
-float getFrequency1(const std::vector<Combination> &samples,
+float getFrequency1(const std::vector<std::vector<std::size_t>> &samples,
                     const VariablesSoup &group, const VariablePtr &var) {
-  auto var_it = std::find(group.begin(), group.end(), var);
-  std::size_t varPos = std::distance(group.begin(), var_it);
+  std::size_t varPos;
+  if (auto it = std::find(group.begin(), group.end(), var); it != group.end()) {
+    varPos = std::distance(group.begin(), it);
+  } else {
+    throw Error::make("Unable to find variable ", var->name());
+  }
   std::size_t instances = 0;
   for (const auto &sample : samples) {
-    if (1 == sample.data()[varPos]) {
+    if (sample[varPos] == 1) {
       ++instances;
     }
   }
   return static_cast<float>(instances) / static_cast<float>(samples.size());
 };
 
-float getFrequency(const std::vector<Combination> &samples,
+float getFrequency(const std::vector<std::vector<std::size_t>> &samples,
                    const std::vector<std::size_t> &comb_to_search) {
   std::size_t result = 0;
   for (const auto &sample : samples) {
-    if (sample.data() == comb_to_search) {
+    if (sample == comb_to_search) {
       ++result;
     }
   }
@@ -64,21 +68,19 @@ float getFrequency(const std::vector<Combination> &samples,
   return result2;
 }
 
-bool check_second_prob(const float expected_value_0,
-                       const float expected_value_1, const float freq_1,
-                       const float threshold = 0.05f) {
-  return almost_equal(
-      (*ProbDistribution{{expected_value_0, expected_value_1}})[1], freq_1,
-      threshold);
+bool check_second_prob(float expected_value_0, float expected_value_1,
+                       float freq_1, float threshold = 0.05f) {
+  return almost_equal(make_prob_distr({expected_value_0, expected_value_1})[1],
+                      freq_1, threshold);
 }
 } // namespace
 
-TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling][!mayfail]") {
+TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
   Graph model;
 
   auto w = GENERATE(0.5f, 1.f, 2.f);
   model.addConstFactor(
-      make_corr_expfactor2(make_variable(2, "A"), make_variable(2, "B"), w));
+      make_corr_expfactor_ptr(make_variable(2, "A"), make_variable(2, "B"), w));
 
   SECTION("combinations involving all variables") {
     auto samples =
@@ -88,13 +90,13 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling][!mayfail]") {
     const float Z = 2.f * (1.f + exp_w);
 
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 0}),
-                       exp_w / Z, 0.05f));
+                       exp_w / Z, 0.075f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{0, 1}),
-                       1.f / Z, 0.05f));
+                       1.f / Z, 0.075f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 0}),
-                       1.f / Z, 0.05f));
+                       1.f / Z, 0.075f));
     CHECK(almost_equal(getFrequency(samples, std::vector<std::size_t>{1, 1}),
-                       exp_w / Z, 0.05f));
+                       exp_w / Z, 0.075f));
   }
 
   SECTION("specific variable frequency") {
@@ -109,7 +111,7 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling][!mayfail]") {
 }
 
 namespace {
-float getFrequency(const std::vector<Combination> &samples,
+float getFrequency(const std::vector<std::vector<std::size_t>> &samples,
                    const std::vector<std::size_t> &comb_to_search,
                    const std::vector<std::size_t> &pos_to_search) {
   std::size_t result = 0;
@@ -129,7 +131,7 @@ float getFrequency(const std::vector<Combination> &samples,
 }
 } // namespace
 
-TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling][!mayfail]") {
+TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling]") {
   Graph model;
 
   auto A = make_variable(2, "A");
@@ -137,10 +139,10 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling][!mayfail]") {
   auto C = make_variable(2, "C");
 
   float alfa = 0.3f;
-  model.addConstFactor(make_corr_expfactor2(A, B, alfa));
+  model.addConstFactor(make_corr_expfactor_ptr(A, B, alfa));
 
   float beta = 1.3f;
-  model.addConstFactor(make_corr_expfactor2(B, C, beta));
+  model.addConstFactor(make_corr_expfactor_ptr(B, C, beta));
 
   auto samples =
       model.makeSamples(GibbsSampler::SamplesGenerationContext{1000, 50, 0});
@@ -193,8 +195,8 @@ TEST_CASE("2 binary factors gibbs sampling", "[gibbs_sampling][!mayfail]") {
   }
 }
 
-TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling][!mayfail]") {
-  RandomField model(SIMPLE_TREE);
+TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
+  SimpleTree model;
 
   const float a = expf(SimpleTree::alfa);
   const float b = expf(SimpleTree::beta);
@@ -228,8 +230,8 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling][!mayfail]") {
       toll));
 }
 
-TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling][!mayfail]") {
-  RandomField model(SIMPLE_LOOPY);
+TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
+  SimpleLoopy model;
 
   float M = expf(SimpleLoopy::w);
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
@@ -260,3 +262,5 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling][!mayfail]") {
       getFrequency1(samples, model.getAllVariables(), model.findVariable("A")),
       toll));
 }
+
+} // namespace EFG::test

@@ -12,10 +12,10 @@
 namespace EFG::train {
 BinaryTuner::BinaryTuner(
     strct::Node &nodeA, strct::Node &nodeB,
-    const std::shared_ptr<distribution::FactorExponential> &factor,
+    const std::shared_ptr<factor::FactorExponential> &factor,
     const categoric::VariablesSoup &variables_in_model)
     : BaseTuner(factor, variables_in_model), nodeA(nodeA), nodeB(nodeB) {
-  const auto &variables = factor->getGroup().getVariables();
+  const auto &variables = factor->function().vars().getVariables();
   if (variables.front().get() != nodeA.variable.get()) {
     throw Error{"Invalid BinaryTuner"};
   }
@@ -24,36 +24,37 @@ BinaryTuner::BinaryTuner(
   }
 }
 
+namespace {
+std::pair<std::vector<float>, std::vector<float>>
+marginal_distributions(strct::Node &a, strct::Node &b) {
+  auto gather = [](strct::Node &subject, strct::Node &other) {
+    std::unordered_set<const factor::Immutable *> res{
+        subject.merged_unaries.get()};
+    for (const auto &[node, conn] : subject.active_connections) {
+      if (node == &other) {
+        continue;
+      }
+      res.emplace(conn.message.get());
+    }
+    return std::vector<const factor::Immutable *>{res.begin(), res.end()};
+  };
+  return std::make_pair(factor::MergedUnaries{gather(a, b)}.getProbabilities(),
+                        factor::MergedUnaries{gather(b, a)}.getProbabilities());
+}
+} // namespace
+
 float BinaryTuner::getGradientBeta() {
-  std::vector<float> merged_a;
-  {
-    std::vector<const distribution::Distribution *> unaries = {
-        nodeA.merged_unaries.get()};
-    for (const auto &[connected_node, connection] : nodeA.active_connections) {
-      unaries.push_back(connection->message.get());
-    }
-    merged_a = distribution::UnaryFactor{unaries}.getProbabilities();
-  }
-
-  std::vector<float> merged_b;
-  {
-    std::vector<const distribution::Distribution *> unaries = {
-        nodeB.merged_unaries.get()};
-    for (const auto &[connected_node, connection] : nodeB.active_connections) {
-      unaries.push_back(connection->message.get());
-    }
-    merged_b = distribution::UnaryFactor{unaries}.getProbabilities();
-  }
-
+  auto marginals = marginal_distributions(nodeA, nodeB);
+  auto &merged_a = marginals.first;
+  auto &merged_b = marginals.second;
   std::vector<float> probs;
-  const auto &eval = getFactor().getEvaluator();
-  probs.reserve(getFactor().getCombinationsMap().size());
+  probs.reserve(getFactor().function().getInfo().totCombinations);
   float probs_coeff = 0;
-  for (const auto &[comb, val] : getFactor().getCombinationsMap()) {
-    const auto &data = comb.data();
-    probs.push_back(eval.evaluate(val) * merged_a[data[0]] * merged_b[data[1]]);
-    probs_coeff += probs.back();
-  }
+  getFactor().function().forEachCombination<true>(
+      [&](const auto &comb, float img) {
+        probs_coeff +=
+            probs.emplace_back(img * merged_a[comb[0]] * merged_b[comb[1]]);
+      });
   probs_coeff = 1.f / probs_coeff;
   for (auto &val : probs) {
     val *= probs_coeff;

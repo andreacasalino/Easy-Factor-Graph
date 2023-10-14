@@ -7,12 +7,13 @@
 
 #pragma once
 
-#include <EasyFactorGraph/categoric/Combination.h>
-
 #include <memory>
 #include <optional>
+#include <vector>
 
 namespace EFG::train {
+
+using Combinations = std::vector<std::vector<std::size_t>>;
 
 class TrainSet {
 public:
@@ -21,19 +22,17 @@ public:
    * @throw if the combinations don't have all the same size
    * @throw if the combinations container is empty
    */
-  TrainSet(const std::vector<categoric::Combination> &combinations);
+  TrainSet(const std::vector<std::vector<std::size_t>> &combinations);
 
-  const std::vector<categoric::Combination> &getCombinations() const {
-    return *this->combinations;
-  };
+  const auto &getCombinations() const { return *this->combinations; };
 
   class Iterator;
   Iterator makeIterator() const;
 
-  Iterator makeSubSetIterator(const float &percentage) const;
+  Iterator makeSubSetIterator(float percentage) const;
 
 private:
-  std::shared_ptr<const std::vector<categoric::Combination>> combinations;
+  std::shared_ptr<const Combinations> combinations;
 };
 
 /**
@@ -48,18 +47,19 @@ public:
    * Passing a value equal to 1, means to use all the combinations of the passed
    * subject.
    */
-  Iterator(const TrainSet &subject, const float percentage);
+  Iterator(const TrainSet &subject, float percentage);
 
   template <typename Predicate>
   void forEachSample(const Predicate &pred) const {
-    if (std::nullopt == combinations_subset) {
-      for (const auto &sample : *combinations) {
-        pred(sample);
+    if (combinations_subset.has_value()) {
+      const auto &coll = *combinations;
+      for (auto index : combinations_subset.value()) {
+        pred(coll[index]);
       }
-    } else {
-      for (const auto &sample_it : *combinations_subset) {
-        pred(*sample_it);
-      }
+      return;
+    }
+    for (const auto &sample : *combinations) {
+      pred(sample);
     }
   }
 
@@ -69,10 +69,8 @@ public:
   std::size_t size() const;
 
 private:
-  std::shared_ptr<const std::vector<categoric::Combination>> combinations;
+  std::shared_ptr<const Combinations> combinations;
 
-  using CombinationIt = std::vector<categoric::Combination>::const_iterator;
-  using CombinationsIt = std::vector<CombinationIt>;
-  std::optional<CombinationsIt> combinations_subset;
+  std::optional<std::vector<std::size_t>> combinations_subset;
 };
 } // namespace EFG::train

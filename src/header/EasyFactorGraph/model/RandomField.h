@@ -8,7 +8,7 @@
 #pragma once
 
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/structure/FactorsManager.h>
+#include <EasyFactorGraph/structure/FactorsConstManager.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 #include <EasyFactorGraph/trainable/FactorsTunableManager.h>
@@ -20,8 +20,8 @@ namespace EFG::model {
  */
 class RandomField : public strct::EvidenceSetter,
                     public strct::EvidenceRemover,
-                    public strct::FactorsAdder,
-                    public train::FactorsTunableAdder,
+                    public strct::FactorsConstInserter,
+                    public train::FactorsTunableInserter,
                     public strct::GibbsSampler,
                     public strct::QueryManager {
 public:
@@ -38,10 +38,10 @@ public:
    * others inserted/copied using the strct::FactorsAdder interface.
    * @param the model whose factors should be inserted/copied
    * @param when passing true the factors are deep copied, while in the contrary
-   * case shallow copies of the smart pointers storing the factors are inserted 
+   * case shallow copies of the smart pointers storing the factors are inserted
    * into this model.
    */
-  void absorb(const strct::ConnectionsManager& to_absorb, const bool copy);
+  void absorb(const strct::FactorsAware &to_absorb, bool copy);
 
 protected:
   std::vector<float> getWeightsGradient_(

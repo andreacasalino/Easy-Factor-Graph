@@ -7,10 +7,9 @@
 
 #ifdef EFG_XML_IO
 
-#include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/xml/Importer.h>
 
-#include "../ImportUtils.h"
+#include "../Utils.h"
 
 #include <XML-Parser/Parser.h>
 
@@ -29,7 +28,7 @@ const std::string &access_attribute(const xmlPrs::Tag &subject,
                                     const std::string &name) {
   const auto *attr = try_access_attribute(subject, name);
   if (nullptr == attr) {
-    throw Error{name, " is an inexistent attribute"};
+    throw Error::make(name, " is an inexistent attribute");
   }
   return *attr;
 }
@@ -68,7 +67,7 @@ categoric::Group importGroup(const xmlPrs::Tag &tag,
   return categoric::Group{group};
 }
 
-std::shared_ptr<distribution::Factor>
+std::shared_ptr<factor::Factor>
 importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
              const categoric::VariablesSet &variables) {
   auto group = importGroup(tag, variables);
@@ -76,21 +75,20 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
   const auto *corr = try_access_attribute(tag, "Correlation");
   if (nullptr != corr) {
     if (*corr == "T") {
-      return std::make_shared<distribution::Factor>(
+      return std::make_shared<factor::Factor>(
           categoric::Group{group.getVariables()},
-          distribution::USE_SIMPLE_CORRELATION_TAG);
+          factor::Factor::SimplyCorrelatedTag{});
     }
     if (*corr == "F") {
-      return std::make_shared<distribution::Factor>(
+      return std::make_shared<factor::Factor>(
           categoric::Group{group.getVariables()},
-          distribution::USE_SIMPLE_ANTI_CORRELATION_TAG);
+          factor::Factor::SimplyAntiCorrelatedTag{});
     }
     throw Error("invalid option for Correlation");
   }
 
-  std::shared_ptr<distribution::Factor> result =
-      std::make_shared<distribution::Factor>(
-          categoric::Group{group.getVariables()});
+  std::shared_ptr<factor::Factor> result =
+      std::make_shared<factor::Factor>(categoric::Group{group.getVariables()});
 
   const auto *source = try_access_attribute(tag, "Source");
   if (nullptr != source) {
@@ -107,8 +105,8 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
                               });
                  const float val = static_cast<float>(
                      std::atof(access_attribute(*comb, "D").c_str()));
-                 result->setImageRaw(
-                     categoric::Combination{std::move(combination)}, val);
+
+                 result->set(combination, val);
                });
 
   return result;
@@ -116,7 +114,7 @@ importFactor(const std::string &prefix, const xmlPrs::Tag &tag,
 
 void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
                      const categoric::VariablesSet &variables,
-                     ImportPredicate &importer) {
+                     ImportHelper &importer) {
   auto shape = importFactor(prefix, tag, variables);
   const auto *w = try_access_attribute(tag, "weight");
   if (nullptr == w) {
@@ -124,7 +122,7 @@ void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
     return;
   }
 
-  auto factor = std::make_shared<distribution::FactorExponential>(
+  auto factor = std::make_shared<factor::FactorExponential>(
       *shape, static_cast<float>(std::atof(w->c_str())));
   const auto *tunab = try_access_attribute(tag, "tunability");
   if ((nullptr != tunab) && (*tunab == "Y")) {
@@ -143,8 +141,8 @@ void importPotential(const std::string &prefix, const xmlPrs::Tag &tag,
 } // namespace
 
 std::unordered_map<std::string, std::size_t>
-Importer::convert(const AdderPtrs &subject, const File &file_path) {
-  auto maybe_parsed_root = xmlPrs::parse_xml(file_path.str());
+Importer::convert(Inserters subject, const std::filesystem::path &file_path) {
+  auto maybe_parsed_root = xmlPrs::parse_xml(file_path.string());
   auto maybe_parsed_error = std::get_if<xmlPrs::Error>(&maybe_parsed_root);
   if (nullptr != maybe_parsed_error) {
     throw *maybe_parsed_error;
@@ -160,7 +158,7 @@ Importer::convert(const AdderPtrs &subject, const File &file_path) {
         const auto &size = access_attribute(*var, "Size");
         auto new_var = categoric::make_variable(std::atoi(size.c_str()), name);
         if (variables.find(new_var) != variables.end()) {
-          throw Error{name, " is a multiple times specified variable "};
+          throw Error::make(name, " is a multiple times specified variable ");
         }
         variables.emplace(new_var);
         const auto *obs_flag = try_access_attribute(*var, "evidence");
@@ -171,10 +169,10 @@ Importer::convert(const AdderPtrs &subject, const File &file_path) {
         }
       });
   // import potentials
-  ImportPredicate importer{subject};
+  ImportHelper importer{subject};
   for_each_key(parsed_root.getNested(), xmlPrs::Name{"Potential"},
                [&](const xmlPrs::TagPtr &factor) {
-                 importPotential(file_path.parent_str(), *factor, variables,
+                 importPotential(file_path.parent_path().string(), *factor, variables,
                                  importer);
                });
   importer.importCumulatedTunable();

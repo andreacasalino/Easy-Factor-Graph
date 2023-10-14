@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/components/BeliefAware.h>
-#include <EasyFactorGraph/structure/components/PoolAware.h>
+#include <EasyFactorGraph/structure/bases/BeliefAware.h>
+#include <EasyFactorGraph/structure/bases/PoolAware.h>
 
 #include <optional>
 #include <random>
@@ -20,7 +20,7 @@ public:
 
   std::size_t sampleFromDiscrete(const std::vector<float> &distribution) const;
 
-  void resetSeed(const std::size_t &newSeed);
+  void resetSeed(std::size_t newSeed);
 
 private:
   float sample() const { return this->distribution(this->generator); };
@@ -68,8 +68,26 @@ public:
    * @param number parameters for the samples generation
    * @param number of threads to use for the samples generation
    */
-  std::vector<categoric::Combination>
-  makeSamples(const SamplesGenerationContext &context,
-              const std::size_t threads = 1);
+  std::vector<std::vector<std::size_t>>
+  makeSamples(const SamplesGenerationContext &context, std::size_t threads = 1);
+
+  struct SamplerNode {
+    std::size_t *value_in_combination;
+    const factor::UnaryFactor *static_dependencies;
+
+    struct DynamicDependency {
+      categoric::VariablePtr sender;
+      const std::size_t *sender_value_in_combination;
+      factor::ImmutablePtr factor;
+    };
+    std::vector<DynamicDependency> dynamic_dependencies;
+
+    bool noChangingDeps(
+        const std::unordered_set<const std::size_t *> &will_change) const;
+  };
+
+private:
+  std::vector<SamplerNode>
+  makeSamplerNodes(std::vector<std::size_t> &combination_buffer) const;
 };
 } // namespace EFG::strct

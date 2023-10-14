@@ -8,198 +8,181 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/structure/SpecialFactors.h>
 
-#include <functional>
+#include <cmath>
+#include <limits>
+#include <algorithm>
 
-namespace EFG::distribution {
-const UnaryFactor::DontFillDomainTag UnaryFactor::DONT_FILL_DOMAIN_TAG =
-    UnaryFactor::DontFillDomainTag{};
-
-UnaryFactor::UnaryFactor(const categoric::VariablePtr &var,
-                         const DontFillDomainTag &)
-    : distribution::Factor(categoric::Group{var}), variable(var) {}
-
-UnaryFactor::UnaryFactor(const categoric::VariablePtr &var)
-    : UnaryFactor(var, DONT_FILL_DOMAIN_TAG) {
-  auto &map = getCombinationsMap_();
-  for (std::size_t c = 0; c < var->size(); ++c) {
-    map.emplace(std::vector<std::size_t>{c}, 1.f);
+namespace EFG::factor {
+UnaryFactor::UnaryFactor(FunctionPtr data)
+    : Factor{data}, variable{data->vars().getVariables().front()} {
+  if (data->vars().getVariables().size() != 1) {
+    throw Error{"Unary factor can refer only to unary group"};
   }
 }
 
-UnaryFactor::UnaryFactor(
-    const std::vector<const distribution::Distribution *> &factors)
-    : UnaryFactor(factors.front()->getGroup().getVariables().front()) {
+float UnaryFactor::diff(const UnaryFactor &o) const {
+  auto this_prob = getProbabilities();
+  auto o_prob = o.getProbabilities();
+  float res = 0;
+  for (std::size_t k = 0; k < this_prob.size(); ++k) {
+    res += std::abs(this_prob[k] - o_prob[k]);
+  }
+  return res;
+}
+
+namespace {
+class MergableFunction : public Function {
+public:
+  MergableFunction(const categoric::VariablePtr &var)
+      : Function{categoric::Group{var}} {
+    std::vector<float> imgs;
+    for (std::size_t k = 0; k < var->size(); ++k) {
+      imgs.push_back(1.f);
+    }
+    data_ = std::move(imgs);
+    imgs_ = std::get_if<std::vector<float>>(&data_);
+  }
+
+  void merge(const Function &subject) {
+    auto it = imgs_->begin();
+    subject.forEachCombination<true>([&it](const auto &, float img) {
+      *it *= img;
+      ++it;
+    });
+  }
+
+  void normalize() {
+    float coeff = 1.f / *std::max_element(imgs_->begin(), imgs_->end());
+    for (auto &val : *imgs_) {
+      val *= coeff;
+    }
+  }
+
+private:
+  std::vector<float> *imgs_;
+};
+} // namespace
+
+MergedUnaries::MergedUnaries(const categoric::VariablePtr &var)
+    : UnaryFactor{std::make_shared<MergableFunction>(var)} {}
+
+MergedUnaries::MergedUnaries(const std::vector<const Immutable *> &factors)
+    : UnaryFactor(std::make_shared<MergableFunction>(
+          factors.front()->function().vars().getVariables().front())) {
   for (const auto *factor : factors) {
     merge(*factor);
   }
   normalize();
 }
 
-void UnaryFactor::merge(const Distribution &to_merge) {
-  {
-    const auto &vars = to_merge.getGroup().getVariables();
-    if (vars.size() != 1) {
-      throw Error{"Invalid factor"};
-    }
-    if (vars.front().get() != this->variable.get()) {
-      throw Error{"Invalid factor"};
-    }
+void MergedUnaries::merge(const Immutable &to_merge) {
+  const auto &vars = to_merge.function().vars().getVariables();
+  if (vars.size() != 1) {
+    throw Error{"Invalid factor"};
   }
-  auto &map = getCombinationsMap_();
-  const auto &to_merge_map = to_merge.getCombinationsMap();
-  if (to_merge_map.size() == map.size()) {
-    auto map_it = map.begin();
-    for (auto to_merge_it = to_merge_map.begin();
-         to_merge_it != to_merge_map.end(); ++to_merge_it, ++map_it) {
-      map_it->second *= to_merge_it->second;
-    }
-  } else {
-    for (auto &[comb, val] : map) {
-      val *= to_merge.evaluate(comb);
-    }
+  if (vars.front().get() != this->variable.get()) {
+    throw Error{"Invalid factor"};
   }
+  static_cast<MergableFunction &>(functionMutable()).merge(to_merge.function());
 }
 
-void UnaryFactor::normalize() {
-  auto &map = getCombinationsMap_();
-  float coeff = map.begin()->second;
-  for (const auto &[comb, val] : map) {
-    if (coeff < val) {
-      coeff = val;
-    }
-  }
-  if (0 == coeff) {
-    return;
-  }
-  coeff = 1.f / coeff;
-  for (auto &[comb, val] : map) {
-    val *= coeff;
-  }
+void MergedUnaries::normalize() {
+  static_cast<MergableFunction &>(functionMutable()).normalize();
 }
 
 namespace {
-categoric::VariablePtr get_other_var(const Distribution &binary_factor,
+categoric::VariablePtr get_other_var(const Immutable &binary_factor,
                                      const categoric::VariablePtr &var) {
-  if (2 != binary_factor.getGroup().getVariables().size()) {
+  const auto &vars = binary_factor.function().vars().getVariables();
+  if (2 != vars.size()) {
     throw Error{"invalid binary factor"};
   }
-  const auto &vars = binary_factor.getGroup().getVariables();
-  if (vars.front() == var) {
-    return vars.back();
-  }
-  return vars.front();
+  return (vars.front() == var) ? vars.back() : vars.front();
 }
 
-void get_positions(const Distribution &binary_factor,
+void get_positions(const Immutable &binary_factor,
                    const categoric::VariablePtr &unary_factor_var,
                    std::size_t &unary_factor_var_pos,
                    std::size_t &other_var_pos) {
   unary_factor_var_pos = 0;
   other_var_pos = 1;
-  if (binary_factor.getGroup().getVariables().back().get() ==
+  if (binary_factor.function().vars().getVariables().back().get() ==
       unary_factor_var.get()) {
     std::swap(unary_factor_var_pos, other_var_pos);
   }
 }
 } // namespace
 
-Evidence::Evidence(const Distribution &binary_factor,
+Evidence::Evidence(const Immutable &binary_factor,
                    const categoric::VariablePtr &evidence_var,
                    const std::size_t evidence)
-    : UnaryFactor(get_other_var(binary_factor, evidence_var),
-                  DONT_FILL_DOMAIN_TAG) {
+    : UnaryFactor(std::make_shared<Function>(
+          get_other_var(binary_factor, evidence_var))) {
   std::size_t pos_evidence;
   std::size_t pos_hidden;
   get_positions(binary_factor, getVariable(), pos_hidden, pos_evidence);
-  auto &map = getCombinationsMap_();
-  const auto &eval = binary_factor.getEvaluator();
-  for (const auto &[comb, val] : binary_factor.getCombinationsMap()) {
-    const auto &big_comb_data = comb.data();
-    if (comb.data()[pos_evidence] == evidence) {
-      categoric::Combination comb(
-          std::vector<std::size_t>{big_comb_data[pos_hidden]});
-      map.emplace(std::move(comb), eval.evaluate(val));
-    }
+  auto &data = functionMutable();
+  binary_factor.function().forEachCombination<true>(
+      [&](const auto &comb, float img) {
+        if (comb[pos_evidence] == evidence) {
+          data.set(std::vector<std::size_t>{comb[pos_hidden]}, img);
+        }
+      });
+}
+
+Indicator::Indicator(const categoric::VariablePtr &var, std::size_t value)
+    : UnaryFactor(std::make_shared<Function>(var)) {
+  if (value >= var->size()) {
+    throw Error{"Invalid indicator factor"};
   }
+  functionMutable().set(std::vector<std::size_t>{value}, 1.f);
 }
 
 namespace {
-void fill_message(
-    const UnaryFactor &merged_unaries,
-    const distribution::Distribution &binary_factor,
-    distribution::CombinationRawValuesMap &recipient,
-    const std::function<float(const std::vector<float> &)> &reduction) {
-  std::size_t message_var_pos;
-  std::size_t sender_var_pos;
-  get_positions(binary_factor, merged_unaries.getVariable(), message_var_pos,
-                sender_var_pos);
-  std::vector<float> values;
-  const auto recipient_var =
-      binary_factor.getGroup().getVariables()[message_var_pos];
-  for (std::size_t recipient_comb = 0; recipient_comb < recipient_var->size();
-       ++recipient_comb) {
-    values.clear();
-    for (const auto &[sender_comb, sender_val] :
-         merged_unaries.getCombinationsMap()) {
-      std::vector<std::size_t> binary_factor_comb;
-      binary_factor_comb.resize(2);
-      binary_factor_comb[sender_var_pos] = sender_comb.data().front();
-      binary_factor_comb[message_var_pos] = recipient_comb;
-      values.push_back(sender_val *
-                       binary_factor.evaluate(std::move(binary_factor_comb)));
-    }
-    recipient.emplace(std::vector<std::size_t>{recipient_comb},
-                      reduction(values));
+template <typename ReducerT>
+void fill_message(const UnaryFactor &merged_unaries,
+                  const Immutable &binary_factor, Function &recipient) {
+  std::size_t message_pos;
+  std::size_t sender_pos;
+  get_positions(binary_factor, merged_unaries.getVariable(), message_pos,
+                sender_pos);
+  std::size_t message_size =
+      binary_factor.function().vars().getVariables()[message_pos]->size();
+  for (std::size_t r = 0; r < message_size; ++r) {
+    ReducerT reducer{};
+    merged_unaries.function().forEachCombination<true>(
+        [&](const auto &sender_comb, float sender_val) {
+          std::vector<std::size_t> binary_factor_comb;
+          binary_factor_comb.resize(2);
+          binary_factor_comb[sender_pos] = sender_comb.front();
+          binary_factor_comb[message_pos] = r;
+          reducer.update(sender_val * binary_factor.function().findTransformed(
+                                          binary_factor_comb));
+        });
+    recipient.set(std::vector<std::size_t>{r}, reducer.val);
   }
 }
 } // namespace
 
 MessageSUM::MessageSUM(const UnaryFactor &merged_unaries,
-                       const distribution::Distribution &binary_factor)
-    : UnaryFactor(get_other_var(binary_factor, merged_unaries.getVariable()),
-                  DONT_FILL_DOMAIN_TAG) {
-  fill_message(merged_unaries, binary_factor, getCombinationsMap_(),
-               [](const std::vector<float> &values) {
-                 float result = 0;
-                 for (const auto &val : values) {
-                   result += val;
-                 }
-                 return result;
-               });
+                       const Immutable &binary_factor)
+    : UnaryFactor(std::make_shared<Function>(
+          get_other_var(binary_factor, merged_unaries.getVariable()))) {
+  struct Reducer {
+    void update(float v) { val += v; }
+    float val = 0;
+  };
+  fill_message<Reducer>(merged_unaries, binary_factor, functionMutable());
 }
 
 MessageMAP::MessageMAP(const UnaryFactor &merged_unaries,
-                       const distribution::Distribution &binary_factor)
-    : UnaryFactor(get_other_var(binary_factor, merged_unaries.getVariable()),
-                  DONT_FILL_DOMAIN_TAG) {
-  fill_message(merged_unaries, binary_factor, getCombinationsMap_(),
-               [](const std::vector<float> &values) {
-                 float result = values.front();
-                 for (const auto &val : values) {
-                   if (val > result) {
-                     result = val;
-                   }
-                 }
-                 return result;
-               });
+                       const Immutable &binary_factor)
+    : UnaryFactor(std::make_shared<Function>(
+          get_other_var(binary_factor, merged_unaries.getVariable()))) {
+  struct Reducer {
+    void update(float v) { val = std::max<float>(val, v); }
+    float val = std::numeric_limits<float>::min();
+  };
+  fill_message<Reducer>(merged_unaries, binary_factor, functionMutable());
 }
-
-Indicator::Indicator(const categoric::VariablePtr &var, const std::size_t value)
-    : UnaryFactor(var, DONT_FILL_DOMAIN_TAG) {
-  if (value >= var->size()) {
-    throw Error{"Invalid indicator factor"};
-  }
-  setAllImagesRaw(0);
-  getCombinationsMap_()[std::vector<std::size_t>{value}] = 1;
-}
-} // namespace EFG::distribution
-
-namespace EFG::strct {
-std::unique_ptr<distribution::Evidence>
-make_evidence(const distribution::Distribution &binary_factor,
-              const categoric::VariablePtr &evidence_var,
-              const std::size_t evidence) {
-  return std::make_unique<distribution::Evidence>(binary_factor, evidence_var,
-                                                  evidence);
-}
-} // namespace EFG::strct
+} // namespace EFG::factor

@@ -7,28 +7,32 @@
 
 #ifdef EFG_JSON_IO
 
-#include <EasyFactorGraph/io/FactorImporter.h>
 #include <EasyFactorGraph/io/json/Importer.h>
 
-#include "../ImportUtils.h"
+#include "../Utils.h"
 
 namespace EFG::io::json {
+nlohmann::json
+Importer::importJsonFromFile(const std::filesystem::path &file_path) {
+  nlohmann::json res;
+  useInStrem(file_path, [&res](std::ifstream &stream) {
+    res = nlohmann::json::parse(stream);
+  });
+  return res;
+}
+
 namespace {
 const nlohmann::json *try_access(const nlohmann::json &subject,
                                  const std::string &name) {
-  if (subject.contains(name)) {
-    return &subject[name];
-  }
-  return nullptr;
+  return subject.contains(name) ? &subject[name] : nullptr;
 }
 
 const nlohmann::json &access(const nlohmann::json &subject,
                              const std::string &name) {
-  const auto *attr = try_access(subject, name);
-  if (nullptr == attr) {
-    throw Error{name, " is inexistent"};
+  if (auto res = try_access(subject, name); res) {
+    return *res;
   }
-  return *attr;
+  throw Error::make(name, " is inexistent");
 }
 
 std::string to_string(const nlohmann::json &subject) {
@@ -63,7 +67,7 @@ categoric::Group importGroup(const nlohmann::json &subject,
   return categoric::Group{group};
 }
 
-std::shared_ptr<distribution::Factor>
+std::shared_ptr<factor::Factor>
 importFactor(const nlohmann::json &subject,
              const categoric::VariablesSet &variables) {
   auto group = importGroup(access(subject, "Variables"), variables);
@@ -71,21 +75,20 @@ importFactor(const nlohmann::json &subject,
   const auto *corr = try_access(subject, "Correlation");
   if (nullptr != corr) {
     if (to_string(*corr) == "T") {
-      return std::make_shared<distribution::Factor>(
+      return std::make_shared<factor::Factor>(
           categoric::Group{group.getVariables()},
-          distribution::USE_SIMPLE_CORRELATION_TAG);
+          factor::Factor::SimplyCorrelatedTag{});
     }
     if (to_string(*corr) == "F") {
-      return std::make_shared<distribution::Factor>(
+      return std::make_shared<factor::Factor>(
           categoric::Group{group.getVariables()},
-          distribution::USE_SIMPLE_ANTI_CORRELATION_TAG);
+          factor::Factor::SimplyAntiCorrelatedTag{});
     }
     throw Error("invalid option for Correlation");
   }
 
-  std::shared_ptr<distribution::Factor> result =
-      std::make_shared<distribution::Factor>(
-          categoric::Group{group.getVariables()});
+  std::shared_ptr<factor::Factor> result =
+      std::make_shared<factor::Factor>(categoric::Group{group.getVariables()});
 
   for (const auto &comb : access(subject, "Distr_val")) {
     std::vector<std::size_t> combination;
@@ -94,7 +97,7 @@ importFactor(const nlohmann::json &subject,
     }
     const float val =
         static_cast<float>(std::atof(to_string(access(comb, "D")).c_str()));
-    result->setImageRaw(categoric::Combination{std::move(combination)}, val);
+    result->set(std::move(combination), val);
   }
 
   return result;
@@ -102,7 +105,7 @@ importFactor(const nlohmann::json &subject,
 
 void importPotential(const nlohmann::json &subject,
                      const categoric::VariablesSet &variables,
-                     ImportPredicate &importer) {
+                     ImportHelper &importer) {
   auto shape = importFactor(subject, variables);
   const auto *w = try_access(subject, "weight");
   if (nullptr == w) {
@@ -110,7 +113,7 @@ void importPotential(const nlohmann::json &subject,
     return;
   }
 
-  auto factor = std::make_shared<distribution::FactorExponential>(
+  auto factor = std::make_shared<factor::FactorExponential>(
       *shape, static_cast<float>(std::atof(to_string(*w).c_str())));
   const auto *tunab = try_access(subject, "tunability");
   if ((nullptr != tunab) && (to_string(*tunab) == "Y")) {
@@ -128,7 +131,7 @@ void importPotential(const nlohmann::json &subject,
 } // namespace
 
 std::unordered_map<std::string, std::size_t>
-Importer::convert(const AdderPtrs &recipient, const nlohmann::json &source) {
+Importer::convert(Inserters recipient, const nlohmann::json &source) {
   // import variables
   categoric::VariablesSet variables;
   std::unordered_map<std::string, std::size_t> evidences;
@@ -137,7 +140,7 @@ Importer::convert(const AdderPtrs &recipient, const nlohmann::json &source) {
     const auto size = to_string(access(var, "Size"));
     auto new_var = categoric::make_variable(std::atoi(size.c_str()), name);
     if (variables.find(new_var) != variables.end()) {
-      throw Error{name, " is a multiple times specified variable "};
+      throw Error::make(name, " is a multiple times specified variable ");
     }
     variables.emplace(new_var);
     const auto *obs_flag = try_access(var, "evidence");
@@ -148,7 +151,7 @@ Importer::convert(const AdderPtrs &recipient, const nlohmann::json &source) {
     }
   }
   // import potentials
-  ImportPredicate importer(recipient);
+  ImportHelper importer(recipient);
   for (const auto &factor : source["Potentials"]) {
     importPotential(factor, variables, importer);
   }
