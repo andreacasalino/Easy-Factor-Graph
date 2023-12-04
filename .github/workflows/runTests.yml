@@ -34,8 +34,8 @@ jobs:
       uses: actions/checkout@v2.0.0
     - name: Checkout submodules
       run:  git submodule update --init --recursive
-    - name: SetUpNinja
     - if:   ${{ matrix.ninja_step }} == "YES"
+      name: SetUpNinja
       uses: seanmiddleditch/gha-setup-ninja@master
     - name: CMake configure
       run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_EFG_SAMPLES=OFF -DBUILD_EFG_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
