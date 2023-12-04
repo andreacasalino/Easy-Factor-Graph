@@ -13,14 +13,20 @@ jobs:
   unitTests:
     strategy:
       matrix:
-        name: [ubuntu-gcc, ubuntu-clang]
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Ninja\" -DBUILD_EFG_COMPILER_CHECK=ON"
+              ninja_step: "YES"
             - name: ubuntu-clang
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Ninja\" -DBUILD_EFG_COMPILER_CHECK=ON"
+              ninja_step: "YES"
+            - name: windows-VS
+              os: windows-latest
+              compiler_opt: ""  
+              ninja_step: "NO"            
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -29,6 +35,7 @@ jobs:
     - name: Checkout submodules
       run:  git submodule update --init --recursive
     - name: SetUpNinja
+    - if:   ${{ matrix.ninja_step }} == "YES"
       uses: seanmiddleditch/gha-setup-ninja@master
     - name: CMake configure
       run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_EFG_SAMPLES=OFF -DBUILD_EFG_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
