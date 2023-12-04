@@ -18,11 +18,11 @@ jobs:
         include:
             - name: ubuntu-gcc-static
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Ninja\""
               lib_opt: ""
             - name: ubuntu-clang-static
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Ninja\""
               lib_opt: ""
             - name: windows-VS-static
               os: windows-latest
@@ -30,11 +30,11 @@ jobs:
               lib_opt: ""
             - name: ubuntu-gcc-shared
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Ninja\""
               lib_opt: "-DLIB_OPT=ON"
             - name: ubuntu-clang-shared
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\""
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Ninja\""
               lib_opt: "-DLIB_OPT=ON"
             - name: windows-VS-shared
               os: windows-latest
@@ -47,6 +47,8 @@ jobs:
       uses: actions/checkout@v2.0.0
     - name: Checkout submodules
       run:  git submodule update --init --recursive
+    - name: SetUpNinja
+      uses: seanmiddleditch/gha-setup-ninja@master
     - name: CMake configure
       run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_EFG_SAMPLES=OFF -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.lib_opt }}
     - name: build release
