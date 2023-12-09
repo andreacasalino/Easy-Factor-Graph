@@ -12,6 +12,7 @@
 #include <EasyFactorGraph/io/ModelComponents.h>
 
 #include <filesystem>
+#include <ostream>
 
 namespace EFG::io::xml {
 struct ExportInfo {
@@ -30,7 +31,7 @@ public:
   template <typename Model>
   static std::string exportToString(const Model &model,
                                     const std::string &model_name) {
-    std::stringstream stream;
+    std::ostringstream stream;
     convert(stream, castToGetters(model), model_name);
     return stream.str();
   }
@@ -46,7 +47,10 @@ public:
   }
 
 private:
-  static void convert(const std::filesystem::path &out_file, Getters subject,
+  static void convert(const std::filesystem::path &out, Getters subject,
+                      const std::string &model_name);
+
+  static void convert(std::ostream &out, Getters subject,
                       const std::string &model_name);
 };
 } // namespace EFG::io::xml

@@ -25,21 +25,21 @@ using namespace test;
 namespace {
 using VarNames = std::set<std::string>;
 
-VarNames vars_names(const Group& subject) {
-    VarNames res;
-    for (const auto& var : subject.getVariables()) {
-        res.emplace(var->name());
-    }
-    return res;
+VarNames vars_names(const Group &subject) {
+  VarNames res;
+  for (const auto &var : subject.getVariables()) {
+    res.emplace(var->name());
+  }
+  return res;
 }
 
 void sort_set(std::vector<VarNames> &subject) {
-  auto convert = [](const VarNames&s) {
-      return *s.begin() + " " + *s.rbegin();
+  auto convert = [](const VarNames &s) {
+    return *s.begin() + " " + *s.rbegin();
   };
 
   std::sort(subject.begin(), subject.end(),
-            [&convert](const VarNames&a, const VarNames&b) {
+            [&convert](const VarNames &a, const VarNames &b) {
               return convert(a) < convert(b);
             });
 }
@@ -107,8 +107,8 @@ public:
     for (const auto &factor : const_factors) {
       groups.emplace_back(vars_names(factor->function().vars()));
     }
-    expected =
-        std::vector<VarNames>{ {"V0", "O"}, {"V1", "O"}, {"V2", "O"}, {"V3", "O"} };
+    expected = std::vector<VarNames>{
+        {"V0", "O"}, {"V1", "O"}, {"V2", "O"}, {"V3", "O"}};
 
     sort_set(groups);
     sort_set(expected);
@@ -128,24 +128,25 @@ public:
       train::visitTuner(
           tuner.get(),
           [&groups](const train::BaseTuner &b) {
-            groups[b.getWeight()].emplace_back(vars_names(b.getFactor().function().vars()));
+            groups[b.getWeight()].emplace_back(
+                vars_names(b.getFactor().function().vars()));
           },
           [&groups](const train::CompositeTuner &c) {
             auto &collection = groups[c.getWeight()];
             for (const auto &f : c.getElements()) {
-              collection.emplace_back(vars_names(static_cast<const train::BaseTuner &>(*f)
-                                          .getFactor()
-                                          .function()
-                                          .vars()));
+              collection.emplace_back(
+                  vars_names(static_cast<const train::BaseTuner &>(*f)
+                                 .getFactor()
+                                 .function()
+                                 .vars()));
             }
           });
     }
 
     expected = std::map<float, std::vector<VarNames>>{
-        {alfa, std::vector<VarNames>{ {"V0", "V1"}}},
-        {beta, std::vector<VarNames>{ {"V1", "V2"}}},
-        {gamma, std::vector<VarNames>{ {"V2", "V3"}, { "V3", "V0" }}}
-    };
+        {alfa, std::vector<VarNames>{{"V0", "V1"}}},
+        {beta, std::vector<VarNames>{{"V1", "V2"}}},
+        {gamma, std::vector<VarNames>{{"V2", "V3"}, {"V3", "V0"}}}};
 
     sort_map(groups);
     sort_map(expected);
