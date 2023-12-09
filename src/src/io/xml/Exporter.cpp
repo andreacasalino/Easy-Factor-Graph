@@ -56,7 +56,14 @@ xmlPrs::Tag &printExpPotential(const factor::FactorExponential &distr,
 }
 } // namespace
 
-void Exporter::convert(const std::filesystem::path &out_file, Getters subject,
+void Exporter::convert(const std::filesystem::path &out, Getters subject,
+                       const std::string &model_name) {
+  useOutStrem(out, [&](std::ofstream &stream) {
+    convert(stream, subject, model_name);
+  });
+}
+
+void Exporter::convert(std::ostream &out, Getters subject,
                        const std::string &model_name) {
   auto [state, constGetter, tunableGetter] = subject;
   xmlPrs::Root exp_root(model_name);
@@ -108,8 +115,7 @@ void Exporter::convert(const std::filesystem::path &out_file, Getters subject,
       std::visit(visitor, cluster);
     }
   }
-  useOutStrem(out_file,
-              [&exp_root](std::ofstream &stream) { exp_root.print(stream); });
+  exp_root.print(out);
 }
 } // namespace EFG::io::xml
 #endif

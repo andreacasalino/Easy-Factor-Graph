@@ -1,4 +1,4 @@
-Fetch(https://github.com/catchorg/Catch2.git 4ff8b27bb6bed4b8b309e56cd269b4f1fbc24e89 catch2)
+Fetch(https://github.com/catchorg/Catch2.git v3.4.0 catch2)
 
 set(TEST_NAME Tests)
 
