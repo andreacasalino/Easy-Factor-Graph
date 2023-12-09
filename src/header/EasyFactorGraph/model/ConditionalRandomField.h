@@ -19,6 +19,7 @@ namespace EFG::model {
 class ConditionalRandomField : protected strct::EvidenceSetter,
                                protected strct::EvidenceRemover,
                                virtual public strct::FactorsAware,
+                               virtual public strct::FactorsConstGetter,
                                protected strct::FactorsConstInserter,
                                virtual public train::FactorsTunableGetter,
                                protected train::FactorsTunableInserter,
