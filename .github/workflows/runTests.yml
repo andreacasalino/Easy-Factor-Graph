@@ -10,6 +10,25 @@ on:
       - master
 
 jobs:
+  prepare:
+    strategy:
+      matrix:
+        name: [ubuntu-gcc, ubuntu-clang, windows-VS]
+        include:
+            - name: ubuntu-gcc
+              os: ubuntu-latest
+            - name: ubuntu-clang
+              os: ubuntu-latest
+            - name: windows-VS
+              os: windows-latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2.0.0
+    - name: Checkout submodules
+      run:  git submodule update --init --recursive
+
   unitTests:
     strategy:
       matrix:
@@ -27,12 +46,6 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     steps:
-    - name: Checkout
-      uses: actions/checkout@v2.0.0
-    - name: Checkout submodules
-      run:  git submodule update --init --recursive
-    - name: SetUpNinja
-      uses: seanmiddleditch/gha-setup-ninja@master
     - name: CMake configure
       run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_EFG_SAMPLES=OFF -DBUILD_EFG_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
     - name: Build
