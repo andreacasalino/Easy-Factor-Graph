@@ -75,7 +75,7 @@ FetchContent_MakeAvailable(efg)
 and then link to the **EFG** library:
 ```cmake
 target_link_libraries(${THE NAME OF THE TARGET NEEDING EFG}
-   EFG
+   EFG-Core
 )
 ```
 ### TRAINING CAPABILITIES

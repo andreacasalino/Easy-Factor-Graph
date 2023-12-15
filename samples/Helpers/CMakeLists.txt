@@ -4,7 +4,7 @@ file(GLOB SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/
 
 add_library(${PROJECT_SHORTNAME} ${SRC_FILES})
 
-target_link_libraries(${PROJECT_SHORTNAME} PUBLIC EFG)
+target_link_libraries(${PROJECT_SHORTNAME} PUBLIC ${EFG_LIB_NAME})
 
 target_include_directories(${PROJECT_SHORTNAME} PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}

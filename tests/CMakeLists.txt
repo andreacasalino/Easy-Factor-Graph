@@ -9,7 +9,7 @@ add_executable(${TEST_NAME} ${SOURCES})
 target_link_libraries(${TEST_NAME} PUBLIC
     Catch2::Catch2
     Catch2::Catch2WithMain
-    EFG
+    ${EFG_LIB_NAME}
 )
 
 install(TARGETS ${TEST_NAME})

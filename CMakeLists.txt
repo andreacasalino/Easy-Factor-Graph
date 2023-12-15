@@ -13,6 +13,7 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 project(EFG-Core)
 
+set(EFG_LIB_NAME EFG-Core)
 add_subdirectory(src)
 
 option(BUILD_EFG_SAMPLES "Build the samples showing how to use EFG" ON)
