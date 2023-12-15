@@ -4,6 +4,7 @@
 - [What is EFG](#intro)
 - [Project structure](#contents)
 - [Samples](#samples)
+- [Python](#python)
 - [CMake support](#cmake-support)
 - [Usage](#usage)
 - [EFG GUI](#efg-gui)
@@ -38,6 +39,7 @@ With respect to similar libraries, **EFG** is also able to:
    * perform belief propagation
    * train **random** and **conditional random fields**
    * draw samples for the variables involved in the model
+ * **python** bindings of this library are offered by [this repo](https://github.com/andreacasalino/Easy-Factor-Graph-py), which is actually a [**python** package](https://pypi.org/project/efg/) that can be **pip** installed.
 
 ## CONTENTS
 
@@ -55,6 +57,10 @@ Haven't yet left a **star**? Do it now! :).
 
 The samples contained in the [samples](./samples) folder and extensively shows how to use **EFG**.
 All of the samples consume a library of utilities called **Samples-Helpers**, which contain common functionalities like printing utilities, that are not part (and don't need to be) of **EFG**.
+
+## PYTHON
+
+Wait a minute ... **Easy Factor Graph** is great, but I don't know **C++** and I am more used to **python** ... well [this package](https://pypi.org/project/efg/) is a **pip** installable wrapper of **EFG** created with [pybind](https://github.com/pybind/pybind11). Combine the power of **EFG** and **python** in your next project!
 
 ## CMAKE SUPPORT
 
