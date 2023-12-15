@@ -1,19 +1,17 @@
-set(PROJECT_SHORTNAME "EFG")
-
-MakeLibrary(${PROJECT_SHORTNAME} header)
+MakeLibrary(${EFG_LIB_NAME} header)
 
 find_package(Threads REQUIRED)
-target_link_libraries(${PROJECT_SHORTNAME} PRIVATE
+target_link_libraries(${EFG_LIB_NAME} PRIVATE
   Threads::Threads
 )
 option(BUILD_EFG_COMPILER_CHECK "Enable extra compiler checks" OFF)
 if(BUILD_EFG_COMPILER_CHECK)
-	target_compile_options(${PROJECT_SHORTNAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+	target_compile_options(${EFG_LIB_NAME} PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
 function(LinkAndFlag DEP_LIB_NAME FLAG_NAME)
-  target_link_libraries(${PROJECT_SHORTNAME} PUBLIC ${DEP_LIB_NAME})
-  target_compile_definitions(${PROJECT_SHORTNAME} PUBLIC
+  target_link_libraries(${EFG_LIB_NAME} PUBLIC ${DEP_LIB_NAME})
+  target_compile_definitions(${EFG_LIB_NAME} PUBLIC
     ${FLAG_NAME}=1
   )  
 endfunction()

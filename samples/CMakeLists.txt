@@ -1,10 +1,10 @@
 # add_executable(ReadMe ReadMe.cpp)
-# target_link_libraries(ReadMe PUBLIC EFG)
+# target_link_libraries(ReadMe PUBLIC ${EFG_LIB_NAME})
 
 add_subdirectory(Helpers)
 
 function(SetUpSample NAME_)
-	target_link_libraries(${NAME_} PUBLIC EFG)
+	target_link_libraries(${NAME_} PUBLIC ${EFG_LIB_NAME})
 
 	target_link_libraries(${NAME_} PUBLIC Samples-Helpers)
 
