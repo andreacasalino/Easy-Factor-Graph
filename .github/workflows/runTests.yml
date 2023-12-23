@@ -18,12 +18,15 @@ jobs:
             - name: ubuntu-gcc
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\" -DBUILD_EFG_COMPILER_CHECK=ON"
+              build_system: '-G Ninja'
             - name: ubuntu-clang
               os: ubuntu-latest
               compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\" -DBUILD_EFG_COMPILER_CHECK=ON"
+              build_system: '-G Ninja'
             - name: windows-VS
               os: windows-latest
               compiler_opt: ""
+              build_system: ''
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -31,8 +34,11 @@ jobs:
       uses: actions/checkout@v2.0.0
     - name: Checkout submodules
       run:  git submodule update --init --recursive
+    - name: Install Ninja
+      if: matrix.build_system == '-G Ninja'
+      uses: seanmiddleditch/gha-setup-ninja@master
     - name: CMake configure
-      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_EFG_SAMPLES=OFF -DBUILD_EFG_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }}     
+      run:  cmake -B./build -DCMAKE_INSTALL_PREFIX:STRING=./artifacts/ -DBUILD_EFG_SAMPLES=OFF -DBUILD_EFG_TESTS=ON -DCMAKE_CONFIGURATION_TYPES="Release" -DCMAKE_BUILD_TYPE:STRING=Release ${{ matrix.compiler_opt }} ${{ matrix.build_system }}
     - name: Build
       run:  cmake --build ./build --config Release
     - name: Install
