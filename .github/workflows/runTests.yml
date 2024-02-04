@@ -17,11 +17,11 @@ jobs:
         include:
             - name: ubuntu-gcc
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -G \"Unix Makefiles\" -DBUILD_EFG_COMPILER_CHECK=ON"
+              compiler_opt: "-DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DBUILD_EFG_COMPILER_CHECK=ON"
               build_system: '-G Ninja'
             - name: ubuntu-clang
               os: ubuntu-latest
-              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -G \"Unix Makefiles\" -DBUILD_EFG_COMPILER_CHECK=ON"
+              compiler_opt: "-DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DBUILD_EFG_COMPILER_CHECK=ON"
               build_system: '-G Ninja'
             - name: windows-VS
               os: windows-latest
