@@ -45,7 +45,7 @@ jobs:
       run:  cmake --install ./build --config Release
     - name: Tests
       run: ./artifacts/bin/Tests
-    - uses: actions/upload-artifact@v2
+    - uses: actions/upload-artifact@v7
       with:
         path: artifacts
         name: ${{ matrix.name }}

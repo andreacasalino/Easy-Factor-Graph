@@ -7,17 +7,19 @@
 
 #pragma once
 
-#include <EasyFactorGraph/misc/Strings.h>
-
 #include <stdexcept>
+#include <string_view>
+
+#include <EasyFactorGraph/misc/Format.h>
 
 namespace EFG {
 class Error : public std::runtime_error {
 public:
-  Error(const std::string &what);
+  Error(std::string what);
 
-  template <typename... Args> static Error make(Args &&...args) {
-    return Error{join<' '>(std::forward<Args>(args)...)};
-  }
+  template <typename ArgFirst, typename... Args>
+  Error(std::string_view frmt, ArgFirst &&first, Args &&...args)
+      : Error{misc::format(frmt, std::forward<ArgFirst>(first),
+                           std::forward<Args>(args)...)} {}
 };
 } // namespace EFG

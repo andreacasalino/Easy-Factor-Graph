@@ -1,0 +1,122 @@
+{
+    "binary_factors": [
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v1",
+            "second_var": "v2"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v2",
+            "second_var": "v4"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v2",
+            "second_var": "v3"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v3",
+            "second_var": "v4"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v4",
+            "second_var": "v5"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v3",
+            "second_var": "v5"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v4",
+            "second_var": "v6"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v5",
+            "second_var": "v7"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v6",
+            "second_var": "v7"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "v7",
+            "second_var": "v8"
+        }
+    ],
+    "variables": [
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v1"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v2"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v3"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v4"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v5"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v6"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v7"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "v8"
+            },
+            "size": 2
+        }
+    ]
+}

@@ -72,7 +72,8 @@ class CommandChain:
     def run(self):
         for cmd in self.chain:
             cmd_str = ' '.join(cmd)
-            logging.info('COMMAND | `{}`{}'.format(cmd_str, '' if self.cwd == None else 'from `{}`'.format(self.cwd) ))
+            from_str = '' if self.cwd == None else ' from {}'.format(self.cwd)
+            logging.info('COMMAND | `{}`{}'.format(cmd_str, from_str))
             hndlr = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=self.cwd)
             _, err = hndlr.communicate()
             if not hndlr.returncode == 0:
@@ -81,9 +82,10 @@ class CommandChain:
 
 class Paths:
     DOC_ROOT_PATH = os.path.dirname(__file__)
-    BUILD_PATH = os.path.join(DOC_ROOT_PATH, '..', 'build')
+    BUILD_PATH = os.path.abspath(os.path.join(DOC_ROOT_PATH, '..', 'build'))
     TEX_PATH = os.path.join(BUILD_PATH, 'latex')
     HTML_PATH = os.path.join(BUILD_PATH, 'html')
+    SOURCES_PATH = os.path.abspath(os.path.join(DOC_ROOT_PATH, '..', '..', 'src', 'header', 'EasyFactorGraph'))
 
 def prepare():
     logging.info('clean up of the build folder')
@@ -106,7 +108,7 @@ def genDoxy():
                 self.scan_(os.path.join(folder, name))
     
     logging.info('setting up doxy_config')
-    source_paths = SourcesScanner(os.path.abspath(os.path.join('..', '..', 'src', 'header', 'EasyFactorGraph')))
+    source_paths = SourcesScanner(Paths.SOURCES_PATH)
     hndlr = FileHandler(os.path.join(Paths.DOC_ROOT_PATH, 'doxy_config'))
     to_find = 'INPUT                  = THE_SOURCES'
     to_put  = 'INPUT                  = {}'.format(' \\ \n                         '.join(source_paths.folders) )
