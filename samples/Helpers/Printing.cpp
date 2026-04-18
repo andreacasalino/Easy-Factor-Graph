@@ -5,130 +5,112 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <EasyFactorGraph/factor/Transform.h>
+
 #include "Printing.h"
 
-#include <functional>
-
-std::ostream &operator<<(std::ostream &s,
-                         const EFG::categoric::VariablesSoup &group) {
-  s << group.front()->name();
-  for (std::size_t k = 1; k < group.size(); ++k) {
-    s << ' ' << group[k]->name();
+void Tabular::addLine(Line line) {
+  columns_max_len.resize(line.sizes.size(), 0);
+  for (std::size_t c = 0; c < line.sizes.size(); ++c) {
+    columns_max_len[c] =
+        std::max<std::size_t>(columns_max_len[c], line.sizes[c]);
   }
-  return s;
+  lines.emplace_back(std::move(line));
 }
 
-std::ostream &operator<<(std::ostream &s, const EFG::categoric::Group &group) {
-  const auto &vars = group.getVariables();
-  s << '{' << vars.front()->name();
-  for (std::size_t k = 1; k < vars.size(); ++k) {
-    s << ", " << vars[k]->name();
-  }
-  s << '}';
-  return s;
-}
+void Tabular::print(std::ostream &s) const {
+  for (const auto &line : lines) {
+    s << '\n';
 
-namespace {
-template <typename T>
-void print_vector(
-    std::ostream &s, const std::vector<T> &subject,
-    const std::function<void(std::ostream &, const T &)> &pred =
-        [](std::ostream &s, const T &element) { s << element; }) {
-  pred(s, subject.front());
-  for (std::size_t k = 1; k < subject.size(); ++k) {
-    s << ' ';
-    pred(s, subject[k]);
-  }
-}
-} // namespace
-
-std::ostream &operator<<(std::ostream &s, const std::vector<float> &values) {
-  print_vector(s, values);
-  return s;
-}
-
-std::ostream &operator<<(std::ostream &s,
-                         const std::vector<std::size_t> &values) {
-  print_vector(s, values);
-  return s;
-}
-
-namespace {
-using Line = std::vector<std::string>;
-
-template <std::size_t TableSize> class TabularStream {
-public:
-  TabularStream() {
-    for (std::size_t k = 0; k < TableSize; ++k) {
-      columns_sizes.push_back(0);
-    }
-  }
-
-  void addLine(const Line &line) {
-    if (line.size() != TableSize) {
-      throw std::runtime_error{"Invalid line to print"};
-    }
-    lines.push_back(line);
-    for (std::size_t col = 0; col < TableSize; ++col) {
-      if (columns_sizes[col] < line[col].size()) {
-        columns_sizes[col] = line[col].size();
+    auto print_ = [&](std::string_view to_add, std::size_t len_tot) {
+      s << to_add;
+      std::size_t delta = len_tot - to_add.size();
+      for (std::size_t i = 0; i < delta; ++i) {
+        s << ' ';
       }
+    };
+
+    print_(line.get(0), columns_max_len[0]);
+    for (std::size_t c = 1; c < line.sizes.size(); ++c) {
+      s << ' ';
+      print_(line.get(c), columns_max_len[c]);
     }
   }
+}
 
-  void print(std::ostream &s) const {
-    for (const auto &line : lines) {
-      s << std::endl;
-      for (std::size_t col = 0; col < TableSize; ++col) {
-        std::string to_add = line[col];
-        to_add.reserve(columns_sizes[col]);
-        while (to_add.size() != columns_sizes[col]) {
-          to_add.push_back(' ');
-        }
-        s << ' ' << to_add;
-      }
+std::string_view Tabular::Line::get(std::size_t idx) const {
+  if (idx == 0) {
+    return {buffer_.begin(), buffer_.begin() + sizes.front()};
+  } else {
+    std::size_t offset{0};
+    for (std::size_t c = 0; c < idx; ++c) {
+      offset += sizes[c];
     }
+    auto it_begin = buffer_.begin() + offset;
+    auto it_end = it_begin + sizes[idx];
+    return {it_begin, it_end};
   }
+}
 
-private:
-  std::vector<std::size_t> columns_sizes;
-  std::vector<Line> lines;
-};
-} // namespace
-
-#include <sstream>
-
-std::ostream &operator<<(std::ostream &s,
-                         const EFG::factor::Function &distribution) {
-  TabularStream<4> table;
-  std::stringstream group_stream;
-  group_stream << distribution.vars().getVariables();
+template <std::size_t N, typename Transform>
+std::ostream &print(std::ostream &s,
+                    const EFG::factor::FactorT<N, Transform> &distribution) {
+  Tabular table;
   table.addLine(
-      Line{group_stream.str(), "", "raw image value   ", "image value"});
-  EFG::categoric::GroupRange range(distribution.vars());
+      Tabular::Line{"combination", "", "raw image value   ", "image value"});
+  if constexpr (N == 1) {
+    std::size_t k{0};
+    for (auto val : distribution.getAllValues()) {
+      table.addLine(Tabular::Line{std::size_t{k++}, " -> ", val,
+                                  distribution.trsfm(val)});
+    }
+  } else {
+    std::string comb_buffer;
+    distribution.template forEachCombination<false>(
+        [&](const EFG::categoric::Combination<N> &comb, float val) {
+          comb_buffer = "[";
+          comb_buffer += std::to_string(comb[0]);
+          std::for_each(comb.begin() + 1, comb.end(), [&comb_buffer](auto val) {
+            comb_buffer.push_back(' ');
+            comb_buffer += std::to_string(val);
+          });
+          comb_buffer.push_back(']');
 
-  std::vector<std::vector<std::size_t>> combinations;
-  std::vector<float> images, transformations;
-  distribution.forEachCombination<false>(
-      [&combinations, &images](const auto &comb, float img) {
-        combinations.push_back(comb);
-        images.push_back(img);
-      });
-  distribution.forEachCombination<true>(
-      [&transformations](const auto &, float img) {
-        transformations.push_back(img);
-      });
-
-  for (std::size_t k = 0; k < combinations.size(); ++k) {
-    Line to_add;
-    std::stringstream comb_stream;
-    print_vector(comb_stream, combinations[k]);
-    to_add.push_back(comb_stream.str());
-    to_add.push_back(" -> ");
-    to_add.push_back(std::to_string(images[k]));
-    to_add.push_back(std::to_string(transformations[k]));
-    table.addLine(to_add);
+          table.addLine(Tabular::Line{
+              std::string_view{comb_buffer.begin(), comb_buffer.end()}, " -> ",
+              val, distribution.trsfm(val)});
+        });
   }
   table.print(s);
   return s;
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template std::ostream &print<1, EFG::factor::NullTrasform>(
+    std::ostream &, const EFG::factor::FactorT<1, EFG::factor::NullTrasform> &);
+
+template std::ostream &print<1, EFG::factor::ExponentialTrasform>(
+    std::ostream &,
+    const EFG::factor::FactorT<1, EFG::factor::ExponentialTrasform> &);
+
+template std::ostream &print<2, EFG::factor::NullTrasform>(
+    std::ostream &, const EFG::factor::FactorT<2, EFG::factor::NullTrasform> &);
+
+template std::ostream &print<2, EFG::factor::ExponentialTrasform>(
+    std::ostream &,
+    const EFG::factor::FactorT<2, EFG::factor::ExponentialTrasform> &);
+
+template std::ostream &print<3, EFG::factor::NullTrasform>(
+    std::ostream &, const EFG::factor::FactorT<3, EFG::factor::NullTrasform> &);
+
+template std::ostream &print<3, EFG::factor::ExponentialTrasform>(
+    std::ostream &,
+    const EFG::factor::FactorT<3, EFG::factor::ExponentialTrasform> &);
+
+template std::ostream &print<4, EFG::factor::NullTrasform>(
+    std::ostream &, const EFG::factor::FactorT<4, EFG::factor::NullTrasform> &);
+
+template std::ostream &print<4, EFG::factor::ExponentialTrasform>(
+    std::ostream &,
+    const EFG::factor::FactorT<4, EFG::factor::ExponentialTrasform> &);

@@ -1,158 +1,134 @@
 /**
  * Author:    Andrea Casalino
- * Created:   01.01.2021
+ * Created:   31.03.2022
  *
  * report any bug to andrecasa91@gmail.com.
  **/
 
 #pragma once
 
-#include <EasyFactorGraph/factor/Immutable.h>
-#include <EasyFactorGraph/factor/Mutable.h>
+#include <EasyFactorGraph/factor/FactorT.h>
+#include <EasyFactorGraph/factor/SimpleCorrelations.h>
+#include <EasyFactorGraph/factor/Transform.h>
 
 namespace EFG::factor {
-class Factor : public Immutable, public Mutable {
-public:
-  Factor(const Factor &o);
+template <std::size_t N> using Factor = FactorT<N, NullTrasform>;
+using UnaryFactor = FactorT<1, NullTrasform>;
+using BinaryFactor = FactorT<2, NullTrasform>;
 
-  /**
-   * @brief The variables set representing this factor is assumed equal to the
-   * passed one.
-   * No combinations is instanciated, implicitly assuming all the images equal
-   * to 0.
-   */
-  Factor(const categoric::Group &vars);
+template <std::size_t N>
+using FactorExponential = FactorT<N, ExponentialTrasform>;
+using UnaryFactorExponential = FactorT<1, ExponentialTrasform>;
+using BinaryFactorExponential = FactorT<2, ExponentialTrasform>;
 
-  struct CloneTrasformedImagesTag {};
-  /**
-   * @brief The variables set representing this factor is copied from the passed
-   * one.
-   * All the combinations instanciated in the passed factor, are copied in the
-   * combinations map of the factor to build, assigning the images values
-   * obtained by evaluating the passed factor.
-   */
-  Factor(const Immutable &to_clone, CloneTrasformedImagesTag);
+template <std::size_t N, typename Transform = NullTrasform>
+FactorT<N, Transform> make_simply_correlated(categoric::VarStateSize var_size) {
+  using Gen = SimplyCorrelatedDomainGen<N>;
+  return FactorT<N, Transform>::from_sparse_domain_gen(
+      categoric::make_same<N>(var_size), Gen{var_size});
+}
 
-  struct SimplyCorrelatedTag {};
-  /**
-   * @brief A simply correlating factor is built.
-   * All the variables in the passed group should have the same size.
-   * The images pertaining to the combinations having all values equal, are
-   * assumed equal to 1, all the others to 0.
-   * For instance assume to pass a variable set equal to: {<A: size 3>, <B: size
-   * 3>, <C: size 3>}. Then, the following combinations map is built:
-   * <0,0,0> -> 1
-   * <0,0,1> -> 0
-   * <0,0,2> -> 0
-   *
-   * <0,1,0> -> 0
-   * <0,1,1> -> 0
-   * <0,1,2> -> 0
-   *
-   * <0,2,0> -> 0
-   * <0,2,1> -> 0
-   * <0,2,2> -> 0
-   *
-   * <1,0,0> -> 0
-   * <1,0,1> -> 0
-   * <1,0,2> -> 0
-   *
-   * <1,1,0> -> 0
-   * <1,1,1> -> 1
-   * <1,1,2> -> 0
-   *
-   * <1,2,0> -> 0
-   * <1,2,1> -> 0
-   * <1,2,2> -> 0
-   *
-   * <2,0,0> -> 0
-   * <2,0,1> -> 0
-   * <2,0,2> -> 0
-   *
-   * <2,1,0> -> 0
-   * <2,1,1> -> 0
-   * <2,1,2> -> 0
-   *
-   * <2,2,0> -> 0
-   * <2,2,1> -> 0
-   * <2,2,2> -> 1
-   */
-  Factor(const categoric::Group &vars, SimplyCorrelatedTag);
+template <std::size_t N, typename Transform = NullTrasform>
+FactorT<N, Transform>
+make_simply_anti_correlated(categoric::VarStateSize var_size) {
+  using Gen = SimplyAntiCorrelatedDomainGen<N>;
+  return {categoric::make_same<N>(var_size),
+          misc::Intervals::from_gen(Gen{var_size})};
+}
 
-  struct SimplyAntiCorrelatedTag {};
-  /**
-   * @brief Similar to Factor(const categoric::Group &, const
-   * UseSimpleCorrelation &), but considering a simple anti-correlation.
-   * Therefore, to all combinations having all equal values, an image equal to 0
-   * is assigned. All the other ones, are assigned a value equal to 1.
-   * For instance assume to pass a variable set equal to: {<A: size 2>, <B: size
-   * 2>}. Then, the following combinations map is built:
-   * <0,0,0> -> 0
-   * <0,0,1> -> 1
-   * <0,0,2> -> 1
-   *
-   * <0,1,0> -> 1
-   * <0,1,1> -> 1
-   * <0,1,2> -> 1
-   *
-   * <0,2,0> -> 1
-   * <0,2,1> -> 1
-   * <0,2,2> -> 1
-   *
-   * <1,0,0> -> 1
-   * <1,0,1> -> 1
-   * <1,0,2> -> 1
-   *
-   * <1,1,0> -> 1
-   * <1,1,1> -> 0
-   * <1,1,2> -> 1
-   *
-   * <1,2,0> -> 1
-   * <1,2,1> -> 1
-   * <1,2,2> -> 1
-   *
-   * <2,0,0> -> 1
-   * <2,0,1> -> 1
-   * <2,0,2> -> 1
-   *
-   * <2,1,0> -> 1
-   * <2,1,1> -> 1
-   * <2,1,2> -> 1
-   *
-   * <2,2,0> -> 1
-   * <2,2,1> -> 1
-   * <2,2,2> -> 0
-   */
-  Factor(const categoric::Group &vars, SimplyAntiCorrelatedTag);
+/**
+ * @return the probabilities associated to each combination in the domain,
+ * when assuming only the existance of this distribution. Such probabilities
+ * are actually the normalized images. The order of returned values, refer to
+ * the combinations that can be iterated by categoric::GroupRange on the
+ * variables representing this distribution.
+ */
+template <std::size_t N, typename Transform>
+void getProbabilities(const FactorT<N, Transform> &fctr,
+                      std::vector<float> &recipient);
 
-  /**
-   * @brief Builds the factor by merging all the passed factors.
-   * The variables set representing this factor is obtained as the union of the
-   * all the variables sets of the passed distribution.
-   */
-  template <typename... Immutables>
-  static Factor merge(const Immutable &first, const Immutable &second,
-                      const Immutables &...others) {
-    std::vector<const Immutable *> factors;
-    factors.push_back(&first);
-    factors.push_back(&second);
-    (factors.push_back(&others), ...);
-    return Factor{factors};
+struct UnaryFactorsMerger {
+  UnaryFactorsMerger() = default;
+
+  std::span<float> getMerged() { return {values_}; }
+
+  void reset(categoric::VarStateSize var_size) {
+    values_.clear();
+    values_.resize(var_size, 1.f);
   }
 
-  Factor(const std::vector<const Immutable *> &factors);
+  template <bool Normalize> void merge(std::span<const float> to_merge) {
+    for (std::size_t k = 0; k < values_.size(); ++k) {
+      values_[k] *= to_merge[k];
+    }
+    if constexpr (Normalize) {
+      normalize();
+    }
+  }
 
-  /**
-   * @brief Generates a Factor similar to this one, permuting the group of
-   * variables.
-   * @param the new variables group order to assume
-   * @return the permuted variables factor
-   * @throw in case new_order.getVariablesSet() !=
-   * this->getVariables().getVariablesSet()
-   */
-  Factor cloneWithPermutedGroup(const categoric::Group &new_order) const;
+  template <bool Normalize, typename Transform>
+  void merge_factor(const factor::FactorT<1, Transform> &to_merge) {
+    for (std::size_t k = 0; k < values_.size(); ++k) {
+      values_[k] *= to_merge.getTrsfm(k);
+    }
+    if constexpr (Normalize) {
+      normalize();
+    }
+  }
 
-protected:
-  Factor(FunctionPtr data);
+  // mostly for numerical computations purpose
+  void normalize();
+
+private:
+  // all ones are assumed at the beginning
+  std::vector<float> values_;
 };
+
+template <typename Transform>
+factor::UnaryFactor
+make_evidence_message(std::span<float> message_support,
+                      const factor::FactorT<2, Transform> &binary_factor,
+                      bool evidence_var_is_first,
+                      categoric::VarStateSize evidence_value) {
+  std::size_t receiver_index = evidence_var_is_first ? 1 : 0;
+  std::size_t sender_index = evidence_var_is_first ? 0 : 1;
+
+  binary_factor.template forEachCombination<true>(
+      [&](const categoric::Combination<2> &comb, auto val) {
+        if (comb[sender_index] == evidence_value) {
+          message_support[comb[receiver_index]] = val;
+        }
+      });
+
+  return {factor::FactorT<1, factor::NullTrasform>{
+      misc::TransferableBlock{message_support}}};
+}
+
+factor::UnaryFactor make_all_same(std::span<float> support, float value);
+
+factor::UnaryFactor make_indicator(std::span<float> support,
+                                   categoric::VarStateSize value);
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <std::size_t N, typename Transform>
+void getProbabilities(const FactorT<N, Transform> &fctr,
+                      std::vector<float> &recipient) {
+  fctr.template getValues<true>(recipient);
+  // normalize values
+  float sum = 0.f;
+  for (const auto &val : recipient) {
+    sum += val;
+  }
+  if (sum == 0.f) {
+    float e = 1.f / static_cast<float>(recipient.size());
+    for (auto &val : recipient) {
+      val = e;
+    }
+  } else {
+    for (auto &val : recipient) {
+      val /= sum;
+    }
+  }
+}
 } // namespace EFG::factor

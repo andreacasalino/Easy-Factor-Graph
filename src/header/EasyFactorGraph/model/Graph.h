@@ -7,34 +7,35 @@
 
 #pragma once
 
+#include <EasyFactorGraph/model/Model.h>
+#include <EasyFactorGraph/structure/BeliefManager.h>
+#include <EasyFactorGraph/structure/ConfigManager.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/structure/FactorsConstManager.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
+#include <EasyFactorGraph/structure/ModelExport.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
+#include <EasyFactorGraph/structure/WorkerPoolManager.h>
 
 namespace EFG::model {
+namespace detail {
+using GraphBase =
+    Model<structure::BeliefManager, structure::ConfigManager,
+          structure::EvidenceSetManager, structure::EvidenceRemoveManager,
+          structure::GibbsSampler, structure::QueryManager,
+          structure::WorkerPoolManager
+#ifdef EFG_JSON_IO
+          ,
+          structure::ModelExport
+#endif
+          >;
+} // namespace detail
+
 /**
  * @brief A simple graph object, that stores only const factors.
  * Evidences may be changed over the time.
  */
-class Graph : public strct::EvidenceSetter,
-              public strct::EvidenceRemover,
-              public strct::FactorsConstInserter,
-              public strct::GibbsSampler,
-              public strct::QueryManager {
+class Graph : public detail::GraphBase {
 public:
-  Graph() = default;
-
-  Graph(const Graph &o) { absorb(o, false); };
-  Graph &operator=(const Graph &) = delete;
-
-  /**
-   * @brief Gather all the factors (tunable and constant) of another model and
-   * insert/copy them into this object.
-   * @param the model whose factors should be inserted/copied
-   * @param when passing true the factors are deep copied, while in the contrary
-   * case shallow copies of the smart pointers are inserted into this model.
-   */
-  void absorb(const strct::FactorsAware &to_absorb, bool copy);
+  Graph(structure::ModelSeed &&seed);
 };
 } // namespace EFG::model

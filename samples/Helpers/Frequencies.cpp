@@ -10,69 +10,66 @@
 #include <Printing.h>
 
 #include <algorithm>
+#include <ranges>
+#include <unordered_map>
 
-namespace {
-std::size_t
-find_var_position(EFG::categoric::VariablePtr var2Search,
-                  const EFG::categoric::VariablesSoup &samplesGroup) {
-  return std::distance(
-      samplesGroup.begin(),
-      std::find(samplesGroup.begin(), samplesGroup.end(), var2Search));
-}
-} // namespace
-
-std::vector<float>
-getEmpiricalMarginals(EFG::categoric::VariablePtr var2Search,
-                      const std::vector<std::vector<std::size_t>> &samples,
-                      const EFG::categoric::VariablesSoup &samplesGroup) {
-  std::vector<std::size_t> counters;
-  counters.reserve(var2Search->size());
-  for (std::size_t k = 0; k < var2Search->size(); ++k) {
-    counters.push_back(0);
-  }
-
-  const std::size_t var_pos = find_var_position(var2Search, samplesGroup);
-  for (const auto &sample : samples) {
-    ++counters[sample.data()[var_pos]];
-  }
-
-  std::vector<float> result;
-  result.reserve(counters.size());
-  for (const auto counter : counters) {
-    result.push_back(static_cast<float>(counter) /
-                     static_cast<float>(samples.size()));
-  }
-  return result;
+std::vector<float> getEmpiricalMarginals(std::size_t var_index,
+                                         EFG::categoric::VarStateSize var_size,
+                                         const EFG::misc::Samples &samples) {
+  std::vector<std::size_t> freq;
+  freq.resize(var_size, 0);
+  EFG::misc::for_each_generated<std::span<const EFG::categoric::VarStateSize>>(
+      samples.makeIter(),
+      [&](const auto &comb) { freq[comb[var_index]] += 1; });
+  auto res =
+      freq | std::views::transform(
+                 [den = static_cast<float>(samples.size())](auto val) mutable {
+                   return static_cast<float>(val) / den;
+                 });
+  return {res.begin(), res.end()};
 }
 
 float getEmpiricalProbability(
-    const std::vector<std::size_t> &comb2Search,
-    const EFG::categoric::VariablesSoup &combGroup,
-    const std::vector<std::vector<std::size_t>> &samples,
-    const EFG::categoric::VariablesSoup &samplesGroup) {
-  std::size_t counter = 0;
+    const std::vector<std::pair<std::size_t, EFG::categoric::VarStateSize>>
+        &to_search,
+    const EFG::misc::Samples &samples) {
+  std::size_t freq{0};
+  EFG::misc::for_each_generated<std::span<const EFG::categoric::VarStateSize>>(
+      samples.makeIter(), [&](const auto &comb) {
+        for (auto [index, val] : to_search) {
+          if (comb[index] != val) {
+            return;
+          }
+        }
+        freq += 1;
+      });
+  return static_cast<float>(freq) / static_cast<float>(samples.size());
+}
 
-  std::vector<std::size_t> var2Search_positions;
-  for (const auto &var : combGroup) {
-    var2Search_positions.push_back(find_var_position(var, samplesGroup));
-  }
-
-  for (const auto &sample : samples) {
-    bool increment = true;
-    const auto &sample_data = sample.data();
-    const auto &comb2Search_data = comb2Search.data();
-    for (std::size_t k = 0; k < var2Search_positions.size(); ++k) {
-      if (sample_data[var2Search_positions[k]] != comb2Search_data[k]) {
-        increment = false;
-        break;
+float getEmpiricalProbabilityInsideHidden(
+    const std::vector<
+        std::pair<std::size_t /* var index ... absolute */,
+                  EFG::categoric::VarStateSize /* var value to seach */>>
+        &to_search,
+    const EFG::misc::Samples &samples,
+    const EFG::structure::Structure &context) {
+  std::unordered_map<std::size_t, EFG::categoric::VarStateSize> to_search_table{
+      to_search.begin(), to_search.end()};
+  std::vector<std::pair<std::size_t, EFG::categoric::VarStateSize>> mapped;
+  std::size_t i_rel{0};
+  for (std::size_t i = 0;
+       i < context.nodes.size() && mapped.size() < to_search.size(); ++i) {
+    const auto &node = context.nodes[i];
+    if (node.evidence == EFG::structure::Evidence::NOT_AN_EVIDENCE) {
+      auto it = to_search_table.find(i);
+      if (it != to_search_table.end()) {
+        mapped.emplace_back(std::make_pair(i_rel, it->second));
       }
-    }
-    if (increment) {
-      ++counter;
+      i_rel += 1;
     }
   }
 
-  return static_cast<float>(counter) / static_cast<float>(samples.size());
+  return getEmpiricalProbability(mapped, samples);
 }
 
 std::vector<float> make_distribution(const std::vector<float> &values) {

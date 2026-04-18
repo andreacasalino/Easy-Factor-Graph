@@ -7,95 +7,97 @@
 
 #pragma once
 
-#include <EasyFactorGraph/categoric/Variable.h>
-#include <EasyFactorGraph/misc/SmartSet.h>
+#include <EasyFactorGraph/categoric/Types.h>
 
+#include <EasyFactorGraph/Error.h>
+
+#include <array>
 #include <vector>
 
 namespace EFG::categoric {
-using VariablesSoup = std::vector<VariablePtr>;
-
-using VariablesSet = SmartSet<Variable>;
-
-VariablesSet to_vars_set(const VariablesSoup &soup);
-
-/**
- * @brief An ensemble of categoric variables. Each variable in the ensemble
- * should have its own unique name.
- */
-class Group {
+template <typename Support> class GroupT {
 public:
-  /**
-   * @param the initial variables of the group
-   * @throw when passing an empty collection
-   * @throw when passing a collection containing multiple times a certain
-   * variable
-   */
-  Group(const VariablesSoup &group);
-
-  /**
-   * @param the initial variable to put in the group
-   */
-  Group(const VariablePtr &var);
-
-  /**
-   * @param the first initial variable to put in the group
-   * @param the second initial variable to put in the group
-   * @param all the other initial variables
-   * @throw when passing a collection containing multiple times a certain
-   */
-  template <typename... Vars>
-  Group(const VariablePtr &varA, const VariablePtr &varB, const Vars &...vars) {
-    this->add(varA);
-    this->add(varB);
-    (this->add(vars), ...);
+  GroupT(Support sizes) : sizes_{sizes}, sizes_prod_{1} {
+    for (auto val : sizes) {
+      sizes_prod_ *= val;
+    }
   }
 
-  /**
-   * @brief replaces the group of variables.
-   * @throw In case of size mismatch with the previous variables set:
-   * the sizes of the 2 groups should be the same and the elements in
-   * the same positions must have the same domain size
-   */
-  void replaceVariables(const VariablesSoup &new_variables);
+  const auto &sizes() const { return sizes_; }
 
-  bool operator==(const Group &o) const {
-    return (this->group_sorted == o.group_sorted);
-  };
+  std::size_t combinationsLen() const { return sizes_prod_; }
 
-  /**
-   * @param the variable to add in the group
-   * @throw in case a variable with the same name is already part of the group
-   */
-  void add(const VariablePtr &var);
+  std::size_t combinationIndex(const Support &combination) const;
 
-  /** @return the size of the joint domain of the group.
-   * For example the group <A,B,C> with sizes <2,4,3> will have a joint domain
-   * of size 2x4x3 = 24
-   */
-  std::size_t size() const;
+  Support combinationFromIndex(std::size_t idx) const;
 
-  /** @return the ensamble of variables as an unsorted collection
-   */
-  const VariablesSoup &getVariables() const { return this->group; }
-  /** @return the ensamble of variables as a sorted collection
-   */
-  const VariablesSet &getVariablesSet() const { return this->group_sorted; }
+  bool check(const Support &combination) const;
 
-protected:
-  Group() = default;
-
-  VariablesSoup group;
-  VariablesSet group_sorted;
+private:
+  std::size_t sizes_prod_;
+  Support sizes_;
 };
 
-/** @brief removes the second set from the first
- */
-VariablesSet &operator-=(VariablesSet &subject, const VariablesSet &to_remove);
+template <std::size_t N> using Group = GroupT<Combination<N>>;
 
-/** @return the complementary group of the entire_set,
- * i.e. returns entire_set \ subset
- */
-VariablesSet get_complementary(const VariablesSet &entire_set,
-                               const VariablesSet &subset);
+using GroupVec = GroupT<std::vector<VarStateSize>>;
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename Support>
+std::size_t
+GroupT<Support>::combinationIndex(const Support &combination) const {
+  if constexpr (std::is_same_v<Support, std::vector<VarStateSize>>) {
+    if (combination.size() != sizes_.size()) {
+      throw Error{"Invalid combination size"};
+    }
+  }
+  auto prod = sizes_prod_;
+  std::size_t res = 0;
+  for (std::size_t k = 0; k < sizes_.size(); ++k) {
+    prod /= sizes_[k];
+    res += combination[k] * prod;
+  }
+  return res;
+}
+
+template <typename Support>
+Support GroupT<Support>::combinationFromIndex(std::size_t idx) const {
+  if (sizes_prod_ <= idx) {
+    throw Error{"Out of range index for Group"};
+  }
+  std::size_t prod = sizes_prod_;
+  Support res;
+  if constexpr (std::is_same_v<Support, std::vector<VarStateSize>>) {
+    res.resize(sizes_.size(), 0);
+  }
+  for (std::size_t i = 0; i < sizes_.size(); ++i) {
+    prod /= sizes_[i];
+    res[i] = (idx / prod) % sizes_[i];
+  }
+  return res;
+}
+
+template <typename Support>
+bool GroupT<Support>::check(const Support &combination) const {
+  if constexpr (std::is_same_v<Support, std::vector<VarStateSize>>) {
+    if (combination.size() != sizes_.size()) {
+      throw Error{"Invalid combination size"};
+    }
+  }
+  for (std::size_t k = 0; k < sizes_.size(); ++k) {
+    if (sizes_[k] <= combination[k]) {
+      return false;
+    }
+  }
+  return true;
+}
+
+template <std::size_t N, typename T> std::array<T, N> make_same(T val) {
+  std::array<T, N> res;
+  for (auto &res_val : res) {
+    res_val = val;
+  }
+  return res;
+}
 } // namespace EFG::categoric

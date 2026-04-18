@@ -7,40 +7,30 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/bases/BeliefAware.h>
-#include <EasyFactorGraph/structure/bases/PoolAware.h>
+#include <EasyFactorGraph/misc/ConcurrentSafeLevels.h>
+#include <EasyFactorGraph/misc/Samples.h>
+#include <EasyFactorGraph/misc/UniformSampler.h>
+#include <EasyFactorGraph/misc/VectorCache.h>
+#include <EasyFactorGraph/structure/Structure.h>
+#include <EasyFactorGraph/structure/WorkerPoolManager.h>
 
+#include <deque>
 #include <optional>
-#include <random>
+#include <unordered_map>
 
-namespace EFG::strct {
-class UniformSampler {
-public:
-  UniformSampler();
-
-  std::size_t sampleFromDiscrete(const std::vector<float> &distribution) const;
-
-  void resetSeed(std::size_t newSeed);
-
-private:
-  float sample() const { return this->distribution(this->generator); };
-
-  mutable std::default_random_engine generator;
-  mutable std::uniform_real_distribution<float> distribution;
-};
-
+namespace EFG::structure {
 /**
  * @brief Refer also to https://en.wikipedia.org/wiki/Gibbs_sampling
  */
-class GibbsSampler : virtual public StateAware,
-                     virtual public BeliefAware,
-                     virtual public PoolAware {
+class GibbsSampler {
 public:
   struct SamplesGenerationContext {
     std::size_t samples_number;
     /**
      * @brief number of iterations used to evolve the model between the drawing
      * of one sample and another
+     *
+     * When nothing is specified, 0.1 * samples_number is assumed
      */
     std::optional<std::size_t> delta_iterations;
     /**
@@ -57,6 +47,7 @@ public:
      */
     std::optional<std::size_t> transient;
   };
+
   /**
    * @brief Use Gibbs sampling approach to draw empirical samples. Values inside
    * the returned combiantion are ordered with the same order used for the
@@ -68,26 +59,26 @@ public:
    * @param number parameters for the samples generation
    * @param number of threads to use for the samples generation
    */
-  std::vector<std::vector<std::size_t>>
-  makeSamples(const SamplesGenerationContext &context, std::size_t threads = 1);
+  std::unique_ptr<misc::Samples>
+  makeSamples(const SamplesGenerationContext &context);
 
-  struct SamplerNode {
-    std::size_t *value_in_combination;
-    const factor::UnaryFactor *static_dependencies;
+  std::shared_ptr<misc::Samples>
+  makeSamplesShared(const SamplesGenerationContext &context) {
+    auto res_unique = makeSamples(context);
+    std::shared_ptr<misc::Samples> res_shared;
+    res_shared.reset(res_unique.get());
+    res_unique.release();
+    return res_shared;
+  }
 
-    struct DynamicDependency {
-      categoric::VariablePtr sender;
-      const std::size_t *sender_value_in_combination;
-      factor::ImmutablePtr factor;
-    };
-    std::vector<DynamicDependency> dynamic_dependencies;
-
-    bool noChangingDeps(
-        const std::unordered_set<const std::size_t *> &will_change) const;
-  };
+protected:
+  void init(StructurePtr context) {
+    context_ = context;
+    context_->addListener(listener_);
+  }
 
 private:
-  std::vector<SamplerNode>
-  makeSamplerNodes(std::vector<std::size_t> &combination_buffer) const;
+  StructurePtr context_;
+  WorkerPoolActivityListener listener_;
 };
-} // namespace EFG::strct
+} // namespace EFG::structure

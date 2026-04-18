@@ -7,11 +7,57 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/bases/BeliefAware.h>
-#include <EasyFactorGraph/structure/bases/StateAware.h>
+#include <EasyFactorGraph/misc/VectorCache.h>
+#include <EasyFactorGraph/structure/Structure.h>
 
-namespace EFG::strct {
-class EvidenceSetter : virtual public StateAware, virtual public BeliefAware {
+namespace EFG::structure {
+struct ScopedEvidenceUpdate {
+  struct Context {
+    void reset() {
+      vars_involved_by_update.clear();
+      clusters_involved_by_update.clear();
+    }
+
+    std::vector<std::size_t> vars_involved_by_update;
+    std::unordered_map<HiddenCluster *, typename HiddenClusters::iterator>
+        clusters_involved_by_update;
+
+    StructurePtr structure;
+  };
+
+  ScopedEvidenceUpdate(Context &ctxt) : ctxt_{ctxt} { ctxt_.reset(); }
+  ~ScopedEvidenceUpdate();
+
+  template <bool ValidateValue>
+  void validateEvidence(std::size_t variable_index,
+                        categoric::VarStateSize value) {
+    if (ctxt_.structure->nodes.size() <= variable_index) {
+      throw Error{"Out of range variable for an evidence"};
+    }
+    if constexpr (ValidateValue) {
+      auto &node = ctxt_.structure->nodes[variable_index];
+      if (node.var_size <= value) {
+        throw Error(
+            "Cannot set evidence to {} for variable at index {} has its "
+            "size is {}",
+            value, variable_index, node.var_size);
+      }
+    }
+  }
+
+  void addCluster(typename HiddenClusters::iterator it) {
+    ctxt_.clusters_involved_by_update.emplace(&(*it), it);
+  }
+
+  void addVar(std::size_t var_index) {
+    ctxt_.vars_involved_by_update.push_back(var_index);
+  }
+
+private:
+  Context &ctxt_;
+};
+
+class EvidenceSetManager {
 public:
   /**
    * @brief update the evidence set with the specified new evidence.
@@ -23,53 +69,72 @@ public:
    * @param the evidence value
    * @throw in case the passed variable is not part of the model.
    */
-  void setEvidence(const categoric::VariablePtr &variable, std::size_t value);
-  /**
-   * @brief Similar to setEvidence(const categoric::VariablePtr &, const
-   * std::size_t) , but passing the variable name, which is interally searched.
-   */
-  void setEvidence(const std::string &variable, std::size_t value);
+  template <typename... ARGS>
+  void setEvidences(Evidence first, ARGS &&...others) {
+    auto &buffer = ev_.get_buffer();
+    buffer.push_back(first);
+    (buffer.emplace_back(others), ...);
+    setEvidences_(buffer);
+  }
+
+  void setEvidences(const std::vector<Evidence> &evidences) {
+    setEvidences_(evidences);
+  }
+
+protected:
+  void init(StructurePtr context) {
+    context_.structure = context;
+    context->registerManager(*this);
+  }
+
+private:
+  void setEvidences_(const std::vector<Evidence> &ev);
+
+  void setEvidence_(const Evidence &ev, ScopedEvidenceUpdate &updater);
+
+  misc::VectorCache<Evidence> ev_;
+  ScopedEvidenceUpdate::Context context_;
 };
 
-class EvidenceRemover : virtual public StateAware, virtual public BeliefAware {
+class EvidenceRemoveManager {
 public:
   /**
    * @brief update the evidence set by removing the specified variable.
    * @param the involved variable
    * @throw in case the passed variable is not part of the model.
-   * @throw in case the passed variable is not part of the current evidence set.
+   * @throw in case the passed variable is not part of the current evidence
+   set.
    */
-  void removeEvidence(const categoric::VariablePtr &variable);
+  template <typename... ARGS>
+  void removeEvidences(std::size_t first, ARGS &&...others) {
+    auto &buffer = this->ev_.get_buffer();
+    buffer.push_back(first);
+    (buffer.emplace_back(others), ...);
+    removeEvidences_<true>(buffer);
+  }
 
-  /**
-   * @brief similar to removeEvidence(const categoric::VariablePtr &), but
-   * passing the variable name, which is internally searched.
-   */
-  void removeEvidence(const std::string &variable);
-
-  /**
-   * @brief update the evidence set by removing all the specified variables.
-   * @param the involved variables
-   * @throw in case one of the passed variable is not part of the model.
-   * @throw in case one of the passed variable is not part of the current
-   * evidence set.
-   */
-  void removeEvidences(const categoric::VariablesSet &variables);
-
-  /**
-   * @brief similar to removeEvidences(const categoric::VariablesSet &), but
-   * passing the variable names, which are internally searched.
-   */
-  void removeEvidences(const std::unordered_set<std::string> &variables);
+  void removeEvidences(const std::vector<std::size_t> &vars) {
+    removeEvidences_<true>(vars);
+  }
 
   /**
    * @brief removes all the evidences currently set for this model.
    */
   void removeAllEvidences();
 
-private:
-  void removeEvidence_(const categoric::VariablePtr &variable);
+protected:
+  void init(StructurePtr context) {
+    context_.structure = context;
+    context->registerManager(*this);
+  }
 
-  void resetState();
+private:
+  template <bool Validate>
+  void removeEvidences_(const std::vector<std::size_t> &var);
+
+  void removeEvidence_(std::size_t var, ScopedEvidenceUpdate &updater);
+
+  misc::VectorCache<std::size_t> ev_;
+  ScopedEvidenceUpdate::Context context_;
 };
-} // namespace EFG::strct
+} // namespace EFG::structure

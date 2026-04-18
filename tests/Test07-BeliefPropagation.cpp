@@ -1,103 +1,63 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include "ModelLibrary.h"
-#include "Utils.h"
 #include <EasyFactorGraph/model/Graph.h>
+
+#include <BruteForceQuery.h>
+#include <ModelLibrary.h>
+#include <Utils.h>
 
 namespace EFG::test {
 using namespace model;
-using namespace strct;
+using namespace structure;
 using namespace categoric;
 using namespace factor;
-using namespace library;
-
-using ClusterInfo = PropagationResult::ClusterInfo;
 
 namespace {
-template <typename ModelT> class TestModels : public ModelT {
-public:
-  TestModels() = default;
+template <typename M>
+bool checkMarginals(M &model, std::size_t var_index,
+                    std::vector<float> expected, float threshold = 0.01f) {
+  static thread_local std::vector<float> res;
+  res.clear();
+  model.getMarginalDistribution(res, var_index);
 
-  // check all messages were computed after propagation
-  bool areAllMessagesComputed() const {
-    for (const auto &cluster : this->state().clusters) {
-      for (const auto *node : cluster.nodes) {
-        for (const auto &[connected_node, connection] :
-             node->active_connections) {
-          if (connection.message == nullptr) {
-            return false;
-          }
-        }
-      }
-    }
-    return true;
-  };
+  auto expected_normalized = make_prob_distr(std::move(expected));
 
-  bool checkMarginals(const std::string &var_name,
-                      const std::vector<float> &expected,
-                      float threshold = 0.01f) {
-    return almost_equal_it(make_prob_distr(expected),
-                           this->getMarginalDistribution(var_name), threshold);
-  }
-};
-
-bool are_equal(const ClusterInfo &a, const ClusterInfo &b) {
-  return (a.size == b.size) && (a.tree_or_loopy_graph == b.tree_or_loopy_graph);
-}
-
-bool are_equal(const std::vector<ClusterInfo> &a,
-               const std::vector<ClusterInfo> &b) {
-  if (a.size() != b.size()) {
-    return false;
-  }
-  for (const auto &a_element : a) {
-    if (std::find_if(b.begin(), b.end(),
-                     [&a_element](const ClusterInfo &b_element) {
-                       return are_equal(a_element, b_element);
-                     }) == b.end()) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool are_equal(const PropagationResult &a, const PropagationResult &b) {
-  return (a.propagation_kind_done == b.propagation_kind_done) &&
-         (a.was_completed == b.was_completed) &&
-         are_equal(a.structures, b.structures);
+  return almost_equal_it(res, expected_normalized, threshold);
 }
 } // namespace
 
 TEST_CASE("trivial graph propagation", "[propagation][trivial]") {
-  TestModels<Graph> model;
+  structure::ModelBuilder res;
+
+  std::size_t var_a = res.make_variable(2);
+  std::size_t var_b = res.make_variable(2);
 
   auto w = GENERATE(1.f, 1.5f, 2.f);
-  const float exp_w = expf(w);
 
-  model.addConstFactor(
-      make_corr_expfactor_ptr(make_variable(2, "A"), make_variable(2, "B"), w));
+  add_corr_expfactor(res, w, var_a, var_b);
+
+  const float exp_w = expf(w);
+  model::Graph model{structure::ModelBuilder::build(std::move(res))};
 
   // B = 0
-  model.setEvidence(model.findVariable("B"), 0);
-  CHECK(model.checkMarginals("A", {exp_w, 1.f}));
+  model.setEvidences(Evidence{var_b, 0});
+  CHECK(checkMarginals(model, var_a, {exp_w, 1.f}));
   // B = 1
-  model.setEvidence(model.findVariable("B"), 1);
-  CHECK(model.checkMarginals("A", {1.f, exp_w}));
+  model.setEvidences(Evidence{var_b, 1});
+  CHECK(checkMarginals(model, var_a, {1.f, exp_w}));
 
   model.removeAllEvidences();
   // A = 0
-  model.setEvidence(model.findVariable("A"), 0);
-  CHECK(model.checkMarginals("B", {exp_w, 1.f}));
+  model.setEvidences(Evidence{var_a, 0});
+  CHECK(checkMarginals(model, var_b, {exp_w, 1.f}));
   // A = 1
-  model.setEvidence(model.findVariable("A"), 1);
-  CHECK(model.checkMarginals("B", {1.f, exp_w}));
+  model.setEvidences(Evidence{var_a, 1});
+  CHECK(checkMarginals(model, var_b, {1.f, exp_w}));
 }
 
 TEST_CASE("simple poly tree belief propagation", "[propagation][tree]") {
-  TestModels<SimpleTree> model;
-
-  REQUIRE_FALSE(model.hasPropagationResult());
+  SimpleTree model;
 
   const float a = expf(SimpleTree::alfa);
   const float b = expf(SimpleTree::beta);
@@ -105,271 +65,246 @@ TEST_CASE("simple poly tree belief propagation", "[propagation][tree]") {
   const float e = expf(SimpleTree::eps);
 
   // E=1
-  model.setEvidence(model.findVariable("E"), 1);
-  CHECK(model.checkMarginals(
-      "A", {(a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e))}));
-  REQUIRE(model.hasPropagationResult());
-  {
-    const auto &propagation_result = model.getLastPropagationResult();
-    strct::PropagationResult propagation_expected;
-    propagation_expected.propagation_kind_done = PropagationKind::SUM;
-    propagation_expected.was_completed = true;
-    propagation_expected.structures =
-        std::vector<ClusterInfo>{ClusterInfo{true, 4}};
-    REQUIRE(are_equal(propagation_expected, propagation_result));
-  }
-  REQUIRE(model.areAllMessagesComputed());
-  CHECK(model.checkMarginals("B", {(g + e), (1 + g * e)}));
-  CHECK(model.checkMarginals(
-      "C", {(b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e))}));
-  CHECK(model.checkMarginals("D", {1.f, e}));
-
-  model.removeAllEvidences();
-  REQUIRE_FALSE(model.hasPropagationResult());
+  model.setEvidences(Evidence{model.getVar('E'), 1});
+  CHECK(checkMarginals(
+      model, model.getVar('A'),
+      {(a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e))}));
+  CHECK(checkMarginals(model, model.getVar('B'), {(g + e), (1 + g * e)}));
+  CHECK(checkMarginals(
+      model, model.getVar('C'),
+      {(b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e))}));
+  CHECK(checkMarginals(model, model.getVar('D'), {1.f, e}));
 
   // D=1
-  model.setEvidence(model.findVariable("D"), 1);
-  CHECK(model.checkMarginals("A", {a + g, 1.f + a * g}));
-  {
-    const auto &propagation_result = model.getLastPropagationResult();
-    strct::PropagationResult propagation_expected;
-    propagation_expected.propagation_kind_done = PropagationKind::SUM;
-    propagation_expected.was_completed = true;
-    propagation_expected.structures =
-        std::vector<ClusterInfo>{ClusterInfo{true, 3}, ClusterInfo{true, 1}};
-    REQUIRE(are_equal(propagation_expected, propagation_result));
+  model.removeAllEvidences();
+  model.setEvidences(Evidence{model.getVar('D'), 1});
+  CHECK(checkMarginals(model, model.getVar('A'), {a + g, 1.f + a * g}));
+  CHECK(checkMarginals(model, model.getVar('B'), {1.f, g}));
+  CHECK(checkMarginals(model, model.getVar('C'), {b + g, 1.f + b * g}));
+  CHECK(checkMarginals(model, model.getVar('E'), {1.f, e}));
+}
+
+namespace {
+void add_asymetric_factor(structure::ModelBuilder &model, std::size_t var_a,
+                          std::size_t var_b, float w) {
+  categoric::VarStateSize var_a_size = model.get_seed().variables_sizes[var_a];
+  categoric::VarStateSize var_b_size = model.get_seed().variables_sizes[var_b];
+  if (var_b_size < var_a_size) {
+    add_asymetric_factor(model, var_b, var_a, w);
+    return;
   }
-  REQUIRE(model.areAllMessagesComputed());
-  CHECK(model.checkMarginals("B", {1.f, g}));
-  CHECK(model.checkMarginals("C", {b + g, 1.f + b * g}));
-  CHECK(model.checkMarginals("E", {1.f, e}));
+
+  categoric::Group<2> g{{var_a_size, var_b_size}};
+  std::vector<misc::Intervals::IntervalPoint> intervals_values;
+  for (categoric::VarStateSize b = 0; b < var_b_size; b += 1) {
+    categoric::VarStateSize a =
+        b % static_cast<categoric::VarStateSize>(var_a_size);
+    auto comb_idx = g.combinationIndex({a, b});
+    intervals_values.emplace_back(std::make_pair(comb_idx, 1.f));
+  }
+
+  auto intervals =
+      misc::Intervals::from_points<true>(std::move(intervals_values));
+  factor::FactorExponential<2> factor{{var_a_size, var_b_size},
+                                      std::move(intervals)};
+  factor.trsfm.setWeight(w);
+
+  model.add_tunable_binary_factor(std::move(factor), var_a, var_b);
+}
+} // namespace
+
+TEST_CASE("simple poly tree with different sizes vars", "[propagation][tree]") {
+  structure::ModelBuilder builder;
+  auto A = builder.make_variable(3);
+  auto B = builder.make_variable(2);
+  auto C = builder.make_variable(2);
+  auto D = builder.make_variable(4);
+  add_asymetric_factor(builder, A, B, 1.2f);
+  add_asymetric_factor(builder, A, C, 1.f);
+  add_asymetric_factor(builder, A, D, 1.3f);
+
+  model::RandomField model{structure::ModelBuilder::build(std::move(builder))};
+
+  model.setEvidences(Evidence{B, 1});
+
+  BruteForce bf{model.getStructure()};
+  std::vector<float> prob, prob_expected;
+
+  model.getMarginalDistribution(prob, C);
+  prob_expected = bf.getMarginals(C);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
+
+  model.getMarginalDistribution(prob, D);
+  prob_expected = bf.getMarginals(D);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
 }
 
 TEST_CASE("complex poly tree belief propagation", "[propagation][tree]") {
-  TestModels<ComplexTree> model;
-  model.setEvidence(model.findVariable("v1"), 1);
-  model.setEvidence(model.findVariable("v2"), 1);
-  model.setEvidence(model.findVariable("v3"), 1);
+  ComplexTree model;
 
-  auto threads = GENERATE(1, 2, 4);
+  model.setEvidences(Evidence{0, 1}, Evidence{1, 1}, Evidence{2, 1});
 
-  {
-    auto prob = model.getMarginalDistribution("v10", threads);
-    CHECK(prob[0] < prob[1]);
-  }
-  {
-    auto prob = model.getMarginalDistribution("v11", threads);
-    CHECK(prob[0] < prob[1]);
-  }
-  {
-    auto prob = model.getMarginalDistribution("v13", threads);
-    CHECK(prob[0] < prob[1]);
-  }
+  auto threads = GENERATE(1, 4);
+  auto activator = activate_if_needed(model, threads);
 
-  CHECK(model.areAllMessagesComputed());
+  BruteForce bf{model.getStructure()};
+  std::vector<float> prob, prob_expected;
+
+  model.getMarginalDistribution(prob, 9);
+  prob_expected = bf.getMarginals(9);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
+
+  model.getMarginalDistribution(prob, 10);
+  prob_expected = bf.getMarginals(10);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
+
+  model.getMarginalDistribution(prob, 12);
+  prob_expected = bf.getMarginals(12);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
 }
 
 TEST_CASE("simple loopy graph belief propagation", "[propagation][loopy]") {
-  TestModels<SimpleLoopy> model;
+  SimpleLoopy model;
 
   float M = expf(SimpleLoopy::w);
   float M_alfa = powf(M, 3) + M + 2.f * powf(M, 2);
   float M_beta = powf(M, 4) + 2.f * M + powf(M, 2);
 
   // E=1
-  model.setEvidence(model.findVariable("E"), 1);
-  CHECK(model.checkMarginals(
-      "D", {3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2)}, 0.045f));
-  REQUIRE(model.hasPropagationResult());
-  {
-    const auto &propagation_result = model.getLastPropagationResult();
-    strct::PropagationResult propagation_expected;
-    propagation_expected.propagation_kind_done = PropagationKind::SUM;
-    propagation_expected.was_completed = true;
-    propagation_expected.structures =
-        std::vector<ClusterInfo>{ClusterInfo{false, 4}};
-    REQUIRE(are_equal(propagation_expected, propagation_result));
-  }
-  REQUIRE(model.areAllMessagesComputed());
-  CHECK(model.checkMarginals("C", {M_alfa, M_beta}, 0.045f));
-  CHECK(model.checkMarginals("B", {M_alfa, M_beta}, 0.045f));
-  CHECK(model.checkMarginals("A", {M * M_alfa + M_beta, M_alfa + M * M_beta},
-                             0.045f));
+  model.setEvidences(Evidence{model.getVar('E'), 1});
+  CHECK(checkMarginals(model, model.getVar('D'),
+                       {3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2)},
+                       0.04f));
+  CHECK(checkMarginals(model, model.getVar('C'), {M_alfa, M_beta}, 0.03f));
+  CHECK(checkMarginals(model, model.getVar('B'), {M_alfa, M_beta}, 0.03f));
+  CHECK(checkMarginals(model, model.getVar('A'),
+                       {M * M_alfa + M_beta, M_alfa + M * M_beta}, 0.03f));
+}
+
+TEST_CASE("simple loopy graph belief propagation with different sizes vars",
+          "[propagation][loopy]") {
+  structure::ModelBuilder builder;
+  auto A = builder.make_variable(3);
+  auto B = builder.make_variable(2);
+  auto C = builder.make_variable(2);
+  auto D = builder.make_variable(4);
+  add_asymetric_factor(builder, A, B, 1.2f);
+  add_asymetric_factor(builder, A, C, 1.f);
+  add_asymetric_factor(builder, A, D, 1.3f);
+  add_asymetric_factor(builder, C, D, 1.f);
+
+  model::RandomField model{structure::ModelBuilder::build(std::move(builder))};
+
+  model.setEvidences(Evidence{B, 1});
+
+  BruteForce bf{model.getStructure()};
+  std::vector<float> prob, prob_expected;
+
+  model.getMarginalDistribution(prob, C);
+  prob_expected = bf.getMarginals(C);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
+
+  model.getMarginalDistribution(prob, D);
+  prob_expected = bf.getMarginals(D);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
 }
 
 TEST_CASE("complex loopy graph belief propagation", "[propagation][loopy]") {
-  TestModels<ComplexLoopy> model;
+  ComplexLoopy model;
 
-  model.setEvidence(model.findVariable("v1"), 1);
+  model.setEvidences(Evidence{0, 1});
 
-  auto threads = GENERATE(1, 2, 4);
+  auto threads = GENERATE(1, 4);
+  auto activator = activate_if_needed(model, threads);
 
-  auto prob = model.getMarginalDistribution("v8", threads);
-  CHECK(prob[0] < prob[1]);
-  CHECK(model.areAllMessagesComputed());
+  std::vector<float> prob;
+  model.getMarginalDistribution(prob, 7);
+
+  auto prob_expected = BruteForce{model.getStructure()}.getMarginals(7);
+  CHECK(almost_equal_it(prob, prob_expected, 0.03f));
 }
-
-#include <sstream>
 
 TEST_CASE("big loopy graph", "[propagation][loopy]") {
-  std::vector<std::vector<VariablePtr>> vars;
+  MatrixLoopy model{10};
 
-  auto make_name = [](std::size_t r, std::size_t c) {
-    std::stringstream stream;
-    stream << "V_" << std::to_string(r) << std::to_string(c);
-    return stream.str();
-  };
+  model.setEvidences(Evidence{0, 1});
 
-  const std::size_t size = 10;
-  vars.reserve(size);
-  for (std::size_t r = 0; r < size; ++r) {
-    auto &row = vars.emplace_back();
-    row.reserve(size);
-    for (std::size_t c = 0; c < size; ++c) {
-      row.push_back(make_variable(2, make_name(r, c)));
-    }
-  }
+  auto threads = GENERATE(1, 4);
+  auto activator = activate_if_needed(model, threads);
 
-  Graph model;
+  auto last_var_index = model.getStructure().nodes.size() - 1;
 
-  using Coord = std::pair<std::size_t, std::size_t>;
-  auto add_factor = [&](const Coord &first, const Coord &second) {
-    model.addConstFactor(
-        make_corr_expfactor_ptr(vars[first.first][first.second],
-                                vars[second.first][second.second], 0.1f));
-  };
+  std::vector<float> prob;
+  model.getMarginalDistribution(prob, last_var_index);
 
-  for (std::size_t r = 0; r < size; ++r) {
-    for (std::size_t c = 0; c < size; ++c) {
-      if (0 < r) {
-        add_factor(Coord{r, c}, Coord{r - 1, c});
-      }
-      if (0 < c) {
-        add_factor(Coord{r, c}, Coord{r, c - 1});
-      }
-      if ((0 < r) && (0 < c)) {
-        add_factor(Coord{r, c}, Coord{r - 1, c - 1});
-      }
-    }
-  }
-
-  auto threads = GENERATE(1, 2, 4);
-  model.getMarginalDistribution(make_name(0, 0), threads);
+  // comparing with brute force would take too much time ...
+  CHECK(prob[0] < prob[1]);
 }
 
-#include <EasyFactorGraph/structure/SpecialFactors.h>
+TEST_CASE("MAPTest, strong weight between hidden", "[propagation][MAP]") {
+  ChainModel model{4, 0.1f, 1.f};
 
-namespace {
-model::Graph make_chain_model(float wXY, float wYY) {
-  categoric::VariablesSoup Y = {make_variable(2, "Y0"), make_variable(2, "Y1"),
-                                make_variable(2, "Y2"), make_variable(2, "Y3")};
-  categoric::VariablesSoup X = {make_variable(2, "X0"), make_variable(2, "X1"),
-                                make_variable(2, "X2"), make_variable(2, "X3")};
+  std::vector<categoric::VarStateSize> map, mapExpected = {1, 1, 1, 1};
+  model.getHiddenSetMAP(map);
+  CHECK(map == mapExpected);
+}
 
-  model::Graph model;
-  auto connect = [&model](const VariablePtr &a, const VariablePtr &b, float w) {
-    model.addConstFactor(make_corr_expfactor_ptr(a, b, w));
+TEST_CASE("MAPTest, strong weight for evidences", "[propagation][MAP]") {
+  ChainModel model{4, 1.0f, 0.1f};
+
+  auto get_expected_MAP_val = [](const std::string &var_name) {
+    if (var_name == "Y0") {
+      return 0;
+    }
+    if (var_name == "Y1") {
+      return 1;
+    }
+    if (var_name == "Y2") {
+      return 0;
+    }
+    return 1;
   };
 
-  connect(X[0], Y[0], wXY);
-  connect(X[1], Y[1], wXY);
-  connect(X[2], Y[2], wXY);
-  connect(X[3], Y[3], wXY);
-
-  connect(Y[0], Y[1], wYY);
-  connect(Y[1], Y[2], wYY);
-  connect(Y[2], Y[3], wYY);
-
-  model.copyConstFactor(
-      factor::FactorExponential(factor::Indicator{Y[0], 1}, wYY));
-
-  model.setEvidence(X[0], 0);
-  model.setEvidence(X[1], 1);
-  model.setEvidence(X[2], 0);
-  model.setEvidence(X[3], 1);
-
-  return model;
-};
-} // namespace
-
-TEST_CASE("MAPTest", "[propagation][MAP]") {
-  SECTION("strong weight between hidden") {
-    auto model = make_chain_model(0.1f, 1.f);
-    std::vector<std::size_t> mapExpected = {1, 1, 1, 1};
-    CHECK(mapExpected == model.getHiddenSetMAP());
-    CHECK(model.getLastPropagationResult().propagation_kind_done ==
-          PropagationKind::MAP);
-  }
-
-  SECTION("strong weight for evidences") {
-    auto model = make_chain_model(1.0f, 0.1f);
-
-    auto get_expected_MAP_val = [](const std::string &var_name) {
-      if (var_name == "Y0") {
-        return 0;
-      }
-      if (var_name == "Y1") {
-        return 1;
-      }
-      if (var_name == "Y2") {
-        return 0;
-      }
-      return 1;
-    };
-    std::vector<std::size_t> mapExpected;
-    mapExpected.reserve(4);
-    for (const auto &var : model.getHiddenVariables()) {
-      mapExpected.push_back(get_expected_MAP_val(var->name()));
-    }
-    CHECK(mapExpected == model.getHiddenSetMAP());
-  }
+  CHECK(model.getMAP(0) == 0);
+  CHECK(model.getMAP(1) == 1);
+  CHECK(model.getMAP(2) == 0);
+  CHECK(model.getMAP(3) == 1);
 }
 
 TEST_CASE("Sub graph distribution", "[propagation][subgraph]") {
-  VariablePtr A = make_variable(2, "A");
-  VariablePtr B = make_variable(2, "B");
-  VariablePtr C = make_variable(2, "C");
-  VariablePtr D = make_variable(2, "D");
+  structure::ModelBuilder res;
+
+  std::size_t var_a = res.make_variable(2);
+  std::size_t var_b = res.make_variable(2);
+  std::size_t var_c = res.make_variable(2);
+  std::size_t var_d = res.make_variable(2);
+
   float alfa = 0.5f, beta = 1.5f;
-  // build the chain
-  model::Graph graph;
-  graph.addConstFactor(make_corr_expfactor_ptr(A, B, alfa));
-  graph.addConstFactor(make_corr_expfactor_ptr(B, C, alfa));
-  graph.addConstFactor(make_corr_expfactor_ptr(C, D, alfa));
+
+  add_corr_expfactor(res, alfa, var_a, var_b);
+  add_corr_expfactor(res, alfa, var_b, var_c);
+  add_corr_expfactor(res, alfa, var_c, var_d);
+
+  model::Graph model{structure::ModelBuilder::build(std::move(res))};
 
   // joint distribution of A B C
-  CHECK(almost_equal_it(
-      make_prob_distr({expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
-                       expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}),
-      graph.getJointMarginalDistribution({"A", "B", "C"}).getProbabilities(),
-      0.15f));
+  {
+    auto joint_factor = model.getJointMarginalDistribution<3>({0, 1, 2});
+    std::vector<float> prob;
+    factor::getProbabilities(joint_factor, prob);
+    CHECK(almost_equal_it(
+        make_prob_distr({expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
+                         expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}),
+        prob, 0.15f));
+  }
 
   // joint distribution of A B
-  CHECK(almost_equal_it(
-      make_prob_distr({expf(alfa), 1.f, 1.f, expf(alfa)}),
-      graph.getJointMarginalDistribution({"A", "B"}).getProbabilities(),
-      0.01f));
+  {
+    auto joint_factor = model.getJointMarginalDistribution<2>({0, 1});
+    std::vector<float> prob;
+    factor::getProbabilities(joint_factor, prob);
+    CHECK(almost_equal_it(make_prob_distr({expf(alfa), 1.f, 1.f, expf(alfa)}),
+                          prob, 0.15f));
+  }
 }
-
-TEST_CASE("Belief propagation with Pool efficiency",
-          "[propagation][performance][!mayfail]") {
-  auto depth = GENERATE(8, 10);
-  auto loopy = GENERATE(false, true);
-
-  ScalableModel model(depth, 7, loopy);
-
-  auto measure_time = [&](std::size_t threads) -> std::chrono::nanoseconds {
-    model.removeAllEvidences();
-    model.setEvidence(model.root(), 0);
-    return test::measure_time(
-        [&]() { model.getMarginalDistribution(model.nonRoot(), threads); });
-  };
-
-  auto single_thread_time = measure_time(1);
-  auto multi_thread_time = measure_time(2);
-
-  CHECK(static_cast<double>(multi_thread_time.count()) <
-        static_cast<double>(single_thread_time.count()));
-}
-
 } // namespace EFG::test

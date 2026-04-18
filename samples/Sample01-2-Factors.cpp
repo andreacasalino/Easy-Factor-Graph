@@ -6,11 +6,11 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/categoric/GroupRange.h>
+#include <EasyFactorGraph/categoric/Range.h>
 #include <EasyFactorGraph/factor/Factor.h>
-#include <EasyFactorGraph/factor/FactorExponential.h>
-#include <EasyFactorGraph/factor/ImageFinder.h>
+#include <EasyFactorGraph/factor/SimpleCorrelations.h>
 using namespace EFG::categoric;
+using namespace EFG::misc;
 using namespace EFG::factor;
 
 // just a bunch of utilities needed by the sample
@@ -20,130 +20,79 @@ using namespace EFG::factor;
 #include <iostream>
 using namespace std;
 
+void print_probabilities(const FactorExponential<3> &factor);
+
 int main() {
   SAMPLE_SECTION("Factors construction", "4.1.2.1", [] {
-    // create a couple of variables with Dom size equal to 4
-    auto A = make_variable(4, "A");
-    auto B = make_variable(4, "B");
-
-    // create a Simple shape involving A and B
-    Factor Phi_AB(VariablesSoup{A, B});
-    // fill the domain in order to have for Phi_AB(a,b) = a + 2*b (just to
+    // create factor domain in order to have for Phi_AB(a,b) = a + 2*b (just to
     // put some numbers)
-    {
-      GroupRange range_AB(Phi_AB.function().vars());
-      for_each_combination(range_AB, [&Phi_AB](const auto &comb) {
-        Phi_AB.set(comb, static_cast<float>(comb[0] + 2 * comb[1]));
-      });
-    }
-    // print the distribution
-    cout << Phi_AB.function() << endl << endl;
+    std::vector<SparseDomainPoint<2>> domain;
+    for_each_generated<const Combination<2> *>(
+        EFG::categoric::Range<2>{{4, 4}}, [&](const auto *comb) {
+          float val = static_cast<float>((*comb)[0] + 2 * (*comb)[1]);
+          domain.emplace_back(std::make_pair(*comb, val));
+        });
 
-    // define another couple of variables with the same Dom size of A and B
-    auto X = make_variable(4, "X");
-    auto Y = make_variable(4, "Y");
-
-    // build a factor involving X and Y, cloning the one that involves A and
-    // B
-    Factor Phi_XY(Phi_AB); // initially clone as is
-    Phi_XY.replaceVariables(
-        VariablesSoup{X, Y}); // then replace variables group
-    cout << Phi_XY.function() << endl << endl;
-
-    // permute X with Y
-    Factor Phi_XY_permuted = Phi_XY.cloneWithPermutedGroup(VariablesSoup{Y, X});
-    cout << Phi_XY_permuted.function() << endl << endl;
+    auto Phi_AB =
+        Factor<2>::from_sparse_domain<true>({4, 4}, std::move(domain));
+    print(cout, Phi_AB) << endl;
   });
 
   SAMPLE_SECTION("Simple Factor query", "4.1.2.2", [] {
-    // build the variables
-    auto V1 = make_variable(3, "V1");
-    auto V2 = make_variable(3, "V2");
-    auto V3 = make_variable(3, "V3");
-
-    // build a factor correlating V1, V2 and V3
-    Factor Phi_C =
-        Factor(VariablesSoup{V1, V2, V3}, Factor::SimplyCorrelatedTag{});
-    cout << "Correlating factor" << endl;
-    cout << Phi_C.function() << endl << endl;
-
+    std::vector<float> prob;
     float weight =
         1.5f; // you can tune this value to see how the probabilities change
 
-    // build the exponential correlating factor and evaluates the probabilities
-    FactorExponential Psi_C(Phi_C, weight);
-    cout << "probabilities taken from the correlating exponential factor "
-         << endl;
-    cout << Psi_C.getProbabilities() << endl << endl;
+    // correlating factor
+    auto Psi_C = FactorExponential<3>::from_sparse_domain_gen(
+        {3, 3, 3}, SimplyCorrelatedDomainGen<3>{3});
+    Psi_C.trsfm.setWeight(weight);
+    print_probabilities(Psi_C);
 
-    // build a factor correlating V1, V2 and V3
-    Factor Phi_A =
-        Factor(VariablesSoup{V1, V2, V3}, Factor::SimplyAntiCorrelatedTag{});
-    cout << "Anti correlating factor" << endl;
-    cout << Phi_A.function() << endl << endl;
-
-    // build the exponential anti correlating factor and evaluates the
-    // probabilities
-    FactorExponential Psi_A(Phi_A, weight);
-    cout << "probabilities taken from the correlating exponential factor "
-         << endl;
-    cout << Psi_A.getProbabilities() << endl << endl;
+    // anti-correlating factor
+    auto Psi_A = FactorExponential<3>(
+        {3, 3, 3}, Intervals::from_gen(SimplyAntiCorrelatedDomainGen<3>{3}));
+    Psi_A.trsfm.setWeight(weight);
+    getProbabilities(Psi_A, prob);
+    print_probabilities(Psi_A);
   });
 
   SAMPLE_SECTION("Find specific combination in Factors", "", [] {
-    Factor factor(VariablesSoup{make_variable(2, "A"), make_variable(3, "B"),
-                                make_variable(2, "C"), make_variable(3, "D")});
-    factor.set(std::vector<std::size_t>{0, 0, 0, 0}, 1.f);
-    factor.set(std::vector<std::size_t>{0, 0, 1, 0}, 2.f);
-    factor.set(std::vector<std::size_t>{1, 0, 1, 1}, 3.f);
+    std::vector<SparseDomainPoint<4>> domain;
+    domain.emplace_back(std::make_pair(Combination<4>{0, 0, 0, 0}, 1.f));
+    domain.emplace_back(std::make_pair(Combination<4>{0, 0, 1, 0}, 2.f));
+    domain.emplace_back(std::make_pair(Combination<4>{1, 0, 1, 1}, 3.f));
+    auto factor =
+        Factor<4>::from_sparse_domain<true>({2, 2, 3, 3}, std::move(domain));
+
     cout << "current content of the distribution" << endl;
-    cout << factor.function() << endl << endl;
+    print(cout, factor) << endl << endl;
 
-    cout << "value found for 0 0 1 0  ->  "
-         << factor.function().findTransformed(
-                std::vector<std::size_t>{0, 0, 1, 0})
-         << endl;
-
-    auto bigger_group = factor.function().vars().getVariables();
-    bigger_group.push_back(make_variable(2, "E"));
-    auto combination_finder = factor.makeFinder(bigger_group);
-    cout << "value found for 1,0,1,1,0 from group " << bigger_group << "  -> "
-         << combination_finder.findImage(
-                std::vector<std::size_t>{1, 0, 1, 1, 0})
-         << endl;
-  });
-
-  SAMPLE_SECTION("Factors merging", "", [] {
-    auto A = make_variable(2, "A");
-    auto B = make_variable(2, "B");
-    auto C = make_variable(2, "C");
-
-    Factor factor_AC(VariablesSoup{A, C}, Factor::SimplyCorrelatedTag{});
-    Factor factor_BC(VariablesSoup{B, C}, Factor::SimplyCorrelatedTag{});
-
-    std::cout << "distributions to merge" << std::endl;
-    cout << factor_AC.function() << endl << endl;
-    cout << factor_BC.function() << endl << endl;
-
-    std::cout << "merged distribution" << std::endl;
-    cout << Factor::merge(factor_AC, factor_BC).function() << endl << endl;
-
-    // change factors to merge and then merge again
-    auto setAllImages = [](Factor &subject, float val) {
-      GroupRange range{subject.function().vars()};
-      for_each_combination(range,
-                           [&](const auto &comb) { subject.set(comb, val); });
-    };
-    setAllImages(factor_AC, 0.5f);
-    setAllImages(factor_BC, 0.5f);
-
-    std::cout << "distributions to merge after the change" << std::endl;
-    cout << factor_AC.function() << endl << endl;
-    cout << factor_BC.function() << endl << endl;
-
-    std::cout << "merged distribution" << std::endl;
-    cout << Factor::merge(factor_AC, factor_BC).function() << endl << endl;
+    auto val = factor.get<true>(Combination<4>{0, 0, 1, 0});
+    cout << "value found for 0 0 1 0  ->  " << val << endl;
   });
 
   return EXIT_SUCCESS;
+}
+
+void print_probabilities(const FactorExponential<3> &factor) {
+  std::vector<float> prob;
+  getProbabilities(factor, prob);
+  Combination<3> sizes{factor.getVariables().sizes()};
+  EFG::categoric::Range<3> rng{std::move(sizes)};
+  Tabular table;
+  table.addLine(Tabular::Line{"combination", "probability"});
+  for_each_generated<const Combination<3> *>(
+      rng, [&, idx = std::size_t{0}](const auto *comb) mutable {
+        std::string comb_str{"["};
+        comb_str += std::to_string(comb->front());
+        std::for_each(comb->begin() + 1, comb->end(), [&](auto val) {
+          comb_str.push_back(' ');
+          comb_str += std::to_string(val);
+        });
+        comb_str.push_back(']');
+        table.addLine(Tabular::Line{std::move(comb_str), prob[idx++]});
+      });
+  table.print(cout);
+  cout << endl;
 }

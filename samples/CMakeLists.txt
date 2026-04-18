@@ -34,19 +34,11 @@ function(AddSamplePath NAME_)
 endfunction()
 
 AddSample(Sample01-1-Variables)
-
 AddSample(Sample01-2-Factors)
-
 AddSample(Sample02-BeliefPropagation-A)
-
 AddSamplePath(Sample03-BeliefPropagation-B)
-
 AddSample(Sample04-HMM-chain)
-
 AddSample(Sample05-Matricial)
-
 AddSamplePath(Sample06-Learning-A)
-
 AddSamplePath(Sample07-Learning-B)
-
 AddSamplePath(Sample08-Subgraphing)

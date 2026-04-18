@@ -5,150 +5,38 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <EasyFactorGraph/factor/Factor.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
-#include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include <algorithm>
-#include <time.h>
+#include <ranges>
 
-namespace EFG::strct {
-UniformSampler::UniformSampler() {
-  auto random_seed = static_cast<unsigned int>(time(NULL));
-  resetSeed(random_seed);
-}
-
-std::size_t UniformSampler::sampleFromDiscrete(
-    const std::vector<float> &distribution) const {
-  float s = this->sample();
-  float cumul = 0.f;
-  for (std::size_t k = 0; k < distribution.size(); ++k) {
-    cumul += distribution[k];
-    if (s <= cumul) {
-      return k;
-    }
-  }
-  return distribution.size() - 1;
-}
-
-void UniformSampler::resetSeed(std::size_t newSeed) {
-  this->generator.seed(static_cast<unsigned int>(newSeed));
-}
-
-bool GibbsSampler::SamplerNode::noChangingDeps(
-    const std::unordered_set<const std::size_t *> &will_change) const {
-  auto it =
-      std::find_if(dynamic_dependencies.begin(), dynamic_dependencies.end(),
-                   [&will_change](const DynamicDependency &dep) {
-                     return will_change.find(dep.sender_value_in_combination) !=
-                            will_change.end();
-                   });
-  return it == dynamic_dependencies.end();
-}
-
-std::vector<GibbsSampler::SamplerNode> GibbsSampler::makeSamplerNodes(
-    std::vector<std::size_t> &combination_buffer) const {
-  const auto vars_order = getAllVariables();
-  const std::size_t size = vars_order.size();
-  combination_buffer.resize(size);
-  SmartMap<categoric::Variable, std::size_t *> combination_values_map;
-  for (std::size_t k = 0; k < size; ++k) {
-    auto *comb_ptr = &combination_buffer[k];
-    *comb_ptr = 0;
-    combination_values_map.emplace(vars_order[k], comb_ptr);
-  }
-  std::vector<SamplerNode> result;
-  result.reserve(size);
-  const auto &state = this->state();
-  for (const auto &[var, val] : state.evidences) {
-    *combination_values_map.find(var)->second = val;
-  }
-  for (auto &cluster : state.clusters) {
-    for (auto *node : cluster.nodes) {
-      node->updateMergedUnaries();
-      auto &added_node = result.emplace_back();
-      added_node.value_in_combination =
-          combination_values_map.find(node->variable)->second;
-      added_node.static_dependencies = node->merged_unaries.get();
-      for (const auto &[connected_node, connection] :
-           node->active_connections) {
-        auto &added_dep = added_node.dynamic_dependencies.emplace_back();
-        added_dep.sender = connected_node->variable;
-        added_dep.sender_value_in_combination =
-            combination_values_map.find(connected_node->variable)->second;
-        added_dep.factor = connection.factor;
-      }
-    }
-  }
-  return result;
-}
-
+namespace EFG::structure {
 namespace {
-Task make_sampling_task(const GibbsSampler::SamplerNode &subject,
-                        std::vector<UniformSampler> &engines) {
-  return [&subject, &engines](const std::size_t thread_id) {
-    std::vector<const factor::Immutable *> factors = {
-        subject.static_dependencies};
-    std::list<factor::Evidence> marginalized;
-    for (const auto &dep : subject.dynamic_dependencies) {
-      factors.push_back(&marginalized.emplace_back(
-          *dep.factor, dep.sender, *dep.sender_value_in_combination));
-    }
-    factor::MergedUnaries merged(factors);
-    *subject.value_in_combination =
-        engines[thread_id].sampleFromDiscrete(merged.getProbabilities());
-  };
-}
+struct HiddenSet {
+  std::vector<std::size_t> var_indices_flat;
 
-std::vector<Tasks>
-make_sampling_tasks(const std::vector<GibbsSampler::SamplerNode> &nodes,
-                    std::vector<UniformSampler> &engines,
-                    const std::optional<std::size_t> &seed, Pool &pool) {
-  engines.resize(pool.size());
-  if (std::nullopt != seed) {
-    std::size_t s = *seed;
-    for (auto &engine : engines) {
-      engine.resetSeed(s);
-      s += 5;
+  std::unordered_map<std::size_t /* var index */,
+                     std::size_t /* position in sample buffer */>
+      table;
+
+  template <typename Pred>
+  void forEachVar(std::size_t offset, std::size_t stride, Pred pred) const {
+    for (std::size_t i = offset; i < var_indices_flat.size(); i += stride) {
+      pred(var_indices_flat[i], i);
     }
   }
+};
 
-  std::vector<Tasks> result;
-  if (1 == pool.size()) {
-    auto &new_tasks = result.emplace_back();
-    for (const auto &node : nodes) {
-      new_tasks.emplace_back(make_sampling_task(node, engines));
-    }
-  } else {
-    std::list<const GibbsSampler::SamplerNode *> open;
-    for (auto &node : nodes) {
-      open.push_back(&node);
-    }
-    while (!open.empty()) {
-      std::unordered_set<const std::size_t *> should_not_change;
-      std::unordered_set<const std::size_t *> will_change;
-      auto &new_tasks = result.emplace_back();
-      auto open_it = open.begin();
-      while (open_it != open.end()) {
-        if ((should_not_change.find((*open_it)->value_in_combination) ==
-             should_not_change.end()) &&
-            (*open_it)->noChangingDeps(will_change)) {
-          will_change.emplace((*open_it)->value_in_combination);
-          for (const auto &dep : (*open_it)->dynamic_dependencies) {
-            should_not_change.emplace(dep.sender_value_in_combination);
-          }
-          new_tasks.emplace_back(make_sampling_task(**open_it, engines));
-          open_it = open.erase(open_it);
-        } else {
-          ++open_it;
-        }
-      }
-    }
-  }
-  return result;
-}
+struct alignas(64) SamplingContext {
+  StructurePtr model;
+  misc::UniformSampler sampler;
+  factor::UnaryFactorsMerger merger;
+  misc::VectorCache<float, float> message_buffer;
+};
 
 std::pair<std::size_t, std::size_t>
-delta_and_burn_out(const GibbsSampler::SamplesGenerationContext &context) {
+parse_context(const GibbsSampler::SamplesGenerationContext &context) {
   std::size_t delta_iterations =
       context.delta_iterations.has_value()
           ? context.delta_iterations.value()
@@ -162,38 +50,187 @@ delta_and_burn_out(const GibbsSampler::SamplesGenerationContext &context) {
   return std::make_pair(delta_iterations, burn_out);
 }
 
-void evolve_samples(strct::Pool &pool, const std::vector<Tasks> &sample_jobs,
-                    std::size_t iterations) {
-  for (std::size_t iter = 0; iter < iterations; ++iter) {
-    for (const auto &tasks : sample_jobs) {
-      pool.parallelFor(tasks);
+HiddenSet identifyHiddenSetIndices(Structure &context) {
+  HiddenSet res;
+  std::size_t node_i = 0;
+  std::size_t buffer_index = 0;
+  for (const auto &node : context.nodes) {
+    if (node.evidence == Evidence::NOT_AN_EVIDENCE) {
+      res.var_indices_flat.push_back(node_i);
+      res.table.emplace(node_i, buffer_index++);
+    }
+    node_i += 1;
+  }
+  return res;
+}
+
+void samplingIteration(const HiddenSet &hidden_set,
+                       std::vector<categoric::VarStateSize> &buffer,
+                       std::size_t offset, std::size_t stride,
+                       SamplingContext &ctxt) {
+  auto &model = *ctxt.model;
+  hidden_set.forEachVar(offset, stride, [&](auto var_index, auto buffer_index) {
+    auto &node = model.nodes[var_index];
+    auto &msg_buffer = ctxt.message_buffer.get_buffer<0>();
+    msg_buffer.resize(node.var_size, 0);
+    auto &msg_prob_buffer = ctxt.message_buffer.get_buffer<1>();
+    msg_prob_buffer.resize(node.var_size, 0);
+    ctxt.merger.reset(node.var_size);
+    for (auto &conn : node.incoming_messages) {
+      if (model.nodes[conn.factor_info.sender_index].evidence ==
+          Evidence::NOT_AN_EVIDENCE) {
+        auto sender_buffer_index =
+            hidden_set.table.find(conn.factor_info.sender_index)->second;
+        std::visit(
+            [&](const auto &factor) {
+              make_evidence_message(
+                  {msg_buffer.begin(), msg_buffer.end()}, factor,
+                  !conn.factor_info.receiver_is_first_in_factor,
+                  buffer[sender_buffer_index]);
+              ctxt.merger.template merge<true>(msg_buffer);
+            },
+            model.binary_factors[conn.factor_info.factor_index].factor);
+      } else {
+        ctxt.merger.template merge<true>(model.getMessageValues(conn));
+      }
+    }
+    use_factor_if(node.unary_factor, [&](const auto &factor) {
+      ctxt.merger.template merge_factor<true>(factor);
+    });
+
+    factor::UnaryFactor merged_factor{
+        misc::TransferableBlock{ctxt.merger.getMerged()}};
+    factor::getProbabilities(merged_factor, msg_prob_buffer);
+
+    buffer[buffer_index] = ctxt.sampler.sampleFromDiscrete(msg_prob_buffer);
+  });
+}
+
+struct SerialDriver {
+  SerialDriver(StructurePtr model, std::optional<std::size_t> seed);
+
+  void advance(const HiddenSet &hidden_set,
+               std::vector<categoric::VarStateSize> &buffer);
+
+private:
+  SamplingContext ctxt_;
+};
+
+SerialDriver::SerialDriver(StructurePtr model,
+                           std::optional<std::size_t> seed) {
+  ctxt_.model = model;
+  if (seed.has_value()) {
+    ctxt_.sampler.resetSeed(seed.value());
+  }
+}
+
+void SerialDriver::advance(const HiddenSet &hidden_set,
+                           std::vector<categoric::VarStateSize> &buffer) {
+  samplingIteration(hidden_set, buffer, 0, 1, ctxt_);
+}
+
+struct ConcurrentDriver {
+  ConcurrentDriver(StructurePtr model, misc::WorkerPool &pool,
+                   std::optional<std::size_t> seed,
+                   const HiddenSet &hidden_set);
+
+  void advance(const HiddenSet &hidden_set,
+               std::vector<categoric::VarStateSize> &buffer);
+
+private:
+  misc::WorkerPool &pool_;
+  std::vector<SamplingContext> ctxt_;
+  misc::ConcurrentSafeLevels<std::size_t> var_indices_levels_;
+};
+
+ConcurrentDriver::ConcurrentDriver(StructurePtr model, misc::WorkerPool &pool,
+                                   std::optional<std::size_t> seed,
+                                   const HiddenSet &hidden_set)
+    : pool_{pool} {
+  ctxt_.resize(pool.size());
+  if (seed.has_value()) {
+    for (auto &s : ctxt_) {
+      s.model = model;
+      s.sampler.resetSeed(seed.value());
     }
   }
+
+  std::vector<std::size_t> open{hidden_set.var_indices_flat}, open_swap;
+  std::unordered_set<std::size_t> this_level;
+  while (!open.empty()) {
+    open_swap.clear();
+    this_level.clear();
+    for (auto var_index : open) {
+      auto deps = model->nodes[var_index].incoming_messages |
+                  std::views::transform([](const MessageMetaData &conn) {
+                    return conn.factor_info.sender_index;
+                  });
+      bool dep_in_this_level =
+          std::any_of(deps.begin(), deps.end(), [&](auto dep_idx) {
+            return this_level.contains(dep_idx);
+          });
+      if (dep_in_this_level) {
+        open_swap.push_back(var_index);
+      } else {
+        this_level.emplace(var_index);
+      }
+    }
+    var_indices_levels_.add(this_level.begin(), this_level.end());
+    std::swap(open, open_swap);
+  }
+}
+
+void ConcurrentDriver::advance(const HiddenSet &hidden_set,
+                               std::vector<categoric::VarStateSize> &buffer) {
+  var_indices_levels_.for_each_level([&](std::span<const std::size_t> level) {
+    pool_.compute([&, len = pool_.size()](std::size_t th_id) {
+      samplingIteration(hidden_set, buffer, th_id, len, ctxt_[th_id]);
+    });
+  });
+}
+
+template <typename Driver>
+std::unique_ptr<misc::Samples>
+make_samples(Driver &driver,
+             const GibbsSampler::SamplesGenerationContext &context,
+             HiddenSet &hidden_set, StructurePtr model) {
+  auto [delta_iterations, burn_out] = parse_context(context);
+
+  std::vector<categoric::VarStateSize> buffer;
+  buffer.resize(hidden_set.var_indices_flat.size(), 0);
+  std::unique_ptr<misc::Samples> res =
+      std::make_unique<misc::Samples>(hidden_set.var_indices_flat.size());
+
+  // burn out phase
+  for (std::size_t i = 0; i < burn_out; ++i) {
+    driver.advance(hidden_set, buffer);
+  }
+
+  for (std::size_t i = 0; i < context.samples_number; ++i) {
+    driver.advance(hidden_set, buffer);
+    res->add(buffer);
+    for (std::size_t t = 0; t < delta_iterations; ++t) {
+      driver.advance(hidden_set, buffer);
+    }
+  }
+
+  return res;
 }
 } // namespace
 
-std::vector<std::vector<std::size_t>>
-GibbsSampler::makeSamples(const SamplesGenerationContext &context,
-                          const std::size_t threads) {
-  ScopedPoolActivator activator(*this, threads);
-
-  auto [delta_iterations, burn_out] = delta_and_burn_out(context);
-
-  std::vector<std::size_t> combination;
-  auto sampling_nodes = makeSamplerNodes(combination);
-
-  std::vector<UniformSampler> engines;
-  auto &pool = getPool();
-  auto sampling_tasks =
-      make_sampling_tasks(sampling_nodes, engines, context.seed, pool);
-
-  evolve_samples(pool, sampling_tasks, burn_out);
-  std::vector<std::vector<std::size_t>> result;
-  result.reserve(context.samples_number);
-  while (result.size() != context.samples_number) {
-    result.push_back(combination);
-    evolve_samples(pool, sampling_tasks, delta_iterations);
+std::unique_ptr<misc::Samples>
+GibbsSampler::makeSamples(const SamplesGenerationContext &context) {
+  auto hidden_set = identifyHiddenSetIndices(*context_);
+  if (hidden_set.var_indices_flat.empty()) {
+    throw Error{"Empty hidden set"};
   }
-  return result;
+
+  if (auto *pool = listener_.getPool(); pool) {
+    ConcurrentDriver driver{context_, *pool, context.seed, hidden_set};
+    return make_samples(driver, context, hidden_set, context_);
+  } else {
+    SerialDriver driver{context_, context.seed};
+    return make_samples(driver, context, hidden_set, context_);
+  }
 }
-} // namespace EFG::strct
+} // namespace EFG::structure

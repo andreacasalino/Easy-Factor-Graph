@@ -8,11 +8,9 @@
 #include <EasyFactorGraph/model/Graph.h>
 
 namespace EFG::model {
-void Graph::absorb(const strct::FactorsAware &to_absorb, bool copy) {
-  const auto &factors = to_absorb.getAllFactors();
-  absorbConstFactors(factors.begin(), factors.end(), copy);
-  for (const auto &[var, val] : to_absorb.getEvidences()) {
-    setEvidence(var, val);
-  }
+Graph::Graph(structure::ModelSeed &&seed)
+    : detail::GraphBase{std::forward<structure::ModelSeed>(seed)} {
+  auto &ctxt = const_cast<structure::Structure &>(this->getStructure());
+  ctxt.tunability.order.clear();
 }
 } // namespace EFG::model

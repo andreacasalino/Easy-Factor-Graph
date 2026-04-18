@@ -1,310 +1,290 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 
-#include "Utils.h"
-#include <EasyFactorGraph/categoric/GroupRange.h>
-#include <EasyFactorGraph/factor/ImageFinder.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
 #include <EasyFactorGraph/model/RandomField.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
-#include <EasyFactorGraph/structure/SpecialFactors.h>
-#include <EasyFactorGraph/trainable/FactorsTunableManager.h>
-#include <EasyFactorGraph/trainable/ModelTrainer.h>
 
 #include <TrainingTools/iterative/solvers/GradientDescend.h>
 #include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
 #include <TrainingTools/iterative/solvers/QuasiNewton.h>
 
+#include <BruteForceQuery.h>
+#include <Utils.h>
+
 #include <algorithm>
 #include <functional>
 #include <limits>
 #include <math.h>
+#include <ranges>
+#include <span>
 
 #include "ModelLibrary.h"
 
 namespace EFG::test {
-using namespace categoric;
-using namespace model;
-using namespace train;
-using namespace strct;
-using namespace library;
-
-namespace {
-template <typename ModelT> class LearningTest {
+template <typename Trainer> class TrainerWithStory : public Trainer {
 public:
-  template <typename MakeModelPred> LearningTest(MakeModelPred &&pred) {
-    to_train = pred();
-    reference = pred();
-  }
+  using Trainer::Trainer;
 
-  LearningTest &threads(std::size_t threads) {
-    threads_ = threads;
-    return *this;
-  }
-  template <typename MakeSamplesPred>
-  LearningTest &samplesMaker(MakeSamplesPred &&pred) {
-    samplesMaker_ = std::forward<std::function<TrainSet(ModelT &)>>(pred);
-    return *this;
-  }
-  template <typename InitTrainerPred>
-  LearningTest &trainerInitialization(InitTrainerPred &&init) {
-    initTrainer =
-        std::forward<std::function<void(::train::IterativeTrainer &)>>(init);
-    return *this;
-  }
-  LearningTest &maxIterations(std::size_t iter) {
-    max_iterations = iter;
-    return *this;
-  }
-  LearningTest &stochGradPecentage(float val) {
-    stoch_percentage = val;
-    return *this;
-  }
-  LearningTest &checkWeightToll(float val) {
-    check_weights_toll = val;
-    return *this;
-  }
-  LearningTest &checkLikelihoodToll(float val) {
-    check_likelihood_trend_toll = val;
-    return *this;
-  }
-  LearningTest &checkMarginalsToll(float val) {
-    check_marginal_toll = val;
-    return *this;
-  }
+  struct StoryIterator {
+    StoryIterator(const TrainerWithStory &src)
+        : len_{src.len_}, rest_{src.wStory_.begin(), src.wStory_.end()} {}
 
-  template <typename TrainerT> bool train() {
-    set_ones(*to_train);
-    std::vector<std::vector<float>> wStory;
-    wStory.reserve(max_iterations);
-    TrainerWithStory<TrainerT> trainer{wStory};
-    trainer.setMaxIterations(max_iterations);
-    if (initTrainer) {
-      initTrainer(trainer);
+    std::optional<std::span<const float>> next() {
+      if (rest_.empty()) {
+        return std::nullopt;
+      }
+      std::span<const float> res{rest_.begin(), rest_.begin() + len_};
+      rest_ = {rest_.begin() + len_, rest_.end()};
+      return res;
     }
-    TrainInfo info;
-    info.stochastic_percentage = stoch_percentage;
-    info.threads = threads_;
-    TrainSet samples = samplesMaker_(*reference);
-    train_model(*to_train, trainer, samples, info);
-    /////////////////// checks ///////////////////
-    return almost_equal_it(reference->getWeights(), to_train->getWeights(),
-                           check_weights_toll) &&
-           checkLikelihoodTrend(wStory, samples.makeIterator()) &&
-           checkMarginals();
-  }
+
+  private:
+    std::size_t len_;
+    std::span<const float> rest_;
+  };
+  StoryIterator make_iter() const { return {*this}; }
 
 protected:
-  bool checkLikelihoodTrend(const std::vector<std::vector<float>> &wStory,
-                            const TrainSet::Iterator &train_set) {
-    if (check_likelihood_trend_toll == std::numeric_limits<float>::max()) {
+  void updateDirection() override {
+    Eigen::VectorXd par = this->getParameters();
+    len_ = static_cast<std::size_t>(par.size());
+    for (auto val : par) {
+      wStory_.push_back(static_cast<float>(val));
+    }
+    this->Trainer::updateDirection();
+  };
+
+private:
+  std::size_t len_{0};
+  std::vector<float> wStory_;
+};
+
+#define CONTEX_FIELD(type, name, default_value)                                \
+  type name{default_value};                                                    \
+  ContextBuilder &set_##name(type val) {                                       \
+    name = val;                                                                \
+    return *this;                                                              \
+  }
+
+struct ContextBuilder {
+  CONTEX_FIELD(std::size_t, samples, 500) // TODO use me!
+  CONTEX_FIELD(std::size_t, max_iterations, 30)
+  CONTEX_FIELD(std::size_t, threads, 1)
+
+  CONTEX_FIELD(float, check_weights_toll, 0.5f)
+  CONTEX_FIELD(float, check_likelihood_trend_toll, 5.f)
+  CONTEX_FIELD(float, check_marginal_toll, 0.15f)
+};
+
+template <typename ModelT, typename Trainer> struct LearningTest {
+  LearningTest(ModelT &model, TrainerWithStory<Trainer> &driver,
+               ContextBuilder ctxt)
+      : model_{model}, driver_{driver}, ctxt_{std::move(ctxt)},
+        bf_{model_, ctxt_.samples} {
+    model_.getTunableWeights(initial_w_);
+    initial_marginals_ = compute_marginals();
+    auto ones = initial_w_;
+    for (auto &val : ones) {
+      val = 1.f;
+    }
+    model_.setTunableWeights(ones);
+  }
+
+  bool train() {
+    driver_.setMaxIterations(ctxt_.max_iterations);
+    auto guard = activate_if_needed(model_, ctxt_.threads);
+    auto samples = bf_.getSamples();
+    structure::train_model(model_, driver_, samples);
+
+    /////////////////// checks ///////////////////
+    return almost_equal_it(initial_w_, getW(), ctxt_.check_weights_toll) &&
+           checkLikelihoodTrend() && checkMarginals();
+  }
+
+private:
+  std::vector<float> getW() const {
+    std::vector<float> w;
+    model_.getTunableWeights(w);
+    return w;
+  }
+
+  bool checkLikelihoodTrend() {
+    if (ctxt_.check_likelihood_trend_toll ==
+        std::numeric_limits<float>::max()) {
       return true;
     }
-    const auto final_w = to_train->getWeights();
-    LikelihoodGetter likelihood_aware(*to_train);
-    float prev_likelihood = -std::numeric_limits<float>::max();
-    for (const auto &w : wStory) {
-      to_train->setWeights(w);
-      float att_likelihood = likelihood_aware.getLogLikeliHood(train_set);
-      const bool ok =
-          (-check_likelihood_trend_toll) < (att_likelihood - prev_likelihood);
+    const auto final_w = getW();
+    auto story_it = driver_.make_iter();
+    auto prev_likelihood = -std::numeric_limits<float>::max();
+    while (true) {
+      auto next = story_it.next();
+      if (!next) {
+        break;
+      }
+      model_.setTunableWeights(*next);
+      float att_likelihood = bf_.getLogLikelihoodAt();
+      const bool ok = (-ctxt_.check_likelihood_trend_toll) <
+                      (att_likelihood - prev_likelihood);
       if (!ok) {
         return false;
       }
       prev_likelihood = att_likelihood;
     }
-    to_train->setWeights(final_w);
+    model_.setTunableWeights(final_w);
     return true;
   }
 
   bool checkMarginals() {
-    if constexpr (!std::is_same<ConditionalRandomField, ModelT>::value) {
-      if (check_marginal_toll == std::numeric_limits<float>::max()) {
-        return true;
-      }
-
-      VariablesSoup hidden_vars;
-      {
-        const auto &hidden_set = to_train->getHiddenVariables();
-        hidden_vars = VariablesSoup{hidden_set.begin(), hidden_set.end()};
-      }
-      auto var_getter = [&reference =
-                             *this->reference](const std::string &name) {
-        return reference.findVariable(name);
-      };
-
-      dynamic_cast<EvidenceSetter *>(to_train.get())
-          ->setEvidence(hidden_vars.back(), 0);
-      dynamic_cast<EvidenceSetter *>(reference.get())
-          ->setEvidence(var_getter(hidden_vars.back()->name()), 0);
-
-      for (std::size_t k = 0; k < (hidden_vars.size() - 1); ++k) {
-        auto marginals_trained =
-            dynamic_cast<QueryManager *>(to_train.get())
-                ->getMarginalDistribution(hidden_vars[k]->name());
-
-        auto marginals_reference =
-            dynamic_cast<QueryManager *>(reference.get())
-                ->getMarginalDistribution(hidden_vars[k]->name());
-
-        if (!almost_equal_it(marginals_trained, marginals_reference,
-                             check_marginal_toll)) {
-          return false;
-        }
+    auto marginals_now = compute_marginals();
+    for (std::size_t k = 0; k < marginals_now.size(); ++k) {
+      if (!almost_equal_it(marginals_now[k], initial_marginals_[k],
+                           ctxt_.check_marginal_toll)) {
+        return false;
       }
     }
     return true;
   }
 
-  std::unique_ptr<ModelT> reference;
-  std::unique_ptr<ModelT> to_train;
+  ModelT &model_;
+  TrainerWithStory<Trainer> &driver_;
+  ContextBuilder ctxt_;
+  BruteForceGradient bf_;
 
-  std::size_t threads_ = 1;
-  std::function<TrainSet(ModelT &)> samplesMaker_;
-  std::size_t max_iterations = 30;
-  std::function<void(::train::IterativeTrainer &)> initTrainer;
-  float stoch_percentage = 1.f;
+  std::vector<float> initial_w_;
 
-  float check_weights_toll = 0.5f;
-  float check_likelihood_trend_toll = 5.f;
-  float check_marginal_toll = 0.15f;
+  std::vector<std::vector<float>> compute_marginals() {
+    if (ctxt_.check_marginal_toll == std::numeric_limits<float>::max()) {
+      return {};
+    }
 
-  template <typename TrainerBase> class TrainerWithStory : public TrainerBase {
-  public:
-    TrainerWithStory(std::vector<std::vector<float>> &wStory)
-        : wStory{wStory} {};
-
-  protected:
-    void updateDirection() override {
-      Eigen::VectorXd par = this->getParameters();
-      std::vector<float> w;
-      w.reserve(par.size());
-      for (Eigen::Index i = 0; i < par.size(); ++i) {
-        w.push_back(par(i));
+    const std::vector<structure::Node> &nodes = model_.getStructure().nodes;
+    if constexpr (std::is_same_v<ModelT, model::RandomField>) {
+      model::RandomField &model = model_;
+      // set last var as evidence with value = 0
+      model.setEvidences(structure::Evidence{nodes.size() - 1, 0});
+    } else {
+      // set evidences to zeros
+      std::vector<std::size_t> ev;
+      for (std::size_t k = 0; k < nodes.size(); ++k) {
+        if (nodes[k].evidence != structure::Evidence::NOT_AN_EVIDENCE) {
+          ev.push_back(0);
+        }
       }
-      this->wStory.emplace_back(std::move(w));
-      this->TrainerBase::updateDirection();
-    };
+      model_.setEvidences(ev);
+    }
 
-  private:
-    std::vector<std::vector<float>> &wStory;
-  };
+    std::vector<std::vector<float>> res;
+    for (std::size_t k = 0; k < nodes.size(); ++k) {
+      if (nodes[k].evidence != structure::Evidence::NOT_AN_EVIDENCE) {
+        continue;
+      }
+      model_.getMarginalDistribution(res.emplace_back(), k);
+    }
+    return res;
+  }
+  std::vector<std::vector<float>> initial_marginals_;
 };
-} // namespace
+
+template <typename Trainer, typename ModelT, typename TrainerInitPred>
+bool train_test_with_init(ModelT &model, ContextBuilder ctxt,
+                          TrainerInitPred &&pred) {
+  TrainerWithStory<Trainer> driver;
+  pred(driver);
+  LearningTest<ModelT, Trainer> test{model, driver, ctxt};
+  return test.train();
+}
+
+template <typename Trainer, typename ModelT>
+bool train_test(ModelT &model, ContextBuilder ctxt) {
+  return train_test_with_init<Trainer, ModelT>(model, ctxt, [](auto &_) {});
+}
 
 TEST_CASE("Small random field tuning", "[train]") {
-  LearningTest<RandomField> info([]() {
-    VariablePtr A = make_variable(3, "A");
-    VariablePtr B = make_variable(3, "B");
-    VariablePtr C = make_variable(3, "C");
-    std::unique_ptr<RandomField> subject = std::make_unique<RandomField>();
-    subject->copyConstFactor(
-        factor::FactorExponential{factor::Indicator{A, 0}, 1.f});
-    subject->addTunableFactor(make_corr_expfactor_ptr(A, B, 2.f));
-    subject->addTunableFactor(make_corr_expfactor_ptr(A, C, 0.5f));
-    return subject;
-  });
-  info.samplesMaker([](RandomField &reference) {
-    return make_good_trainset(reference, 500);
-  });
+  structure::ModelBuilder builder;
+  auto varA = builder.make_variable(3);
+  auto varB = builder.make_variable(3);
+  auto varC = builder.make_variable(3);
+  add_indicator_expfactor(builder, 1.f, varA);
+  add_corr_expfactor(builder, 2.f, varA, varB);
+  add_corr_expfactor(builder, 0.5f, varA, varC);
+
+  model::RandomField model{structure::ModelBuilder::build(std::move(builder))};
+  ContextBuilder ctxt;
 
   SECTION("Gradient Descend Fixed") {
-    info.trainerInitialization([](::train::IterativeTrainer &trainer) {
-      static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
-          0.5f);
-    });
-    CHECK(info.train<::train::GradientDescendFixed>());
+    bool ok = train_test_with_init<::train::GradientDescendFixed>(
+        model, ctxt, [](auto &trainer) { trainer.setOptimizationStep(0.5f); });
+    CHECK(ok);
   }
 
-  info.checkLikelihoodToll(std::numeric_limits<float>::max());
+  ctxt.set_check_likelihood_trend_toll(std::numeric_limits<float>::max());
+
   SECTION("Gradient Descend Adaptive") {
-    CHECK(info.train<::train::GradientDescend<::train::YundaSearcher>>());
+    bool ok = train_test<::train::GradientDescend<::train::YundaSearcher>>(
+        model, ctxt);
+    CHECK(ok);
   }
   SECTION("Gradient Descend Conjugate") {
-    CHECK(info.train<
-          ::train::GradientDescendConjugate<::train::YundaSearcher>>());
+    bool ok =
+        train_test<::train::GradientDescendConjugate<::train::YundaSearcher>>(
+            model, ctxt);
+    CHECK(ok);
   }
   SECTION("Quasi Newton") {
-    CHECK(info.train<
-          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>());
+    bool ok =
+        train_test<::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+            model, ctxt);
+    CHECK(ok);
   }
 }
 
 TEST_CASE("Medium random field tuning", "[train]") {
-  LearningTest<RandomField> info([]() {
-    VariablePtr A = make_variable(3, "A");
-    VariablePtr B = make_variable(3, "B");
-    VariablePtr C = make_variable(3, "C");
-    VariablePtr D = make_variable(3, "D");
-    VariablePtr E = make_variable(3, "E");
+  structure::ModelBuilder builder;
+  auto varA = builder.make_variable(3);
+  auto varB = builder.make_variable(3);
+  auto varC = builder.make_variable(3);
+  auto varD = builder.make_variable(3);
+  auto varE = builder.make_variable(3);
+  add_indicator_expfactor(builder, 1.f, varA);
+  add_corr_expfactor(builder, 2.f, varA, varB);
+  add_corr_expfactor(builder, 0.5f, varA, varC);
+  add_corr_expfactor(builder, 2.f, varA, varD);
+  add_corr_expfactor(builder, 0.5f, varA, varE);
 
-    std::unique_ptr<RandomField> subject = std::make_unique<RandomField>();
-    subject->copyConstFactor(
-        factor::FactorExponential{factor::Indicator{A, 0}, 1.f});
-    subject->addTunableFactor(make_corr_expfactor_ptr(A, B, 2.f));
-    subject->addTunableFactor(make_corr_expfactor_ptr(A, C, 0.5f));
-    subject->addTunableFactor(make_corr_expfactor_ptr(A, D, 2.f));
-    subject->addTunableFactor(make_corr_expfactor_ptr(A, E, 0.5f));
-    return subject;
-  });
+  model::RandomField model{structure::ModelBuilder::build(std::move(builder))};
+  ContextBuilder ctxt = ContextBuilder{}.set_samples(1000);
 
-  SECTION("Full training set") {
-    info.samplesMaker([](RandomField &reference) {
-      return make_good_trainset(reference, 1000);
-    });
-    SECTION("Gradient Descend Fixed") {
-      info.trainerInitialization([](::train::IterativeTrainer &trainer) {
-        static_cast<::train::GradientDescendFixed &>(trainer)
-            .setOptimizationStep(0.2f);
-      });
-      auto threads = GENERATE(1, 2, 4);
-      info.threads(threads);
-      CHECK(info.train<::train::GradientDescendFixed>());
-    }
-    info.checkLikelihoodToll(std::numeric_limits<float>::max());
-    SECTION("Gradient Descend Adaptive") {
-      CHECK(info.train<::train::GradientDescend<::train::YundaSearcher>>());
-    }
-    SECTION("Gradient Descend Conjugate") {
-      CHECK(info.train<
-            ::train::GradientDescendConjugate<::train::YundaSearcher>>());
-    }
-    SECTION("Quasi Newton") {
-      CHECK(info.train<
-            ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>());
-    }
+  SECTION("Gradient Descend Fixed") {
+    auto threads = GENERATE(1, 2, 4);
+    ctxt.set_threads(threads);
+    bool ok = train_test_with_init<::train::GradientDescendFixed>(
+        model, ctxt, [](auto &trainer) { trainer.setOptimizationStep(0.2f); });
+    CHECK(ok);
   }
 
-  SECTION("Stochastic training set") {
-    info.samplesMaker([](RandomField &reference) {
-          return make_good_trainset(reference, 5000);
-        })
-        .checkLikelihoodToll(std::numeric_limits<float>::max())
-        .stochGradPecentage(0.2f);
+  ctxt.set_check_likelihood_trend_toll(std::numeric_limits<float>::max());
 
-    SECTION("Gradient Descend Fixed") {
-      info.trainerInitialization([](::train::IterativeTrainer &trainer) {
-        static_cast<::train::GradientDescendFixed &>(trainer)
-            .setOptimizationStep(0.2f);
-      });
-
-      CHECK(info.train<::train::GradientDescendFixed>());
-    }
-    ///////////////// temporarely disabled /////////////////
-    // SECTION("Gradient Descend Adaptive") {
-    //   CHECK(info.train<::train::GradientDescend<::train::YundaSearcher>>());
-    // }
-    // SECTION("Gradient Descend Conjugate") {
-    //   CHECK(info.train<
-    //         ::train::GradientDescendConjugate<::train::YundaSearcher>>());
-    // }
-    // SECTION("Quasi Newton") {
-    //   CHECK(info.train<
-    //         ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>());
-    // }
+  SECTION("Gradient Descend Adaptive") {
+    bool ok = train_test<::train::GradientDescend<::train::YundaSearcher>>(
+        model, ctxt);
+    CHECK(ok);
+  }
+  SECTION("Gradient Descend Conjugate") {
+    bool ok =
+        train_test<::train::GradientDescendConjugate<::train::YundaSearcher>>(
+            model, ctxt);
+    CHECK(ok);
+  }
+  SECTION("Quasi Newton") {
+    bool ok =
+        train_test<::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>(
+            model, ctxt);
+    CHECK(ok);
   }
 }
 
+/*
 TEST_CASE("Small conditional random field tuning", "[train]") {
   LearningTest<ConditionalRandomField> info([]() {
     VariablePtr A = make_variable(3, "A");
@@ -315,8 +295,8 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
     reference_model_temp.copyConstFactor(
         factor::FactorExponential{factor::Indicator{A, 0}, 1.f});
     reference_model_temp.addTunableFactor(make_corr_expfactor_ptr(A, B, 2.f));
-    reference_model_temp.addTunableFactor(make_corr_expfactor_ptr(A, C, 0.5f));
-    reference_model_temp.setEvidence(B, 0);
+    reference_model_temp.addTunableFactor(make_corr_expfactor_ptr(A, C,
+0.5f)); reference_model_temp.setEvidence(B, 0);
     reference_model_temp.setEvidence(C, 0);
     return std::make_unique<ConditionalRandomField>(reference_model_temp,
                                                     false);
@@ -328,8 +308,8 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
 
   SECTION("Gradient Descend Fixed") {
     info.trainerInitialization([](::train::IterativeTrainer &trainer) {
-      static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
-          0.2f);
+      static_cast<::train::GradientDescendFixed
+&>(trainer).setOptimizationStep( 0.2f);
     });
     CHECK(info.train<::train::GradientDescendFixed>());
   }
@@ -346,129 +326,5 @@ TEST_CASE("Small conditional random field tuning", "[train]") {
           ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>());
   }
 }
-
-#include <sstream>
-
-namespace {
-void make_shared_w_chain(RandomField &model, std::size_t size, float alfa,
-                         float beta) {
-  auto make_var_name = [](char name, std::size_t pos) {
-    std::stringstream stream;
-    stream << name << std::to_string(pos);
-    return stream.str();
-  };
-
-  auto make_vars_set = [&model](const std::vector<std::string> &names) {
-    VariablesSet result;
-    for (const auto &name : names) {
-      result.emplace(model.findVariable(name));
-    }
-    return result;
-  };
-
-  for (std::size_t k = 0; k < size; ++k) {
-    auto Y = make_variable(3, make_var_name('Y', k));
-    auto X = make_variable(3, make_var_name('X', k));
-    auto pot_XY = make_corr_expfactor_ptr(X, Y, beta);
-    if (0 == k) {
-      model.addTunableFactor(pot_XY);
-    } else {
-      model.addTunableFactor(pot_XY, make_vars_set({"X0", "Y0"}));
-      auto pot_YY = make_corr_expfactor_ptr(
-          Y, model.findVariable(make_var_name('Y', k - 1)), alfa);
-      if (1 == k) {
-        model.addTunableFactor(pot_YY);
-      } else {
-        model.addTunableFactor(pot_YY, make_vars_set({"Y0", "Y1"}));
-      }
-    }
-  }
-}
-} // namespace
-
-TEST_CASE("Shared weights tuning", "[train]") {
-  auto chain_size = GENERATE(3, 6);
-
-  LearningTest<RandomField> info([size = chain_size]() {
-    auto subject = std::make_unique<RandomField>();
-    make_shared_w_chain(*subject, size, 0.7f, 1.2f);
-    return subject;
-  });
-  info.samplesMaker([](RandomField &reference) {
-        return make_good_trainset(reference, 1000);
-      })
-      .checkLikelihoodToll(std::numeric_limits<float>::max())
-      .checkMarginalsToll(std::numeric_limits<float>::max());
-
-  SECTION("Gradient Descend Fixed") {
-    info.trainerInitialization([](::train::IterativeTrainer &trainer) {
-      static_cast<::train::GradientDescendFixed &>(trainer).setOptimizationStep(
-          0.5f);
-    });
-    CHECK(info.train<::train::GradientDescendFixed>());
-  }
-  SECTION("Quasi Newton") {
-    CHECK(info.train<
-          ::train::QuasiNewton<::train::YundaSearcher, ::train::BFGS>>());
-  }
-}
-
-/*
-namespace {
-std::vector<std::size_t> make_ones(std::size_t size) {
-  std::vector<std::size_t> result;
-  result.resize(size);
-  for (auto &val : result) {
-    val = 0;
-  }
-  return result;
-}
-} // namespace
-
-TEST_CASE("Train with Pool efficiency", "[train][!mayfail]") {
-  auto depth = GENERATE(8, 10);
-
-  ScalableModel model{static_cast<std::size_t>(depth), 3, false};
-
-  std::unique_ptr<TrainSet> train_set;
-  {
-    const std::size_t train_set_size = 500;
-    std::vector<std::vector<std::size_t>> samples;
-    samples.reserve(train_set_size);
-    for (std::size_t k = 0; k < train_set_size; ++k) {
-      samples.emplace_back(make_ones(model.getAllVariables().size()));
-    }
-    train_set = std::make_unique<TrainSet>(samples);
-  }
-  auto measure_time =
-      [&](std::size_t threads,
-          FactorsTunableGetter &subject) -> std::chrono::nanoseconds {
-    ::train::GradientDescendFixed trainer;
-    trainer.setMaxIterations(20);
-    trainer.setOptimizationStep(static_cast<float>(1e-5));
-    return test::measure_time([&]() {
-      train_model(subject, trainer, *train_set,
-                  EFG::train::TrainInfo{threads, 1.f});
-    });
-  };
-
-  auto single_thread_time = measure_time(1, model);
-  auto multi_thread_time = measure_time(2, model);
-
-  CHECK(static_cast<double>(multi_thread_time.count()) <
-        static_cast<double>(single_thread_time.count()));
-
-  SECTION("conditional model") {
-    model.setEvidence(model.root(), 0);
-    ConditionalRandomField as_conditional_random_field(model, false);
-
-    single_thread_time = measure_time(1, as_conditional_random_field);
-    multi_thread_time = measure_time(2, as_conditional_random_field);
-
-    CHECK(static_cast<double>(multi_thread_time.count()) <
-          static_cast<double>(single_thread_time.count()));
-  }
-}
 */
-
 } // namespace EFG::test

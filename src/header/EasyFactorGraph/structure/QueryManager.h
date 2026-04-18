@@ -7,60 +7,73 @@
 
 #pragma once
 
-#include <EasyFactorGraph/structure/bases/BeliefAware.h>
-#include <EasyFactorGraph/structure/bases/PoolAware.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/misc/MemoryPool.h>
+#include <EasyFactorGraph/misc/VectorCache.h>
+#include <EasyFactorGraph/structure/BeliefManager.h>
 
 #include <algorithm>
+#include <optional>
+#include <ranges>
+#include <span>
+#include <variant>
 
-namespace EFG::strct {
-class QueryManager : virtual public StateAware,
-                     virtual public BeliefAware,
-                     virtual public PoolAware {
+namespace EFG::structure {
+class QueryManager {
 public:
   /**
-   * @return the marginal probabilty of the passed variable, i.e.
+   * @param the marginal probabilty of the passed variable, i.e.
    * P(var|observations), conditioned to the last set of evidences.
    * @param the involved variable
    * @param the number of threads to use for propagating the belief before
    * returning the result.
    * @throw when the passed variable name is not found
    */
-  std::vector<float> getMarginalDistribution(const categoric::VariablePtr &var,
-                                             std::size_t threads = 1) {
-    return marginalQuery_<PropagationKind::SUM>(var, threads);
+  void getMarginalDistribution(std::vector<float> &recipient,
+                               std::size_t variable_index) {
+    auto distr = getMarginal_<PropagationKind::SUM>(variable_index);
+    factor::getProbabilities(
+        factor::UnaryFactor{misc::TransferableBlock{distr}}, recipient);
   }
 
-  /**
-   * @brief same as getMarginalDistribution(const categoric::VariablePtr &,
-   * std::size_t), but passing the name of the variable, which is
-   * internally searched.
-   */
-  std::vector<float> getMarginalDistribution(const std::string &var,
-                                             std::size_t threads = 1);
+  void getJointMarginalDistributionProbabilities(
+      std::vector<float> &recipient, const std::vector<std::size_t> &vars) {
+    getJointMarginalDistributionProbabilities_(
+        recipient, std::span<const std::size_t>{vars});
+  }
 
-  /**
-   * @return a factor representing the joint distribution of the subgraph
-   * described by the passed set of variables.
-   * @param the involved variables
-   * @param the number of threads to use for propagating the belief before
-   * returning the result.
-   * @throw when some of the passed variable names are not found
-   */
-  factor::Factor
-  getJointMarginalDistribution(const categoric::Group &subgroup,
-                               std::size_t threads = 1);
+  template <typename... ARGS>
+  void getJointMarginalDistributionProbabilities(std::vector<float> &recipient,
+                                                 std::size_t var_first,
+                                                 std::size_t var_second,
+                                                 ARGS &&...others) {
+    auto &vars = cache_.get_buffer<0>();
+    vars.push_back(var_first);
+    vars.push_back(var_second);
+    (vars.push_back(others), ...);
 
-  /**
-   * @brief same as getJointMarginalDistribution(const categoric::VariablesSet
-   * &, std::size_t), but passing the names of the variables, which are
-   * internally searched.
-   *
-   * @throw in case the passed set of variables is not representative of a valid
-   * group
-   */
-  factor::Factor
-  getJointMarginalDistribution(const std::vector<std::string> &subgroup,
-                               std::size_t threads = 1);
+    getJointMarginalDistributionProbabilities_(
+        recipient, std::span<const std::size_t>{vars});
+  }
+
+  template <std::size_t N>
+  factor::FactorT<N, factor::NullTrasform>
+  getJointMarginalDistribution(const std::array<std::size_t, N> &vars) {
+    static_assert(1 < N,
+                  "Joint distribution shall involve at least 2 variables!");
+
+    auto &buffer = cache_.get_buffer<1>();
+    getJointMarginalDistributionProbabilities_(
+        buffer, std::span<const std::size_t>{vars.data(), N});
+
+    std::array<categoric::VarStateSize, N> vars_sizes;
+    for (std::size_t i = 0; i < vars.size(); ++i) {
+      vars_sizes[i] = context_->nodes[i].var_size;
+    }
+
+    return factor::FactorT<N, factor::NullTrasform>::from_compact_domain(
+        vars_sizes, buffer);
+  }
 
   /**
    * @return the Maximum a Posteriori estimation of a specific variable in
@@ -70,46 +83,54 @@ public:
    * returning the result.
    * @throw when the passed variable name is not found
    */
-  std::size_t getMAP(const categoric::VariablePtr &var,
-                     std::size_t threads = 1);
-
-  /**
-   * @brief same as getMAP(const categoric::VariablePtr &,
-   * std::size_t), but passing the name of the variable, which is
-   * internally searched.
-   */
-  std::size_t getMAP(const std::string &var, std::size_t threads = 1);
+  categoric::VarStateSize getMAP(std::size_t variable_index) {
+    auto distr = getMarginal_<PropagationKind::MAP>(variable_index);
+    auto it = std::max_element(distr.begin(), distr.end());
+    return static_cast<std::size_t>(it - distr.begin());
+  }
 
   /**
    * @return the Maximum a Posteriori estimation of the hidden variables,
-   * conditioned to the last set of evidences. Values are ordered with the same
+   * conditioned to the last set of evidences. Values are ordered with the
+   same
    * order used by the set of variables returned in getHiddenVariables()
    * @param the number of threads to use for propagating the belief before
    * returning the result.
    */
-  std::vector<size_t> getHiddenSetMAP(std::size_t threads = 1);
+  void getHiddenSetMAP(std::vector<categoric::VarStateSize> &recipient);
+
+  const auto &getStructure() const { return *context_; }
+
+  ~QueryManager();
+
+protected:
+  QueryManager();
+
+  void init(StructurePtr context) { context_ = context; }
 
 private:
-  static void throwInexistentVar(const std::string &var);
-
-  std::vector<float> getMarginalDistribution(const NodeLocation &location);
-
-  template <PropagationKind Kind> void checkPropagation_(std::size_t threads) {
-    if (wouldNeedPropagation(Kind)) {
-      ScopedPoolActivator activator(*this, threads);
-      propagateBelief(Kind);
-    }
-  }
-
   template <PropagationKind Kind>
-  std::vector<float> marginalQuery_(const categoric::VariablePtr &var,
-                                    std::size_t threads) {
-    checkPropagation_<Kind>(threads);
-    auto location = locate(var);
-    if (!location) {
-      throwInexistentVar(var->name());
+  std::span<float> getMarginal_(std::size_t variable_index) {
+    if (context_->nodes.size() <= variable_index) {
+      throw Error{
+          "Cannot perform marginal query on an index that is out of range"};
     }
-    return getMarginalDistribution(*location);
+
+    context_->getManager<BeliefManager>()->template propagateBelief<Kind>();
+    return gatherNodeUnaries_(variable_index);
   }
+
+  std::span<float> gatherNodeUnaries_(std::size_t variable_index);
+
+  void
+  getJointMarginalDistributionProbabilities_(std::vector<float> &recipient,
+                                             std::span<const std::size_t> vars);
+
+  void *joint_distribution_builder_{nullptr};
+
+  misc::VectorCache<std::size_t, float> cache_;
+  factor::UnaryFactorsMerger merger_;
+
+  StructurePtr context_;
 };
-} // namespace EFG::strct
+} // namespace EFG::structure

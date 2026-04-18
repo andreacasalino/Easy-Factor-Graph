@@ -6,16 +6,14 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/factor/SimpleCorrelations.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
-#include <EasyFactorGraph/trainable/ModelTrainer.h>
 
 using namespace EFG::model;
 using namespace EFG::factor;
 using namespace EFG::categoric;
-using namespace EFG::strct;
-using namespace EFG::io;
-using namespace EFG::train;
+using namespace EFG::structure;
 
 // you can also use another iterative trainer
 #include <TrainingTools/iterative/solvers/QuasiNewton.h>
@@ -31,34 +29,35 @@ using namespace std;
 
 int main() {
   SAMPLE_SECTION("Tuning of a conditional random field ", "4.7", [] {
-    RandomField temporary_imported_structure;
-    xml::Importer::importFromFile(temporary_imported_structure,
-                                  SAMPLE_FOLDER +
-                                      std::string{"cond_graph.xml"});
-    ConditionalRandomField conditional_field(temporary_imported_structure,
-                                             false);
+    auto path = std::filesystem::path{SAMPLE_FOLDER} / "cond_graph.json";
+    ConditionalRandomField model{std::move(from_file(path))};
 
     cout << "creating the training set, might take a while" << endl;
-    TrainSet train_set(conditional_field.makeTrainSet(
-        GibbsSampler::SamplesGenerationContext{30, 50, 0}, 1.f, 4));
+    auto samples = model.makeSamplesShared(
+        GibbsSampler::SamplesGenerationContext{1000, 50, 0});
     cout << "training set created" << endl;
 
-    const auto expected_weights = conditional_field.getWeights();
+    std::vector<float> expected_weights;
+    model.getTunableWeights(expected_weights);
 
     // set all weights to 1 and train the model on the previously generated
     // train set
-    set_ones(conditional_field);
+    std::vector<float> weights;
+    weights.resize(1.f, expected_weights.size());
+    model.setTunableWeights(weights);
+
     QuasiNewton trainer;
-    trainer.setMaxIterations(15);
+    trainer.setMaxIterations(100);
     cout << "training the model, this might take a while as conditional "
             "random "
             "field are much more computationally demanding"
          << endl;
     trainer.enablePrintAdvancement();
-    train_model(conditional_field, trainer, train_set, TrainInfo{4, 1.f});
+    EFG::structure::train_model(model, trainer, samples);
 
     cout << "expected weights:    " << expected_weights << endl;
-    cout << "wieghts after train: " << conditional_field.getWeights() << endl;
+    model.getTunableWeights(weights);
+    cout << "weights after train: " << weights << endl;
   });
 
   return EXIT_SUCCESS;

@@ -1,0 +1,174 @@
+{
+    "binary_factors": [
+        {
+            "values": "corr",
+            "w": 2.0,
+            "first_var": "X1",
+            "second_var": "Y1",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "X1",
+            "second_var": "Y2",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 0.6,
+            "first_var": "X2",
+            "second_var": "Y2",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 2.0,
+            "first_var": "X3",
+            "second_var": "Y2",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "X4",
+            "second_var": "Y2",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 0.6,
+            "first_var": "X2",
+            "second_var": "Y3",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 2.0,
+            "first_var": "Y1",
+            "second_var": "Y2",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "Y1",
+            "second_var": "Y4",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 0.6,
+            "first_var": "Y1",
+            "second_var": "Y5",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 2.0,
+            "first_var": "Y2",
+            "second_var": "Y3",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "Y2",
+            "second_var": "Y4",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 0.6,
+            "first_var": "Y3",
+            "second_var": "Y4",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 2.0,
+            "first_var": "Y4",
+            "second_var": "Y6",
+            "tunable": true
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "Y5",
+            "second_var": "Y6",
+            "tunable": true
+        }
+    ],
+    "variables": [
+        {
+            "description": {
+                "isPermanentEvidence": true,
+                "label": "X1"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": true,
+                "label": "X2"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": true,
+                "label": "X3"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": true,
+                "label": "X4"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "Y1"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "Y2"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "Y3"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "Y4"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "Y5"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "Y6"
+            },
+            "size": 3
+        }
+    ]
+}

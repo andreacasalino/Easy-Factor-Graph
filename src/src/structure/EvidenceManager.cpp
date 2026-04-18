@@ -6,130 +6,133 @@
  **/
 
 #include <EasyFactorGraph/Error.h>
-#include <EasyFactorGraph/misc/Visitor.h>
+#include <EasyFactorGraph/misc/Generator.h>
 #include <EasyFactorGraph/structure/EvidenceManager.h>
-#include <EasyFactorGraph/structure/bases/StateAware.h>
 
 #include <algorithm>
+#include <ranges>
+#include <span>
+#include <unordered_map>
 
-namespace EFG::strct {
-void EvidenceSetter::setEvidence(const categoric::VariablePtr &variable,
-                                 std::size_t value) {
-  if (variable->size() <= value) {
-    throw Error::make(std::to_string(value),
-                      " is an invalid evidence for variable ",
-                      variable->name());
-  }
-  auto info = locate(variable);
-  if (!info.has_value()) {
-    throw Error::make(variable->name(), " is a non existing variable");
-  }
-  auto *node = info->node;
-  Evidences::iterator evidence_location;
-  VisitorConst<HiddenClusters::iterator, Evidences::iterator>{
-      [&](const HiddenClusters::iterator &it) {
-        while (!node->active_connections.empty()) {
-          Node::disable(*node, *node->active_connections.begin()->first);
-        }
-        // update clusters
-        auto &state = stateMutable();
-        if (1 == it->nodes.size()) {
-          state.clusters.erase(it);
-        } else {
-          auto nodes = it->nodes;
-          state.clusters.erase(it);
-          nodes.erase(node);
-          for (auto &&cluster : compute_clusters(nodes)) {
-            state.clusters.emplace_back(std::move(cluster));
-          }
-        }
-        evidence_location =
-            state.evidences.emplace(node->variable, value).first;
-      },
-      [&](const Evidences::iterator &it) {
-        evidence_location = it;
-        evidence_location->second = value;
-      }}
-      .visit(info->location);
-
-  for (auto &[connected_node, connection] : node->disabled_connections) {
-    auto connection_it = connected_node->disabled_connections.find(node);
-    connection_it->second.message = std::make_unique<factor::Evidence>(
-        *connection_it->second.factor, node->variable,
-        evidence_location->second);
-    connected_node->merged_unaries.reset();
-  }
-  resetBelief();
-}
-
-void EvidenceSetter::setEvidence(const std::string &variable,
-                                 std::size_t value) {
-  setEvidence(findVariable(variable), value);
-}
-
-void EvidenceRemover::removeEvidence_(const categoric::VariablePtr &variable) {
-  auto &state = stateMutable();
-  auto evidence_it = state.evidences.find(variable);
-  if (evidence_it == state.evidences.end()) {
-    throw Error::make(variable->name(), " is not an evidence");
-  }
-  resetBelief();
-  state.evidences.erase(evidence_it);
-  auto &node = *state.nodes[variable].get();
-  while (!node.disabled_connections.empty()) {
-    auto it = node.disabled_connections.begin();
-    it->first->merged_unaries.reset();
-    Node::activate(node, *it->first, it->second.factor);
-  }
-  node.merged_unaries.reset();
-}
-
-void EvidenceRemover::removeEvidence(const categoric::VariablePtr &variable) {
-  removeEvidence_(variable);
-  resetState();
-}
-
-void EvidenceRemover::removeEvidence(const std::string &variable) {
-  removeEvidence(findVariable(variable));
-}
-
-void EvidenceRemover::removeEvidences(
-    const categoric::VariablesSet &variables) {
-  if (variables.empty()) {
+namespace EFG::structure {
+ScopedEvidenceUpdate::~ScopedEvidenceUpdate() {
+  if (ctxt_.vars_involved_by_update.empty() &&
+      ctxt_.clusters_involved_by_update.empty()) {
     return;
   }
-  for (const auto &variable : variables) {
-    removeEvidence_(variable);
+
+  for (const auto &[_, it] : ctxt_.clusters_involved_by_update) {
+    ctxt_.vars_involved_by_update.insert(ctxt_.vars_involved_by_update.end(),
+                                         it->variables.begin(),
+                                         it->variables.end());
+    ctxt_.structure->clusters.erase(it);
   }
-  resetState();
+  // newly generated clusters will start having a null previous belief
+  // propagation information
+  ctxt_.structure->updateClusters(
+      misc::GenFromBlock<std::size_t>{ctxt_.vars_involved_by_update});
 }
 
-void EvidenceRemover::removeEvidences(
-    const std::unordered_set<std::string> &variables) {
-  categoric::VariablesSet vars;
-  for (const auto &name : variables) {
-    vars.emplace(findVariable(name));
+void EvidenceSetManager::setEvidences_(const std::vector<Evidence> &ev) {
+  ScopedEvidenceUpdate guard{context_};
+  for (auto e : ev) {
+    guard.validateEvidence<true>(e.var_index, e.value);
   }
-  removeEvidences(vars);
+  for (auto e : ev) {
+    setEvidence_(e, guard);
+  }
 }
 
-void EvidenceRemover::removeAllEvidences() {
-  const auto &state = this->state();
-  while (!state.evidences.empty()) {
-    auto var = state.evidences.begin()->first;
-    removeEvidence_(var);
+void EvidenceSetManager::setEvidence_(const Evidence &ev,
+                                      ScopedEvidenceUpdate &updater) {
+  auto [var_index, value] = ev;
+
+  auto &structure = *context_.structure;
+  auto &node = structure.nodes[var_index];
+  if (node.evidence == value) {
+    return;
   }
-  resetState();
+  node.evidence = value;
+
+  // recompute messages sent by the evidence
+  for (auto &msg_data : node.incoming_messages) {
+    msg_data.is_available = false;
+
+    std::visit(
+        [&](const auto &binary_factor) {
+          auto &msg_twin = structure.getMessageData(msg_data.twin_idx);
+          auto msg_twin_message = structure.getMessageValues(msg_twin);
+          make_evidence_message(
+              msg_twin_message, binary_factor,
+              msg_data.factor_info.receiver_is_first_in_factor, value);
+          msg_twin.is_available = true;
+
+          auto it = structure.nodes[msg_data.factor_info.sender_index]
+                        .hidden_cluster_it;
+          if (it != structure.clusters.end()) {
+            it->last_performed_propagation.reset();
+          }
+        },
+        structure.binary_factors[msg_data.factor_info.factor_index].factor);
+  }
+
+  auto it = node.hidden_cluster_it;
+  if (it != structure.clusters.end()) {
+    // was hidden before
+    auto it_cl =
+        std::find(it->variables.begin(), it->variables.end(), var_index);
+    it->variables.erase(it_cl);
+    node.hidden_cluster_it = structure.clusters.end();
+    updater.addCluster(it);
+  }
 }
 
-void EvidenceRemover::resetState() {
-  auto &state = stateMutable();
-  std::unordered_set<Node *> nodes;
-  for (auto &[var, node] : state.nodes) {
-    if (state.evidences.find(var) == state.evidences.end()) {
-      nodes.emplace(node.get());
+template <bool Validate>
+void EvidenceRemoveManager::removeEvidences_(
+    const std::vector<std::size_t> &var) {
+  ScopedEvidenceUpdate guard{context_};
+  if constexpr (Validate) {
+    for (auto v : var) {
+      guard.validateEvidence<false>(v, 0);
     }
   }
-  state.clusters = compute_clusters(nodes);
+  for (auto v : var) {
+    removeEvidence_(v, guard);
+  }
 }
-} // namespace EFG::strct
+
+void EvidenceRemoveManager::removeEvidence_(std::size_t var_index,
+                                            ScopedEvidenceUpdate &updater) {
+  auto &structure = *context_.structure;
+  auto &node = structure.nodes[var_index];
+  if (node.evidence == Evidence::NOT_AN_EVIDENCE) {
+    return;
+  }
+  node.evidence = Evidence::NOT_AN_EVIDENCE;
+  updater.addVar(var_index);
+  for (auto &msg : structure.get_active_incoming(var_index)) {
+    msg.is_available = false;
+    structure.getMessageData(msg.twin_idx).is_available = false;
+    updater.addCluster(
+        structure.nodes[msg.factor_info.sender_index].hidden_cluster_it);
+  }
+}
+
+void EvidenceRemoveManager::removeAllEvidences() {
+  auto &structure = *context_.structure;
+  auto &buffer = this->ev_.get_buffer();
+  for (std::size_t index = 0; index < structure.nodes.size(); ++index) {
+    if (structure.nodes[index].evidence != Evidence::NOT_AN_EVIDENCE) {
+      buffer.push_back(index);
+    }
+  }
+  removeEvidences_<false>(buffer);
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template void EvidenceRemoveManager::removeEvidences_<true>(
+    const std::vector<std::size_t> &var);
+template void EvidenceRemoveManager::removeEvidences_<false>(
+    const std::vector<std::size_t> &var);
+} // namespace EFG::structure

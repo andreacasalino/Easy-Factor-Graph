@@ -1,0 +1,71 @@
+{
+    "binary_factors": [
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A",
+            "second_var": "B"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "B",
+            "second_var": "C"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "B",
+            "second_var": "D"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "C",
+            "second_var": "D"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "E",
+            "second_var": "D"
+        }
+    ],
+    "variables": [
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "A"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "B"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "C"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "D"
+            },
+            "size": 2
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "E"
+            },
+            "size": 2
+        }
+    ]
+}
