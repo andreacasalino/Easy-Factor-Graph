@@ -15,12 +15,6 @@ using namespace EFG::factor;
 using namespace EFG::categoric;
 using namespace EFG::structure;
 
-// you can also use another iterative trainer
-#include <TrainingTools/iterative/solvers/GradientDescend.h>
-#include <TrainingTools/iterative/solvers/QuasiNewton.h>
-
-using namespace train;
-
 // just a bunch of utilities needed by the sample
 #include <Printing.h>
 #include <SampleSection.h>
@@ -32,8 +26,7 @@ using namespace std;
 /// Then, set all weights of the model to 1 and try to tune the model with the
 /// previously generated train set.
 /// The obtained weights are expected to be close to the initial ones.
-void train_model(RandomField &model_to_tune, ::train::IterativeTrainer &tuner,
-                 std::size_t max_iterations, std::size_t train_set_size);
+void train_model(RandomField &model_to_tune, std::size_t train_set_size);
 
 void add_to_model(ModelBuilder &builder, float w, std::size_t var_a,
                   std::size_t var_b, VarStateSize var_size) {
@@ -58,8 +51,7 @@ int main() {
 
     RandomField model{ModelBuilder::build(std::move(builder))};
 
-    ::train::QuasiNewton tuner;
-    train_model(model, tuner, 50, 500);
+    train_model(model, 500);
   });
 
   SAMPLE_SECTION("Medium tunable model ", "4.6.2", [] {
@@ -86,8 +78,7 @@ int main() {
 
     RandomField model{ModelBuilder::build(std::move(builder))};
 
-    ::train::QuasiNewton tuner;
-    train_model(model, tuner, 50, 1500);
+    train_model(model, 1500);
   });
 
   SAMPLE_SECTION("Complex tunable model ", "4.6.3", [] {
@@ -102,8 +93,7 @@ int main() {
     model.getMarginalDistribution(marginals_pre, v8);
     model.removeAllEvidences();
 
-    ::train::QuasiNewton tuner;
-    train_model(model, tuner, 50, 2000);
+    train_model(model, 2000);
 
     // get the marginal distribution of a variable after training ... the
     // distribution shall be close
@@ -118,8 +108,7 @@ int main() {
   return EXIT_SUCCESS;
 }
 
-void train_model(RandomField &model_to_tune, ::train::IterativeTrainer &tuner,
-                 std::size_t max_iterations, std::size_t train_set_size) {
+void train_model(RandomField &model_to_tune, std::size_t train_set_size) {
   std::vector<float> expected_weights;
   model_to_tune.getTunableWeights(expected_weights);
 
@@ -131,8 +120,7 @@ void train_model(RandomField &model_to_tune, ::train::IterativeTrainer &tuner,
   // train set
   std::vector<float> weights;
   weights.resize(1.f, expected_weights.size());
-  tuner.setMaxIterations(max_iterations);
-  EFG::structure::train_model(model_to_tune, tuner, samples);
+  EFG::structure::Trainer{}.train_model(model_to_tune, samples);
 
   cout << "expected weights:    " << expected_weights << endl;
   model_to_tune.getTunableWeights(weights);

@@ -15,11 +15,6 @@ using namespace EFG::factor;
 using namespace EFG::categoric;
 using namespace EFG::structure;
 
-// you can also use another iterative trainer
-#include <TrainingTools/iterative/solvers/QuasiNewton.h>
-
-using namespace train;
-
 // just a bunch of utilities needed by the sample
 #include <Printing.h>
 #include <SampleSection.h>
@@ -46,14 +41,11 @@ int main() {
     weights.resize(1.f, expected_weights.size());
     model.setTunableWeights(weights);
 
-    QuasiNewton trainer;
-    trainer.setMaxIterations(100);
     cout << "training the model, this might take a while as conditional "
             "random "
             "field are much more computationally demanding"
          << endl;
-    trainer.enablePrintAdvancement();
-    EFG::structure::train_model(model, trainer, samples);
+    EFG::structure::Trainer{}.train_model(model, samples);
 
     cout << "expected weights:    " << expected_weights << endl;
     model.getTunableWeights(weights);

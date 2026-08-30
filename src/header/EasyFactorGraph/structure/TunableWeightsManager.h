@@ -154,18 +154,32 @@ private:
 // More sophisticated ones are available at
 // https://github.com/andreacasalino/TrainingTools.git
 struct Trainer {
-  struct Context {
-    std::size_t max_iterations{1000};
-    float gradient_rescale{0.001f};
-    float advance_toll_percentage{0.05};
-  };
+  Trainer() = default;
+
+  Trainer &max_iterations(std::size_t val) {
+    max_iterations_ = val;
+    return *this;
+  }
+  Trainer &gradient_rescale(float val) {
+    gradient_rescale_ = val;
+    return *this;
+  }
+  Trainer &advance_toll_percentage(float val) {
+    advance_toll_percentage_ = val;
+    return *this;
+  }
 
   /**
    * @return the number of actually performed iterations
    *
    */
-  static std::size_t
-  train_model(TunableWeightsManager &model, Context ctxt,
-              std::shared_ptr<const misc::Samples> training_set);
+  std::size_t
+  train_model(TunableWeightsManager &model,
+              std::shared_ptr<const misc::Samples> training_set) const;
+
+private:
+  std::size_t max_iterations_{1000};
+  float gradient_rescale_{0.001f};
+  float advance_toll_percentage_{0.05};
 };
 } // namespace EFG::structure
