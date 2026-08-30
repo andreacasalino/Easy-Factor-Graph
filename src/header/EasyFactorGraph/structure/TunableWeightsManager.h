@@ -13,9 +13,6 @@
 #include <EasyFactorGraph/misc/WorkerPool.h>
 #include <EasyFactorGraph/structure/Structure.h>
 
-#include <TrainingTools/ParametersAware.h>
-#include <TrainingTools/Trainer.h>
-
 #include <memory>
 
 namespace EFG::structure {
@@ -152,8 +149,23 @@ private:
   std::vector<ComputationContext> cmpContext_{ComputationContext{}};
 };
 
-#ifdef EFG_LEARNING_ENABLED
-void train_model(TunableWeightsManager &model, ::train::Trainer &trainer,
-                 std::shared_ptr<const misc::Samples> training_set);
-#endif
+// Simple gradient descend.
+//
+// More sophisticated ones are available at
+// https://github.com/andreacasalino/TrainingTools.git
+struct Trainer {
+  struct Context {
+    std::size_t max_iterations{1000};
+    float gradient_rescale{0.001f};
+    float advance_toll_percentage{0.05};
+  };
+
+  /**
+   * @return the number of actually performed iterations
+   *
+   */
+  static std::size_t
+  train_model(TunableWeightsManager &model, Context ctxt,
+              std::shared_ptr<const misc::Samples> training_set);
+};
 } // namespace EFG::structure

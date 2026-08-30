@@ -282,6 +282,29 @@ float TunableWeightsManager::BinaryConditionedTuner<
   return res;
 }
 
+std::size_t
+Trainer::train_model(TunableWeightsManager &model, Context ctxt,
+                     std::shared_ptr<const misc::Samples> training_set) {
+  std::vector<float> w_prev, w, w_grad;
+  model.getTunableWeights(w_prev);
+  auto gradient = model.gradient(training_set);
+  std::size_t i = 0;
+  for (; i < ctxt.max_iterations; ++i) {
+    gradient.get(w_grad);
+    w = w_prev;
+    float adv_prctg{0};
+    for (std::size_t k = 0; k < w.size(); ++k) {
+      w[k] += ctxt.gradient_rescale * w_grad[k];
+      adv_prctg = std::max<float>(adv_prctg,
+                                  std::abs(w[k] - w_prev[k]) / std::abs(w[k]));
+    }
+    if (adv_prctg < ctxt.advance_toll_percentage) {
+      break;
+    }
+  }
+  return i;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template float
@@ -290,57 +313,4 @@ TunableWeightsManager::BinaryConditionedTuner<true>::getGradientBeta(
 template float
 TunableWeightsManager::BinaryConditionedTuner<false>::getGradientBeta(
     ComputationContext &);
-
-#ifdef EFG_LEARNING_ENABLED
-
-namespace {
-::train::Vect to_Vect(const std::vector<float> &subject) {
-  ::train::Vect result(subject.size());
-  for (std::size_t k = 0; k < subject.size(); ++k) {
-    result(static_cast<Eigen::Index>(k)) = static_cast<double>(subject[k]);
-  }
-  return result;
-}
-
-void to_vector(const ::train::Vect &subject, std::vector<float> &recipient) {
-  recipient.clear();
-  for (auto val : subject) {
-    recipient.push_back(static_cast<float>(val));
-  }
-}
-
-class ModelWrapper : public ::train::ParametersAware {
-public:
-  ModelWrapper(TunableWeightsManager &source,
-               std::shared_ptr<const misc::Samples> training_set)
-      : source_(source), gradient_{source.gradient(training_set)} {}
-
-  ::train::Vect getParameters() const final {
-    source_.getTunableWeights(buffer_);
-    return to_Vect(buffer_);
-  };
-
-  void setParameters(const ::train::Vect &w) final {
-    to_vector(w, buffer_);
-    source_.setTunableWeights(buffer_);
-  }
-
-  ::train::Vect getGradient() const final {
-    gradient_.get(buffer_);
-    return to_Vect(buffer_);
-  }
-
-private:
-  TunableWeightsManager &source_;
-  mutable TunableWeightsManager::TunableWeightsGradient gradient_;
-  mutable std::vector<float> buffer_;
-};
-} // namespace
-
-void train_model(TunableWeightsManager &model, ::train::Trainer &trainer,
-                 std::shared_ptr<const misc::Samples> training_set) {
-  ModelWrapper wrapper{model, training_set};
-  trainer.train(wrapper);
-}
-#endif
 } // namespace EFG::structure
