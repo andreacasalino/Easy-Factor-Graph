@@ -35,41 +35,81 @@ private:
   char *buffer_;
 };
 
-template <typename T> struct TransferableBlock {
-  TransferableBlock() = default;
+template <typename T> struct Slot {
+  Slot() = default;
 
-  ~TransferableBlock() {
+  Slot(const Slot &) = delete;
+  Slot &operator=(const Slot &) = delete;
+
+  Slot(Slot &&o) noexcept;
+  Slot &operator=(Slot &&o) noexcept;
+
+  ~Slot() {
     if (is_heap_allocated_) {
       delete[] block.data();
     }
   }
 
-  TransferableBlock(std::size_t capacity)
-      : block{new T[capacity], capacity}, is_heap_allocated_{true} {}
-
-  explicit TransferableBlock(std::span<T> blck)
-      : block{blck}, is_heap_allocated_{false} {}
-
-  static TransferableBlock<T> clone(std::span<const T> blcks) {
-    TransferableBlock<T> res{blcks.size()};
-    std::memcpy(res.block.data(), blcks.data(), sizeof(T) * blcks.size());
+  static Slot makeNonOwning(std::span<T> the_view) {
+    Slot res{0};
+    res.block = the_view;
     return res;
   }
 
-  TransferableBlock(const TransferableBlock &) = delete;
-  TransferableBlock &operator=(const TransferableBlock &) = delete;
-
-  TransferableBlock(TransferableBlock &&o) noexcept;
-  TransferableBlock &operator=(TransferableBlock &&o) noexcept;
+  static Slot makeOwning(std::span<const T> the_view) {
+    Slot res{the_view.size()};
+    std::memcpy(res.block.data(), the_view.data(), sizeof(T) * the_view.size());
+    return res;
+  }
 
   void transferIntoPool(misc::MemoryPool &pool);
 
   std::size_t getMemoryFootprint() const { return sizeof(T) * block.size(); }
 
-  std::span<T> block;
+  auto get() const { return block; }
 
 private:
+  Slot(std::size_t capacity) {
+    if (0 < capacity) {
+      block = {new T[capacity], capacity};
+      is_heap_allocated_ = true;
+    }
+  }
+
+  std::span<T> block;
   bool is_heap_allocated_{false};
+};
+
+class ValuesPool {
+public:
+  ValuesPool();
+
+  template <typename SlotsSizesRng>
+  static std::pair<ValuesPool, std::size_t> make(SlotsSizesRng rng) {
+    std::pair<ValuesPool, std::size_t> res;
+    res.second = 0;
+    for (auto len : rng) {
+      auto &added = res.first.slots_.emplace_back();
+      added.first = res.second;
+      res.second += len;
+      added.second = res.second;
+    }
+    return res;
+  }
+
+  std::span<float> get_slot(std::size_t slot_idx, std::span<float> giver) {
+    auto [begin, end] = slots_[slot_idx];
+    return {giver.begin() + begin, giver.begin() + end};
+  }
+
+  std::span<const float> get_slot(std::size_t slot_idx,
+                                  std::span<const float> giver) const {
+    auto [begin, end] = slots_[slot_idx];
+    return {giver.begin() + begin, giver.begin() + end};
+  }
+
+private:
+  std::vector<std::pair<std::size_t, std::size_t>> slots_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -93,15 +133,13 @@ template <typename T> std::span<T> MemoryPool::claimFromPool(std::size_t size) {
 }
 
 template <typename T>
-TransferableBlock<T>::TransferableBlock(TransferableBlock &&o) noexcept
+Slot<T>::Slot(Slot &&o) noexcept
     : block{o.block}, is_heap_allocated_{o.is_heap_allocated_} {
   o.block = {};
   o.is_heap_allocated_ = false;
 }
 
-template <typename T>
-TransferableBlock<T> &
-TransferableBlock<T>::operator=(TransferableBlock<T> &&o) noexcept {
+template <typename T> Slot<T> &Slot<T>::operator=(Slot<T> &&o) noexcept {
   if (is_heap_allocated_) {
     delete[] block.data();
   }
@@ -112,8 +150,7 @@ TransferableBlock<T>::operator=(TransferableBlock<T> &&o) noexcept {
   return *this;
 }
 
-template <typename T>
-void TransferableBlock<T>::transferIntoPool(misc::MemoryPool &pool) {
+template <typename T> void Slot<T>::transferIntoPool(misc::MemoryPool &pool) {
   auto new_block = pool.cloneIntoPool(block);
   if (is_heap_allocated_) {
     delete[] block.data();
@@ -121,36 +158,4 @@ void TransferableBlock<T>::transferIntoPool(misc::MemoryPool &pool) {
   is_heap_allocated_ = false;
   block = new_block;
 }
-
-class NumbersPoolSizes {
-public:
-  NumbersPoolSizes();
-
-  template <typename SlotsSizesRng>
-  static std::pair<NumbersPoolSizes, std::size_t> make(SlotsSizesRng rng) {
-    std::pair<NumbersPoolSizes, std::size_t> res;
-    res.second = 0;
-    for (auto len : rng) {
-      auto &added = res.first.slots_.emplace_back();
-      added.first = res.second;
-      res.second += len;
-      added.second = res.second;
-    }
-    return res;
-  }
-
-  std::span<float> get_slot(std::size_t slot_idx, std::vector<float> &giver) {
-    auto [begin, end] = slots_[slot_idx];
-    return {giver.begin() + begin, giver.begin() + end};
-  }
-
-  std::span<const float> get_slot(std::size_t slot_idx,
-                                  const std::vector<float> &giver) const {
-    auto [begin, end] = slots_[slot_idx];
-    return {giver.begin() + begin, giver.begin() + end};
-  }
-
-private:
-  std::vector<std::pair<std::size_t, std::size_t>> slots_;
-};
 } // namespace EFG::misc

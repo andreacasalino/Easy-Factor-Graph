@@ -115,7 +115,7 @@ int main() {
 
           cout << endl << "Prob(A1=0, A2=0, A3=0, A4=0 | X1=0,X2=0)" << endl;
           cout << getEmpiricalProbabilityInsideHidden(
-                      {{A1, 0}, {A2, 0}, {A3, 0}, {A4, 0}}, *samples,
+                      {{A1, 0}, {A2, 0}, {A3, 0}, {A4, 0}}, samples,
                       graph.getStructure())
                << "  empirical values from Gibbs sampling" << endl;
           cout << marginal_A_1234.get<true>({0, 0, 0, 0}) / images_sum
@@ -123,7 +123,7 @@ int main() {
 
           cout << endl << "Prob(A1=1, A2=1, A3=0, A4=0 | X1=0,X2=0)" << endl;
           cout << getEmpiricalProbabilityInsideHidden(
-                      {{A1, 1}, {A2, 1}, {A3, 0}, {A4, 0}}, *samples,
+                      {{A1, 1}, {A2, 1}, {A3, 0}, {A4, 0}}, samples,
                       graph.getStructure())
                << "  empirical values from Gibbs sampling" << endl;
           cout << marginal_A_1234.get<true>({1, 1, 0, 0}) / images_sum
@@ -141,7 +141,7 @@ int main() {
 
           cout << endl << "Prob(B1=0, B2=0, B3=0 | X1=0,X2=0)" << endl;
           cout << getEmpiricalProbabilityInsideHidden(
-                      {{B1, 0}, {B2, 0}, {B3, 0}}, *samples,
+                      {{B1, 0}, {B2, 0}, {B3, 0}}, samples,
                       graph.getStructure())
                << "  empirical values from Gibbs sampling" << endl;
           cout << marginal_B_123.get<true>({0, 0, 0}) / images_sum
@@ -149,7 +149,7 @@ int main() {
 
           cout << endl << "Prob(B1=1, B2=1, B3=0 | X1=0,X2=0)" << endl;
           cout << getEmpiricalProbabilityInsideHidden(
-                      {{B1, 1}, {B2, 1}, {B3, 0}}, *samples,
+                      {{B1, 1}, {B2, 1}, {B3, 0}}, samples,
                       graph.getStructure())
                << "  empirical values from Gibbs sampling" << endl;
           cout << marginal_B_123.get<true>({1, 1, 0}) / images_sum
@@ -173,7 +173,7 @@ int main() {
 
           cout << endl << "Prob(A1=0, A2=0, A3=0, A4=0 | X1=1,X2=1)" << endl;
           cout << getEmpiricalProbabilityInsideHidden(
-                      {{A1, 0}, {A2, 0}, {A3, 0}, {A4, 0}}, *samples,
+                      {{A1, 0}, {A2, 0}, {A3, 0}, {A4, 0}}, samples,
                       graph.getStructure())
                << "  empirical values from Gibbs sampling" << endl;
           cout << marginal_A_1234.get<true>({0, 0, 0, 0}) / images_sum
@@ -181,7 +181,7 @@ int main() {
 
           cout << endl << "Prob(A1=1, A2=1, A3=0, A4=0 | X1=1,X2=1)" << endl;
           cout << getEmpiricalProbabilityInsideHidden(
-                      {{A1, 1}, {A2, 1}, {A3, 0}, {A4, 0}}, *samples,
+                      {{A1, 1}, {A2, 1}, {A3, 0}, {A4, 0}}, samples,
                       graph.getStructure())
                << "  empirical values from Gibbs sampling" << endl;
           cout << marginal_A_1234.get<true>({1, 1, 0, 0}) / images_sum

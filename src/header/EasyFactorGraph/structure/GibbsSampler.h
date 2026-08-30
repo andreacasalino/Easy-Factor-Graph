@@ -59,17 +59,7 @@ public:
    * @param number parameters for the samples generation
    * @param number of threads to use for the samples generation
    */
-  std::unique_ptr<misc::Samples>
-  makeSamples(const SamplesGenerationContext &context);
-
-  std::shared_ptr<misc::Samples>
-  makeSamplesShared(const SamplesGenerationContext &context) {
-    auto res_unique = makeSamples(context);
-    std::shared_ptr<misc::Samples> res_shared;
-    res_shared.reset(res_unique.get());
-    res_unique.release();
-    return res_shared;
-  }
+  misc::Samples makeSamples(const SamplesGenerationContext &context);
 
 protected:
   void init(StructurePtr context) {

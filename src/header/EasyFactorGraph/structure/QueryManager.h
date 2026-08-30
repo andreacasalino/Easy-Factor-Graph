@@ -33,7 +33,8 @@ public:
                                std::size_t variable_index) {
     auto distr = getMarginal_<PropagationKind::SUM>(variable_index);
     factor::getProbabilities(
-        factor::UnaryFactor{misc::TransferableBlock{distr}}, recipient);
+        factor::UnaryFactor{misc::Slot<float>::makeNonOwning(distr)},
+        recipient);
   }
 
   void getJointMarginalDistributionProbabilities(

@@ -67,16 +67,16 @@ private:
 
 template <typename Transform> class FactorT<1, Transform> {
 public:
-  explicit FactorT(misc::TransferableBlock<float> &&images)
-      : values{std::forward<misc::TransferableBlock<float>>(images)} {}
+  explicit FactorT(misc::Slot<float> &&images)
+      : values{std::forward<misc::Slot<float>>(images)} {}
 
   explicit FactorT(const std::vector<float> &images)
-      : FactorT{misc::TransferableBlock<float>::clone(
-            std::span<const float>{images})} {}
+      : FactorT{misc::Slot<float>::makeOwning(std::span<const float>{images})} {
+  }
 
-  float getTrsfm(std::size_t index) const { return trsfm(values.block[index]); }
+  float getTrsfm(std::size_t index) const { return trsfm(values.get()[index]); }
 
-  std::span<const float> getAllValues() const { return values.block; }
+  std::span<const float> getAllValues() const { return values.get(); }
 
   template <bool UseTransformed>
   void getValues(std::vector<float> &recipient) const;
@@ -92,7 +92,7 @@ public:
   std::size_t getMemoryFootprint() const { return values.getMemoryFootprint(); }
 
 private:
-  misc::TransferableBlock<float> values;
+  misc::Slot<float> values;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,8 @@ template <std::size_t N, typename Transform>
 FactorT<N, Transform>::FactorT(categoric::Combination<N> sizes,
                                misc::Intervals domain)
     : trsfm{}, variables_{sizes}, images_{std::move(domain)} {
-  auto it = images_.getDelimiters().block.rbegin();
+  auto delim_block = images_.getDelimiters().get();
+  auto it = delim_block.rbegin();
   ++it;
   auto &last_del = *it;
 
@@ -209,8 +210,9 @@ template <typename Transform>
 template <bool UseTransformed>
 void FactorT<1, Transform>::getValues(std::vector<float> &recipient) const {
   recipient.clear();
-  recipient.reserve(values.block.size());
-  for (float val : values.block) {
+  auto block = values.get();
+  recipient.reserve(block.size());
+  for (float val : block) {
     if constexpr (UseTransformed) {
       recipient.push_back(trsfm(val));
     } else {

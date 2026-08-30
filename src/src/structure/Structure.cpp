@@ -155,7 +155,7 @@ std::size_t getMemoryFootprint(const Structure &subject) {
 } // namespace
 
 void Structure::transfer_into_pool_() {
-  auto &&[messages_pool, messages_pool_len] = misc::NumbersPoolSizes::make(
+  auto &&[messages_pool, messages_pool_len] = misc::ValuesPool::make(
       messages_data_buffer_ | std::views::transform([&](const auto &c) {
         return nodes[c.factor_info.receiver_index].var_size;
       }));

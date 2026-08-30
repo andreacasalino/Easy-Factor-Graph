@@ -124,8 +124,8 @@ void train_model(RandomField &model_to_tune, ::train::IterativeTrainer &tuner,
   model_to_tune.getTunableWeights(expected_weights);
 
   // generate the training set from the current model
-  auto samples = model_to_tune.makeSamplesShared(
-      GibbsSampler::SamplesGenerationContext{train_set_size, 50, 0});
+  auto samples = std::make_shared<EFG::misc::Samples>(model_to_tune.makeSamples(
+      GibbsSampler::SamplesGenerationContext{train_set_size, 50, 0}));
 
   // set all weights to 1 and train the model on the previously generated
   // train set

@@ -9,7 +9,7 @@ namespace EFG::test {
 using namespace misc;
 std::vector<std::pair<std::size_t, float>>
 get_delimiters(const Intervals &subject) {
-  const auto &block = subject.getDelimiters().block;
+  const auto &block = subject.getDelimiters().get();
   return {block.begin(), block.end()};
 }
 

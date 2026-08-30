@@ -144,14 +144,14 @@ int main() {
     politree.setEvidences(Evidence{vars_names.at("v1"), 1},
                           Evidence{vars_names.at("v2"), 1},
                           Evidence{vars_names.at("v3"), 1});
-    std::unique_ptr<EFG::misc::Samples> samples;
+    std::optional<EFG::misc::Samples> samples;
     {
       // use internal thread pool to fasten various computations below
       std::size_t threads = 4;
       politree.setWorkersPoolSize(threads);
       auto activated_threads_guard =
           politree.activatePool(); // scoped activation
-      samples = politree.makeSamples(context_for_saples_generation);
+      samples.emplace(politree.makeSamples(context_for_saples_generation));
     }
 
     std::pair<std::size_t, VarStateSize> idx_and_size;
@@ -166,7 +166,7 @@ int main() {
     cout << "P(v10 | Observations): \n";
     get_var_and_size_("v10");
     cout << getEmpiricalMarginals(idx_and_size.first, idx_and_size.second,
-                                  *samples)
+                                  samples.value())
          << "  empirical values from Gibbs sampling" << endl;
     politree.getMarginalDistribution(prob, idx_and_size.first);
     cout << prob << "  computed values" << endl << endl;
@@ -174,7 +174,7 @@ int main() {
     cout << "P(v11 | Observations): \n";
     get_var_and_size_("v11");
     cout << getEmpiricalMarginals(idx_and_size.first, idx_and_size.second,
-                                  *samples)
+                                  samples.value())
          << "  empirical values from Gibbs sampling" << endl;
     politree.getMarginalDistribution(prob, idx_and_size.first);
     cout << prob << "  computed values" << endl << endl;
@@ -182,7 +182,7 @@ int main() {
     cout << "P(v12 | Observations): \n";
     get_var_and_size_("v12");
     cout << getEmpiricalMarginals(idx_and_size.first, idx_and_size.second,
-                                  *samples)
+                                  samples.value())
          << "  empirical values from Gibbs sampling" << endl;
     politree.getMarginalDistribution(prob, idx_and_size.first);
     cout << prob << "  computed values" << endl << endl;
@@ -257,7 +257,7 @@ int main() {
     // compare the computed marginals with the ones coming from the samples
     // obtained by the Gibbs sampler
     cout << "P(v8 | Observations): \n";
-    cout << getEmpiricalMarginals(var_idx, var_size, *samples)
+    cout << getEmpiricalMarginals(var_idx, var_size, samples)
          << "  empirical values from Gibbs sampling" << endl;
     loop.getMarginalDistribution(prob, var_idx);
     cout << prob << "  computed values" << endl

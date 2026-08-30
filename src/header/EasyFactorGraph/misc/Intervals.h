@@ -71,7 +71,7 @@ public:
     std::size_t axis_position_;
     std::span<const IntervalPoint> source_;
   };
-  IntervalsIter iter() const { return IntervalsIter{delimiters.block}; }
+  IntervalsIter iter() const { return IntervalsIter{delimiters.get()}; }
 
   const auto &getDelimiters() const { return delimiters; }
 
@@ -80,11 +80,12 @@ public:
   }
 
 private:
-  template <typename T> static Intervals from_vec(std::span<const T> collection);
+  template <typename T>
+  static Intervals from_vec(std::span<const T> collection);
 
   Intervals(std::vector<IntervalPoint> input);
 
-  TransferableBlock<IntervalPoint> delimiters;
+  Slot<IntervalPoint> delimiters;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -107,7 +108,8 @@ Intervals Intervals::from_chunks(std::vector<Chunk> collection) {
   return from_vec(std::span<const Chunk>{collection});
 }
 
-template <typename T> Intervals Intervals::from_vec(std::span<const T> collection) {
+template <typename T>
+Intervals Intervals::from_vec(std::span<const T> collection) {
   using Gen = GenFromBlock<T>;
   return Intervals::from_gen<Gen>(Gen{collection});
 }

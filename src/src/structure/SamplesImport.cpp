@@ -88,7 +88,7 @@ void dump_train_set(const misc::Samples &samples,
                     const std::filesystem::path &file_name) {
   auto stream = misc::open<misc::FileMode::WRITE>(file_name);
 
-  auto sample_len = samples.sampleSize();
+  auto sample_len = samples.eachSampleSize();
   for (int k = 7; 0 <= k; --k) {
     *stream << static_cast<char>(sample_len >> k * 8);
   }

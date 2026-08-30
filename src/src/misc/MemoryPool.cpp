@@ -11,5 +11,5 @@ namespace EFG::misc {
 MemoryPool::MemoryPool(std::size_t capacity_limit)
     : len_{0}, capacity_{capacity_limit}, buffer_{new char[capacity_limit]} {}
 
-NumbersPoolSizes::NumbersPoolSizes() = default;
+ValuesPool::ValuesPool() = default;
 } // namespace EFG::misc

@@ -22,10 +22,11 @@ std::vector<float> getEmpiricalMarginals(std::size_t var_index,
       samples.makeIter(),
       [&](const auto &comb) { freq[comb[var_index]] += 1; });
   auto res =
-      freq | std::views::transform(
-                 [den = static_cast<float>(samples.size())](auto val) mutable {
-                   return static_cast<float>(val) / den;
-                 });
+      freq |
+      std::views::transform(
+          [den = static_cast<float>(samples.samplesCount())](auto val) mutable {
+            return static_cast<float>(val) / den;
+          });
   return {res.begin(), res.end()};
 }
 
@@ -43,7 +44,7 @@ float getEmpiricalProbability(
         }
         freq += 1;
       });
-  return static_cast<float>(freq) / static_cast<float>(samples.size());
+  return static_cast<float>(freq) / static_cast<float>(samples.samplesCount());
 }
 
 float getEmpiricalProbabilityInsideHidden(

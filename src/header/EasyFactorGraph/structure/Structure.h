@@ -163,7 +163,7 @@ private:
   std::unique_ptr<misc::MemoryPool> factors_pool_;
 
   struct MessagesPool {
-    misc::NumbersPoolSizes sizes;
+    misc::ValuesPool sizes;
     std::vector<float> buffer;
   };
   std::vector<MessageMetaData> messages_data_buffer_;

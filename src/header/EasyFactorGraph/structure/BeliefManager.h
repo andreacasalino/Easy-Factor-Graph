@@ -56,7 +56,7 @@ make_passed_message(std::span<float> message_support,
       });
 
   return {factor::FactorT<1, factor::NullTrasform>{
-      misc::TransferableBlock{message_support}}};
+      misc::Slot<float>::makeNonOwning(message_support)}};
 }
 
 // TODO shoulnd't this too occupy an entire cache line to avoid false sharing?

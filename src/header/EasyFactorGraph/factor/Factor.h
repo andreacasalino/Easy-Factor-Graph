@@ -101,7 +101,7 @@ make_evidence_message(std::span<float> message_support,
       });
 
   return {factor::FactorT<1, factor::NullTrasform>{
-      misc::TransferableBlock{message_support}}};
+      misc::Slot<float>::makeNonOwning(message_support)}};
 }
 
 factor::UnaryFactor make_all_same(std::span<float> support, float value);

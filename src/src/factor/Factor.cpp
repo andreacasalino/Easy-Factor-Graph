@@ -22,13 +22,13 @@ void UnaryFactorsMerger::normalize() {
 
 factor::UnaryFactor make_all_same(std::span<float> support, float value) {
   std::fill_n(support.data(), support.size(), value);
-  return factor::UnaryFactor{misc::TransferableBlock{support}};
+  return factor::UnaryFactor{misc::Slot<float>::makeNonOwning(support)};
 }
 
 factor::UnaryFactor make_indicator(std::span<float> support,
                                    categoric::VarStateSize value) {
   std::fill_n(support.data(), support.size(), 0);
   support[value] = 1.f;
-  return factor::UnaryFactor{misc::TransferableBlock{support}};
+  return factor::UnaryFactor{misc::Slot<float>::makeNonOwning(support)};
 }
-} // namespace EFG::structure
+} // namespace EFG::factor

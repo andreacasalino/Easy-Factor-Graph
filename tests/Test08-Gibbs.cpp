@@ -81,16 +81,16 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
     const float Z = 2.f * (1.f + exp_w);
 
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{0, 0}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{0, 0}),
         exp_w / Z, 0.075f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{0, 1}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{0, 1}),
         1.f / Z, 0.075f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{1, 0}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{1, 0}),
         1.f / Z, 0.075f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{1, 1}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{1, 1}),
         exp_w / Z, 0.075f));
   }
 
@@ -101,9 +101,9 @@ TEST_CASE("binary factor gibbs sampling", "[gibbs_sampling]") {
     const float exp_w = expf(w);
     const float Z = 1.f + exp_w;
 
-    REQUIRE(are_samples_valid(samples->makeIter(),
+    REQUIRE(are_samples_valid(samples.makeIter(),
                               {model.getStructure().nodes[1].var_size}));
-    CHECK(almost_equal(expf(w) / Z, getFrequency1(samples->makeIter(), 0),
+    CHECK(almost_equal(expf(w) / Z, getFrequency1(samples.makeIter(), 0),
                        0.075f));
   }
 }
@@ -153,11 +153,11 @@ TEST_CASE("Two binary factors gibbs sampling", "[gibbs_sampling]") {
   SECTION("Check freq of sub-combination") {
     const float Z = 2.f * (1.f + exp_alfa);
 
-    CHECK(almost_equal(getFrequency(samples->makeIter(),
+    CHECK(almost_equal(getFrequency(samples.makeIter(),
                                     std::vector<VarStateSize>{0, 0},
                                     std::vector<std::size_t>{0, 1}),
                        exp_alfa / Z, 0.05f));
-    CHECK(almost_equal(getFrequency(samples->makeIter(),
+    CHECK(almost_equal(getFrequency(samples.makeIter(),
                                     std::vector<VarStateSize>{1, 1},
                                     std::vector<std::size_t>{0, 1}),
                        exp_alfa / Z, 0.05f));
@@ -166,11 +166,11 @@ TEST_CASE("Two binary factors gibbs sampling", "[gibbs_sampling]") {
   SECTION("Check freq of sub-combination") {
     const float Z = 2.f * (1.f + exp_beta);
 
-    CHECK(almost_equal(getFrequency(samples->makeIter(),
+    CHECK(almost_equal(getFrequency(samples.makeIter(),
                                     std::vector<VarStateSize>{0, 0},
                                     std::vector<std::size_t>{1, 2}),
                        exp_beta / Z, 0.05f));
-    CHECK(almost_equal(getFrequency(samples->makeIter(),
+    CHECK(almost_equal(getFrequency(samples.makeIter(),
                                     std::vector<VarStateSize>{1, 1},
                                     std::vector<std::size_t>{1, 2}),
                        exp_beta / Z, 0.05f));
@@ -180,29 +180,29 @@ TEST_CASE("Two binary factors gibbs sampling", "[gibbs_sampling]") {
     const float Z = 2.f * (1.f + exp_alfa + exp_beta + exp_alfa * exp_beta);
 
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{0, 0, 0}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{0, 0, 0}),
         exp_alfa * exp_beta / Z, 0.05f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{0, 0, 1}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{0, 0, 1}),
         exp_alfa / Z, 0.05f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{0, 1, 0}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{0, 1, 0}),
         1.f / Z, 0.05f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{0, 1, 1}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{0, 1, 1}),
         exp_beta / Z, 0.05f));
 
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{1, 0, 0}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{1, 0, 0}),
         exp_beta / Z, 0.05f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{1, 0, 1}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{1, 0, 1}),
         1.f / Z, 0.05f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{1, 1, 0}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{1, 1, 0}),
         exp_alfa / Z, 0.05f));
     CHECK(almost_equal(
-        getFrequency(samples->makeIter(), std::vector<VarStateSize>{1, 1, 1}),
+        getFrequency(samples.makeIter(), std::vector<VarStateSize>{1, 1, 1}),
         exp_alfa * exp_beta / Z, 0.05f));
   }
 }
@@ -225,27 +225,27 @@ TEST_CASE("polyTree gibbs sampling", "[gibbs_sampling]") {
       Evidence{model.getStructure().named_vars_table.at("E"), 1});
   auto samples =
       model.makeSamples(GibbsSampler::SamplesGenerationContext{1500, 50, 0});
-  REQUIRE(are_samples_valid(samples->makeIter(),
+  REQUIRE(are_samples_valid(samples.makeIter(),
                             getHiddenSetSizes(model.getStructure())));
 
   CHECK(check_second_prob(
       (a * (g + e) + (1 + g * e)), ((g + e) + a * (1 + g * e)),
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("A")),
       toll));
   CHECK(check_second_prob(
       (g + e), (1 + g * e),
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("B")),
       toll));
   CHECK(check_second_prob(
       (b * (g + e) + (1 + g * e)), ((g + e) + b * (1 + g * e)),
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("C")),
       toll));
   CHECK(check_second_prob(
       1.f, e,
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("D")),
       toll));
 }
@@ -267,27 +267,27 @@ TEST_CASE("loopy model gibbs sampling", "[gibbs_sampling]") {
       Evidence{model.getStructure().named_vars_table.at("E"), 1});
   auto samples =
       model.makeSamples(GibbsSampler::SamplesGenerationContext{1500, 50, 0});
-  REQUIRE(are_samples_valid(samples->makeIter(),
+  REQUIRE(are_samples_valid(samples.makeIter(),
                             getHiddenSetSizes(model.getStructure())));
 
   CHECK(check_second_prob(
       3.f * M + powf(M, 3), powf(M, 4) + 3.f * powf(M, 2),
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("D")),
       toll));
   CHECK(check_second_prob(
       M_alfa, M_beta,
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("C")),
       toll));
   CHECK(check_second_prob(
       M_alfa, M_beta,
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("B")),
       toll));
   CHECK(check_second_prob(
       M * M_alfa + M_beta, M_alfa + M * M_beta,
-      getFrequency1(samples->makeIter(),
+      getFrequency1(samples.makeIter(),
                     model.getStructure().named_vars_table.at("A")),
       toll));
 }

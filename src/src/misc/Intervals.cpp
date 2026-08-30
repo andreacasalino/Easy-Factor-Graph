@@ -18,13 +18,13 @@ Intervals::Intervals(std::vector<IntervalPoint> vals) {
     vals.insert(vals.begin(), std::make_pair(0, 0));
   }
   vals.emplace_back(std::make_pair(std::numeric_limits<std::size_t>::max(), 0));
-  delimiters = TransferableBlock<std::pair<std::size_t, float>>::clone(vals);
+  delimiters = Slot<std::pair<std::size_t, float>>::makeOwning(vals);
 }
 
 float Intervals::get(std::size_t index) const {
+  auto block = delimiters.get();
   auto it = std::lower_bound(
-      delimiters.block.begin(), delimiters.block.end(),
-      std::make_pair(index, 0),
+      block.begin(), block.end(), std::make_pair(index, 0),
       [](const auto &a, const auto &b) { return a.first < b.first; });
   // cannot be delimiters.block.end() as numeric_limist<size_t>::max() is always
   // added as back value in the c'tor

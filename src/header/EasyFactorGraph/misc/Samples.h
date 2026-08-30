@@ -10,7 +10,6 @@
 #include <EasyFactorGraph/Error.h>
 #include <EasyFactorGraph/categoric/Types.h>
 
-#include <list>
 #include <optional>
 #include <span>
 #include <vector>
@@ -18,23 +17,28 @@
 namespace EFG::misc {
 class Samples {
   struct Buffer {
-    Buffer(std::size_t capacity);
+    Buffer(std::size_t capacity)
+        : support{new categoric::VarStateSize[capacity], capacity} {}
 
-    ~Buffer();
+    Buffer *add(std::span<const categoric::VarStateSize> vals);
 
-    std::size_t size;
-    categoric::VarStateSize *support;
+    std::span<categoric::VarStateSize> support;
+    std::size_t size{0};
+    Buffer *next{nullptr};
   };
-
-  using Buffers = std::list<Buffer>;
 
 public:
   Samples(std::size_t sample_len, std::size_t samples_per_buffer = 1000)
       : sample_len_{sample_len}, buffer_capacity_{sample_len *
                                                   samples_per_buffer} {}
 
+  ~Samples();
+
   Samples(const Samples &) = delete;
   Samples &operator=(const Samples &) = delete;
+
+  Samples(Samples &&o) noexcept;
+  Samples &operator=(Samples &&o) noexcept;
 
   void add(std::span<const categoric::VarStateSize> vals);
 
@@ -48,23 +52,33 @@ public:
     std::optional<std::span<const categoric::VarStateSize>> next();
 
   private:
-    void updateCurrentView();
+    void resetResidualView() {
+      if (current_) {
+        current_residual_view = {current_->support.data(), current_->size};
+      } else {
+        current_residual_view = {};
+      }
+    }
 
     std::size_t sample_len_;
-    Buffers::const_iterator current_it;
+    Buffer *current_;
     std::span<const categoric::VarStateSize> current_residual_view;
-    Buffers::const_iterator end;
   };
   SamplesIter makeIter() const { return {*this}; }
 
-  std::size_t sampleSize() const { return sample_len_; }
-  std::size_t size() const { return size_; }
+  std::size_t eachSampleSize() const { return sample_len_; }
+  std::size_t samplesCount() const { return samples_; }
 
 private:
-  std::size_t size_{0};
+  void steal(Samples &o);
+
+  void clear();
+
+  std::size_t samples_{0};
   std::size_t sample_len_;
   std::size_t buffer_capacity_;
 
-  Buffers buffers_;
+  Buffer *buffers_head_{nullptr};
+  Buffer *buffers_tail_{nullptr};
 };
 } // namespace EFG::misc

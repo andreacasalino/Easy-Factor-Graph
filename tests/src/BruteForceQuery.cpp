@@ -156,7 +156,7 @@ float BruteForceGradient::getAlfa(
   float res{0};
   const auto &factor = std::get<factor::UnaryFactorExponential>(
       context_.nodes[t.var_index].unary_factor);
-  float samples_size = static_cast<float>(samples_->size());
+  float samples_size = static_cast<float>(samples_->eachSampleSize());
   misc::for_each_generated<std::span<const categoric::VarStateSize>>(
       samples_->makeIter(), [&](const auto &sample) {
         res += factor.getAllValues()[sample[t.var_index]] / samples_size;
@@ -180,7 +180,7 @@ float BruteForceGradient::getBeta(
 float BruteForceGradient::getAlfa(
     const structure::Tunability::TunableBinaryFactor &t) const {
   float res{0};
-  float samples_size = static_cast<float>(samples_->size());
+  float samples_size = static_cast<float>(samples_->eachSampleSize());
   const auto &factor = find_binary_factor(t);
   misc::for_each_generated<std::span<const categoric::VarStateSize>>(
       samples_->makeIter(), [&](const auto &sample) {
@@ -209,7 +209,7 @@ float BruteForceGradient::getLogLikelihoodAt() const {
       samples_->makeIter(),
       [&](const auto &sample) { Z += getEnergy<true>(sample); });
   float lkl = 0.f;
-  float coeff = 1.f / static_cast<float>(samples_->size());
+  float coeff = 1.f / static_cast<float>(samples_->samplesCount());
   misc::for_each_generated<std::span<const categoric::VarStateSize>>(
       samples_->makeIter(),
       [&](const auto &sample) { lkl += coeff * getEnergy<true>(sample); });

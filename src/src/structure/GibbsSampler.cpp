@@ -99,7 +99,7 @@ void samplingIteration(const HiddenSet &hidden_set,
     });
 
     factor::UnaryFactor merged_factor{
-        misc::TransferableBlock{ctxt.merger.getMerged()}};
+        misc::Slot<float>::makeNonOwning(ctxt.merger.getMerged())};
     factor::getProbabilities(merged_factor, msg_prob_buffer);
 
     buffer[buffer_index] = ctxt.sampler.sampleFromDiscrete(msg_prob_buffer);
@@ -190,7 +190,7 @@ void ConcurrentDriver::advance(const HiddenSet &hidden_set,
 }
 
 template <typename Driver>
-std::unique_ptr<misc::Samples>
+misc::Samples
 make_samples(Driver &driver,
              const GibbsSampler::SamplesGenerationContext &context,
              HiddenSet &hidden_set, StructurePtr model) {
@@ -198,8 +198,7 @@ make_samples(Driver &driver,
 
   std::vector<categoric::VarStateSize> buffer;
   buffer.resize(hidden_set.var_indices_flat.size(), 0);
-  std::unique_ptr<misc::Samples> res =
-      std::make_unique<misc::Samples>(hidden_set.var_indices_flat.size());
+  misc::Samples res{hidden_set.var_indices_flat.size()};
 
   // burn out phase
   for (std::size_t i = 0; i < burn_out; ++i) {
@@ -208,7 +207,7 @@ make_samples(Driver &driver,
 
   for (std::size_t i = 0; i < context.samples_number; ++i) {
     driver.advance(hidden_set, buffer);
-    res->add(buffer);
+    res.add(buffer);
     for (std::size_t t = 0; t < delta_iterations; ++t) {
       driver.advance(hidden_set, buffer);
     }
@@ -218,7 +217,7 @@ make_samples(Driver &driver,
 }
 } // namespace
 
-std::unique_ptr<misc::Samples>
+misc::Samples
 GibbsSampler::makeSamples(const SamplesGenerationContext &context) {
   auto hidden_set = identifyHiddenSetIndices(*context_);
   if (hidden_set.var_indices_flat.empty()) {

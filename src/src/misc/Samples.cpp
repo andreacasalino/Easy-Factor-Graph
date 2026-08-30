@@ -10,48 +10,81 @@
 #include <cstring>
 
 namespace EFG::misc {
-Samples::Buffer::Buffer(std::size_t capacity)
-    : size{0}, support{new categoric::VarStateSize[capacity]} {}
+Samples::Buffer *
+Samples::Buffer::add(std::span<const categoric::VarStateSize> vals) {
+  std::size_t residual = support.size() - size;
+  if (vals.size() <= residual) {
+    std::memcpy(support.data() + size, vals.data(),
+                vals.size() * sizeof(categoric::VarStateSize));
+    size += vals.size();
+    return this;
+  } else {
+    auto *res = new Buffer{support.size()};
+    next = res;
+    res->add(vals);
+    return res;
+  }
+}
 
-Samples::Buffer::~Buffer() { delete[] support; }
+void Samples::clear() {
+  auto *current = buffers_head_;
+  while (current) {
+    delete[] current->support.data();
+    auto *next = current->next;
+    delete current;
+    current = next;
+  }
+}
+
+Samples::~Samples() { clear(); }
+
+void Samples::steal(Samples &o) {
+  buffers_head_ = o.buffers_head_;
+  buffers_tail_ = o.buffers_tail_;
+  samples_ = o.samples_;
+  o.samples_ = 0;
+  o.buffers_head_ = nullptr;
+  o.buffers_tail_ = nullptr;
+}
+
+Samples::Samples(Samples &&o) noexcept
+    : Samples{o.sample_len_, o.buffer_capacity_ / o.sample_len_} {
+  steal(o);
+}
+
+Samples &Samples::operator=(Samples &&o) noexcept {
+  clear();
+  steal(o);
+  return *this;
+}
 
 void Samples::add(std::span<const categoric::VarStateSize> vals) {
   if (vals.size() != sample_len_) {
     throw Error{"Invalid sample length"};
   }
-  if (buffers_.empty() || buffers_.rbegin()->size == buffer_capacity_) {
-    buffers_.emplace_back(buffer_capacity_);
+
+  if (!buffers_head_) {
+    buffers_head_ = new Buffer{buffer_capacity_};
+    buffers_tail_ = buffers_head_;
   }
-  auto &recipient = *buffers_.rbegin();
-  std::memcpy(recipient.support + recipient.size, vals.data(),
-              sample_len_ * sizeof(categoric::VarStateSize));
-  recipient.size += sample_len_;
-  size_ += 1;
+
+  buffers_tail_ = buffers_tail_->add(vals);
 }
 
 Samples::SamplesIter::SamplesIter(const Samples &source)
-    : sample_len_{source.sample_len_},
-      current_it{source.buffers_.begin()}, end{source.buffers_.end()} {
-  updateCurrentView();
-}
-
-void Samples::SamplesIter::updateCurrentView() {
-  if (current_it != end) {
-    current_residual_view = {current_it->support, current_it->size};
-  }
+    : sample_len_{source.sample_len_}, current_{source.buffers_head_} {
+  resetResidualView();
 }
 
 std::optional<std::span<const categoric::VarStateSize>>
 Samples::SamplesIter::next() {
-  while (true) {
-    if (current_it == end) {
-      return std::nullopt;
-    }
+  while (current_) {
     if (current_residual_view.empty()) {
-      ++current_it;
-      updateCurrentView();
+      current_ = current_->next;
+      resetResidualView();
       continue;
     }
+
     std::span<const categoric::VarStateSize> res{current_residual_view.begin(),
                                                  current_residual_view.begin() +
                                                      sample_len_};
@@ -59,5 +92,6 @@ Samples::SamplesIter::next() {
                              current_residual_view.end()};
     return res;
   }
+  return std::nullopt;
 }
 } // namespace EFG::misc

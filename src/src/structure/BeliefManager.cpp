@@ -14,12 +14,12 @@ namespace EFG::structure {
 float MessagePassingHandler::eval_diff(std::span<float> pre,
                                        std::span<float> post) {
   auto &prob_pre = cache_.template get_buffer<1>();
-  factor::getProbabilities(factor::UnaryFactor{misc::TransferableBlock{pre}},
-                           prob_pre);
+  factor::getProbabilities(
+      factor::UnaryFactor{misc::Slot<float>::makeNonOwning(pre)}, prob_pre);
 
   auto &prob_post = cache_.template get_buffer<2>();
-  factor::getProbabilities(factor::UnaryFactor{misc::TransferableBlock{post}},
-                           prob_post);
+  factor::getProbabilities(
+      factor::UnaryFactor{misc::Slot<float>::makeNonOwning(post)}, prob_post);
 
   float res = 0;
   for (std::size_t k = 0; k < prob_pre.size(); ++k) {

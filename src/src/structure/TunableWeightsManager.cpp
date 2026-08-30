@@ -86,7 +86,7 @@ TunableWeightsManager::TunableWeightsGradient::TunableWeightsGradient(
 void TunableWeightsManager::TunableWeightsGradient::setAlfa() {
   alfa_part_.resize(source_.tuners_.size(), 0);
 
-  float coeff = 1.f / static_cast<float>(training_set_->size());
+  float coeff = 1.f / static_cast<float>(training_set_->samplesCount());
 
   auto compute_ = [&](std::size_t th_id, std::size_t stride) {
     auto it = training_set_->makeIter();
@@ -152,7 +152,7 @@ void TunableWeightsManager::TunableWeightsGradient::setBeta() {
   else {
     // conditional random fields
     auto samples_it = training_set_->makeIter();
-    float coeff = 1.f / static_cast<float>(training_set_->size());
+    float coeff = 1.f / static_cast<float>(training_set_->samplesCount());
     while (true) {
       auto maybe_sample = samples_it.next();
       if (!maybe_sample.has_value()) {
@@ -196,7 +196,8 @@ float TunableWeightsManager::UnaryTuner::getGradientBeta(
 
   auto &prob = ctx.cache.get_buffer();
   factor::getProbabilities(
-      factor::UnaryFactor{misc::TransferableBlock{merger.getMerged()}}, prob);
+      factor::UnaryFactor{misc::Slot<float>::makeNonOwning(merger.getMerged())},
+      prob);
   float res{0};
   auto values = factor_.getAllValues();
   for (std::size_t k = 0; k < prob.size(); ++k) {
@@ -260,7 +261,8 @@ float TunableWeightsManager::BinaryConditionedTuner<
 
   auto &prob = ctx.cache.get_buffer();
   factor::getProbabilities(
-      factor::UnaryFactor{misc::TransferableBlock{merger.getMerged()}}, prob);
+      factor::UnaryFactor{misc::Slot<float>::makeNonOwning(merger.getMerged())},
+      prob);
 
   auto evidence = getEvidence();
 
