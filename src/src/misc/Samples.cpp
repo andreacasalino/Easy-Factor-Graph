@@ -63,6 +63,8 @@ void Samples::add(std::span<const categoric::VarStateSize> vals) {
     throw Error{"Invalid sample length"};
   }
 
+  samples_ += 1;
+
   if (!buffers_head_) {
     buffers_head_ = new Buffer{buffer_capacity_};
     buffers_tail_ = buffers_head_;
