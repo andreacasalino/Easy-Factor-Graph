@@ -116,6 +116,7 @@ void TunableWeightsManager::TunableWeightsGradient::setAlfa() {
 }
 
 void TunableWeightsManager::TunableWeightsGradient::setBeta() {
+  beta_part_.clear();
   beta_part_.resize(source_.tuners_.size(), 0);
   if (auto *pool = source_.listener_.getPool(); pool) {
     source_.cmpContext_.resize(pool->size());
@@ -286,11 +287,11 @@ std::size_t
 Trainer::train_model(TunableWeightsManager &model,
                      std::shared_ptr<const misc::Samples> training_set) const {
   std::vector<float> w, w_grad;
-  // auto gradient = model.gradient(training_set);
+  auto gradient = model.gradient(training_set);
   std::size_t i = 0;
   for (; i < max_iterations_; ++i) {
     model.getTunableWeights(w);
-    model.gradient(training_set).get(w_grad);
+    gradient.get(w_grad);
     float adv_prctg{0};
     for (std::size_t k = 0; k < w.size(); ++k) {
       float w_snap = w[k];
