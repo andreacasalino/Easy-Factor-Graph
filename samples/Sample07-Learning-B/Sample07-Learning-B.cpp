@@ -38,7 +38,7 @@ int main() {
     // set all weights to 1 and train the model on the previously generated
     // train set
     std::vector<float> weights;
-    weights.resize(1.f, expected_weights.size());
+    weights.resize(expected_weights.size(), 1.f);
     model.setTunableWeights(weights);
 
     cout << "training the model, this might take a while as conditional "

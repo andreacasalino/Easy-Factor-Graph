@@ -5,10 +5,6 @@
 #include <EasyFactorGraph/model/RandomField.h>
 #include <EasyFactorGraph/structure/QueryManager.h>
 
-#include <TrainingTools/iterative/solvers/GradientDescend.h>
-#include <TrainingTools/iterative/solvers/GradientDescendConjugate.h>
-#include <TrainingTools/iterative/solvers/QuasiNewton.h>
-
 #include <BruteForceQuery.h>
 #include <Utils.h>
 

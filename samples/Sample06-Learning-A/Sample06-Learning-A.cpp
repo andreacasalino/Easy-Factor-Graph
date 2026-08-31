@@ -74,6 +74,7 @@ int main() {
 
     auto const_exp_factor = BinaryFactorExponential::from_sparse_domain_gen(
         {2, 2}, SimplyCorrelatedDomainGen<2>{2});
+    const_exp_factor.trsfm.setWeight(gamma);
     builder.add_binary_factor(std::move(const_exp_factor), B, E);
 
     RandomField model{ModelBuilder::build(std::move(builder))};
@@ -119,7 +120,8 @@ void train_model(RandomField &model_to_tune, std::size_t train_set_size) {
   // set all weights to 1 and train the model on the previously generated
   // train set
   std::vector<float> weights;
-  weights.resize(1.f, expected_weights.size());
+  weights.resize(expected_weights.size(), 1.f);
+  model_to_tune.setTunableWeights(weights);
   EFG::structure::Trainer{}.train_model(model_to_tune, samples);
 
   cout << "expected weights:    " << expected_weights << endl;

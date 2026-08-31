@@ -285,22 +285,24 @@ float TunableWeightsManager::BinaryConditionedTuner<
 std::size_t
 Trainer::train_model(TunableWeightsManager &model,
                      std::shared_ptr<const misc::Samples> training_set) const {
-  std::vector<float> w_prev, w, w_grad;
-  model.getTunableWeights(w_prev);
-  auto gradient = model.gradient(training_set);
+  std::vector<float> w, w_grad;
+  // auto gradient = model.gradient(training_set);
   std::size_t i = 0;
   for (; i < max_iterations_; ++i) {
-    gradient.get(w_grad);
-    w = w_prev;
+    model.getTunableWeights(w);
+    model.gradient(training_set).get(w_grad);
     float adv_prctg{0};
     for (std::size_t k = 0; k < w.size(); ++k) {
-      w[k] += gradient_rescale_ * w_grad[k];
-      adv_prctg = std::max<float>(adv_prctg,
-                                  std::abs(w[k] - w_prev[k]) / std::abs(w[k]));
+      float w_snap = w[k];
+      float advancement = gradient_rescale_ * w_grad[k];
+      w[k] += advancement;
+      adv_prctg =
+          std::max<float>(adv_prctg, std::abs(advancement) / std::abs(w_snap));
     }
     if (adv_prctg < advance_toll_percentage_) {
       break;
     }
+    model.setTunableWeights(w);
   }
   return i;
 }

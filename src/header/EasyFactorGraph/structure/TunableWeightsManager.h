@@ -179,7 +179,7 @@ struct Trainer {
 
 private:
   std::size_t max_iterations_{1000};
-  float gradient_rescale_{0.001f};
-  float advance_toll_percentage_{0.05};
+  float gradient_rescale_{0.01f};
+  float advance_toll_percentage_{1e-5};
 };
 } // namespace EFG::structure
