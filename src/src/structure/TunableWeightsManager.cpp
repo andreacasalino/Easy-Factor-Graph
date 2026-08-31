@@ -119,6 +119,7 @@ void TunableWeightsManager::TunableWeightsGradient::setBeta() {
   beta_part_.clear();
   beta_part_.resize(source_.tuners_.size(), 0);
   if (auto *pool = source_.listener_.getPool(); pool) {
+    source_.cmpContext_.clear();
     source_.cmpContext_.resize(pool->size());
   }
 

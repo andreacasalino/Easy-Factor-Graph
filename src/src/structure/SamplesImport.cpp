@@ -30,6 +30,7 @@ struct StreamReadGen {
   StreamReadGen(std::unique_ptr<std::ifstream> fd) : fd_{std::move(fd)} {}
 
   std::optional<std::string_view> read_next(std::size_t len) {
+    buffer_.clear();
     buffer_.resize(len, 0);
     fd_->read(buffer_.data(), len);
     std::streamsize bytesRead = fd_->gcount();

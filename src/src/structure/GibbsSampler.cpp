@@ -147,6 +147,7 @@ ConcurrentDriver::ConcurrentDriver(StructurePtr model, misc::WorkerPool &pool,
                                    std::optional<std::size_t> seed,
                                    const HiddenSet &hidden_set)
     : pool_{pool} {
+  ctxt_.clear();
   ctxt_.resize(pool.size());
   if (seed.has_value()) {
     for (auto &s : ctxt_) {

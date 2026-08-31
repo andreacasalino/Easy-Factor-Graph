@@ -195,6 +195,7 @@ BeliefManager::SerialBeliefPropagator::calibration_(
 BeliefManager::ConcurrentBeliefPropagator::ConcurrentBeliefPropagator(
     misc::WorkerPool &workers)
     : workers_{workers} {
+  msg_passing_handlers_.clear();
   msg_passing_handlers_.resize(workers.size());
 }
 
