@@ -190,16 +190,14 @@ void ConcurrentDriver::advance(const HiddenSet &hidden_set,
   });
 }
 
-template <typename Driver>
-misc::Samples
-make_samples(Driver &driver,
-             const GibbsSampler::SamplesGenerationContext &context,
-             HiddenSet &hidden_set, StructurePtr model) {
+template <typename Driver, typename Listener>
+void make_samples(Driver &driver,
+                  const GibbsSampler::SamplesGenerationContext &context,
+                  HiddenSet &hidden_set, StructurePtr model, Listener &lstnr) {
   auto [delta_iterations, burn_out] = parse_context(context);
 
   std::vector<categoric::VarStateSize> buffer;
   buffer.resize(hidden_set.var_indices_flat.size(), 0);
-  misc::Samples res{hidden_set.var_indices_flat.size()};
 
   // burn out phase
   for (std::size_t i = 0; i < burn_out; ++i) {
@@ -208,14 +206,48 @@ make_samples(Driver &driver,
 
   for (std::size_t i = 0; i < context.samples_number; ++i) {
     driver.advance(hidden_set, buffer);
-    res.add(buffer);
+    lstnr.on_sample(
+        std::span<categoric::VarStateSize>{buffer.begin(), buffer.end()});
     for (std::size_t t = 0; t < delta_iterations; ++t) {
       driver.advance(hidden_set, buffer);
     }
   }
-
-  return res;
 }
+
+struct SamplesAsIs {
+  SamplesAsIs(std::size_t sample_len) : samples{sample_len} {}
+
+  misc::Samples samples;
+
+  void on_sample(std::span<categoric::VarStateSize> val) { samples.add(val); }
+};
+
+struct SamplesWithEvidences {
+  SamplesWithEvidences(HiddenSet hidden, StructurePtr ctxt)
+      : samples{ctxt->nodes.size()}, hidden_{std::move(hidden)}, ctxt_{ctxt} {
+    buffer_.resize(ctxt->nodes.size(), 0);
+    for (std::size_t n = 0; n < ctxt_->nodes.size(); ++n) {
+      if (ctxt_->nodes[n].evidence != Evidence::NOT_AN_EVIDENCE) {
+        buffer_[n] = ctxt_->nodes[n].evidence;
+      }
+    }
+  }
+
+  void on_sample(std::span<categoric::VarStateSize> val) {
+    for (std::size_t k = 0; k < hidden_.var_indices_flat.size(); ++k) {
+      auto idx = hidden_.var_indices_flat[k];
+      buffer_[idx] = val[k];
+    }
+    samples.add(buffer_);
+  }
+
+  misc::Samples samples;
+
+private:
+  std::vector<categoric::VarStateSize> buffer_;
+  HiddenSet hidden_;
+  StructurePtr ctxt_;
+};
 } // namespace
 
 misc::Samples
@@ -225,12 +257,22 @@ GibbsSampler::makeSamples(const SamplesGenerationContext &context) {
     throw Error{"Empty hidden set"};
   }
 
-  if (auto *pool = listener_.getPool(); pool) {
-    ConcurrentDriver driver{context_, *pool, context.seed, hidden_set};
-    return make_samples(driver, context, hidden_set, context_);
+  auto compute_ = [&](auto lstnr) {
+    if (auto *pool = listener_.getPool(); pool) {
+      ConcurrentDriver driver{context_, *pool, context.seed, hidden_set};
+      make_samples(driver, context, hidden_set, context_, lstnr);
+    } else {
+      SerialDriver driver{context_, context.seed};
+      make_samples(driver, context, hidden_set, context_, lstnr);
+    }
+
+    return std::move(lstnr.samples);
+  };
+
+  if (context.include_evidences_in_samples) {
+    return compute_(SamplesWithEvidences{hidden_set, context_});
   } else {
-    SerialDriver driver{context_, context.seed};
-    return make_samples(driver, context, hidden_set, context_);
+    return compute_(SamplesAsIs{hidden_set.var_indices_flat.size()});
   }
 }
 } // namespace EFG::structure

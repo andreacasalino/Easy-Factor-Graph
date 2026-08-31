@@ -46,6 +46,8 @@ public:
      * When nothing is specified, 10 times delta_iterations is assumed.
      */
     std::optional<std::size_t> transient;
+
+    bool include_evidences_in_samples{false};
   };
 
   /**
