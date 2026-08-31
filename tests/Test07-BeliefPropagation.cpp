@@ -21,7 +21,7 @@ bool checkMarginals(M &model, std::size_t var_index,
   res.clear();
   model.getMarginalDistribution(res, var_index);
 
-  auto expected_normalized = make_prob_distr(std::move(expected));
+  auto expected_normalized = make_probabilities(std::move(expected));
 
   return almost_equal_it(res, expected_normalized, threshold);
 }
@@ -293,8 +293,9 @@ TEST_CASE("Sub graph distribution", "[propagation][subgraph]") {
     std::vector<float> prob;
     factor::getProbabilities(joint_factor, prob);
     CHECK(almost_equal_it(
-        make_prob_distr({expf(alfa) * expf(beta), expf(alfa), 1.f, expf(beta),
-                         expf(beta), 1.f, expf(alfa), expf(alfa) * expf(beta)}),
+        make_probabilities({expf(alfa) * expf(beta), expf(alfa), 1.f,
+                            expf(beta), expf(beta), 1.f, expf(alfa),
+                            expf(alfa) * expf(beta)}),
         prob, 0.15f));
   }
 
@@ -303,8 +304,8 @@ TEST_CASE("Sub graph distribution", "[propagation][subgraph]") {
     auto joint_factor = model.getJointMarginalDistribution<2>({0, 1});
     std::vector<float> prob;
     factor::getProbabilities(joint_factor, prob);
-    CHECK(almost_equal_it(make_prob_distr({expf(alfa), 1.f, 1.f, expf(alfa)}),
-                          prob, 0.15f));
+    CHECK(almost_equal_it(
+        make_probabilities({expf(alfa), 1.f, 1.f, expf(alfa)}), prob, 0.15f));
   }
 }
 } // namespace EFG::test

@@ -20,17 +20,6 @@ make_unary_exp_factor(float w, const std::vector<float> &domain) {
   return res;
 }
 
-std::vector<float> make_prob_distr(std::vector<float> distr) {
-  float sum{0};
-  for (auto val : distr) {
-    sum += val;
-  }
-  for (auto &val : distr) {
-    val /= sum;
-  }
-  return distr;
-}
-
 void add_corr_expfactor(structure::ModelBuilder &res, float w,
                         std::size_t var_a, std::size_t var_b) {
   auto var_size = res.get_seed().variables_sizes[var_a];

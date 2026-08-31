@@ -70,8 +70,6 @@ bool same_sign_it(const IterableA &a, const IterableB &b) {
 factor::UnaryFactorExponential
 make_unary_exp_factor(float w, const std::vector<float> &domain);
 
-std::vector<float> make_prob_distr(std::vector<float> distr);
-
 void add_corr_expfactor(structure::ModelBuilder &res, float w,
                         std::size_t var_a, std::size_t var_b);
 

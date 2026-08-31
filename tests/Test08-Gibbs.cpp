@@ -13,6 +13,7 @@ namespace EFG::test {
 using namespace misc;
 using namespace categoric;
 using namespace structure;
+using namespace factor;
 using namespace model;
 
 namespace {
@@ -65,8 +66,9 @@ float getFrequency(Samples::SamplesIter samples,
 
 bool check_second_prob(float expected_value_0, float expected_value_1,
                        float freq_1, float threshold = 0.05f) {
-  return almost_equal(make_prob_distr({expected_value_0, expected_value_1})[1],
-                      freq_1, threshold);
+  return almost_equal(
+      make_probabilities({expected_value_0, expected_value_1})[1], freq_1,
+      threshold);
 }
 } // namespace
 

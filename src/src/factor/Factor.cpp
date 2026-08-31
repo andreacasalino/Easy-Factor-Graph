@@ -31,4 +31,31 @@ factor::UnaryFactor make_indicator(std::span<float> support,
   support[value] = 1.f;
   return factor::UnaryFactor{misc::Slot<float>::makeNonOwning(support)};
 }
+
+void normalize_probabilities(std::vector<float> &values) {
+  if (values.empty()) {
+    return;
+  }
+
+  // normalize values
+  float sum = 0.f;
+  for (const auto &val : values) {
+    sum += val;
+  }
+  if (sum == 0.f) {
+    float e = 1.f / static_cast<float>(values.size());
+    for (auto &val : values) {
+      val = e;
+    }
+  } else {
+    for (auto &val : values) {
+      val /= sum;
+    }
+  }
+}
+
+std::vector<float> make_probabilities(std::vector<float> values) {
+  normalize_probabilities(values);
+  return std::move(values);
+}
 } // namespace EFG::factor

@@ -234,13 +234,7 @@ float TunableWeightsManager::BinaryTuner::getGradientBeta(
       [&](const categoric::Combination<2> &comb, float val) {
         prob.push_back(unaries_a[comb[0]] * unaries_b[comb[1]] * val);
       });
-  float sum{0};
-  for (auto val : prob) {
-    sum += val;
-  }
-  for (auto &val : prob) {
-    val /= sum;
-  }
+  factor::normalize_probabilities(prob);
 
   float res{0};
   factor_.forEachCombination<false>(

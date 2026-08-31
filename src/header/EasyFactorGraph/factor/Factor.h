@@ -53,6 +53,10 @@ make_exp_simply_anti_correlated(categoric::VarStateSize var_size,
   return res;
 }
 
+void normalize_probabilities(std::vector<float> &values);
+
+std::vector<float> make_probabilities(std::vector<float> values);
+
 /**
  * @return the probabilities associated to each combination in the domain,
  * when assuming only the existance of this distribution. Such probabilities
@@ -132,20 +136,6 @@ template <std::size_t N, typename Transform>
 void getProbabilities(const FactorT<N, Transform> &fctr,
                       std::vector<float> &recipient) {
   fctr.template getValues<true>(recipient);
-  // normalize values
-  float sum = 0.f;
-  for (const auto &val : recipient) {
-    sum += val;
-  }
-  if (sum == 0.f) {
-    float e = 1.f / static_cast<float>(recipient.size());
-    for (auto &val : recipient) {
-      val = e;
-    }
-  } else {
-    for (auto &val : recipient) {
-      val /= sum;
-    }
-  }
+  normalize_probabilities(recipient);
 }
 } // namespace EFG::factor

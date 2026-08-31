@@ -46,7 +46,7 @@ std::vector<float> BruteForce::getMarginals(std::size_t var_index) const {
                 [&](const std::vector<categoric::VarStateSize> &comb) {
                   res[comb[var_index]] += getEnergy<false>(comb) / getZ();
                 });
-  return make_prob_distr(res);
+  return factor::make_probabilities(std::move(res));
 }
 
 std::vector<float> BruteForce::getMarginals(std::size_t var_a_index,
@@ -61,7 +61,7 @@ std::vector<float> BruteForce::getMarginals(std::size_t var_a_index,
         auto idx = g.combinationIndex({comb[var_a_index], comb[var_b_index]});
         res[idx] += getEnergy<false>(comb) / getZ();
       });
-  return make_prob_distr(res);
+  return factor::make_probabilities(std::move(res));
 }
 
 template <bool Logarithm>
