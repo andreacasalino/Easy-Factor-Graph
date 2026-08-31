@@ -34,9 +34,7 @@ std::vector<float> make_prob_distr(std::vector<float> distr) {
 void add_corr_expfactor(structure::ModelBuilder &res, float w,
                         std::size_t var_a, std::size_t var_b) {
   auto var_size = res.get_seed().variables_sizes[var_a];
-  auto factor =
-      factor::make_simply_correlated<2, factor::ExponentialTrasform>(var_size);
-  factor.trsfm.setWeight(w);
+  auto factor = factor::make_exp_simply_correlated<2>(var_size, w);
   res.add_tunable_binary_factor(std::move(factor), var_a, var_b);
 }
 

@@ -96,15 +96,11 @@ std::unique_ptr<Graph> make_graph_chain(std::size_t chain_size,
     Y_vars.push_back(builder.make_variable(var_size));
   }
   for (std::size_t k = 0; k < chain_size; ++k) {
-    auto factor = FactorExponential<2>::from_sparse_domain_gen(
-        {var_size, var_size}, SimplyCorrelatedDomainGen<2>{var_size});
-    factor.trsfm.setWeight(weight_XY);
+    auto factor = make_exp_simply_correlated<2>(var_size, weight_XY);
     builder.add_binary_factor(std::move(factor), X_vars[k], Y_vars[k]);
   }
   for (std::size_t k = 1; k < chain_size; ++k) {
-    auto factor = FactorExponential<2>::from_sparse_domain_gen(
-        {var_size, var_size}, SimplyCorrelatedDomainGen<2>{var_size});
-    factor.trsfm.setWeight(weight_YY);
+    auto factor = make_exp_simply_correlated<2>(var_size, weight_YY);
     builder.add_binary_factor(std::move(factor), Y_vars[k - 1], Y_vars[k]);
   }
 

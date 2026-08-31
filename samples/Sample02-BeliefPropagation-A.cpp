@@ -30,9 +30,7 @@ int main() {
     ModelBuilder builder;
     builder.make_variable(2);
     builder.make_variable(2);
-    auto factor = FactorExponential<2>::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
-    factor.trsfm.setWeight(teta);
+    auto factor = make_exp_simply_correlated<2>(2, teta);
     builder.add_binary_factor(std::move(factor), 0, 1);
 
     Graph graph{ModelBuilder::build(std::move(builder))};
@@ -65,13 +63,9 @@ int main() {
     auto A_idx = builder.make_variable(2);
     auto B_idx = builder.make_variable(2);
     auto C_idx = builder.make_variable(2);
-    auto factor_alfa = FactorExponential<2>::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
-    factor_alfa.trsfm.setWeight(alfa);
+    auto factor_alfa = make_exp_simply_correlated<2>(2, alfa);
     builder.add_binary_factor(std::move(factor_alfa), B_idx, C_idx);
-    auto factor_beta = FactorExponential<2>::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
-    factor_beta.trsfm.setWeight(beta);
+    auto factor_beta = make_exp_simply_correlated<2>(2, beta);
     builder.add_binary_factor(std::move(factor_beta), A_idx, B_idx);
 
     Graph graph{ModelBuilder::build(std::move(builder))};
@@ -123,10 +117,7 @@ int main() {
         builder.make_variable(domain_size);
       }
       for (size_t k = 1; k < chain_size; ++k) {
-        auto factor = FactorExponential<2>::from_sparse_domain_gen(
-            {domain_size, domain_size},
-            SimplyCorrelatedDomainGen<2>{domain_size});
-        factor.trsfm.setWeight(weight);
+        auto factor = make_exp_simply_correlated<2>(domain_size, weight);
         builder.add_binary_factor(std::move(factor), k - 1, k);
       }
 

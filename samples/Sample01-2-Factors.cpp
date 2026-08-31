@@ -44,14 +44,11 @@ int main() {
         1.5f; // you can tune this value to see how the probabilities change
 
     // correlating factor
-    auto Psi_C = FactorExponential<3>::from_sparse_domain_gen(
-        {3, 3, 3}, SimplyCorrelatedDomainGen<3>{3});
-    Psi_C.trsfm.setWeight(weight);
+    auto Psi_C = make_exp_simply_correlated<3>(3, weight);
     print_probabilities(Psi_C);
 
     // anti-correlating factor
-    auto Psi_A = FactorExponential<3>(
-        {3, 3, 3}, Intervals::from_gen(SimplyAntiCorrelatedDomainGen<3>{3}));
+    auto Psi_A = make_exp_simply_anti_correlated<3>(3, weight);
     Psi_A.trsfm.setWeight(weight);
     getProbabilities(Psi_A, prob);
     print_probabilities(Psi_A);

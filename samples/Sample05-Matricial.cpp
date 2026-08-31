@@ -87,9 +87,7 @@ ModelSeed makeMatrix(std::size_t matrix_size, VarStateSize var_size,
 
   auto connect_row_ = [&](std::size_t row) {
     for (std::size_t col = 1; col < matrix_size; ++col) {
-      auto factor = FactorExponential<2>::from_sparse_domain_gen(
-          {var_size, var_size}, SimplyCorrelatedDomainGen<2>{var_size});
-      factor.trsfm.setWeight(weight_correlation);
+      auto factor = make_exp_simply_correlated<2>(var_size, weight_correlation);
       builder.add_binary_factor(std::move(factor), vars[row][col - 1],
                                 vars[row][col]);
     }
@@ -101,9 +99,7 @@ ModelSeed makeMatrix(std::size_t matrix_size, VarStateSize var_size,
     connect_row_(row);
     // connect this row to the previous one
     for (std::size_t col = 0; col < matrix_size; ++col) {
-      auto factor = FactorExponential<2>::from_sparse_domain_gen(
-          {var_size, var_size}, SimplyCorrelatedDomainGen<2>{var_size});
-      factor.trsfm.setWeight(weight_correlation);
+      auto factor = make_exp_simply_correlated<2>(var_size, weight_correlation);
       builder.add_binary_factor(std::move(factor), vars[row - 1][col],
                                 vars[row][col]);
     }
