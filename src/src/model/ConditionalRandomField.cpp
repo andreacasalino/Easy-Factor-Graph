@@ -13,6 +13,8 @@ ConditionalRandomField::ConditionalRandomField(structure::ModelSeed &&seed)
           std::forward<structure::ModelSeed>(seed)} {
   const auto &ctxt = getStructure();
 
+  // TODO init EvidenceSetManager and EvidenceRemoveManager
+
   if (ctxt.permanent_evidences.empty()) {
     throw Error{
         "A ConditionalRandomField should have at least one permanent evidence"};

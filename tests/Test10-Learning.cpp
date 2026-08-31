@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <functional>
 #include <limits>
+#include <map>
 #include <math.h>
 #include <ranges>
 #include <span>
@@ -36,7 +37,9 @@ struct TrainTestContext {
 template <typename ModelT> struct LearningTest {
   LearningTest(ModelT &model, TrainTestContext ctxt = TrainTestContext{})
       : model_{model}, ctxt_{std::move(ctxt)}, bf_{model_, ctxt_.samples} {
+    model_.getTunableWeights(initial_weights_);
     initial_marginals_ = compute_marginals();
+
     std::vector<float> ones;
     ones.resize(model.getStructure().tunability.order.size(), 1.f);
     model_.setTunableWeights(ones);
@@ -49,7 +52,42 @@ template <typename ModelT> struct LearningTest {
         .max_iterations(ctxt_.max_iterations)
         .train_model(model_, samples);
 
-    /////////////////// check marginals ///////////////////
+    /////////////////// checks ///////////////////
+    return checkWeights() && checkMarginals();
+  }
+
+private:
+  bool checkWeights() {
+    std::map<float, std::vector<std::size_t>> values_pre;
+    for (std::size_t k = 0; k < initial_weights_.size(); ++k) {
+      values_pre[initial_weights_[k]].push_back(k);
+    }
+
+    std::vector<float> weights;
+    model_.getTunableWeights(weights);
+    std::vector<std::pair<float, float>> values_post;
+    for (const auto &[_, level] : values_pre) {
+      auto &added = values_post.emplace_back(
+          std::make_pair(std::numeric_limits<float>::max(),
+                         std::numeric_limits<float>::min()));
+      auto rng =
+          level | std::views::transform([&](auto idx) { return weights[idx]; });
+      for (auto val : rng) {
+        added.first = std::min<float>(added.first, val);
+        added.second = std::max<float>(added.second, val);
+      }
+    }
+
+    for (std::size_t k = 1; k < values_post.size(); ++k) {
+      if (values_post[k].first <= values_post[k - 1].second) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  bool checkMarginals() {
     auto marginals_now = compute_marginals();
     for (std::size_t k = 0; k < marginals_now.size(); ++k) {
       if (!almost_equal_it(marginals_now[k], initial_marginals_[k],
@@ -59,11 +97,6 @@ template <typename ModelT> struct LearningTest {
     }
     return true;
   }
-
-private:
-  ModelT &model_;
-  TrainTestContext ctxt_;
-  BruteForceGradient bf_;
 
   std::vector<std::vector<float>> compute_marginals() {
     const std::vector<structure::Node> &nodes = model_.getStructure().nodes;
@@ -91,6 +124,12 @@ private:
     }
     return res;
   }
+
+  ModelT &model_;
+  TrainTestContext ctxt_;
+  BruteForceGradient bf_;
+
+  std::vector<float> initial_weights_;
   std::vector<std::vector<float>> initial_marginals_;
 };
 
