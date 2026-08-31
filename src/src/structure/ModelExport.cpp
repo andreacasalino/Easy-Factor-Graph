@@ -141,21 +141,18 @@ struct ConversionBinary {
                   {var_first_size, var_second_size},
                   factor::SimplyCorrelatedDomainGen<2>{var_first_size}));
         } else {
-          auto factor = factor::BinaryFactor::from_sparse_domain_gen(
-              {var_first_size, var_second_size},
-              factor::SimplyCorrelatedDomainGen<2>{var_first_size});
+          auto factor = factor::make_simply_correlated<2>(var_first_size);
           model.add_binary_factor(std::move(factor), var_first_index,
                                   var_second_index);
         }
       } else if (label == "anti") {
-        auto values = misc::Intervals::from_gen(
-            factor::SimplyAntiCorrelatedDomainGen<2>{var_first_size});
         if (giver.contains("w")) {
+          auto values = misc::Intervals::from_gen(
+              factor::SimplyAntiCorrelatedDomainGen<2>{var_first_size});
           add_exp_factor_(factor::BinaryFactorExponential{
               {var_first_size, var_second_size}, std::move(values)});
         } else {
-          factor::BinaryFactor factor{{var_first_size, var_second_size},
-                                      std::move(values)};
+          auto factor = factor::make_simply_anti_correlated<2>(var_first_size);
           model.add_binary_factor(std::move(factor), var_first_index,
                                   var_second_index);
         }
