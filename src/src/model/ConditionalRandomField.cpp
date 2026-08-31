@@ -13,7 +13,8 @@ ConditionalRandomField::ConditionalRandomField(structure::ModelSeed &&seed)
           std::forward<structure::ModelSeed>(seed)} {
   const auto &ctxt = getStructure();
 
-  // TODO init EvidenceSetManager and EvidenceRemoveManager
+  this->structure::EvidenceSetManager::init(getContextPtr());
+  this->structure::EvidenceRemoveManager::init(getContextPtr());
 
   if (ctxt.permanent_evidences.empty()) {
     throw Error{

@@ -20,6 +20,9 @@ public:
   Model(Model &&) noexcept = delete;
   Model &operator=(Model &&) noexcept = delete;
 
+protected:
+  auto getContextPtr() { return context_; }
+
 private:
   template <typename ComponentFirst, typename... Rest>
   void init_components(structure::StructurePtr context) {
@@ -28,14 +31,16 @@ private:
       this->template init_components<Rest...>(context);
     }
   }
+
+  structure::StructurePtr context_;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 template <typename... Components>
 Model<Components...>::Model(structure::ModelSeed &&seed) {
-  auto models = std::make_shared<structure::Structure>(
+  context_ = std::make_shared<structure::Structure>(
       std::forward<structure::ModelSeed>(seed));
-  this->template init_components<Components...>(models);
+  this->template init_components<Components...>(context_);
 }
 } // namespace EFG::model
