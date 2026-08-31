@@ -30,9 +30,7 @@ void train_model(RandomField &model_to_tune, std::size_t train_set_size);
 
 void add_to_model(ModelBuilder &builder, float w, std::size_t var_a,
                   std::size_t var_b, VarStateSize var_size) {
-  auto factor = FactorExponential<2>::from_sparse_domain_gen(
-      {var_size, var_size}, SimplyCorrelatedDomainGen<2>{var_size});
-  factor.trsfm.setWeight(w);
+  auto factor = make_exp_simply_correlated<2>(var_size, w);
   builder.add_tunable_binary_factor(std::move(factor), var_a, var_b);
 }
 
@@ -68,13 +66,10 @@ int main() {
     add_to_model(builder, beta, A, C, 2);
     add_to_model(builder, delta, D, E, 2);
 
-    auto const_factor = BinaryFactor::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
+    auto const_factor = make_simply_correlated<2>(2);
     builder.add_binary_factor(std::move(const_factor), C, D);
 
-    auto const_exp_factor = BinaryFactorExponential::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
-    const_exp_factor.trsfm.setWeight(gamma);
+    auto const_exp_factor = make_exp_simply_correlated<2>(2, gamma);
     builder.add_binary_factor(std::move(const_exp_factor), B, E);
 
     RandomField model{ModelBuilder::build(std::move(builder))};

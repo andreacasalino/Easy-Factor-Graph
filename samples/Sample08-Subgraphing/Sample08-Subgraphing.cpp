@@ -43,19 +43,13 @@ int main() {
 
     float alfa = 0.5f, beta = 1.5f;
 
-    auto factor_alfa = FactorExponential<2>::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
-    factor_alfa.trsfm.setWeight(alfa);
+    auto factor_alfa = make_exp_simply_correlated<2>(2, alfa);
     builder.add_binary_factor(std::move(factor_alfa), A, B);
 
-    auto factor_beta = FactorExponential<2>::from_sparse_domain_gen(
-        {2, 2}, SimplyCorrelatedDomainGen<2>{2});
-    factor_beta.trsfm.setWeight(beta);
+    auto factor_beta = make_exp_simply_correlated<2>(2, beta);
     builder.add_binary_factor(std::move(factor_alfa), B, C);
 
-    builder.add_binary_factor(FactorExponential<2>::from_sparse_domain_gen(
-                                  {2, 2}, SimplyCorrelatedDomainGen<2>{2}),
-                              C, D);
+    builder.add_binary_factor(make_simply_correlated<2>(2), C, D);
 
     Graph graph{ModelBuilder::build(std::move(builder))};
 
