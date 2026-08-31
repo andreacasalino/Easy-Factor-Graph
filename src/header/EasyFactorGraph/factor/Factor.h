@@ -28,12 +28,29 @@ FactorT<N, Transform> make_simply_correlated(categoric::VarStateSize var_size) {
       categoric::make_same<N>(var_size), Gen{var_size});
 }
 
+template <std::size_t N>
+FactorExponential<N>
+make_exp_simply_correlated(categoric::VarStateSize var_size, float weight) {
+  auto res = make_simply_correlated<N, ExponentialTrasform>(var_size);
+  res.trsfm.setWeight(weight);
+  return res;
+}
+
 template <std::size_t N, typename Transform = NullTrasform>
 FactorT<N, Transform>
 make_simply_anti_correlated(categoric::VarStateSize var_size) {
   using Gen = SimplyAntiCorrelatedDomainGen<N>;
   return {categoric::make_same<N>(var_size),
           misc::Intervals::from_gen(Gen{var_size})};
+}
+
+template <std::size_t N>
+FactorExponential<N>
+make_exp_simply_anti_correlated(categoric::VarStateSize var_size,
+                                float weight) {
+  auto res = make_simply_anti_correlated<N, ExponentialTrasform>(var_size);
+  res.trsfm.setWeight(weight);
+  return res;
 }
 
 /**
