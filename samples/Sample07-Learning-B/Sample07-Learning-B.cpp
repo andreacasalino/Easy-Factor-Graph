@@ -46,7 +46,12 @@ int main() {
             "random "
             "field are much more computationally demanding"
          << endl;
-    EFG::structure::Trainer{}.train_model(model, samples);
+    // use more threads to speed up the process
+    model.setWorkersPoolSize(4);
+    {
+      auto scoped_activation = model.activatePool();
+      EFG::structure::Trainer{}.train_model(model, samples);
+    }
 
     cout << "expected weights:    " << expected_weights << endl;
     model.getTunableWeights(weights);
