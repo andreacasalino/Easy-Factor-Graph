@@ -40,4 +40,12 @@ void ConditionalRandomField::setEvidences(
   }
   this->structure::EvidenceSetManager::setEvidences(buffer);
 }
+
+misc::Samples ConditionalRandomField::makeSamplesSpanningEvidences(
+    const SamplesGenerationContext &context) {
+  removeAllEvidences();
+  auto res = makeSamples(context);
+  this->structure::EvidenceSetManager::setEvidences(cache_.get_buffer<false>());
+  return res;
+}
 } // namespace EFG::model

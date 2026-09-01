@@ -48,6 +48,17 @@ public:
   // just the values packed all together, same order of getHiddenSetRng()
   void setEvidences(std::span<const categoric::VarStateSize> evidence_values);
 
+  /**
+   * @brief Temporarely clear all evidences and samples from the model
+   * like it is RandomField with no evidences in an attempt to span the
+   * different possible observations values.
+   *
+   * If you instead call makeSamples(...) (inherited from GibbsSampler),
+   * you are getting samples compatible with the last evidences set.
+   */
+  misc::Samples
+  makeSamplesSpanningEvidences(const SamplesGenerationContext &context);
+
 private:
   misc::VectorCache<structure::Evidence> cache_;
 };

@@ -60,7 +60,7 @@ float MessagePassingHandler::compute_message(Structure &context,
       context.binary_factors[msg.factor_info.factor_index].factor);
 
   if constexpr (EvalDiff) {
-    return eval_diff(this->cache_.access_buffer<0>(), recipient);
+    return eval_diff(this->cache_.get_buffer<0, false>(), recipient);
   } else {
     return std::numeric_limits<float>::max();
   }

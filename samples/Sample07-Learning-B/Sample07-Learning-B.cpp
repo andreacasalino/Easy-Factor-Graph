@@ -28,8 +28,9 @@ int main() {
     ConditionalRandomField model{std::move(from_file(path))};
 
     cout << "creating the training set, might take a while" << endl;
-    auto samples = std::make_shared<EFG::misc::Samples>(model.makeSamples(
-        GibbsSampler::SamplesGenerationContext{1000, 50, 0, true}));
+    auto samples =
+        std::make_shared<EFG::misc::Samples>(model.makeSamplesSpanningEvidences(
+            GibbsSampler::SamplesGenerationContext{2000, 50, 0, true}));
     cout << "training set created" << endl;
 
     std::vector<float> expected_weights;

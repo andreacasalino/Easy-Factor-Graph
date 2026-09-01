@@ -15,14 +15,12 @@ template <typename... Ts> class VectorCache {
 public:
   VectorCache() = default;
 
-  template <std::size_t Index> auto &get_buffer() {
+  template <std::size_t Index, bool Clear = true> auto &get_buffer() {
     auto &res = std::get<Index>(buffer_);
-    res.clear();
+    if constexpr (Clear) {
+      res.clear();
+    }
     return res;
-  }
-
-  template <std::size_t Index> auto &access_buffer() {
-    return std::get<Index>(buffer_);
   }
 
 private:
@@ -33,12 +31,12 @@ template <typename T> class VectorCache<T> {
 public:
   VectorCache() = default;
 
-  auto &get_buffer() {
-    buffer_.clear();
+  template <bool Clear = true> auto &get_buffer() {
+    if constexpr (Clear) {
+      buffer_.clear();
+    }
     return buffer_;
   }
-
-  template <std::size_t Index> auto &access_buffer() const { return buffer_; }
 
 private:
   std::vector<T> buffer_;
