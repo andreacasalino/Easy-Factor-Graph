@@ -169,13 +169,47 @@ struct Trainer {
     return *this;
   }
 
+  struct NoCB {};
+
   /**
    * @return the number of actually performed iterations
    *
    */
+  template <typename CB>
+  std::size_t
+  train_model_with_cb(TunableWeightsManager &model,
+                      std::shared_ptr<const misc::Samples> training_set,
+                      CB cb) const {
+    std::vector<float> w, w_grad;
+    auto gradient = model.gradient(training_set);
+    std::size_t i = 0;
+    for (; i < max_iterations_; ++i) {
+      model.getTunableWeights(w);
+      gradient.get(w_grad);
+      float adv_prctg{0};
+      for (std::size_t k = 0; k < w.size(); ++k) {
+        float w_snap = w[k];
+        float advancement = gradient_rescale_ * w_grad[k];
+        w[k] += advancement;
+        adv_prctg = std::max<float>(adv_prctg,
+                                    std::abs(advancement) / std::abs(w_snap));
+      }
+      if (adv_prctg < advance_toll_percentage_) {
+        break;
+      }
+      model.setTunableWeights(w);
+      if constexpr (!std::is_same_v<CB, NoCB>) {
+        cb(w);
+      }
+    }
+    return i;
+  }
+
   std::size_t
   train_model(TunableWeightsManager &model,
-              std::shared_ptr<const misc::Samples> training_set) const;
+              std::shared_ptr<const misc::Samples> training_set) const {
+    return train_model_with_cb<NoCB>(model, training_set, NoCB{});
+  }
 
 private:
   std::size_t max_iterations_{1000};
