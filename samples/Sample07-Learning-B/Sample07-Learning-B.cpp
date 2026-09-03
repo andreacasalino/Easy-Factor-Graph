@@ -67,10 +67,7 @@ int main() {
             "random "
             "field are much more computationally demanding"
          << endl;
-    // use more threads to speed up the process
-    model.setWorkersPoolSize(4);
     {
-      // auto scoped_activation = model.activatePool();
       EFG::structure::Trainer{}.max_iterations(50).train_model_with_cb(
           model, samples, [i = int{0}](const std::vector<float> &) mutable {
             cout << "iteration: " << ++i << " done" << endl;
