@@ -38,7 +38,7 @@
         {
             "values": "corr",
             "w": 0.6,
-            "first_var": "X2",
+            "first_var": "X4",
             "second_var": "Y3",
             "tunable": true
         },
