@@ -27,27 +27,6 @@ int main() {
     auto path = std::filesystem::path{SAMPLE_FOLDER} / "cond_graph.json";
     ConditionalRandomField model{std::move(from_file(path))};
 
-    // ModelBuilder builder;
-    // auto X1 = builder.make_variable(
-    //     2, ModelBuilder::VariableDescription{.isPermanentEvidence = true});
-    // auto X2 = builder.make_variable(
-    //     2, ModelBuilder::VariableDescription{.isPermanentEvidence = true});
-    // auto Y1 = builder.make_variable(2);
-    // auto Y2 = builder.make_variable(2);
-    // auto Y3 = builder.make_variable(2);
-    // builder.add_tunable_binary_factor(make_exp_simply_correlated<2>(2, 1.5f),
-    //                                   X1, Y1);
-    // builder.add_tunable_binary_factor(make_exp_simply_correlated<2>(2, 1.f),
-    // X2,
-    //                                   Y2);
-    // builder.add_tunable_binary_factor(make_exp_simply_correlated<2>(2, 0.2f),
-    //                                   Y1, Y2);
-    // builder.add_tunable_binary_factor(make_exp_simply_correlated<2>(2, 0.8f),
-    //                                   Y1, Y3);
-    // builder.add_tunable_binary_factor(make_exp_simply_correlated<2>(2, 1.2f),
-    //                                   Y2, Y3);
-    // ConditionalRandomField model{ModelBuilder::build(std::move(builder))};
-
     cout << "creating the training set, might take a while" << endl;
     auto samples =
         std::make_shared<EFG::misc::Samples>(model.makeSamplesSpanningEvidences(
