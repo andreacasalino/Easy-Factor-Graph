@@ -52,9 +52,8 @@ private:
 };
 } // namespace
 
-std::unique_ptr<misc::Samples>
-load_train_set(const std::filesystem::path &file_name,
-               std::size_t samples_per_buffer) {
+misc::Samples load_train_set(const std::filesystem::path &file_name,
+                             std::size_t samples_per_buffer) {
   StreamReadGen fd{misc::open<misc::FileMode::READ>(file_name)};
 
   std::size_t sample_len;
@@ -66,7 +65,7 @@ load_train_set(const std::filesystem::path &file_name,
 
   std::vector<categoric::VarStateSize> sample_buffer;
 
-  auto res = std::make_unique<misc::Samples>(sample_len, samples_per_buffer);
+  misc::Samples res{sample_len, samples_per_buffer};
   while (true) {
     auto maybe_next =
         fd.read_next(sample_len * sizeof(categoric::VarStateSize));
@@ -80,7 +79,7 @@ load_train_set(const std::filesystem::path &file_name,
          ++i, cursor += sizeof(categoric::VarStateSize)) {
       sample_buffer.push_back(parse_value(maybe_next->data() + cursor));
     }
-    res->add(sample_buffer);
+    res.add(sample_buffer);
   }
   return res;
 }

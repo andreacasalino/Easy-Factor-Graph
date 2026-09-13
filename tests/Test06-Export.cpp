@@ -68,7 +68,7 @@ TEST_CASE("Samples i/o", "[io][samples]") {
 
   auto samples_imported = structure::load_train_set(tmp_file.getPath(), 3);
 
-  CHECK(are_same_sample(samples, *samples_imported));
+  CHECK(are_same_sample(samples, samples_imported));
 }
 
 namespace {
