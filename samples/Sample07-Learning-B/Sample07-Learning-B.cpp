@@ -6,21 +6,14 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/io/xml/Importer.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/factor/SimpleCorrelations.h>
 #include <EasyFactorGraph/model/ConditionalRandomField.h>
-#include <EasyFactorGraph/trainable/ModelTrainer.h>
 
 using namespace EFG::model;
 using namespace EFG::factor;
 using namespace EFG::categoric;
-using namespace EFG::strct;
-using namespace EFG::io;
-using namespace EFG::train;
-
-// you can also use another iterative trainer
-#include <TrainingTools/iterative/solvers/QuasiNewton.h>
-
-using namespace train;
+using namespace EFG::structure;
 
 // just a bunch of utilities needed by the sample
 #include <Printing.h>
@@ -31,34 +24,40 @@ using namespace std;
 
 int main() {
   SAMPLE_SECTION("Tuning of a conditional random field ", "4.7", [] {
-    RandomField temporary_imported_structure;
-    xml::Importer::importFromFile(temporary_imported_structure,
-                                  SAMPLE_FOLDER +
-                                      std::string{"cond_graph.xml"});
-    ConditionalRandomField conditional_field(temporary_imported_structure,
-                                             false);
+    auto path = std::filesystem::path{SAMPLE_FOLDER} / "cond_graph.json";
+    ConditionalRandomField model{std::move(from_file(path))};
 
     cout << "creating the training set, might take a while" << endl;
-    TrainSet train_set(conditional_field.makeTrainSet(
-        GibbsSampler::SamplesGenerationContext{30, 50, 0}, 1.f, 4));
+    auto samples =
+        std::make_shared<EFG::misc::Samples>(model.makeSamplesSpanningEvidences(
+            GibbsSampler::SamplesGenerationContext{2000, 50, 0, true}));
     cout << "training set created" << endl;
 
-    const auto expected_weights = conditional_field.getWeights();
+    std::vector<float> expected_weights;
+    model.getTunableWeights(expected_weights);
 
     // set all weights to 1 and train the model on the previously generated
     // train set
-    set_ones(conditional_field);
-    QuasiNewton trainer;
-    trainer.setMaxIterations(15);
+    std::vector<float> weights;
+    weights.resize(expected_weights.size(), 1.f);
+    model.setTunableWeights(weights);
+
     cout << "training the model, this might take a while as conditional "
             "random "
             "field are much more computationally demanding"
          << endl;
-    trainer.enablePrintAdvancement();
-    train_model(conditional_field, trainer, train_set, TrainInfo{4, 1.f});
+    {
+      model.setWorkersPoolSize(4);
+      auto guard = model.activatePool();
+      EFG::structure::Trainer{}.max_iterations(50).train_model_with_cb(
+          model, samples, [i = int{0}](const std::vector<float> &) mutable {
+            cout << "iteration: " << ++i << " done" << endl;
+          });
+    }
 
     cout << "expected weights:    " << expected_weights << endl;
-    cout << "wieghts after train: " << conditional_field.getWeights() << endl;
+    model.getTunableWeights(weights);
+    cout << "weights after train: " << weights << endl;
   });
 
   return EXIT_SUCCESS;

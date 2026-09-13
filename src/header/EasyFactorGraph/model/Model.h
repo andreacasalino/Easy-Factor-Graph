@@ -1,0 +1,46 @@
+/**
+ * Author:    Andrea Casalino
+ * Created:   01.01.2021
+ *
+ * report any bug to andrecasa91@gmail.com.
+ **/
+
+#pragma once
+
+#include <EasyFactorGraph/structure/ModelSeed.h>
+#include <EasyFactorGraph/structure/Structure.h>
+
+namespace EFG::model {
+template <typename... Components> class Model : public Components... {
+public:
+  Model(structure::ModelSeed &&seed);
+
+  Model(const Model &) = delete;
+  Model &operator=(const Model &) = delete;
+  Model(Model &&) noexcept = delete;
+  Model &operator=(Model &&) noexcept = delete;
+
+protected:
+  auto getContextPtr() { return context_; }
+
+private:
+  template <typename ComponentFirst, typename... Rest>
+  void initComponents(structure::StructurePtr context) {
+    this->ComponentFirst::init(context);
+    if constexpr (0 < sizeof...(Rest)) {
+      this->template initComponents<Rest...>(context);
+    }
+  }
+
+  structure::StructurePtr context_;
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+template <typename... Components>
+Model<Components...>::Model(structure::ModelSeed &&seed) {
+  context_ = std::make_shared<structure::Structure>(
+      std::forward<structure::ModelSeed>(seed));
+  this->template initComponents<Components...>(context_);
+}
+} // namespace EFG::model

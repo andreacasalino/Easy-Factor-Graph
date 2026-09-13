@@ -1,5 +1,5 @@
 #include <EasyFactorGraph/Error.h>
 
 namespace EFG {
-Error::Error(const std::string &what) : std::runtime_error(what) {}
+Error::Error(std::string what) : std::runtime_error(std::move(what)) {}
 } // namespace EFG

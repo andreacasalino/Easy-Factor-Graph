@@ -1,0 +1,135 @@
+{
+    "binary_factors": [
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "X1",
+            "second_var": "A1"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "X2",
+            "second_var": "A2"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A1",
+            "second_var": "A2"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A1",
+            "second_var": "A4"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A2",
+            "second_var": "A4"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A2",
+            "second_var": "A3"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A3",
+            "second_var": "A4"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "A3",
+            "second_var": "B1"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "B1",
+            "second_var": "B2"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "B1",
+            "second_var": "B3"
+        },
+        {
+            "values": "corr",
+            "w": 1.0,
+            "first_var": "B2",
+            "second_var": "B3"
+        }
+    ],
+    "variables": [
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "X1"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "X2"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "A1"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "A2"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "A3"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "A4"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "B1"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "B2"
+            },
+            "size": 3
+        },
+        {
+            "description": {
+                "isPermanentEvidence": false,
+                "label": "B3"
+            },
+            "size": 3
+        }
+    ]
+}

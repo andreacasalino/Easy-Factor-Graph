@@ -5,195 +5,251 @@
  * report any bug to andrecasa91@gmail.com.
  **/
 
+#include <EasyFactorGraph/factor/Factor.h>
 #include <EasyFactorGraph/structure/GibbsSampler.h>
-#include <EasyFactorGraph/structure/SpecialFactors.h>
 
 #include <algorithm>
-#include <time.h>
+#include <ranges>
 
-namespace EFG::strct {
-UniformSampler::UniformSampler() {
-  auto random_seed = static_cast<unsigned int>(time(NULL));
-  resetSeed(random_seed);
-}
-
-std::size_t UniformSampler::sampleFromDiscrete(
-    const std::vector<float> &distribution) const {
-  float s = this->sample();
-  float cumul = 0.f;
-  for (std::size_t k = 0; k < distribution.size(); ++k) {
-    cumul += distribution[k];
-    if (s <= cumul) {
-      return k;
-    }
-  }
-  return distribution.size() - 1;
-}
-
-void UniformSampler::resetSeed(std::size_t newSeed) {
-  this->generator.seed(static_cast<unsigned int>(newSeed));
-}
-
-bool GibbsSampler::SamplerNode::noChangingDeps(
-    const std::unordered_set<const std::size_t *> &will_change) const {
-  auto it =
-      std::find_if(dynamic_dependencies.begin(), dynamic_dependencies.end(),
-                   [&will_change](const DynamicDependency &dep) {
-                     return will_change.find(dep.sender_value_in_combination) !=
-                            will_change.end();
-                   });
-  return it == dynamic_dependencies.end();
-}
-
-std::vector<GibbsSampler::SamplerNode> GibbsSampler::makeSamplerNodes(
-    std::vector<std::size_t> &combination_buffer) const {
-  const auto vars_order = getAllVariables();
-  const std::size_t size = vars_order.size();
-  combination_buffer.resize(size);
-  SmartMap<categoric::Variable, std::size_t *> combination_values_map;
-  for (std::size_t k = 0; k < size; ++k) {
-    auto *comb_ptr = &combination_buffer[k];
-    *comb_ptr = 0;
-    combination_values_map.emplace(vars_order[k], comb_ptr);
-  }
-  std::vector<SamplerNode> result;
-  result.reserve(size);
-  const auto &state = this->state();
-  for (const auto &[var, val] : state.evidences) {
-    *combination_values_map.find(var)->second = val;
-  }
-  for (auto &cluster : state.clusters) {
-    for (auto *node : cluster.nodes) {
-      node->updateMergedUnaries();
-      auto &added_node = result.emplace_back();
-      added_node.value_in_combination =
-          combination_values_map.find(node->variable)->second;
-      added_node.static_dependencies = node->merged_unaries.get();
-      for (const auto &[connected_node, connection] :
-           node->active_connections) {
-        auto &added_dep = added_node.dynamic_dependencies.emplace_back();
-        added_dep.sender = connected_node->variable;
-        added_dep.sender_value_in_combination =
-            combination_values_map.find(connected_node->variable)->second;
-        added_dep.factor = connection.factor;
-      }
-    }
-  }
-  return result;
-}
-
+namespace EFG::structure {
 namespace {
-Task make_sampling_task(const GibbsSampler::SamplerNode &subject,
-                        std::vector<UniformSampler> &engines) {
-  return [&subject, &engines](const std::size_t thread_id) {
-    std::vector<const factor::Immutable *> factors = {
-        subject.static_dependencies};
-    std::list<factor::Evidence> marginalized;
-    for (const auto &dep : subject.dynamic_dependencies) {
-      factors.push_back(&marginalized.emplace_back(
-          *dep.factor, dep.sender, *dep.sender_value_in_combination));
-    }
-    factor::MergedUnaries merged(factors);
-    *subject.value_in_combination =
-        engines[thread_id].sampleFromDiscrete(merged.getProbabilities());
-  };
-}
+struct Indices {
+  std::vector<std::size_t> evidences;
+  std::vector<std::size_t> hidden;
+};
 
-std::vector<Tasks>
-make_sampling_tasks(const std::vector<GibbsSampler::SamplerNode> &nodes,
-                    std::vector<UniformSampler> &engines,
-                    const std::optional<std::size_t> &seed, Pool &pool) {
-  engines.resize(pool.size());
-  if (std::nullopt != seed) {
-    std::size_t s = *seed;
-    for (auto &engine : engines) {
-      engine.resetSeed(s);
-      s += 5;
+Indices identify_indices(const Structure &ctxt) {
+  Indices res;
+  for (std::size_t i = 0; i < ctxt.nodes.size(); ++i) {
+    if (ctxt.nodes[i].evidence == Evidence::NOT_AN_EVIDENCE) {
+      res.hidden.push_back(i);
+    } else {
+      res.evidences.push_back(i);
     }
   }
-
-  std::vector<Tasks> result;
-  if (1 == pool.size()) {
-    auto &new_tasks = result.emplace_back();
-    for (const auto &node : nodes) {
-      new_tasks.emplace_back(make_sampling_task(node, engines));
-    }
-  } else {
-    std::list<const GibbsSampler::SamplerNode *> open;
-    for (auto &node : nodes) {
-      open.push_back(&node);
-    }
-    while (!open.empty()) {
-      std::unordered_set<const std::size_t *> should_not_change;
-      std::unordered_set<const std::size_t *> will_change;
-      auto &new_tasks = result.emplace_back();
-      auto open_it = open.begin();
-      while (open_it != open.end()) {
-        if ((should_not_change.find((*open_it)->value_in_combination) ==
-             should_not_change.end()) &&
-            (*open_it)->noChangingDeps(will_change)) {
-          will_change.emplace((*open_it)->value_in_combination);
-          for (const auto &dep : (*open_it)->dynamic_dependencies) {
-            should_not_change.emplace(dep.sender_value_in_combination);
-          }
-          new_tasks.emplace_back(make_sampling_task(**open_it, engines));
-          open_it = open.erase(open_it);
-        } else {
-          ++open_it;
-        }
-      }
-    }
-  }
-  return result;
+  return res;
 }
+
+struct alignas(64) SamplingContext {
+  StructurePtr model;
+  misc::UniformSampler sampler;
+  factor::UnaryFactorsMerger merger;
+  misc::VectorCache<float, float> message_buffer;
+};
 
 std::pair<std::size_t, std::size_t>
-delta_and_burn_out(const GibbsSampler::SamplesGenerationContext &context) {
+parse_context(const GibbsSampler::SamplesGenerationContext &context) {
   std::size_t delta_iterations =
       context.delta_iterations.has_value()
-          ? context.delta_iterations.value()
+          ? *context.delta_iterations
           : static_cast<std::size_t>(ceil(context.samples_number * 0.1));
   delta_iterations = std::max<std::size_t>(1, delta_iterations);
 
-  std::size_t burn_out = context.transient.has_value()
-                             ? context.transient.value()
-                             : 10 * delta_iterations;
+  std::size_t burn_out = context.transient.has_value() ? *context.transient
+                                                       : 10 * delta_iterations;
 
   return std::make_pair(delta_iterations, burn_out);
 }
 
-void evolve_samples(strct::Pool &pool, const std::vector<Tasks> &sample_jobs,
-                    std::size_t iterations) {
-  for (std::size_t iter = 0; iter < iterations; ++iter) {
-    for (const auto &tasks : sample_jobs) {
-      pool.parallelFor(tasks);
+template <typename V> categoric::VarStateSize extract_value(const V &val) {
+  if constexpr (std::is_same_v<V, categoric::VarStateSize>) {
+    return val;
+  } else if constexpr (std::is_same_v<V,
+                                      std::atomic<categoric::VarStateSize>>) {
+    return val.load(std::memory_order::relaxed);
+  }
+}
+
+template <typename V> void set_value(V &val, categoric::VarStateSize giver) {
+  if constexpr (std::is_same_v<V, categoric::VarStateSize>) {
+    val = giver;
+  } else if constexpr (std::is_same_v<V,
+                                      std::atomic<categoric::VarStateSize>>) {
+    val.store(giver, std::memory_order::relaxed);
+  }
+}
+
+template <typename V>
+void samplingIteration(std::span<const std::size_t> vars, std::span<V> buffer,
+                       SamplingContext &ctxt) {
+  auto &model = *ctxt.model;
+  for (auto abs_idx : vars) {
+    auto &node = model.nodes[abs_idx];
+    auto &msg_buffer = ctxt.message_buffer.getBuffer<0>();
+    msg_buffer.resize(node.var_size, 0);
+    auto &msg_prob_buffer = ctxt.message_buffer.getBuffer<1>();
+    msg_prob_buffer.resize(node.var_size, 0);
+    ctxt.merger.reset(node.var_size);
+    for (auto &conn : node.incoming_messages) {
+      if (model.nodes[conn.factor_info.sender_index].evidence ==
+          Evidence::NOT_AN_EVIDENCE) {
+        categoric::VarStateSize val =
+            extract_value(buffer[conn.factor_info.sender_index]);
+
+        std::visit(
+            [&](const auto &factor) {
+              make_evidence_message(
+                  {msg_buffer.begin(), msg_buffer.end()}, factor,
+                  !conn.factor_info.receiver_is_first_in_factor, val);
+            },
+            model.binary_factors[conn.factor_info.factor_index].factor);
+        ctxt.merger.template merge<true>(msg_buffer);
+      } else {
+        ctxt.merger.template merge<true>(model.getMessageValues(conn));
+      }
+    }
+    use_factor_if(node.unary_factor, [&](const auto &factor) {
+      ctxt.merger.template mergeFactor<true>(factor);
+    });
+
+    factor::UnaryFactor merged_factor{
+        misc::Slot<float>::makeNonOwning(ctxt.merger.getMerged())};
+    factor::get_probabilities(merged_factor, msg_prob_buffer);
+
+    set_value(buffer[abs_idx],
+              ctxt.sampler.sampleFromDiscrete(msg_prob_buffer));
+  }
+}
+
+template <typename Pred>
+void for_each_evidence(const Structure &ctxt, Pred pred) {
+  for (std::size_t i = 0; i < ctxt.nodes.size(); ++i) {
+    if (ctxt.nodes[i].evidence != Evidence::NOT_AN_EVIDENCE) {
+      pred(i, ctxt.nodes[i].evidence);
     }
   }
 }
+
+struct SerialDriver {
+  SerialDriver(Indices indices, StructurePtr model,
+               std::optional<std::size_t> seed);
+
+  void advance(std::vector<categoric::VarStateSize> &result_buffer);
+
+private:
+  Indices indices_;
+  SamplingContext ctxt_;
+};
+
+SerialDriver::SerialDriver(Indices indices, StructurePtr model,
+                           std::optional<std::size_t> seed)
+    : indices_{std::move(indices)} {
+  ctxt_.model = model;
+  if (seed.has_value()) {
+    ctxt_.sampler.resetSeed(seed.value());
+  }
+}
+
+void SerialDriver::advance(
+    std::vector<categoric::VarStateSize> &result_buffer) {
+  samplingIteration(indices_.hidden,
+                    std::span<categoric::VarStateSize>{result_buffer.begin(),
+                                                       result_buffer.end()},
+                    ctxt_);
+}
+
+struct ConcurrentDriver {
+  ConcurrentDriver(Indices indices, StructurePtr model, misc::WorkerPool &pool,
+                   std::optional<std::size_t> seed);
+
+  ~ConcurrentDriver() { delete[] scratch_buffer_; }
+
+  void advance(std::vector<categoric::VarStateSize> &result_buffers);
+
+private:
+  misc::WorkerPool &pool_;
+  Indices indices_;
+  std::vector<SamplingContext> ctxt_;
+  std::vector<std::pair<std::size_t, std::size_t>> partitions_;
+  std::atomic<categoric::VarStateSize> *scratch_buffer_{nullptr};
+};
+
+ConcurrentDriver::ConcurrentDriver(Indices indices, StructurePtr model,
+                                   misc::WorkerPool &pool,
+                                   std::optional<std::size_t> seed)
+    : pool_{pool}, indices_{std::move(indices)},
+      partitions_{misc::per_threads_indices_subdivision(
+          pool_.size(), indices_.hidden.size())} {
+  ctxt_.clear();
+  ctxt_.resize(pool.size());
+  if (seed.has_value()) {
+    for (auto &s : ctxt_) {
+      s.model = model;
+      s.sampler.resetSeed(seed.value());
+    }
+  }
+  scratch_buffer_ =
+      new std::atomic<categoric::VarStateSize>[model->nodes.size()];
+  for_each_evidence(*model, [&](std::size_t i, categoric::VarStateSize val) {
+    scratch_buffer_[i] = val;
+  });
+}
+
+void ConcurrentDriver::advance(
+    std::vector<categoric::VarStateSize> &result_buffer) {
+  pool_.compute([&, len = pool_.size()](std::size_t th_id) {
+    auto &partition = partitions_[th_id];
+    auto &ctxt = ctxt_[th_id];
+    std::span<std::atomic<categoric::VarStateSize>> buffer{
+        scratch_buffer_, ctxt.model->nodes.size()};
+    samplingIteration(
+        std::span<const std::size_t>{indices_.hidden.begin() + partition.first,
+                                     indices_.hidden.begin() +
+                                         partition.second},
+        buffer, ctxt);
+  });
+  for (auto idx : indices_.hidden) {
+    result_buffer[idx] = scratch_buffer_[idx];
+  }
+}
+
+template <typename Driver>
+misc::Samples
+make_samples(Driver &driver,
+             const GibbsSampler::SamplesGenerationContext &context,
+             StructurePtr model) {
+  misc::Samples samples{model->nodes.size()};
+
+  auto [delta_iterations, burn_out] = parse_context(context);
+
+  std::vector<categoric::VarStateSize> buffer;
+  buffer.resize(model->nodes.size(), 0);
+  for_each_evidence(*model, [&](std::size_t i, categoric::VarStateSize val) {
+    buffer[i] = val;
+  });
+
+  // burn out phase
+  for (std::size_t i = 0; i < burn_out; ++i) {
+    driver.advance(buffer);
+  }
+
+  for (std::size_t i = 0; i < context.samples_number; ++i) {
+    driver.advance(buffer);
+    samples.add(buffer);
+    for (std::size_t t = 0; t < delta_iterations; ++t) {
+      driver.advance(buffer);
+    }
+  }
+
+  return samples;
+}
 } // namespace
 
-std::vector<std::vector<std::size_t>>
-GibbsSampler::makeSamples(const SamplesGenerationContext &context,
-                          const std::size_t threads) {
-  ScopedPoolActivator activator(*this, threads);
+misc::Samples
+GibbsSampler::makeSamples(const SamplesGenerationContext &context) {
+  misc::Samples samples{context_->nodes.size()};
 
-  auto [delta_iterations, burn_out] = delta_and_burn_out(context);
-
-  std::vector<std::size_t> combination;
-  auto sampling_nodes = makeSamplerNodes(combination);
-
-  std::vector<UniformSampler> engines;
-  auto &pool = getPool();
-  auto sampling_tasks =
-      make_sampling_tasks(sampling_nodes, engines, context.seed, pool);
-
-  evolve_samples(pool, sampling_tasks, burn_out);
-  std::vector<std::vector<std::size_t>> result;
-  result.reserve(context.samples_number);
-  while (result.size() != context.samples_number) {
-    result.push_back(combination);
-    evolve_samples(pool, sampling_tasks, delta_iterations);
+  auto idx = identify_indices(*context_);
+  if (idx.hidden.empty()) {
+    throw Error{"Empty hidden set"};
   }
-  return result;
+
+  if (auto *pool = listener_.getPool(); pool) {
+    ConcurrentDriver driver{std::move(idx), context_, *pool, context.seed};
+    return make_samples(driver, context, context_);
+  } else {
+    SerialDriver driver{std::move(idx), context_, context.seed};
+    return make_samples(driver, context, context_);
+  }
 }
-} // namespace EFG::strct
+} // namespace EFG::structure

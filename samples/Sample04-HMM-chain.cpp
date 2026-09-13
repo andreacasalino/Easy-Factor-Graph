@@ -6,18 +6,14 @@
  **/
 
 // what is required from the EFG core library
-#include <EasyFactorGraph/Error.h>
-#include <EasyFactorGraph/factor/FactorExponential.h>
-#include <EasyFactorGraph/io/json/Exporter.h>
-#include <EasyFactorGraph/io/xml/Exporter.h>
+#include <EasyFactorGraph/factor/Factor.h>
+#include <EasyFactorGraph/factor/SimpleCorrelations.h>
 #include <EasyFactorGraph/model/Graph.h>
-#include <EasyFactorGraph/structure/SpecialFactors.h>
 
 using namespace EFG::model;
-using namespace EFG::io;
 using namespace EFG::factor;
 using namespace EFG::categoric;
-using namespace EFG::strct;
+using namespace EFG::structure;
 
 // just a bunch of utilities needed by the sample
 #include <Printing.h>
@@ -26,9 +22,9 @@ using namespace EFG::strct;
 #include <iostream>
 using namespace std;
 
-Graph make_graph_chain(const std::size_t &chain_size,
-                       const std::size_t &var_size, const float &weight_XY,
-                       const float &weight_YY);
+std::pair<std::unique_ptr<Graph>, std::vector<std::size_t>>
+make_graph_chain(std::size_t chain_size, VarStateSize var_size, float weight_XY,
+                 float weight_YY);
 
 int main() {
   SAMPLE_SECTION(
@@ -44,92 +40,83 @@ int main() {
 
         {
           // create a chain with a strong weight on the potentials XY.
-          auto G_XY = make_graph_chain(chain_size, var_dom_size, 2.f, 0.5f);
+          auto &&[G_XY, hidden_vars] =
+              make_graph_chain(chain_size, var_dom_size, 2.f, 0.5f);
           // compute MAP on hidden variables and display it
-          for (size_t k = 0; k < chain_size; ++k) {
-            Y_MAP.push_back(G_XY.getMAP("Y_" + to_string(k)));
+          for (auto var_idx : hidden_vars) {
+            Y_MAP.push_back(G_XY->getMAP(var_idx));
           }
           cout << "Strong correlation with evidences,   MAP on Y0,1,..   "
                << Y_MAP << endl;
 
           // export into an xml (just as an exporting example)
-          xml::Exporter::exportToFile(
-              G_XY, xml::ExportInfo{"Graph_XY.xml", "Graph_XY"});
-          // export into a json (just as an exporting example)
-          json::Exporter::exportToFile(G_XY, "Graph_XY.json");
+          auto export_path =
+              std::filesystem::temp_directory_path() / "Graph_XY.json";
+          G_XY->to_file(export_path);
+          cout << "Check exported json at: " << export_path.string() << endl;
         }
 
         {
           // create a chain with a strong weight on the potentials YY.
-          auto G_YY = make_graph_chain(chain_size, var_dom_size, 0.5f, 2.f);
+          auto &&[G_YY, hidden_vars] =
+              make_graph_chain(chain_size, var_dom_size, 0.5f, 2.f);
           // compute MAP on hidden variables and display it
           Y_MAP.clear();
-          for (size_t k = 0; k < chain_size; ++k) {
-            Y_MAP.push_back(G_YY.getMAP("Y_" + to_string(k)));
+          for (auto var_idx : hidden_vars) {
+            Y_MAP.push_back(G_YY->getMAP(var_idx));
           }
           cout << "Strong correlation among hidden variables,   MAP on Y0,1,.. "
                   "  "
                << Y_MAP << endl;
 
           // export into an xml (just as an exporting example)
-          xml::Exporter::exportToFile(
-              G_YY, xml::ExportInfo{"Graph_YY.xml", "Graph_YY"});
-          // export into a json (just as an exporting example)
-          json::Exporter::exportToFile(G_YY, "Graph_YY.json");
+          auto export_path =
+              std::filesystem::temp_directory_path() / "Graph_YY.json";
+          G_YY->to_file(export_path);
+          cout << "Check exported json at: " << export_path.string() << endl;
         }
       });
 
   return EXIT_SUCCESS;
 }
 
-Graph make_graph_chain(const std::size_t &chain_size,
-                       const std::size_t &var_size, const float &weight_XY,
-                       const float &weight_YY) {
+std::pair<std::unique_ptr<Graph>, std::vector<std::size_t>>
+make_graph_chain(std::size_t chain_size, VarStateSize var_size, float weight_XY,
+                 float weight_YY) {
   if (chain_size < 2)
     throw EFG::Error("invalid chain size");
   if (var_size < 2)
     throw EFG::Error("invalid variable size");
 
-  Graph G;
+  ModelBuilder builder;
 
-  auto X = make_variable(var_size, "X_placeholder");
-  auto Y = make_variable(var_size, "Y_placeholder");
-  auto Ybis = make_variable(var_size, "Y_placeholder_bis");
-
-  FactorExponential P_YY(
-      Factor{VariablesSoup{Y, Ybis}, Factor::SimplyCorrelatedTag{}}, weight_YY);
-
-  FactorExponential P_XY(
-      Factor{VariablesSoup{Y, X}, Factor::SimplyCorrelatedTag{}}, weight_XY);
-
-  // build the chain and set the value of the evidences equal to:
-  // X_0 = 0, X_1=var_size-1, X_2= 0, X_3 = var_size-1, etc..
-  VariablesSoup Y_vars, X_vars;
-  for (size_t k = 0; k < chain_size; k++) {
-    Y_vars.push_back(make_variable(var_size, "Y_" + to_string(k)));
-    X_vars.push_back(make_variable(var_size, "X_" + to_string(k)));
-    auto temp_XY = std::make_shared<FactorExponential>(P_XY);
-    temp_XY->replaceVariables(VariablesSoup{X_vars[k], Y_vars[k]});
-    G.addConstFactor(temp_XY);
+  std::vector<std::size_t> Y_vars, X_vars;
+  for (std::size_t k = 0; k < chain_size; ++k) {
+    X_vars.push_back(builder.make_variable(var_size));
   }
+  for (std::size_t k = 0; k < chain_size; ++k) {
+    Y_vars.push_back(builder.make_variable(var_size));
+  }
+  for (std::size_t k = 0; k < chain_size; ++k) {
+    auto factor = make_exp_simply_correlated<2>(var_size, weight_XY);
+    builder.add_binary_factor(std::move(factor), X_vars[k], Y_vars[k]);
+  }
+  for (std::size_t k = 1; k < chain_size; ++k) {
+    auto factor = make_exp_simply_correlated<2>(var_size, weight_YY);
+    builder.add_binary_factor(std::move(factor), Y_vars[k - 1], Y_vars[k]);
+  }
+
+  auto graph = std::make_unique<Graph>(ModelBuilder::build(std::move(builder)));
+
+  std::vector<Evidence> evidences;
   for (size_t k = 0; k < chain_size; k++) {
-    ImmutablePtr factor;
-    if (0 == k) {
-      factor = std::make_shared<Indicator>(Y_vars[0], 0);
+    if (k % 2 == 0) {
+      evidences.emplace_back(Evidence{X_vars[k], 0});
     } else {
-      auto temp_YY = std::make_shared<FactorExponential>(P_YY);
-      temp_YY->replaceVariables(VariablesSoup{Y_vars[k], Y_vars[k - 1]});
-      factor = temp_YY;
+      evidences.emplace_back(Evidence{X_vars[k], 1});
     }
-    G.addConstFactor(factor);
   }
-  size_t o = 0;
-  for (size_t k = 0; k < chain_size; k++) {
-    G.setEvidence(X_vars[k], o);
-    if (o == 0)
-      o = 1;
-    else
-      o = 0;
-  }
-  return G;
+  graph->setEvidences(evidences);
+
+  return std::make_pair(std::move(graph), std::move(Y_vars));
 }
