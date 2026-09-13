@@ -6,7 +6,6 @@
 - [Python](#python)
 - [CMake support](#cmake-support)
 - [Usage](#usage)
-- [EFG GUI](#efg-gui)
 
 ## INTRO
 
@@ -111,136 +110,76 @@ This library exploits virtual inheritance to define some objects hierarchies. Th
 
 Haven't yet left a **star**? Do it now! :).
 
-For convenience, assume all these namespaces are used by default:
-```cpp
-using namespace EFG;
-using namespace EFG::categoric;
-using namespace EFG::factor;
-using namespace EFG::model;
-using namespace EFG::io;
-using namespace EFG::train;
-using namespace EFG::strct;
-```
-
 ### FACTORS CONSTRUCTION
 
-**EFG** allows you to define categoric variables and factors by calling simple functions.
-This is what you would do to build a couple of variables:
+**EFG** allows you to define factors as pure shape functions. This is what you would do to build a simple exponential correlating factor:
 ```cpp
-    // define a couple of variables, with the same size
-    VariablePtr A = make_variable(3, "A"); // size is 3
-    VariablePtr B = make_variable(3, "B"); // size is 3
-```
-
-Such variables can be referred by the factors correlating them. In order to build a simple correlating factor this is what you would do:
-```cpp
-    // build a simply correlating factor connecting the 2 variables
-    Factor factor_AB(VariablesSoup{B, A}, // the order in the specified
-                                          // group matters: B is assumed
-                                          // as the first variable, A
-                                          // will be the second
-                     Factor::SimplyCorrelatedTag{});
-```
-
-And this is what you would do to generate an exponential simple correlating factor:
-```cpp
-    // build an exponential factor using as base `factor_AB`: values of the
-    // images are assumed as exp(weight * images_factor_AB)
-    FactorExponential factor_AB_exponential(
-        factor_AB,
-        1.5f // this will be the value assumed for the weight
-);
+    // Factors are just shape functions.
+    // For examample this is an exponential simply correlating factor connecting
+    // 2 variables each with space size equal to 3
+    float weight = 1.5f;
+    EFG::factor::FactorExponential<2> factor_exp =
+        EFG::factor::make_exp_simply_correlated<2>(3, weight);
 ```
 
 You can also define custom factors, specifying the shape function that maps the values in their domain with their images.
 For example:
 ```cpp
-    // define another variable
-    VariablePtr C = make_variable(2, "C"); // size is 2
-    // define a factor connecting C to B
-    // we start building an empty factor, having all images equal to 0
-    Factor factor_BC(VariablesSoup{B, C});
-    // set some individual images of factor_BC
-    // set for <0,1> -> 2
-    factor_BC.set(std::vector<std::size_t>{0, 1}, 2.f);
-    // set for <2,0> -> 1.3f
-    factor_BC.set(std::vector<std::size_t>{2, 0}, 1.3f);
+    // This other factor is instead built defining value by value the element in
+    // its domain
+    //
+    // This factor will connet 2 variables:
+    // - the first having a space size of 3
+    // - the second having a space size of 2
+    //
+    // domain is us:
+    // - set for <0,1> -> 2
+    // - set for <2,0> -> 1.3f
+    EFG::factor::Factor<2> factor =
+        EFG::factor::Factor<2>::fromSparseDomain<true>(
+            EFG::categoric::Combination<2>{3, 2},
+            {{{0, 1}, 2.f}, {{2, 0}, 1.3f}});
 ```
 
 ### MODELS CONSTRUCTION
 
-Factor graphs can be built incrementally, passing one by one the factors that compose them.
-Without loss of generality suppose to start from an empty **random field**:
+Model can be built incrementally, defining one by one the variables and factors the model should contain.
+The builder pattern is followed, for example this is what you would do to build a **random field**:
 ```cpp
-    // start building an empty random field
-    RandomField model;
-```
+    // builder pattern to define the pieces of the model
+    EFG::structure::ModelBuilder builder;
 
-then, you can build some factors and enrich the model with them:
-```cpp
     // define some variables, which will be later connected
-    auto A = make_variable(4, "varA");
-    auto B = make_variable(4, "varB");
-    auto C = make_variable(4, "varC");
+    EFG::categoric::VarStateSize space_size{4};
+    auto varA_idx = builder.make_variable(space_size);
+    auto varB_idx = builder.make_variable(space_size);
+    auto varC_idx = builder.make_variable(space_size);
+    auto varD_idx = builder.make_variable(space_size);
 
-    // without loss of generality, add to the model some simply correlating
-    // factors
-    model.addConstFactor(std::make_shared<Factor>(
-        VariablesSoup{A, B},
-        Factor::SimplyCorrelatedTag{})); // the generated smart
-                                         // pointer is shallow
-                                         // copied
-    model.copyConstFactor(
-        Factor{VariablesSoup{A, C},
-               Factor::SimplyCorrelatedTag{}}); // the passed factor is
-                                                // deep-copied into the
-                                                // model
+    // add constant factors
+    builder.add_binary_factor(
+        EFG::factor::make_exp_simply_correlated<2>(space_size, 1.2f), varA_idx,
+        varB_idx);
+
+    // add additional tunable factors
+    builder.add_binary_factor(
+        EFG::factor::make_exp_simply_correlated<2>(space_size, 0.7f), varB_idx,
+        varC_idx);
+    builder.add_binary_factor(
+        EFG::factor::make_exp_simply_correlated<2>(space_size, 1.5f), varC_idx,
+        varD_idx);
+
+    // now seal the model and actually build it
+    EFG::model::RandomField model{
+        EFG::structure::ModelBuilder::build(std::move(builder))};
 ```
 
-The previously added factor are kept constant in the model. In order to enrich the model with a tunable factor you can call a different method:
+Once created, the entire model can be queried (see below) or exported to file:
 ```cpp
-    // build some additional tunable exponential factors that will be too added
-    auto factor_exp_BC = std::make_shared<FactorExponential>(
-        Factor{VariablesSoup{B, C}, Factor::SimplyCorrelatedTag{}}, 1.f);
-    model.addTunableFactor(factor_exp_BC);
-
-    auto D = make_variable(4, "varD");
-    auto factor_exp_CD = std::make_shared<FactorExponential>(
-        Factor{VariablesSoup{C, D}, Factor::SimplyCorrelatedTag{}}, 1.5f);
-    model.addTunableFactor(factor_exp_CD);
+    // export the model to a file
+    std::filesystem::path dest_file = "/tmp/the_mdoel.json";
+    model.to_file(dest_file);
 ```
-
-You can also add a tunable factor, that must share its weigth with an already inserted factor of the model:
-```cpp
-    // insert another tunable factor, this time specifying that it needs to
-    // share the weight with already inserted exponential factor that connects B
-    // and C
-    model.addTunableFactor(
-        std::make_shared<FactorExponential>(
-            Factor{VariablesSoup{C, D}, Factor::SimplyCorrelatedTag{}},
-            2.f // actually this value is irrelevant, as the weight of
-                // factor_exp_BC will be assumed from now on
-            ),
-        VariablesSet{B, C}
-        // this additional input is to specify that this exponential factor
-        // needs to share the weight with the one connecting B and C
-    );
-```
-
-You can also import the entire graph defined in an xml file:
-```cpp
-    // absorb the structure defined in an xml file
-    xml::Importer::importFromFile(model, std::string{"file_name.xml"});
-```
-check the documentation or the samples for the expected format the xml file should be compliant with.
-
-Similarly, you can also import the structure defined in a **json**
-```cpp
-    // absorb the structure encoded in a json string
-    nlohmann::json json_defining_a_structure = ...;
-    json::Importer::importFromJson(model, json_defining_a_structure);
-```
-check the documentation or the samples for the expected format the json should be compliant with.
 
 ### QUERY THE MODEL
 
@@ -250,21 +189,31 @@ However, any query that you can do, is conditioned to the latest set of evidence
 Setting the evidences can be easily done by calling:
 ```cpp
     // set some evidences
-    model.setEvidence("variable_1", 0); // setting variable_1 = 0
-    model.setEvidence("variable_2", 2); // setting variable_2 = 2
+    auto varA_idx = model.getStructure().named_vars_table.at("varA");
+    auto varB_idx = model.getStructure().named_vars_table.at("varB");
+    EFG::structure::Evidence ev_A{varA_idx, 1}; // prescribe setting varA = 1
+    EFG::structure::Evidence ev_B{varB_idx, 0}; // prescribe setting varB = 0
+    model.setEvidences(ev_A, ev_B);
 ```
 
 You can get the **conditioned marginal distribution** of a variable by calling:
 ```cpp
     // get the marginal conditioned distribution of an hidden variable
-    std::vector<float> conditioned_marginals =
-        model.getMarginalDistribution("var_A");
+    std::vector<float> conditioned_marginals;
+    auto varC_idx = model.getStructure().named_vars_table.at(
+        "varC"); // there is no need to look up every time the variable if you
+                 // already know the index
+    model.getMarginalDistribution(conditioned_marginals, varC_idx);
 ```
 
 Or you might be interested in the **maximum a posteriori estimation** of the entire evidence set:
 ```cpp
     // get maxiomum a posteriori estimation of the entire hidden set
-    std::vector<std::size_t> MAP_hidden_set = model.getHiddenSetMAP();
+    std::vector<EFG::categoric::VarStateSize> MAP_hidden_set;
+    model.getHiddenSetMAP(
+        MAP_hidden_set); // same order of variable accessible through
+                         // model.getStructure().nodes, keeping only hidden ones
+                         // actually, is assumed
 ```
 
 As already mentioned, results are subjected to the latest evidences set (which can be also empty).
@@ -272,11 +221,12 @@ Of course, you can update the evidences and get the updated marginals:
 ```cpp
     // set some new evidences
     model.removeAllEvidences();
-    model.setEvidence("evid_1", 1);
+    model.setEvidences(EFG::structure::Evidence{
+        model.getStructure().named_vars_table.at("varE"), 1});
 
     // compute new conditioned marginals: the should be different as the
     // evidences were changed
-    conditioned_marginals = model.getMarginalDistribution("var_A");
+    model.getMarginalDistribution(conditioned_marginals, varA_idx);
 ```
 
 ### TUNE THE MODEL
@@ -285,51 +235,41 @@ Tunable models are characterized by the exponential factors added to the model i
 This is done by relying on a training set, which can be for example imported from a file:
 ```cpp
     // assume we have a training set for the model stored in a file
-    TrainSet training_set = import_train_set("file_name.txt");
+    auto training_set = std::make_shared<EFG::misc::Samples>(
+        EFG::structure::load_train_set("/tmp/the_training_set", 500));
 ```
 
-Then, a training approach must be chosen. You can rely on one of the ready to use approaches implemented in [this](https://github.com/andreacasalino/TrainingTools) (by default) fetched package. 
-Suppose you want to use a quasi Newton method:
+The above traning set can be used to actually train a model. You can rely on the very simple gradient descend approach contained in this library, or use one of the ready to use approaches implemented in [this](https://github.com/andreacasalino/TrainingTools) or other ones: what this library gives you actually is the possibility to get/set the weights of the model as well as evaluate their gradient w.r.t. a given training set. Once you have this you can implement any traning startegy!
 ```cpp
-    // we can train the model using one of the ready to use gradient based
-    // approaches
-    ::train::QuasiNewton ready_to_use_trainer;
-    ready_to_use_trainer.setMaxIterations(50);
-```
+    EFG::structure::ModelBuilder builder;
+    EFG::model::ConditionalRandomField tunable_model{
+        EFG::structure::from_file("/tmp/the_model.json")};
 
-Then, you are ready to train the model:
-```cpp
-    // some definitions to control the training process
-    TrainInfo info = TrainInfo{
-        4,  // threads to use
-        1.f // stochasticity. When set different from 1, the stochastich
-            // gradient descend approaches are actually used
-    };
-
-    train_model(tunable_model, ready_to_use_trainer, training_set, info);
+    // We can train the model using the function provided by this library, which
+    // is a simple gradient descend
+    //
+    // At the same what this library offers is the possibility to get/set the
+    // weights of the model as well as evaluate their gradient w.r.t. a given
+    // training set. Once you have this you can implement any traning startegy!
+    EFG::structure::Trainer{}
+        .max_iterations(500)
+        .gradient_rescale(0.02f)
+        .train_model(tunable_model, training_set);
 ```
 
 ### GIBBS SAMPLING
 
 Sometimes, it might be useful to draw samples from the model. This can be done with the Gibbs sampling strategy provided by **EFG**:
 ```cpp
+    EFG::model::RandomField model{
+        EFG::structure::from_file("/tmp/the_model.json")};
+
     // some definitions to control the samples generation process
-    GibbsSampler::SamplesGenerationContext info =
-        GibbsSampler::SamplesGenerationContext{
-            1000, // samples number
-            0,    // seed used by random engines
-            500   // number of iterations to discard at the beginning (burn out)
-        };
+    EFG::structure::GibbsSampler::SamplesGenerationContext samples_gen_context{
+        .samples_number = 1000, // samples number
+        .seed = 0,              // seed used by random engines
+    };
 
     // get samples from the model using Gibbs sampler
-    std::vector<std::vector<std::size_t>> samples =
-        model.makeSamples(info,
-                          4 // threads to use
-        );
+    EFG::misc::Samples samples = model.makeSamples(samples_gen_context);
 ```
-
-## EFG GUI
-
-If you have found this library useful, please find the time to leave a star :). Just before you go, be aware that [Easy-Factor-Graph-GUI](https://github.com/andreacasalino/Easy-Factor-Graph-GUI) wraps this library as C++ backend to a nice graphical user interactive application:
-
-![What you should see when running the application](https://github.com/andreacasalino/Easy-Factor-Graph-GUI/blob/master/Example.png)
